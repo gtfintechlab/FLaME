@@ -32,9 +32,6 @@ from src.args import parse_args
 
 
 def main(args):
-    # TODO: remove this argument if the script can generalize beyond dolly-v2-12b
-    args.model = "databricks/dolly-v2-12b"
-
     data_category = task_data_map[args.task_name]["data_category"]
     instruction = task_data_map[args.task_name]["instruction"]
 
@@ -61,10 +58,9 @@ def main(args):
         TEST_DIRECTORY.mkdir(parents=True, exist_ok=True)
         PROMPT_OUTPUTS = TASK_DIRECTORY / "llm_prompt_outputs" / args.quantization
         PROMPT_OUTPUTS.mkdir(parents=True, exist_ok=True)
-        test_data_fp = PROMPT_OUTPUTS / f"{data_category}-test-{seed}.xlsx"
-        results_fp = f"dolly_{seed}_{TODAY.strftime('%d_%m_%Y')}_{time_taken}.csv"
 
         start_t = time()
+        test_data_fp = TEST_DIRECTORY / f"{data_category}-test-{seed}.xlsx"
         logger.info(f"Loading test data from {test_data_fp}")
         data_df = pd.read_excel(test_data_fp)
         sentences = data_df["sentence"].to_list()
@@ -85,11 +81,12 @@ def main(args):
         for i in range(len(res)):
             output_list.append([labels[i], sentences[i], res[i][0]["generated_text"]])
         logger.debug(f"Number of outputs: {len(output_list)}")
+        time_taken = int((time() - start_t) / 60.0)
 
         results = pd.DataFrame(
             output_list, columns=["true_label", "original_sent", "text_output"]
         )
-        time_taken = int((time() - start_t) / 60.0)
+        results_fp = f"dolly_{seed}_{TODAY.strftime('%d_%m_%Y')}_{time_taken}.csv"
         logger.info(f"Time taken: {time_taken} minutes")
         results.to_csv(
             PROMPT_OUTPUTS / results_fp,
