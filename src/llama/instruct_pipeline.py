@@ -2,40 +2,22 @@ import logging
 import re
 from typing import List
 
-from transformers import Pipeline, PreTrainedTokenizer
-from transformers.utils import is_tf_available
+import torch
+from transformers import Pipeline, LlamaTokenizer
 
-if is_tf_available():
-    import tensorflow as tf
+from instructions import INSTRUCTION_KEY, RESPONSE_KEY, END_KEY
+from src.instructions import INTRO_BLURB
 
 logger = logging.getLogger(__name__)
 
-INSTRUCTION_KEY = "### Instruction:"
-RESPONSE_KEY = "### Response:"
-END_KEY = "### End"
-INTRO_BLURB = "Below is an instruction that describes a task. Write a response that appropriately completes the request."
 
-# This is the prompt that is used for generating responses using an already trained model.  It ends with the response
-# key, where the job of the model is to provide the completion that follows it (i.e. the response itself).
-PROMPT_FOR_GENERATION_FORMAT = """{intro}
-{instruction_key}
-{instruction}
-{response_key}
-""".format(
-    intro=INTRO_BLURB,
-    instruction_key=INSTRUCTION_KEY,
-    instruction="{instruction}",
-    response_key=RESPONSE_KEY,
-)
-
-
-def get_special_token_id(tokenizer: PreTrainedTokenizer, key: str) -> int:
+def get_special_token_id(tokenizer: LlamaTokenizer, key: str) -> int:
     """
     Gets the token ID for a given string that has been added to the tokenizer as a special token.
     When training, we configure the tokenizer so that the sequences like "### Instruction:" and "### End" are
     treated specially and converted to a single, new token.  This retrieves the token ID each of these keys map to.
     Args:
-        tokenizer (PreTrainedTokenizer): the tokenizer
+        tokenizer (LlamaTokenizer): the tokenizer
         key (str): the key to convert to a single token
     Raises:
         RuntimeError: if more than one ID was generated
@@ -50,7 +32,7 @@ def get_special_token_id(tokenizer: PreTrainedTokenizer, key: str) -> int:
     return token_ids[0]
 
 
-class InstructionTextGenerationPipeline(Pipeline):
+class LlamaTextGenerationPipeline(Pipeline):
     def __init__(
         self,
         *args,
@@ -119,7 +101,14 @@ class InstructionTextGenerationPipeline(Pipeline):
         return preprocess_params, forward_params, postprocess_params
 
     def preprocess(self, instruction_text, **generate_kwargs):
-        prompt_text = PROMPT_FOR_GENERATION_FORMAT.format(instruction=instruction_text)
+        # This is the prompt that is used for generating responses using an already trained model. It ends with the
+        # response key, where the job of the model is to provide the completion that follows it (i.e. the response
+        # itself).
+        prompt_text = f"""{INTRO_BLURB}
+        {INSTRUCTION_KEY}
+        {instruction_text}
+        {RESPONSE_KEY}
+        """
         inputs = self.tokenizer(
             prompt_text,
             return_tensors="pt",

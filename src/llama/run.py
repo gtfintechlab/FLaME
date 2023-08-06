@@ -22,8 +22,8 @@ import pandas as pd
 import torch
 from tqdm.auto import tqdm
 # TODO: Implement the instruction text pipeline for LLAMA2
-from src.llama.instruct_pipeline import InstructionTextGenerationPipeline
-from hf_model import get_model
+from src.llama.instruct_pipeline import LlamaTextGenerationPipeline
+from model import get_model
 from src.config import SEEDS, TODAY
 from src.instructions import task_data_map
 from src.utils.logging import setup_logger
@@ -40,7 +40,7 @@ def main(args):
     model, tokenizer = get_model(args)
 
     # get pipeline ready for instruction text generation
-    generate_text = InstructionTextGenerationPipeline(model=model, tokenizer=tokenizer)
+    generate_text = LlamaTextGenerationPipeline(model=model, tokenizer=tokenizer)
 
     for seed in tqdm(SEEDS):
         logger.info(f"Running inference for seed {seed}")

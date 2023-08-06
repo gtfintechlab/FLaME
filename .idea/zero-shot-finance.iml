@@ -7,6 +7,8 @@
       <excludeFolder url="file://$MODULE_DIR$/.model_cache" />
       <excludeFolder url="file://$MODULE_DIR$/.pytest_cache" />
       <excludeFolder url="file://$MODULE_DIR$/llama2" />
+      <excludeFolder url="file://$MODULE_DIR$/submodules/llama" />
+      <excludeFolder url="file://$MODULE_DIR$/submodules/llama-recipes" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

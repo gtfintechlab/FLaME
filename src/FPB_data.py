@@ -22,16 +22,22 @@ def encode(label_word):
         return -1
 
 
+# def get_FPB_dataset_from_HF():
+#     logger.info(f"Getting FPB from HuggingFace datasets")
+#     # Load the dataset
+#     dataset = datasets.load_dataset("financial_phrasebank")
+#     # Path to save the dataset as a zip file
+#     zip_path = DATA_DIRECTORY / "FinancialPhraseBank-v1.0.zip"
+#     # Save the dataset to a zip file
+#     logger.info(f"Saving FPB to {zip_path}")
+#     dataset.save_to_disk(zip_path)
+#     # Unzip the file
+#     logger.info(f"Unzipping {zip_path}")
+#     with zipfile.ZipFile(zip_path, "r") as zip_ref:
+#         zip_ref.extractall("ExtractedFinancialPhraseBank")
+
 def get_FPB_dataset():
-    logger.info(f"Getting FPB from HuggingFace datasets")
-    # Load the dataset
-    dataset = datasets.load_dataset("financial_phrasebank")
-    # Path to save the dataset as a zip file
     zip_path = DATA_DIRECTORY / "FinancialPhraseBank-v1.0.zip"
-    # Save the dataset to a zip file
-    logger.info(f"Saving FPB to {zip_path}")
-    dataset.save_to_disk(zip_path)
-    # Unzip the file
     logger.info(f"Unzipping {zip_path}")
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall("ExtractedFinancialPhraseBank")

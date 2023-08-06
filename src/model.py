@@ -11,21 +11,21 @@ CACHE_DIR = str(ROOT_DIRECTORY / ".model_cache")
 logger = setup_logger(__name__)
 
 VALID_MODELS = ["meta-llama/Llama-2-7b-hf",
-                "meta-llama/Llama-2-7b-chat-hf",
+                # "meta-llama/Llama-2-7b-chat-hf",
                 "meta-llama/Llama-2-13b-hf",
-                "meta-llama/Llama-2-13b-chat-hf",
+                # "meta-llama/Llama-2-13b-chat-hf",
                 "meta-llama/Llama-2-70b-hf",
-                "meta-llama/Llama-2-70b-chat-hf",
+                # "meta-llama/Llama-2-70b-chat-hf",
                 "databricks/dolly-v2-12b"]
 
 
 def get_model(args):
     if torch.cuda.is_available():
-        cuda_n_gpus = torch.cuda.device_count()
-        cuda_max_memory = f"{int(torch.cuda.mem_get_info()[0] / 1024 ** 3) - 2}GB"
-        cuda_max_memory = {i: cuda_max_memory for i in range(cuda_n_gpus)}
+        CUDA_N_GPUS = torch.cuda.device_count()
+        CUDA_MAX_MEMORY = f"{int(torch.cuda.mem_get_info()[0] / 1024 ** 3) - 2}GB"
+        CUDA_MAX_MEMORY = {i: CUDA_MAX_MEMORY for i in range(CUDA_N_GPUS)}
         logger.info(
-            f"Using k={cuda_n_gpus} CUDA GPUs with max memory {cuda_max_memory}"
+            f"Using k={CUDA_N_GPUS} CUDA GPUs with max memory {CUDA_MAX_MEMORY}"
         )
     else:
         logger.error(f"CUDA Unavailable!")
@@ -39,7 +39,7 @@ def get_model(args):
         model = AutoModelForCausalLM.from_pretrained(
             args.model,
             device_map="auto",
-            max_memory=cuda_max_memory,
+            max_memory=CUDA_MAX_MEMORY,
             cache_dir=CACHE_DIR,
         )
     elif args.quantization == "bf16":
@@ -47,7 +47,7 @@ def get_model(args):
             args.model,
             torch_dtype=torch.bfloat16,
             device_map="auto",
-            max_memory=cuda_max_memory,
+            max_memory=CUDA_MAX_MEMORY,
             cache_dir=CACHE_DIR,
         )
     elif args.quantization == "int8":
@@ -55,7 +55,7 @@ def get_model(args):
             args.model,
             load_in_8bit=True,
             device_map="auto",
-            max_memory=cuda_max_memory,
+            max_memory=CUDA_MAX_MEMORY,
             cache_dir=CACHE_DIR,
         )
     elif args.quantization == "int4":
@@ -63,7 +63,7 @@ def get_model(args):
             args.model,
             load_in_4bit=True,
             device_map="auto",
-            max_memory=cuda_max_memory,
+            max_memory=CUDA_MAX_MEMORY,
             cache_dir=CACHE_DIR,
         )
     else:

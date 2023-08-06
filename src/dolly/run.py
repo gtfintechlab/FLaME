@@ -23,7 +23,7 @@ import torch
 from instruct_pipeline import InstructionTextGenerationPipeline
 from tqdm.auto import tqdm
 from src.config import SEEDS, TODAY
-from src.hf_model import get_model
+from src.model import get_model
 from src.instructions import task_data_map
 from src.utils.logging import setup_logger
 
