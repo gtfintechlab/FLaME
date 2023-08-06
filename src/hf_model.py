@@ -10,7 +10,13 @@ CACHE_DIR = str(ROOT_DIRECTORY / ".model_cache")
 
 logger = setup_logger(__name__)
 
-VALID_MODELS = ["databricks/dolly-v2-12b"]
+VALID_MODELS = ["meta-llama/Llama-2-7b-hf",
+                "meta-llama/Llama-2-7b-chat-hf",
+                "meta-llama/Llama-2-13b-hf",
+                "meta-llama/Llama-2-13b-chat-hf",
+                "meta-llama/Llama-2-70b-hf",
+                "meta-llama/Llama-2-70b-chat-hf",
+                "databricks/dolly-v2-12b"]
 
 
 def get_model(args):

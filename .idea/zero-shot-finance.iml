@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.model_cache" />
       <excludeFolder url="file://$MODULE_DIR$/.pytest_cache" />
+      <excludeFolder url="file://$MODULE_DIR$/llama2" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

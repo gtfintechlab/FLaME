@@ -20,10 +20,11 @@ from time import time
 import numpy as np
 import pandas as pd
 import torch
-from instruct_pipeline import InstructionTextGenerationPipeline
 from tqdm.auto import tqdm
+# TODO: Implement the instruction text pipeline for LLAMA2
+from src.llama.instruct_pipeline import InstructionTextGenerationPipeline
+from hf_model import get_model
 from src.config import SEEDS, TODAY
-from src.hf_model import get_model
 from src.instructions import task_data_map
 from src.utils.logging import setup_logger
 
