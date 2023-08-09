@@ -4,8 +4,9 @@ from time import time
 
 import pandas as pd
 import torch
-from unused.h2o.pipeline import H2OTextGenerationPipeline
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+from unused.h2o.pipeline import H2OTextGenerationPipeline
 
 today = date.today()
 seeds = [5768, 78516, 944601]

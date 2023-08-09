@@ -1,12 +1,13 @@
+import sys
+import zipfile
+from pathlib import Path
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
-from src.config import SEEDS
-from pathlib import Path
-import sys
-import datasets
-import zipfile
+
 from src.utils.logging import setup_logger
+from utils.config import SEEDS
 
 logger = setup_logger(__name__)
 
@@ -35,6 +36,7 @@ def encode(label_word):
 #     logger.info(f"Unzipping {zip_path}")
 #     with zipfile.ZipFile(zip_path, "r") as zip_ref:
 #         zip_ref.extractall("ExtractedFinancialPhraseBank")
+
 
 def get_FPB_dataset():
     zip_path = DATA_DIRECTORY / "FinancialPhraseBank-v1.0.zip"

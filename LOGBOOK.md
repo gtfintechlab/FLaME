@@ -1,3 +1,5 @@
+https://github.com/facebookresearch/llama-recipes/tree/main/inference
+
 # Research Logbook
 ***SUBMITTAL DEADLINE: DECEMBER 15TH 2023 (OR) JANUARY 15TH 2024***
 ***FINAL RESULTS DEADLINE: NOVEMBER 15TH deadline to work with agam***
@@ -44,6 +46,91 @@ ANSWER: NO IT IS DIFFERENT
 * [X] What is the deal with `lab-manual-split-combine-test` for FOMC data, 'test.csv' for finder_ord
 ANSWER: check the papers original for the data
 
+  
+## Research Questions
+
+- How is performance on financial tasks affected by pruning or parameters reduction
+- few shot learning (sampling sentences for few shot)
+  - how do i sample few shot from different regions
+  - region aware sampling
+  - HOW DO WE DO FEW SHOT LEARNING IN THE KNOWLEDGE OF FINANCE
+  - keyword aware sampling how does this LLM perform
+- what is the number of shots we need?
+- how can we pick the best shots?
+- goal is to use zero/few shot on fomc data like trillion dollar words paper (correlate with CPI data on hawk/dove)
+  - hawk/dove isnt a task its just to build a measure
+
+
+## Journal
+
+### Tuesday, 2023-08-08
+
+### Llama2
+`python src/dolly/run.py -q default -t sentiment_analysis -m meta-llama/Llama-2-7b-chat-hf -hf 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`
+
+#### Prompt Template
+
+##### Special Tokens in Llama2 Foundation Model
+- `<s>`: the beginning of the entire sequence.
+  - NOTE: When using the `LlamaTokenizer()` from HuggingFace, the `<s>` token is automatically added to the beginning of the sequence.
+- `<<SYS>>\n`: the beginning of the system message.
+- `\n<</SYS>>\n\n`: the end of the system message.
+- `[INST]`: the beginning of some instructions.
+- `[/INST]`: the end of some instructions.
+
+##### Examples of Llama2's Prompt Template
+
+Template:
+"""
+<s>[INST] <<SYS>>
+{{ system_prompt }}
+<</SYS>>
+
+{{ user_message }} [/INST]
+"""
+
+Example 1:
+"""
+<s>[INST] <<SYS>>
+You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
+
+If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
+<</SYS>>
+
+There's a llama in my garden. What should I do? [/INST]
+"""
+
+Example 2:
+"""
+<s>[INST] <<SYS>>
+You are a helpful, respectful and honest assistant. Always do...
+
+If you are unsure about an answer, truthfully say "I don't know"
+<</SYS>>
+
+How many Llamas are we from skynet? [/INST]
+"""
+
+##### Alternative to Llama2's Prompt Template
+Alternative Template:
+"""
+<<SYS>>
+{{ system_prompt }}
+<</SYS>>
+
+[INST] {{instruction_prompt}} [/INST] {{ user_message }}
+"""
+
+Alternative Example 1:
+"""
+<<SYS>>
+You are a helpful, respectful and honest assistant. Always do...
+
+If you are unsure about an answer, truthfully say "I don't know"
+<</SYS>>
+
+[INST] Remember you are an assistant [/INST] User: How many Llamas are we from skynet?
+"""
 
 ## Useful Links
 
@@ -54,37 +141,17 @@ ANSWER: check the papers original for the data
 - https://huggingface.co/transformers/v3.0.2/model_doc/auto.html
 - https://huggingface.co/docs/transformers/perf_infer_gpu_one
 - https://huggingface.co/docs/transformers/main_classes/quantization
+- https://huggingface.co/docs/transformers/v4.31.0/en/main_classes/pipelines#transformers.pipeline
 
 ### Quantization
+- https://huggingface.co/docs/accelerate/usage_guides/quantization
 - https://github.com/TimDettmers/bitsandbytes
 - https://github.com/huggingface/peft
 - https://github.com/artidoro/qlora
-
-## Journal
-
-### Monday, 2023-07-31
-
-#### Actions
-
-#### Notes:
- - focus on memory gpu utilization with quantization
- - parameters reduction can be done by pruning
- - Agam's paper
-   - few shot learning (sampling sentences for few shot)
-     - how do i sample few shot from different regions
-     - region aware sampling
-     - HOW DO WE DO FEW SHOT LEARNING IN THE KNOWLEDGE OF FINANCE
-     - keyword aware sampling how does this LLM perform
-   - what is the number of shots we need?
-   - how can we pick the best shots?
-   - goal is to use zero/few shot on fomc data like trillion dollar words paper (correlate with CPI data on hawk/dove)
-     - hawk/dove isnt a task its just to build a measure
-
-### Friday, 2023-07-28
-- Could using `.batch_decode()` instead of `.decode()` in the instruction pipeline speed things up?
-- Runtimes are found in the original research. There were 453 sentences in the test set for sentiment classification. Reported inference time was ~7s each so $453 \times 7 \times \frac{1}{60} =$ 52.85 minutes for completion -- which is similar to what I was getting!
-
-## Thursday, 2023-07-27
-- turned off device mapping for inference and instead set to use one GPU for now
-- dolly model inference is working with quantization and batching
-- utils.py broken down into cuda_utils and model_utils
+- https://github.com/PanQiWei/AutoGPTQ
+- 
+### Llama
+- https://huggingface.co/docs/transformers/main/model_doc/llama2
+- https://github.com/huggingface/transformers/tree/main/src/transformers/models/llama
+- https://github.com/huggingface/transformers/tree/v4.31.0/src/transformers/pipelines
+- https://gist.github.com/viniciusarruda/ef463e9e04e2a221710a72d978d604c3

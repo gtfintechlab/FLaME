@@ -12,7 +12,7 @@ if str(ROOT_DIRECTORY) not in sys.path:
 from src.utils.logging import setup_logger
 
 logger = setup_logger(__name__)
-from src.dolly.model import get_dolly
+from unused.dolly import get_dolly
 
 
 @pytest.mark.parametrize(

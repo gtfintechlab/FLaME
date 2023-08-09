@@ -13,15 +13,17 @@ task_data_map = {
         "instruction": instruction_sentiment_analysis,
     },
     "numclaim_detection": {
-        "data_category": None
+        "data_category": None,
         "instruction": instruction_numclaim_detection,
     },
     "fomc_communication": {
-        "data_category": None, #"lab-manual-split-combine-test",
+        "data_category": None,  # "lab-manual-split-combine-test",
         "instruction": instruction_fomc_communication,
     },
-    "finer_ord": {"data_category": None, #"test.csv",
-                  "instruction": instruction_finer_ord},
+    "finer_ord": {
+        "data_category": None,  # "test.csv",
+        "instruction": instruction_finer_ord,
+    },
 }
 INSTRUCTION_KEY = "### Instruction:"
 RESPONSE_KEY = "### Response:"

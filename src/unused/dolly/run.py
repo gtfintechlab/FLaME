@@ -22,13 +22,14 @@ import pandas as pd
 import torch
 from instruct_pipeline import InstructionTextGenerationPipeline
 from tqdm.auto import tqdm
-from src.config import SEEDS, TODAY
-from src.model import get_model
-from src.instructions import task_data_map
+
 from src.utils.logging import setup_logger
+from unused.instructions import task_data_map
+from unused.model import get_model
+from utils.config import SEEDS, TODAY
 
 logger = setup_logger(__name__)
-from src.args import parse_args
+from utils.args import parse_args
 
 
 def main(args):

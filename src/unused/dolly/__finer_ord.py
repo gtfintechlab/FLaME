@@ -13,10 +13,10 @@ import torch
 from instruct_pipeline import InstructionTextGenerationPipeline
 from tqdm.auto import tqdm
 
-from src.config import QUANTIZATION, SEEDS, TODAY
-from src.dolly.model import get_dolly
-from src.instructions import task_data_map
 from src.utils.logging import setup_logger
+from unused.dolly import get_dolly
+from unused.instructions import task_data_map
+from utils.config import QUANTIZATION, SEEDS, TODAY
 
 logger = setup_logger(__name__)
 

@@ -1,6 +1,0 @@
-[submodule "submodules/llama"]
-	path = submodules/llama
-	url = https://github.com/facebookresearch/llama
-[submodule "submodules/llama-recipes"]
-	path = submodules/llama-recipes
-	url = https://github.com/facebookresearch/llama-recipes/
