@@ -12,7 +12,7 @@ if str(ROOT_DIRECTORY) not in sys.path:
 from src.utils.logging import setup_logger
 
 logger = setup_logger(__name__)
-from unused.dolly import get_dolly
+from src.utils.hf_model import get_hf_model
 
 
 @pytest.mark.parametrize(
@@ -23,9 +23,9 @@ from unused.dolly import get_dolly
         ("none", torch.float32),  # Default dtype for models without quantization
     ],
 )
-def test_get_dolly(quantization, expected_dtype):
+def test_get_hf_model(quantization, expected_dtype):
     logger.info(f"Testing get_dolly with quantization '{quantization}'")
-    model, tokenizer = get_dolly(quantization)
+    model, tokenizer = get_hf_model(quantization)
 
     # Check if the returned objects are of the correct type
     assert isinstance(model, AutoModelForCausalLM)
