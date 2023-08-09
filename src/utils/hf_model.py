@@ -1,6 +1,7 @@
 import torch
 from transformers import LlamaConfig, LlamaForCausalLM, LlamaTokenizer
 
+from src.utils.config import VALID_MODELS
 # from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from src.utils.logging import setup_logger
 
@@ -14,20 +15,6 @@ from src.utils.logging import setup_logger
 # CACHE_DIR=str(ROOT_DIRECTORY / ".model_cache")
 
 logger = setup_logger(__name__)
-
-VALID_MODELS = [
-    "meta-llama/Llama-2-7b-chat-hf",
-    "meta-llama/Llama-2-70b-chat-hf",
-    "meta-llama/Llama-2-13b-chat-hf",
-]
-
-# Non-chat models should not be used in the experiment
-INVALID_MODELS = [
-    "meta-llama/Llama-2-7b-hf",
-    "meta-llama/Llama-2-13b-hf",
-    "meta-llama/Llama-2-70b-hf",
-]
-
 
 def get_hf_model(args):
     if torch.cuda.is_available():
