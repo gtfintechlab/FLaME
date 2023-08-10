@@ -97,7 +97,7 @@ class LlamaTextGenerationPipeline(TextGenerationPipeline):
     #
     #     return preprocess_params, forward_params, postprocess_params
 
-    def preprocess(self, model_input: Dict[str:str], **generate_kwargs):
+    def preprocess(self, model_input, **generate_kwargs):
         instruction, sentence = model_input["instruction"], model_input["sentence"]
         prompt = llama2_prompt_generator(instruction, sentence)
         inputs = self.tokenizer(

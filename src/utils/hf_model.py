@@ -1,9 +1,9 @@
 import torch
 from transformers import LlamaConfig, LlamaForCausalLM, LlamaTokenizer
 
-from src.utils.config import VALID_MODELS
+from utils.config import VALID_MODELS
 # from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
-from src.utils.logging import setup_logger
+from utils.logging import setup_logger
 
 # TODO: Add support to ensure we load from local model cache; perhaps set HF to offline mode?
 # import os
