@@ -7,7 +7,7 @@ if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
 from time import time
-
+from llama.instructions import llama2_prompt_generator
 import numpy as np
 import pandas as pd
 import torch
@@ -15,6 +15,9 @@ from tqdm import tqdm
 
 from llama.instructions import TASK_MAP
 from llama.pipeline import LlamaTextGenerationPipeline
+
+from transformers.pipelines import TextGenerationPipeline
+
 from utils.args import parse_args
 from utils.config import SEEDS, TODAY
 from utils.hf_model import get_hf_model
@@ -33,7 +36,18 @@ def main(args):
     model, tokenizer = get_hf_model(args)
 
     # get pipeline ready for instruction text generation
-    generation_pipeline = LlamaTextGenerationPipeline(model=model, tokenizer=tokenizer)
+    generation_pipeline = TextGenerationPipeline(model=model,
+                                                 tokenizer=tokenizer,
+                                                 # NOTE: Set `do_sample = True` when `temperature > 0.0`
+                                                 # https://github.com/huggingface/transformers/issues/25326
+                                                 temperature=0.0,  # [0.0, 1.0]; 0.0 means greedy sampling
+                                                 do_sample=False,
+                                                 max_new_tokens=512,
+                                                 top_k=10,
+                                                 top_p=0.92,
+                                                 repetition_penalty=1.0,  # 1.0 means no penalty
+                                                 num_return_sequences=1  # Only generate one response
+                                                )
 
     for seed in tqdm(SEEDS):
         logger.info(f"Running inference for seed {seed}")
@@ -65,9 +79,10 @@ def main(args):
         labels = data_df["label"].to_numpy()
         logger.debug(f"Number of labels: {len(labels)}")
 
-        inputs_list = []
-        for SENTENCE in tqdm(sentences, desc="Generating prompts"):
-            inputs_list.append({"instruction": TASK_INSTRUCTION, "sentence": SENTENCE})
+        inputs_list = llama2_prompt_generator(TASK_INSTRUCTION, sentences)
+        # for SENTENCE in tqdm(sentences, desc="Generating prompts"):
+        #     # inputs_list.append({"instruction": TASK_INSTRUCTION, "sentence": SENTENCE})
+        #     inputs_list.append(
 
         logger.info(f"Prompts created -- Running inference on {args.model_id}...")
         generation_result = generation_pipeline(inputs_list)

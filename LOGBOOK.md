@@ -71,8 +71,8 @@ python src/scripts/download_llama.py -m meta-llama/Llama-2-7b-chat-hf -hf hf_FQO
 python src/scripts/download_llama.py -m meta-llama/Llama-2-13b-chat-hf -hf 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 ; \
 python src/scripts/download_llama.py -m meta-llama/Llama-2-70b-chat-hf -hf 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
 ```bash
-python src/scripts/run_llama.py -q default -t sentiment_analysis -m meta-llama/Llama-2-7b-chat-hf -hf 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
-python src/scripts/run_llama.py -q default -t sentiment_analysis -m meta-llama/Llama-2-13b-chat-hf -hf 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
+python src/scripts/run_llama.py -q default -t sentiment_analysis -m meta-llama/Llama-2-7b-chat-hf -hf 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 ; \
+python src/scripts/run_llama.py -q default -t sentiment_analysis -m meta-llama/Llama-2-13b-chat-hf -hf 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 ; \
 python src/scripts/run_llama.py -q default -t sentiment_analysis -m meta-llama/Llama-2-70b-chat-hf -hf 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
 ```
 
