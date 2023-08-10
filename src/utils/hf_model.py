@@ -69,7 +69,7 @@ def get_hf_model(args):
             device_map="auto",
             max_memory=CUDA_MAX_MEMORY,
         )
-    elif args.quantization == "int4":
+    elif args.quantization == "fp4":
         model = LlamaForCausalLM.from_pretrained(
             args.model_id,
             use_auth_token=args.hf_auth,

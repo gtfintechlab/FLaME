@@ -70,12 +70,26 @@ ANSWER: check the papers original for the data
 python src/scripts/download_llama.py -m meta-llama/Llama-2-7b-chat-hf -hf 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 ; \
 python src/scripts/download_llama.py -m meta-llama/Llama-2-13b-chat-hf -hf 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 ; \
 python src/scripts/download_llama.py -m meta-llama/Llama-2-70b-chat-hf -hf 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
+
 ```bash
 python src/scripts/run_llama.py -q default -t sentiment_analysis -m meta-llama/Llama-2-7b-chat-hf -hf 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 ; \
 python src/scripts/run_llama.py -q default -t sentiment_analysis -m meta-llama/Llama-2-13b-chat-hf -hf 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 ; \
 python src/scripts/run_llama.py -q default -t sentiment_analysis -m meta-llama/Llama-2-70b-chat-hf -hf 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
 ```
-
+```bash
+python src/scripts/run_llama.py -q bf16 -t sentiment_analysis -m meta-llama/Llama-2-7b-chat-hf -hf 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 ; \
+python src/scripts/run_llama.py -q bf16 -t sentiment_analysis -m meta-llama/Llama-2-13b-chat-hf -hf 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 ; \
+python src/scripts/run_llama.py -q bf16 -t sentiment_analysis -m meta-llama/Llama-2-70b-chat-hf -hf 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
+```
+```bash
+python src/scripts/run_llama.py -q int8 -t sentiment_analysis -m meta-llama/Llama-2-7b-chat-hf -hf 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 ; \
+python src/scripts/run_llama.py -q int8 -t sentiment_analysis -m meta-llama/Llama-2-13b-chat-hf -hf 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 ; \
+python src/scripts/run_llama.py -q int8 -t sentiment_analysis -m meta-llama/Llama-2-70b-chat-hf -hf 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
+``````bash
+python src/scripts/run_llama.py -q fp4 -t sentiment_analysis -m meta-llama/Llama-2-7b-chat-hf -hf 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 ; \
+python src/scripts/run_llama.py -q fp4 -t sentiment_analysis -m meta-llama/Llama-2-13b-chat-hf -hf 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 ; \
+python src/scripts/run_llama.py -q fp4 -t sentiment_analysis -m meta-llama/Llama-2-70b-chat-hf -hf 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
+```
 #### Prompt Template
 
 ##### Special Tokens in Llama2 Foundation Model
@@ -148,16 +162,17 @@ If you are unsure about an answer, truthfully say "I don't know"
 ### Transformers
 - https://huggingface.co/transformers/v3.0.2/model_doc/auto.html
 - https://huggingface.co/docs/transformers/perf_infer_gpu_one
-- https://huggingface.co/docs/transformers/main_classes/quantization
 - https://huggingface.co/docs/transformers/v4.31.0/en/main_classes/pipelines#transformers.pipeline
 
 ### Quantization
+- https://huggingface.co/blog/4bit-transformers-bitsandbytes
+- https://huggingface.co/docs/transformers/main_classes/quantization
 - https://huggingface.co/docs/accelerate/usage_guides/quantization
 - https://github.com/TimDettmers/bitsandbytes
 - https://github.com/huggingface/peft
 - https://github.com/artidoro/qlora
 - https://github.com/PanQiWei/AutoGPTQ
-- 
+
 ### Llama
 - https://huggingface.co/docs/transformers/main/model_doc/llama2
 - https://github.com/huggingface/transformers/tree/main/src/transformers/models/llama
