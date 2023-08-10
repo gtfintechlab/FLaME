@@ -99,8 +99,9 @@ def main(args):
         results = pd.DataFrame(
             output_list, columns=["true_label", "original_sent", "text_output"]
         )
+        model_name = args.model_id.split("/")[-1]
         results_fp = (
-            f"{args.model_id}_{seed}_{TODAY.strftime('%d_%m_%Y')}_{time_taken}.csv"
+            f"{model_name}_{seed}_{TODAY.strftime('%d_%m_%Y')}_{time_taken}.csv"
         )
         logger.info(f"Time taken: {time_taken} minutes")
         results.to_csv(
