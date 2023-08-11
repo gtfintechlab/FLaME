@@ -31,6 +31,11 @@ def get_hf_model(args):
     if args.model_id not in VALID_MODELS:
         raise ValueError(f"Invalid model '{args.model_id}'")
 
+    # if args.model_id == "meta-llama/Llama-2-70b-chat-hf" and (args.quantization == "fp16" or args.quantization == "bf16"):
+    #     logger.warn(f"Model '{args.model_id}' with '{args.quantization}' had issues so we are using weights from 'TheBloke' repo")
+    #     logger.warn(f"Setting model_id to 'TheBloke/Llama-2-70B-fp16'")
+    #     args.model_id = "TheBloke/Llama-2-70B-fp16"
+
     model_config = LlamaConfig.from_pretrained(
         args.model_id, use_auth_token=args.hf_auth
     )
@@ -39,13 +44,16 @@ def get_hf_model(args):
         f"Loading model '{args.model_id}' with quantization '{args.quantization}'"
     )
     # TODO: determine how to create a model param dict that can be passed to the model instead of repeating
-    if args.quantization == "default":
+    if args.quantization == "fp16":
+        # uses fp16 and fp32 for hidden states
         model = LlamaForCausalLM.from_pretrained(
             args.model_id,
             use_auth_token=args.hf_auth,
             trust_remote_code=True,
             config=model_config,
             device_map="auto",
+            offload_state_dict=True,
+            offload_folder="offload",
             max_memory=CUDA_MAX_MEMORY,
         )
 
@@ -57,6 +65,8 @@ def get_hf_model(args):
             config=model_config,
             torch_dtype=torch.bfloat16,
             device_map="auto",
+            offload_state_dict=True,
+            offload_folder="offload",
             max_memory=CUDA_MAX_MEMORY,
         )
     elif args.quantization == "int8":
@@ -67,6 +77,8 @@ def get_hf_model(args):
             config=model_config,
             load_in_8bit=True,
             device_map="auto",
+            offload_state_dict=False,
+            offload_folder="offload",
             max_memory=CUDA_MAX_MEMORY,
         )
     elif args.quantization == "fp4":
@@ -77,6 +89,8 @@ def get_hf_model(args):
             config=model_config,
             load_in_4bit=True,
             device_map="auto",
+            offload_state_dict=False,
+            offload_folder="offload",
             max_memory=CUDA_MAX_MEMORY,
         )
     else:
