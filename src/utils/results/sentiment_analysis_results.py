@@ -78,7 +78,7 @@ if __name__ == "__main__":
         description="Compute metrics for sentiment analysis results."
     )
     parser.add_argument(
-        "-m", "--model", type=str, required=True, help="Name of the model used."
+        "-m", "--model_id", type=str, required=True, help="Name of the model used."
     )
     parser.add_argument(
         "-q",
