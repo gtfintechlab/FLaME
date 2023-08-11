@@ -105,8 +105,8 @@ python src/scripts/run_llama.py -q fp4 -t sentiment_analysis -m meta-llama/Llama
 -q bf16 -m meta-llama/Llama-2-13b-chat-hf [DONE on 10.138.66.6]
 -q bf16 -m meta-llama/Llama-2-70b-chat-hf [INCOMPLETE on 10.138.66.5]
 
--q int8 -m meta-llama/Llama-2-7b-chat-hf [QUEUED on 10.138.66.6]
--q int8 -m meta-llama/Llama-2-13b-chat-hf [QUEUED on 10.138.66.6]
+-q int8 -m meta-llama/Llama-2-7b-chat-hf [DONE on 10.138.66.6]
+-q int8 -m meta-llama/Llama-2-13b-chat-hf [WIP on 10.138.66.6]
 -q int8 -m meta-llama/Llama-2-70b-chat-hf [QUEUED on 10.138.66.6]
 
 -q fp4 -m meta-llama/Llama-2-7b-chat-hf [DONE on 10.138.66.6]
