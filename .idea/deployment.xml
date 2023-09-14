@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="VLAI03" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" serverName="zero-shot@FSIL" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="VLAI03">
         <serverdata>
           <mappings>
             <mapping deploy="zero-shot-finance" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="zero-shot@FSIL">
+        <serverdata>
+          <mappings>
+            <mapping deploy="zero-shot" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

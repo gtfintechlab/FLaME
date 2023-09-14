@@ -1,10 +1,11 @@
+import argparse
+import logging
+import sys
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-import argparse
 from sklearn.metrics import accuracy_score, f1_score
-from pathlib import Path
-import sys
-import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -14,8 +15,9 @@ logger.debug(f"Root directory: {str(ROOT_DIRECTORY)}")
 if str(ROOT_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(ROOT_DIRECTORY))
 
-from src.utils.results.decode import sentiment_analysis_decode
 import nltk
+
+from src.utils.results.decode import sentiment_analysis_decode
 
 nltk.download("punkt")
 
@@ -56,7 +58,7 @@ def main(args):
     files = [
         f
         for f in LLM_OUTPUTS_DIRECTORY.iterdir()
-        if args.model in f.name and f.suffix == ".csv"
+        if args.model_id in f.name and f.suffix == ".csv"
     ]
 
     acc_list, f1_list, missing_perc_list = compute_metrics(files, LLM_OUTPUTS_DIRECTORY)
@@ -76,7 +78,7 @@ if __name__ == "__main__":
         description="Compute metrics for sentiment analysis results."
     )
     parser.add_argument(
-        "-m", "--model", type=str, required=True, help="Name of the model used."
+        "-m", "--model_id", type=str, required=True, help="Name of the model used."
     )
     parser.add_argument(
         "-q",
