@@ -1,3 +1,5 @@
+# TODO: Move over to using the HF dataset https://huggingface.co/datasets/financial_phrasebank
+
 import sys
 import zipfile
 from pathlib import Path
