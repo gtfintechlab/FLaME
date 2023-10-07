@@ -1,15 +1,12 @@
 --extra-index-url https://download.pytorch.org/whl/cu118
 torch==2.0.1+cu118
-transformers==4.30.2
-peft @ git+https://github.com/huggingface/peft.git@86290e9660d24ef0d0cedcf57710da249dd1f2f4
-langchain
+bitsandbytes==0.41.1
+transformers==4.33.3
+peft==0.5.0
 accelerate
-bitsandbytes
 datasets
 sentencepiece
 scipy
-tensorboardX
-trl
 wandb
 tqdm
 pandas
