@@ -19,3 +19,6 @@ ipykernel
 ipywidgets
 jupyterlab
 scikit-learn
+# https://github.com/TimDettmers/bitsandbytes/issues/520
+# https://github.com/TimDettmers/bitsandbytes/issues/156
+cudatoolkit

@@ -1,3 +1,5 @@
+from typing import List
+
 # DEFAULT_LLAMA_SYSTEM_PROMPT = """You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your \
 # answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure\
 #  that your responses are socially unbiased and positive in nature.
@@ -45,7 +47,7 @@ B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
 
 
-def llama2_prompt_generator(instruction: str, sentences: list[str]):
+def llama2_prompt_generator(instruction: str, sentences: List[str]):
     SYS_PROMPT = f""""Discard all the previous instructions. Below is an instruction that describes a task. Write a response that appropriately completes the request."""
     # INST_PROMPT = f"""Behave like you are an expert sentence sentiment classifier. Classify the following sentence into 'NEGATIVE', 'POSITIVE', or 'NEUTRAL' class. Label 'NEGATIVE' if it is corresponding to negative sentiment, 'POSITIVE' if it is corresponding to positive sentiment, or 'NEUTRAL' if the sentiment is neutral. Provide the label in the first line and provide a short explanation in the second line. The sentence: """
     INST_PROMPT = instruction
