@@ -43,7 +43,6 @@ TASK_MAP = {
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-# BOS, EOS = "<s>", "</s>" # When using the `LlamaTokenizer()` from HuggingFace the BOS/EOS tokens are handled automatically
 
 
 def llama2_prompt_generator(instruction: str, sentences: list[str]):
@@ -65,6 +64,7 @@ def llama2_prompt_generator(instruction: str, sentences: list[str]):
 
 
 ## CONVERSATION GENERATORS CURRENTLY UNUSED
+# BOS, EOS = "<s>", "</s>" # When using the `LlamaTokenizer()` from HuggingFace the BOS/EOS tokens are handled automatically
 # def llama2_conversation_generator_1(
 #     messages: list[dict]
 # ):
