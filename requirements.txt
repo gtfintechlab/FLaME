@@ -4,7 +4,8 @@ bitsandbytes==0.41.1
 transformers==4.31-relase
 peft==0.5.0
 accelerate==0.23.0
-# trl
+pip install git+https://github.com/huggingface/trl.git@main
+# trl is at 0.7.3.dev0 so i can use NEFT for the SFTTrainer
 datasets==2.14.5
 sentencepiece
 scipy
