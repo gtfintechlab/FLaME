@@ -1,9 +1,10 @@
 --extra-index-url https://download.pytorch.org/whl/cu118
 torch==2.0.1+cu118
 bitsandbytes==0.41.1
-transformers==4.33.3
+transformers==4.34.1
 peft==0.5.0
-accelerate
+accelerate==0.23.0
+# trl
 datasets
 sentencepiece
 scipy
@@ -11,6 +12,7 @@ wandb
 tqdm
 pandas
 matplotlib
+trl
 seaborn
 huggingface_hub
 einops
@@ -22,3 +24,7 @@ scikit-learn
 # https://github.com/TimDettmers/bitsandbytes/issues/520
 # https://github.com/TimDettmers/bitsandbytes/issues/156
 cudatoolkit
+# !conda install -c conda-forge cudatoolkit-dev
+cupy-cuda11x
+cuda-python
+optimum==1.13.2
