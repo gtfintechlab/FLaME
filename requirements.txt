@@ -29,3 +29,4 @@ cudatoolkit
 cupy-cuda11x
 cuda-python
 optimum==1.13.2
+tensorboard
