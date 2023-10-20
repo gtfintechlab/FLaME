@@ -10,7 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/submodules/llama" />
       <excludeFolder url="file://$MODULE_DIR$/submodules/llama-recipes" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="conference" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

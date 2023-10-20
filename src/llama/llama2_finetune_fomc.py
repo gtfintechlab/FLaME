@@ -1,179 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# change to using https://huggingface.co/datasets/gtfintechlab/fomc-example-dataset
-
-# # Not for Public
-# 
-# ***!!!TODO!!!***
-# - remove wandb logging from conference notebook, switch to tensorboard
-# - Determine if its possible to just checkpoint and log adapters to wandb
-# - MAKE CONFERENCE NOTEBOOK GENERIC HF WITH NO TOKEN, USE PUBLIC DATASET
-
-# In[1]:
-
-
-import os
-import huggingface_hub
-
-HF_AUTH = "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"
-huggingface_hub.login(token=HF_AUTH)
-
-import wandb
-
-WANDB_PROJECT = f"llama2_sft_fomc"
-
-# set the wandb project where this run will be logged
-os.environ["WANDB_PROJECT"] = WANDB_PROJECT
-
-# save your trained model checkpoint to wandb
-os.environ["WANDB_LOG_MODEL"] = "false" # dont log any models
-# os.environ["WANDB_LOG_MODEL"] = "checkpoint" # log all model checkpoints
-
-
-# turn off watch to log faster
-os.environ["WANDB_WATCH"] = "false"
-os.environ["WANDB_API_KEY"] = "fa69ffc6a97578da0410b553042cbb8b3bf5fcaf"
-os.environ["WANDB_NOTEBOOK_NAME"] = f"llama2_sft"
-
-wandb.login()
-
-# # Convert Args namedtuple to dictionary
-# args_dict = args._asdict()
-
-# run = wandb.init(
-#     project=WANDB_PROJECT,
-#     config=args_dict  # Passing the converted dictionary as config
-# )
-
-import uuid
-
-def generate_uid(id_length=8, dt_format="%y%m%d"):
-    date_str = datetime.now().strftime(dt_format)
-
-    # Generate a short UUID
-    uid = str(uuid.uuid4())[:id_length]
-
-    # Combine
-    uid = f"{uid}_{date_str}"
-
-    return uid
-# # Supervised Fine-Tuning of Llama2 on FOMC
-
-# ## Setup
-
-# ### Imports
-
-# In[18]:
-
-
-get_ipython().run_line_magic('load_ext', 'tensorboard')
-
-
-# In[19]:
-
-
-import os
-import sys
-from pathlib import Path
-
-import pandas as pd
-from IPython.display import display
-
-from tqdm.notebook import tqdm
-from transformers import GenerationConfig
-
-SRC_DIRECTORY = Path().cwd().resolve().parent
-
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
-
-
-# In[20]:
-
-
-import gc
-import logging
-from transformers import logging as hf_logging
-
-hf_logging.set_verbosity(hf_logging.DEBUG)
-
-logger = logging.getLogger("llama2_finetune")
-logger.setLevel(logging.DEBUG)
-
-# Create handlers
-c_handler = logging.StreamHandler()
-f_handler = logging.FileHandler('llama2_finetune.log')
-c_handler.setLevel(logging.DEBUG)
-f_handler.setLevel(logging.DEBUG)
-
-
-# Create formatters and add it to handlers
-format = '%(name)s - %(levelname)s - %(message)s'
-c_format = logging.Formatter(format)
-f_format = logging.Formatter(format)
-c_handler.setFormatter(c_format)
-f_handler.setFormatter(f_format)
-
-
-# Add handlers to the logger
-logger.addHandler(c_handler)
-logger.addHandler(f_handler)
-
-
-# In[21]:
-
-
-import pprint
-
-pp = pprint.PrettyPrinter(indent=4)
-
-import warnings
-from collections import namedtuple
-from datetime import datetime
-from functools import partial
-
-import bitsandbytes as bnb
-import torch
-import torch.nn as nn
-from datasets import Dataset, DatasetDict, load_dataset
-from peft import (
-    AutoPeftModelForCausalLM,
-    LoraConfig,
-    TaskType,
-    get_peft_model,
-    prepare_model_for_kbit_training,
-)
-from sklearn.model_selection import train_test_split
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    BitsAndBytesConfig,
-    DataCollatorForLanguageModeling,
-    LlamaConfig,
-    LlamaForCausalLM,
-    LlamaModel,
-    LlamaTokenizer,
-    TextGenerationPipeline,
-    Trainer,
-    TrainingArguments,
-    logging,
-    pipeline,
-)
-
-# Related to HuggingFace's Tokenizers
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
-
-from trl import SFTTrainer
-
-from peft import PeftModel
-
-
-# In[22]:
-
-
-from transformers.trainer_callback import TrainerCallback
-
 class PeftSavingCallback(TrainerCallback):
     def on_save(self, args, state, control, **kwargs):
         checkpoint_path = os.path.join(args.output_dir, f"checkpoint-{state.global_step}")
@@ -182,309 +6,10 @@ class PeftSavingCallback(TrainerCallback):
         if "pytorch_model.bin" in os.listdir(checkpoint_path):
             os.remove(os.path.join(checkpoint_path, "pytorch_model.bin"))
 
-
-# ### Configuration
-
-# In[23]:
-
-
-################################################################################
-# User parameters
-################################################################################
-organization = "gtfintechlab"
-report_to="tensorboard"
-logging_dir="/home/AD/gmatlin3/tensorboard/logs"
-
-################################################################################
-# Task parameters
-################################################################################
-task_name = "fomc_communication"
-seeds = (5768, 78516, 944601)
-seed = seeds[0]
-
-################################################################################
-# Model parameters
-################################################################################
-model_parameters = "7b"
-model_id = f"meta-llama/Llama-2-{model_parameters}-chat-hf"
-model_name = model_id.split("/")[-1]
-
-################################################################################
-# Prompt parameters
-################################################################################
-system_prompt = f"""Discard all the previous instructions.
-Below is an instruction that describes a task.
-Write a response that appropriately completes the request.
-"""
-
-instruction_prompt = f"""Behave like you are an expert sentence classifier.
-Classify the following sentence from FOMC into 'HAWKISH', 'DOVISH', or 'NEUTRAL' class.
-Label 'HAWKISH' if it is corresponding to tightening of the monetary policy.
-Label 'DOVISH' if it is corresponding to easing of the monetary policy.
-Label 'NEUTRAL' if the stance is neutral.
-Provide a single label from the choices 'HAWKISH', 'DOVISH', or 'NEUTRAL' then stop generating text.
-
-The sentence: "
-"""
-
-B_INST, E_INST = "[INST]", "[/INST]"
-B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-BOS, EOS = "<s>", "</s>"
-
-repo_name = f"{organization}/{model_name}_{task_name}"
-
-################################################################################
-# QLoRA parameters
-################################################################################
-
-# LoRA attention dimension
-lora_r = 64
-
-# Alpha parameter for LoRA scaling
-lora_alpha = 16
-
-# Dropout probability for LoRA layers
-lora_dropout = 0.1
-
-################################################################################
-# SFT parameters
-################################################################################
-
-# Maximum sequence length to use
-max_seq_length = None
-
-# Pack multiple short examples in the same input sequence to increase efficiency
-packing = False
-
-neftune_noise_alpha = 5
-
-################################################################################
-# CUDA Parameters
-################################################################################
-
-# Enable fp16/bf16 training
-compute_dtype = torch.bfloat16
-fp16, bf16 = False, True
-
-CUDA_N_GPUS = torch.cuda.device_count()
-CUDA_MAX_MEMORY = f"{int(torch.cuda.mem_get_info()[0] / 1024 ** 3) - 2}GB"
-CUDA_MAX_MEMORY = {i: CUDA_MAX_MEMORY for i in range(CUDA_N_GPUS)}
-logger.info(f"Using k={CUDA_N_GPUS} CUDA GPUs with max memory {CUDA_MAX_MEMORY}")
-
-# device_map = {"": 0} # Load the entire model on the GPU 0
-device_map = "auto" # Automatically determine the device map
-
-save_safetensors = True
-
-################################################################################
-# bitsandbytes parameters
-################################################################################
-
-# Activate 4-bit precision base model loading
-load_in_4bit = True
-
-# Activate 8-bit precision base model loading
-load_in_8bit = False
-
-# Compute dtype for 4-bit base models
-bnb_4bit_compute_dtype = compute_dtype
-
-# Quantization type (fp4 or nf4)
-bnb_4bit_quant_type = "nf4"
-
-# Activate nested quantization for 4-bit base models (double quantization)
-bnb_4bit_use_double_quant = False
-
-################################################################################
-# TrainingArguments parameters
-################################################################################
-
-# Output directory where the model predictions and checkpoints will be stored
-output_dir = Path(f"/fintech_3/20231018/results/{model_name}_{task_name}")
-
-# Number of training epochs
-num_train_epochs = 1
-
-# Batch size per GPU for training
-per_device_train_batch_size = 8
-
-# Batch size per GPU for evaluation
-per_device_eval_batch_size = 8
-
-# Number of update steps to accumulate the gradients for
-gradient_accumulation_steps = 1
-
-# Enable gradient checkpointing
-gradient_checkpointing = False
-
-# Maximum gradient normal (gradient clipping)
-max_grad_norm = 0.3
-
-# Initial learning rate (AdamW optimizer)
-learning_rate = 2e-4
-
-# Weight decay to apply to all layers except bias/LayerNorm weights
-weight_decay = 0.001
-
-# Optimizer to use
-optim = "adamw_bnb_8bit"
-
-# Learning rate schedule
-lr_scheduler_type = "constant"
-
-# Number of training steps (overrides num_train_epochs)
-max_steps = -1
-
-# Ratio of steps for a linear warmup (from 0 to learning rate)
-warmup_ratio = 0.03
-
-# Group sequences into batches with same length
-# Saves memory and speeds up training considerably
-group_by_length = True
-
-# Save checkpoint every X updates steps
-save_steps = 200
-
-# Log every X updates steps
-logging_steps = 25
-
-load_best_model_at_end = True
-
-strategy="steps"
-save_strategy=strategy
-logging_strategy=strategy
-evaluation_strategy=strategy
-
-disable_tqdm=True
-predict_with_generate=True
-
-
-# In[24]:
-
-
-Args = namedtuple(
-    "Args",
-    [
-        "task_name",
-        "system_prompt",
-        "instruction_prompt",
-        "seed",
-        "model_id",
-        "model_name",
-        "organization",
-        "lora_r",
-        "lora_alpha",
-        "lora_dropout",
-        "max_seq_length",
-        "packing",
-        "device_map",
-        "load_in_4bit",
-        "load_in_8bit",
-        "bnb_4bit_compute_dtype",
-        "bnb_4bit_use_double_quant",
-        "bnb_4bit_quant_type",
-        "output_dir",
-        "num_train_epochs",
-        "fp16",
-        "bf16",
-        "per_device_train_batch_size",
-        "per_device_eval_batch_size",
-        "gradient_accumulation_steps",
-        "gradient_checkpointing",
-        "max_grad_norm",
-        "learning_rate",
-        "weight_decay",
-        "optim",
-        "lr_scheduler_type",
-        "max_steps",
-        "warmup_ratio",
-        "group_by_length",
-        "save_steps",
-        "save_strategy",
-        "logging_strategy",
-        "logging_steps",
-        "evaluation_strategy",
-        "neftune_noise_alpha",
-        "save_safetensors",
-        "load_best_model_at_end",
-        "disable_tqdm",
-        "B_INST",
-        "E_INST",
-        "B_SYS",
-        "E_SYS",
-        "BOS",
-        "EOS",
-        "report_to",
-        "logging_dir",
-        "predict_with_generate",
-    ],
-)
-
-args = Args(
-    task_name=task_name,
-    system_prompt = system_prompt,
-    instruction_prompt = instruction_prompt,
-    seed=seed,
-    model_id=model_id,
-    model_name=model_id.split("/")[-1],
-    organization=organization,
-    lora_r=lora_r,
-    lora_alpha=lora_alpha,
-    lora_dropout=lora_dropout,
-    max_seq_length=max_seq_length,
-    packing=packing,
-    device_map=device_map,
-    load_in_4bit=load_in_4bit,
-    load_in_8bit=load_in_8bit,
-    bnb_4bit_compute_dtype=bnb_4bit_compute_dtype,
-    bnb_4bit_use_double_quant=bnb_4bit_use_double_quant,
-    bnb_4bit_quant_type=bnb_4bit_quant_type,
-    output_dir=output_dir,
-    num_train_epochs=num_train_epochs,
-    fp16=fp16,
-    bf16=bf16,
-    per_device_train_batch_size=per_device_train_batch_size,
-    per_device_eval_batch_size=per_device_eval_batch_size,
-    gradient_accumulation_steps=gradient_accumulation_steps,
-    gradient_checkpointing=gradient_checkpointing,
-    max_grad_norm=max_grad_norm,
-    learning_rate=learning_rate,
-    weight_decay=weight_decay,
-    optim=optim,
-    lr_scheduler_type = lr_scheduler_type,
-    max_steps=max_steps,
-    warmup_ratio= warmup_ratio,
-    group_by_length=group_by_length,
-    save_steps=save_steps,
-    save_strategy=save_strategy,
-    evaluation_strategy=evaluation_strategy,
-    logging_strategy=logging_strategy,
-    logging_steps=logging_steps,
-    neftune_noise_alpha=neftune_noise_alpha,
-    save_safetensors=save_safetensors,
-    load_best_model_at_end=load_best_model_at_end,
-    disable_tqdm=disable_tqdm,
-    B_INST = B_INST,
-    E_INST = E_INST,
-    B_SYS = B_SYS,
-    E_SYS = E_SYS,
-    BOS = BOS,
-    EOS = EOS,
-    report_to=report_to,
-    logging_dir=logging_dir,
-    predict_with_generate=predict_with_generate,
-)
-
-
-# ### Functions
-
-# In[25]:
-
-
 def log_trainable_parameters(model, logger):
     """
     Logs the number of trainable parameters in the model.
-    
+
     Parameters:
     model : torch.nn.Module
         The model whose parameters we want to log.
@@ -497,7 +22,7 @@ def log_trainable_parameters(model, logger):
         all_params += param.numel()
         if param.requires_grad:
             trainable_params += param.numel()
-    
+
     # Logging the information instead of printing
     logger.info(
         f"Trainable params: {trainable_params} || All params: {all_params} || Trainable%: {100 * trainable_params / all_params}"
@@ -507,7 +32,7 @@ def log_trainable_parameters(model, logger):
 def log_dtypes(model, logger):
     """
     Logs the data types of the model parameters and their proportions.
-    
+
     Parameters:
     model : torch.nn.Module
         The model whose parameter data types we want to log.
@@ -520,9 +45,9 @@ def log_dtypes(model, logger):
         if dtype not in dtypes:
             dtypes[dtype] = 0
         dtypes[dtype] += p.numel()
-    
+
     total = sum(dtypes.values())
-    
+
     # Logging the information instead of printing
     for dtype, count in dtypes.items():
         logger.info(f"{dtype}: {count} ({100 * count / total:.2f}%)")
@@ -581,20 +106,20 @@ def preprocess_dataset(
     """
 
     seed = args.seed
-    
+
     # Add prompt to each sample
     print("Preprocessing dataset...")
 
     _prompt_format_function = partial(
         create_prompt_format, args=args
     )
-    
+
     dataset = dataset.map(
         _prompt_format_function,
         batched=False
     )
-    
-    
+
+
     # Apply preprocessing to each batch of the dataset & and remove 'instruction', 'context', 'response', 'category' fields
     _preprocessing_function = partial(
         preprocess_batch, max_seq_length=max_seq_length, tokenizer=tokenizer
@@ -712,7 +237,7 @@ def metric_computer(tokenizer):
         and computes the custom metrics (BLEU, ROUGE).
         """
         predictions, references = p
-        
+
         # Decode the logits to get predicted token ids
         pred_ids = np.argmax(p.predictions, axis=2)
 
@@ -752,15 +277,15 @@ def train(args):
         # Activate nested quantization for 4-bit base models (double quantization)
         bnb_4bit_use_double_quant=args.bnb_4bit_use_double_quant,
         bnb_8bit_use_double_quant=args.bnb_4bit_use_double_quant,
-        
+
         # Quantization type (fp4 or nf4)
         bnb_4bit_quant_type=args.bnb_4bit_quant_type,
         bnb_8bit_quant_type=args.bnb_4bit_quant_type,
-        
+
         # Compute dtype for 4-bit base models
         bnb_4bit_compute_dtype=args.bnb_4bit_compute_dtype,
         bnb_8bit_compute_dtype=args.bnb_4bit_compute_dtype,
-        
+
     )
 
     logger.info("Loading the Tokenizer...")
@@ -769,7 +294,7 @@ def train(args):
     tokenizer.pad_token = EOS
     # logger.info("Tokenizer configured to fix overflow issues with fp16 training"
     # tokenizer.padding_side = "right"
-    
+
     compute_metrics_function = metric_computer(tokenizer)
     logger.info(compute_metrics_function)
 
@@ -885,14 +410,14 @@ def train(args):
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
     )
-    
+
     trainer.predict_with_generate = args.predict_with_generate
 
     # Evaluate the model before fine-tuning to get the baseline performance
     logger.info("Evaluating the baseline performance of the model before fine-tuning...")
     baseline_results = trainer.evaluate()
     logger.info(f"Baseline evaluation results: {baseline_results}")
-  
+
     logger.info("Running trainer.train() ...")
     trainer.train()
     if args.report_to == 'wandb':
@@ -912,11 +437,11 @@ def train(args):
 
     results_df = merge_evaluation_results(baseline_results, final_results)
     display(results_df)
-    
-    
+
+
     logger.info("trainer.save_state() ...")
     trainer.save_state()
-    
+
     logger.info("Saving tokenizer and last checkpoint of the model...")
     tokenizer.save_pretrained(output_dir)
 
