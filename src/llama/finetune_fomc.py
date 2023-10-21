@@ -19,41 +19,42 @@ import logging
 from pathlib import Path
 from functools import partial
 from typing import NamedTuple, List, Type
+from IPython.display import display
 
 # Third-Party Libraries
 import numpy as np
 import pandas as pd
+from sklearn.metrics import accuracy_score, f1_score
 import wandb
-import huggingface_hub
-from IPython.display import display
-from tqdm.notebook import tqdm
-from sklearn.model_selection import train_test_split
 import nltk
+# import huggingface_hub
+# from tqdm.notebook import tqdm
+# from sklearn.model_selection import train_test_split
 
 # PyTorch and HuggingFace Libraries
 import torch
-import torch.nn as nn
 import bitsandbytes as bnb
 import evaluate
 from datasets import Dataset, DatasetDict, load_dataset
+from trl import SFTTrainer
+from transformers import logging as hf_logging
+from transformers.trainer_callback import TrainerCallback
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     BitsAndBytesConfig,
     GenerationConfig,
-    DataCollatorForLanguageModeling,
-    LlamaConfig,
-    LlamaForCausalLM,
-    LlamaModel,
-    LlamaTokenizer,
-    TextGenerationPipeline,
-    Trainer,
     TrainingArguments,
     logging,
-    pipeline,
+    # DataCollatorForLanguageModeling,
+    # LlamaConfig,
+    # LlamaForCausalLM,
+    # LlamaModel,
+    # LlamaTokenizer,
+    # TextGenerationPipeline,
+    # Trainer,
+    # pipeline,
 )
-from transformers import logging as hf_logging
-from trl import SFTTrainer
 from peft import (
     PeftModel,
     AutoPeftModelForCausalLM,
@@ -63,7 +64,6 @@ from peft import (
     prepare_model_for_kbit_training,
 )
 
-from transformers.trainer_callback import TrainerCallback
 
 # ====================== HUGGINGFACE ======================
 HF_AUTH = "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"
@@ -418,8 +418,6 @@ def log_dtypes(model, logger):
     for dtype, count in dtypes.items():
         logger.info(f"{dtype}: {count} ({100 * count / total:.2f}%)")
 
-
-import pandas as pd
 
 def log_and_save_info(model, logger, args):
     """
@@ -995,37 +993,38 @@ def compute_metrics(files, outputs_directory):
 
     return acc_list, f1_list, missing_perc_list
 
-# TODO: RESULTS CODE BELOW NEEDS TO BE INCORPORATED
-# results = {}
-# for model_name in model_names:
-#     results[model_name] = {}
-#     for quantization in quantizations:
-#         # Define output directory
-#         LLM_OUTPUTS_DIRECTORY = (
-#             ROOT_DIRECTORY
-#             / "data"
-#             / task_name
-#             / "llm_prompt_outputs"
-#             / quantization
-#         )
-#         # Filter out relevant files
-#         files = [
-#             f.stem
-#             for f in LLM_OUTPUTS_DIRECTORY.iterdir()
-#             if model_name in f.name and f.suffix == ".csv"
-#         ]
-#         results[model_name][quantization] = files
-# acc_list, f1_list, missing_perc_list = compute_metrics(files, LLM_OUTPUTS_DIRECTORY)
-#
-# # Print results
-# print("f1 score mean: ", format(np.mean(f1_list), ".4f"))
-# print("f1 score std: ", format(np.std(f1_list), ".4f"))
-# print(
-#     "Percentage of cases when didn't follow instruction: ",
-#     format(np.mean(missing_perc_list), ".4f"),
-#     "\n",
-# )
-
+def evaluate_results():
+    # TODO: RESULTS CODE BELOW NEEDS TO BE INCORPORATED
+    # results = {}
+    # for model_name in model_names:
+    #     results[model_name] = {}
+    #     for quantization in quantizations:
+    #         # Define output directory
+    #         LLM_OUTPUTS_DIRECTORY = (
+    #             ROOT_DIRECTORY
+    #             / "data"
+    #             / task_name
+    #             / "llm_prompt_outputs"
+    #             / quantization
+    #         )
+    #         # Filter out relevant files
+    #         files = [
+    #             f.stem
+    #             for f in LLM_OUTPUTS_DIRECTORY.iterdir()
+    #             if model_name in f.name and f.suffix == ".csv"
+    #         ]
+    #         results[model_name][quantization] = files
+    # acc_list, f1_list, missing_perc_list = compute_metrics(files, LLM_OUTPUTS_DIRECTORY)
+    #
+    # # Print results
+    # print("f1 score mean: ", format(np.mean(f1_list), ".4f"))
+    # print("f1 score std: ", format(np.std(f1_list), ".4f"))
+    # print(
+    #     "Percentage of cases when didn't follow instruction: ",
+    #     format(np.mean(missing_perc_list), ".4f"),
+    #     "\n",
+    # )
+    pass
 
 
 # ====== UTILS =======
