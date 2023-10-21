@@ -1,14 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
+
 # TODO: change dataset to https://huggingface.co/datasets/gtfintechlab/fomc-example-dataset
-# TODO: remove wandb logging from conference notebook tensorboard only
-# TODO: for py file have report_to be in the args with support for both options
-# TODO: Determine if its possible to just checkpoint and log adapters to wandb
-# TODO: MAKE CONFERENCE NOTEBOOK GENERIC HF WITH NO TOKEN, USE PUBLIC DATASET
-# TODO: Break down the complexity of setup_args()
-# TODO: Improve modularity of code
-# TODO: WandB config as inputs
-# TODO: make sure comments on all parameters
+# TODO: WandB config as inputs, remove wandb logging from conference notebook tensorboard only
 # TODO: Remove tokens from py
 # HF_AUTH = os.getenv('HF_AUTH_TOKEN')
 # if not HF_AUTH:
@@ -17,19 +11,12 @@
 # if not WANDB_API_KEY:
 #     raise ValueError("WANDB_API_KEY is not set in the environment variables.")
 
-# TODO: VALIDATION SPLIT??
-
 # ====================== IMPORTS ======================
 # Standard Libraries
 import os
-import sys
-import uuid
+import gc
 import logging
-import warnings
-import pprint
 from pathlib import Path
-from collections import namedtuple
-from datetime import datetime
 from functools import partial
 from typing import NamedTuple, List, Type
 
@@ -95,9 +82,6 @@ os.environ["WANDB_API_KEY"] = "fa69ffc6a97578da0410b553042cbb8b3bf5fcaf"
 os.environ["WANDB_NOTEBOOK_NAME"] = f"llama2_sft"
 wandb.login()
 
-# # Convert Args namedtuple to dictionary
-# args_dict = args._asdict()
-
 # ====================== USER PARAMETERS ======================
 organization = "gtfintechlab"
 report_to="tensorboard"
@@ -114,7 +98,7 @@ model_id = f"meta-llama/Llama-2-{model_parameters}-chat-hf"
 model_name = model_id.split("/")[-1]
 
 # ====================== PROMPT PARAMETERS ======================
-system_prompt = f"""Discard all the previous instructions.
+system_prompt = f"""Discard all previous instructions.
 Below is an instruction that describes a task.
 Write a response that appropriately completes the request.
 """
@@ -126,7 +110,7 @@ Label 'DOVISH' if it is corresponding to easing of the monetary policy.
 Label 'NEUTRAL' if the stance is neutral.
 Provide a single label from the choices 'HAWKISH', 'DOVISH', or 'NEUTRAL' then stop generating text.
 
-The sentence: "
+The sentence:
 """
 
 B_INST, E_INST = "[INST]", "[/INST]"
@@ -711,7 +695,8 @@ def create_peft_config(args: Args, modules: List[str]) -> LoraConfig:
         bias="none",
         task_type=TaskType.CAUSAL_LM,
     )
-#########
+
+# ============== METRICS FUNCTIONS =================
 
 def compute_metrics(eval_pred, tokenizer, metric):
     """
@@ -922,7 +907,7 @@ def train(args, logger):
     save_model_and_tokenizer(model, tokenizer, output_dir)
 
 
-# ======== generate ===============
+# ======== EVALUATION FUNCTIONS ===============
 
 def generate(model=None, tokenizer=None, dataset=None):
     temperature = 0.0  # [0.0, 1.0]; 0.0 means greedy sampling
@@ -961,6 +946,87 @@ def generate(model=None, tokenizer=None, dataset=None):
     seq = generation_output.sequences
     output = tokenizer.decode(seq[0])
     return output.split("[/INST]")[-1].strip()
+
+# TODO: INCORPORATE EXTRACT LABEL
+def extract_label(text_output, E_INST = "[/INST]"):
+    # Find the 'end of instruction' token and remove text before it
+    response_pos = text_output.find(E_INST)
+    generated_text = text_output[response_pos + len(E_INST) :].strip()
+    # Convert the string to lowercase for case-insensitive search
+    text = text_output.lower()
+
+    # Define the substring options
+    substrings = ["label: positive", "label: negative", "label: neutral"]
+
+    # Iterate over the substrings and find the matching label
+    for i, substring in enumerate(substrings):
+        if substring in text:
+            return i
+
+    # If none of the substrings are found, return -1
+    return -1
+
+# TODO: INCORPORATE COMPUTE METRICS
+def compute_metrics(files, outputs_directory):
+    acc_list = []
+    f1_list = []
+    missing_perc_list = []
+
+    for file in files:
+        df = pd.read_csv(outputs_directory / file)
+
+        # Make sure the 'Label:' was provided in all generated text
+        if all(df['text_output'].str.contains('Label:')):
+            pass
+        else:
+            raise ValueError("not all responses contain the substring 'Label:'")
+
+        # Decode the predicted label
+        df["generated_label"] = df["text_output"].apply(extract_label)
+
+        # Calculate metrics
+        acc_list.append(accuracy_score(df["true_label"], df["generated_label"]))
+        f1_list.append(
+            f1_score(df["true_label"], df["generated_label"], average="weighted")
+        )
+        missing_perc_list.append(
+            (len(df[df["generated_label"] == -1]) / df.shape[0]) * 100.0
+        )
+
+    return acc_list, f1_list, missing_perc_list
+
+# TODO: RESULTS CODE BELOW NEEDS TO BE INCORPORATED
+# results = {}
+# for model_name in model_names:
+#     results[model_name] = {}
+#     for quantization in quantizations:
+#         # Define output directory
+#         LLM_OUTPUTS_DIRECTORY = (
+#             ROOT_DIRECTORY
+#             / "data"
+#             / task_name
+#             / "llm_prompt_outputs"
+#             / quantization
+#         )
+#         # Filter out relevant files
+#         files = [
+#             f.stem
+#             for f in LLM_OUTPUTS_DIRECTORY.iterdir()
+#             if model_name in f.name and f.suffix == ".csv"
+#         ]
+#         results[model_name][quantization] = files
+# acc_list, f1_list, missing_perc_list = compute_metrics(files, LLM_OUTPUTS_DIRECTORY)
+#
+# # Print results
+# print("f1 score mean: ", format(np.mean(f1_list), ".4f"))
+# print("f1 score std: ", format(np.std(f1_list), ".4f"))
+# print(
+#     "Percentage of cases when didn't follow instruction: ",
+#     format(np.mean(missing_perc_list), ".4f"),
+#     "\n",
+# )
+
+
 
 # ====== UTILS =======
 
