@@ -621,6 +621,33 @@ def load_and_preprocess_dataset(args, logger, tokenizer, max_seq_length, split: 
     return preprocessed_dataset
 
 
+def split_dataset(train_dataset, train_ratio=0.7, seed=42):
+    """
+    Split a Hugging Face dataset into training and validation sets with a given ratio.
+
+    Parameters:
+    - train_dataset: Hugging Face dataset to split
+    - train_ratio: Ratio of data to keep in the training set
+    - seed: Seed for reproducibility
+
+    Returns:
+    - train_set: Training dataset
+    - val_set: Validation dataset
+    """
+    # Ensuring the ratios are valid
+    if train_ratio <= 0 or train_ratio >= 1:
+        raise ValueError("Train ratio must be between 0 and 1")
+
+    val_ratio = 1 - train_ratio
+
+    # Splitting the dataset
+    datasets = train_dataset.train_test_split(test_size=val_ratio, seed=seed)
+    train_set = datasets['train']
+    val_set = datasets['test']
+
+    return train_set, val_set
+
+
 
 # ======= PEFT HELPER FUNCTIONS ===========
 class PeftSavingCallback(TrainerCallback):
@@ -876,8 +903,7 @@ def train(args, logger):
     # Loading and preprocessing datasets
     logger.debug("Loading and preprocessing train dataset...")
     train_dataset = load_and_preprocess_dataset(args, logger, tokenizer, max_seq_length, "train")
-    logger.debug("Loading and preprocessing test dataset...")
-    test_dataset = load_and_preprocess_dataset(args, logger, tokenizer, max_seq_length, "test")
+    train_set, val_set = split_dataset(train_dataset, train_ratio=0.7, seed=args.seed)
 
     # TrainingArguments setup
     logger.info("Creating TrainingArguments ...")
@@ -885,7 +911,7 @@ def train(args, logger):
 
     # Trainer setup
     logger.info("Creating SFTTrainer ...")
-    trainer = setup_trainer(args, model, train_dataset, test_dataset, training_arguments)
+    trainer = setup_trainer(args, model, train_set, val_set, training_arguments)
 
     # Training and Evaluation
     results_df = execute_training_and_evaluation(trainer, args, logger)
@@ -1050,30 +1076,23 @@ def main():
         memory_cleanup()
 
     base_model, new_model = load_models(args, logger)
-
     peft_model = merge_models(base_model, new_model, logger)
-
-    # TODO: load the tokenizer from repo? or get it from local? its made during train ...
-    tokenizer = configure_tokenizer(args)
+    save_and_push(args, peft_model)
     max_seq_length = get_max_length(peft_model)
 
-    logger.debug("Loading and preprocessing test dataset...")
-    test_dataset = load_and_preprocess_dataset(args, logger, tokenizer, max_seq_length, "test")
+    logger.info("Loading and preprocessing test dataset...")
+    logger.debug("Creating Tokenizer...")
+    tokenizer = configure_tokenizer(args)
+    logger.debug("Creating Test Dataset...")
+    test_set = load_and_preprocess_dataset(args, logger, tokenizer, max_seq_length, "test")
 
-    preprocessed_test_dataset = preprocess_dataset(
-        args=args,
-        tokenizer=tokenizer,
-        max_seq_length=max_seq_length,
-        dataset=test_dataset
-    )
-
+    # TODO: holdout evaluation
     output_list = []
-    for i in range(len(preprocessed_test_dataset)):
+    for i in range(len(test_set)):
         output_list.append(
             generate(model=peft_model,
                      tokenizer=tokenizer,
-                     dataset=preprocessed_test_dataset)
+                     dataset=test_set)
         )
     output_list.replace("</s>", "")
 
-    save_and_push(args, peft_model)
