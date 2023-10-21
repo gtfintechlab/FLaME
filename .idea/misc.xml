@@ -5,5 +5,5 @@
     <option name="pathToExecutable" value="$USER_HOME$/miniconda/bin/black" />
     <option name="sdkName" value="conference" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="conference" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="DeepQuant" project-jdk-type="Python SDK" />
 </project>
