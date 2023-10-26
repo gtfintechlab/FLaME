@@ -452,7 +452,7 @@ def log_and_save_info(model, logger, args):
     info_data.append(["Dtypes After KBit Prep", dtypes_after])
 
     logger.debug("Get module names for the linear layers where we add LORA adapters...")
-    layers_for_adapters = find_all_linear_names(model)
+    layers_for_adapters = find_all_linear_names(model, 4)
     info_data.append(["Layers for Adapters", layers_for_adapters])
 
     logger.info("Create PEFT config for these modules and wrap the model to PEFT...")
