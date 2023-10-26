@@ -27,6 +27,7 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score
 import wandb
 import nltk
+
 # import huggingface_hub
 # from tqdm.notebook import tqdm
 # from sklearn.model_selection import train_test_split
@@ -84,8 +85,8 @@ wandb.login()
 
 # ====================== USER PARAMETERS ======================
 organization = "gtfintechlab"
-report_to="tensorboard"
-logging_dir=Path.home()/'tensorboard'/'logs'
+report_to = "tensorboard"
+logging_dir = Path.home() / "tensorboard" / "logs"
 
 # ====================== TASK PARAMETERS ======================
 task_name = "fomc_communication"
@@ -143,7 +144,7 @@ CUDA_N_GPUS = torch.cuda.device_count()
 CUDA_MAX_MEMORY = f"{int(torch.cuda.mem_get_info()[0] / 1024 ** 3) - 2}GB"
 CUDA_MAX_MEMORY = {i: CUDA_MAX_MEMORY for i in range(CUDA_N_GPUS)}
 
-device_map = "auto" # Automatically determine the device map
+device_map = "auto"  # Automatically determine the device map
 
 save_safetensors = True
 
@@ -163,6 +164,7 @@ bnb_quant_type = "nf4"
 # Activate nested quantization for 4-bit base models (double quantization)
 bnb_use_double_quant = False
 
+
 def configure_bnb(args):
     """
     Configures BitsAndBytes based on the arguments provided.
@@ -176,9 +178,9 @@ def configure_bnb(args):
         bnb_8bit_quant_type=args.bnb_quant_type,
         bnb_4bit_compute_dtype=args.bnb_compute_dtype,
         bnb_8bit_compute_dtype=args.bnb_compute_dtype,
-
     )
     return bnb_config
+
 
 # ====================== TRAININGARGUMENTS PARAMETERS ======================
 # Output directory where the model predictions and checkpoints will be stored
@@ -233,14 +235,13 @@ logging_steps = 25
 
 load_best_model_at_end = True
 
-strategy="steps"
-save_strategy=strategy
-logging_strategy=strategy
-evaluation_strategy=strategy
+strategy = "steps"
+save_strategy = strategy
+logging_strategy = strategy
+evaluation_strategy = strategy
 
-disable_tqdm=True
-predict_with_generate=True
-
+disable_tqdm = True
+predict_with_generate = True
 
 
 # ====================== LOGGING SETUP ======================
@@ -266,6 +267,7 @@ def setup_logging():
     logger.addHandler(c_handler)
     logger.addHandler(f_handler)
     return logger
+
 
 # ====================== ARGUMENTS SETUP ======================
 class Args(NamedTuple):
@@ -383,6 +385,7 @@ def setup_args() -> Args:
 
     return args
 
+
 # =============== SFT LOGGING FUNCTIONS ==================
 def log_trainable_parameters(model, logger):
     """
@@ -395,9 +398,12 @@ def log_trainable_parameters(model, logger):
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     total_params = sum(p.numel() for p in model.parameters())
 
-    logger.info(f"Trainable params: {trainable_params} || "
-                f"All params: {total_params} || "
-                f"Trainable%: {100 * trainable_params / total_params}")
+    logger.info(
+        f"Trainable params: {trainable_params} || "
+        f"All params: {total_params} || "
+        f"Trainable%: {100 * trainable_params / total_params}"
+    )
+
 
 def log_dtypes(model, logger):
     """
@@ -427,47 +433,56 @@ def log_and_save_info(model, logger, args):
 
     logger.debug("Getting the model's memory footprint...")
     memory_footprint = model.get_memory_footprint()
-    info_data.append(['Memory Footprint', memory_footprint])
+    info_data.append(["Memory Footprint", memory_footprint])
 
     logger.debug(f"Model Dtypes before preparing for kbit training ...")
-    dtypes_after = log_dtypes(model, logger)  # Assuming log_dtypes returns relevant data
-    info_data.append(['Dtypes Before KBit Prep', dtypes_after])
+    dtypes_after = log_dtypes(
+        model, logger
+    )  # Assuming log_dtypes returns relevant data
+    info_data.append(["Dtypes Before KBit Prep", dtypes_after])
 
     logger.debug("Using the prepare_model_for_kbit_training method from PEFT...")
-    model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=args.gradient_checkpointing)
+    model = prepare_model_for_kbit_training(
+        model, use_gradient_checkpointing=args.gradient_checkpointing
+    )
 
     logger.debug(f"Model Dtypes after preparing for kbit training ...")
-    dtypes_after = log_dtypes(model, logger)  # Assuming log_dtypes returns relevant data
-    info_data.append(['Dtypes After KBit Prep', dtypes_after])
+    dtypes_after = log_dtypes(
+        model, logger
+    )  # Assuming log_dtypes returns relevant data
+    info_data.append(["Dtypes After KBit Prep", dtypes_after])
 
     logger.debug("Get module names for the linear layers where we add LORA adapters...")
     layers_for_adapters = find_all_linear_names(model)
-    info_data.append(['Layers for Adapters', layers_for_adapters])
+    info_data.append(["Layers for Adapters", layers_for_adapters])
 
     logger.info("Create PEFT config for these modules and wrap the model to PEFT...")
     peft_config = create_peft_config(args, layers_for_adapters)
 
     logger.info(f"Model Dtypes before applying PEFT config ...")
     dtypes_before = log_dtypes(model, logger)
-    info_data.append(['Dtypes Before PEFT Config', dtypes_before])
+    info_data.append(["Dtypes Before PEFT Config", dtypes_before])
 
     model = get_peft_model(model, peft_config)
 
     logger.info(f"Model Dtypes after applying PEFT config ...")
     dtypes_after_peft = log_dtypes(model, logger)
-    info_data.append(['Dtypes After PEFT Config', dtypes_after_peft])
+    info_data.append(["Dtypes After PEFT Config", dtypes_after_peft])
 
     logger.info("Information about the percentage of trainable parameters...")
     trainable_parameters = log_trainable_parameters(model, logger)
-    info_data.append(['Trainable Parameters', trainable_parameters])
+    info_data.append(["Trainable Parameters", trainable_parameters])
 
     # Convert the info_data list into a pandas DataFrame and save it
-    df = pd.DataFrame(info_data, columns=['Info', 'Value'])
-    df.to_csv('model_info.csv', index=False)
+    df = pd.DataFrame(info_data, columns=["Info", "Value"])
+    df.to_csv("model_info.csv", index=False)
 
     return model
 
-def merge_evaluation_results(baseline_results: dict, final_results: dict) -> pd.DataFrame:
+
+def merge_evaluation_results(
+    baseline_results: dict, final_results: dict
+) -> pd.DataFrame:
     """
     Merge evaluation results for comparison.
 
@@ -480,9 +495,11 @@ def merge_evaluation_results(baseline_results: dict, final_results: dict) -> pd.
     """
     all_metrics = set(baseline_results.keys()).union(final_results.keys())
     data = {
-        'Metric': list(all_metrics),
-        'Baseline': [baseline_results.get(metric, None) for metric in all_metrics],
-        'After Fine-tuning': [final_results.get(metric, None) for metric in all_metrics]
+        "Metric": list(all_metrics),
+        "Baseline": [baseline_results.get(metric, None) for metric in all_metrics],
+        "After Fine-tuning": [
+            final_results.get(metric, None) for metric in all_metrics
+        ],
     }
 
     return pd.DataFrame(data)
@@ -498,6 +515,7 @@ def decode_predictions(predictions, labels, tokenizer):
     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
     return decoded_preds, decoded_labels
+
 
 def get_max_length(model: Type[torch.nn.Module]) -> int:
     """
@@ -526,7 +544,15 @@ def get_max_length(model: Type[torch.nn.Module]) -> int:
 
     return max_length
 
-def preprocess_batch(batch, args: Args, tokenizer, max_seq_length, context_field="sentence", response_field="label_decoded"):
+
+def preprocess_batch(
+    batch,
+    args: Args,
+    tokenizer,
+    max_seq_length,
+    context_field="sentence",
+    response_field="label_decoded",
+):
     """
     Creates formatted prompts and tokenizes in batch mode.
 
@@ -547,21 +573,30 @@ def preprocess_batch(batch, args: Args, tokenizer, max_seq_length, context_field
         raise ValueError("Instruction and system prompts must be non-empty strings.")
 
     # Check each element of the context_field and response_field
-    if not all(item.strip() for item in batch[context_field]) or \
-            not all(item.strip() for item in batch[response_field]):
+    if not all(item.strip() for item in batch[context_field]) or not all(
+        item.strip() for item in batch[response_field]
+    ):
         raise ValueError("Fields must be non-empty strings.")
 
     # Creating the formatted prompt for each sample in the batch
     batch["text"] = [
-        args.B_INST + args.B_SYS + system_prompt + args.E_SYS +
-        instruction_prompt + context + args.E_INST
+        args.B_INST
+        + args.B_SYS
+        + system_prompt
+        + args.E_SYS
+        + instruction_prompt
+        + context
+        + args.E_INST
         for context in batch[context_field]
     ]
 
     # Tokenizing the batch
     return tokenizer(batch["text"], max_length=max_seq_length, truncation=True)
 
-def preprocess_dataset(args: Args, tokenizer: AutoTokenizer, max_seq_length: int, dataset: Dataset):
+
+def preprocess_dataset(
+    args: Args, tokenizer: AutoTokenizer, max_seq_length: int, dataset: Dataset
+):
     """
     Format & tokenize the dataset for training.
 
@@ -574,8 +609,13 @@ def preprocess_dataset(args: Args, tokenizer: AutoTokenizer, max_seq_length: int
 
     # Applying the preprocessing function to each batch of the dataset
     dataset = dataset.map(
-        partial(preprocess_batch, args=args, tokenizer=tokenizer, max_seq_length=max_seq_length),
-        batched=True
+        partial(
+            preprocess_batch,
+            args=args,
+            tokenizer=tokenizer,
+            max_seq_length=max_seq_length,
+        ),
+        batched=True,
     )
 
     # Further processing steps if necessary (e.g., filtering, shuffling)
@@ -590,7 +630,9 @@ def load_and_preprocess_dataset(args, logger, tokenizer, max_seq_length, split: 
     Load and preprocess datasets based on the split specified (train/test).
     """
     logger.info(f"Loading {split} dataset...")
-    dataset = load_dataset(f"{args.organization}/{args.task_name}", str(args.seed))[split]
+    dataset = load_dataset(f"{args.organization}/{args.task_name}", str(args.seed))[
+        split
+    ]
 
     logger.info(f"Preprocessing {split} dataset...")
     preprocessed_dataset = preprocess_dataset(
@@ -624,11 +666,10 @@ def split_dataset(train_dataset, train_ratio=0.7, seed=42):
 
     # Splitting the dataset
     datasets = train_dataset.train_test_split(test_size=val_ratio, seed=seed)
-    train_set = datasets['train']
-    val_set = datasets['test']
+    train_set = datasets["train"]
+    val_set = datasets["test"]
 
     return train_set, val_set
-
 
 
 # ======= PEFT HELPER FUNCTIONS ===========
@@ -636,12 +677,16 @@ class PeftSavingCallback(TrainerCallback):
     """
     A callback to save the PEFT adapters during the model training.
     """
+
     def on_save(self, args, state, control, **kwargs):
-        checkpoint_path = os.path.join(args.output_dir, f"checkpoint-{state.global_step}")
+        checkpoint_path = os.path.join(
+            args.output_dir, f"checkpoint-{state.global_step}"
+        )
         kwargs["model"].save_pretrained(checkpoint_path)
 
         if "pytorch_model.bin" in os.listdir(checkpoint_path):
             os.remove(os.path.join(checkpoint_path, "pytorch_model.bin"))
+
 
 def find_all_linear_names(model: Type[torch.nn.Module], bits: int) -> List[str]:
     """
@@ -674,6 +719,7 @@ def find_all_linear_names(model: Type[torch.nn.Module], bits: int) -> List[str]:
 
     return list(lora_module_names)
 
+
 def create_peft_config(args: Args, modules: List[str]) -> LoraConfig:
     """
     Create PEFT configuration for LoRA.
@@ -694,7 +740,9 @@ def create_peft_config(args: Args, modules: List[str]) -> LoraConfig:
         task_type=TaskType.CAUSAL_LM,
     )
 
+
 # ============== METRICS FUNCTIONS =================
+
 
 def compute_metrics(eval_pred, tokenizer, metric):
     """
@@ -704,13 +752,24 @@ def compute_metrics(eval_pred, tokenizer, metric):
     decoded_preds, decoded_labels = decode_predictions(predictions, labels, tokenizer)
 
     # TODO: REVIEW THIS CODE ... SHOULD I EVEN USE NLTK??
-    decoded_preds = ["\n".join(nltk.sent_tokenize(pred.strip())) for pred in decoded_preds]
-    decoded_labels = ["\n".join(nltk.sent_tokenize(label.strip())) for label in decoded_labels]
+    decoded_preds = [
+        "\n".join(nltk.sent_tokenize(pred.strip())) for pred in decoded_preds
+    ]
+    decoded_labels = [
+        "\n".join(nltk.sent_tokenize(label.strip())) for label in decoded_labels
+    ]
 
-    result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True, use_aggregator=True)
+    result = metric.compute(
+        predictions=decoded_preds,
+        references=decoded_labels,
+        use_stemmer=True,
+        use_aggregator=True,
+    )
     result = {key: value * 100 for key, value in result.items()}
 
-    prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in predictions]
+    prediction_lens = [
+        np.count_nonzero(pred != tokenizer.pad_token_id) for pred in predictions
+    ]
     result["gen_len"] = np.mean(prediction_lens)
 
     return {k: round(v, 4) for k, v in result.items()}
@@ -720,22 +779,29 @@ def metric_computer(tokenizer):
     """
     Load and compute custom metrics like BLEU and ROUGE.
     """
-    bleu_metric = evaluate.load('bleu')
-    rouge_metric = evaluate.load('rouge')
+    bleu_metric = evaluate.load("bleu")
+    rouge_metric = evaluate.load("rouge")
 
     def compute(p):
         predictions, references = p
         pred_ids = np.argmax(p.predictions, axis=2)
 
-        pred_texts = [tokenizer.decode(ids, skip_special_tokens=True) for ids in pred_ids]
-        label_texts = [tokenizer.decode(ids, skip_special_tokens=True) for ids in p.label_ids]
+        pred_texts = [
+            tokenizer.decode(ids, skip_special_tokens=True) for ids in pred_ids
+        ]
+        label_texts = [
+            tokenizer.decode(ids, skip_special_tokens=True) for ids in p.label_ids
+        ]
 
         bleu_score = bleu_metric.compute(predictions=pred_texts, references=label_texts)
-        rouge_score = rouge_metric.compute(predictions=pred_texts, references=label_texts)
+        rouge_score = rouge_metric.compute(
+            predictions=pred_texts, references=label_texts
+        )
 
-        return {'bleu': bleu_score, 'rouge': rouge_score}
+        return {"bleu": bleu_score, "rouge": rouge_score}
 
     return compute
+
 
 # ========== TRAINING FUNCTIONS ===============
 def configure_tokenizer(args):
@@ -746,6 +812,7 @@ def configure_tokenizer(args):
     tokenizer.pad_token = args.EOS
 
     return tokenizer
+
 
 def configure_model(args, logger):
     """
@@ -763,7 +830,7 @@ def configure_model(args, logger):
         max_memory=CUDA_MAX_MEMORY,
         torch_dtype=compute_dtype,
         quantization_config=bnb_config,
-        trust_remote_code=False
+        trust_remote_code=False,
     )
 
     model.config.use_cache = False
@@ -771,12 +838,15 @@ def configure_model(args, logger):
     model = log_and_save_info(model, logger, args)
     return model
 
+
 def setup_training_arguments(args):
     """
     Configures and returns the TrainingArguments based on the provided arguments.
     """
     # Directory setup for outputs
-    output_dir = setup_output_directory(args.output_dir)  # Assuming a function for directory setup
+    output_dir = setup_output_directory(
+        args.output_dir
+    )  # Assuming a function for directory setup
 
     training_arguments = TrainingArguments(
         output_dir=output_dir,
@@ -785,8 +855,8 @@ def setup_training_arguments(args):
         per_device_train_batch_size=args.per_device_train_batch_size,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
-        max_grad_norm = args.max_grad_norm,
-        weight_decay = args.weight_decay,
+        max_grad_norm=args.max_grad_norm,
+        weight_decay=args.weight_decay,
         optim=args.optim,
         learning_rate=args.learning_rate,
         lr_scheduler_type=args.lr_scheduler_type,
@@ -803,12 +873,14 @@ def setup_training_arguments(args):
         save_steps=args.save_steps,
         logging_strategy=args.logging_strategy,
         logging_steps=args.logging_steps,
-        group_by_length = args.group_by_length
+        group_by_length=args.group_by_length,
     )
     return training_arguments
 
-def setup_trainer(args, model, tokenizer, peft_config,
-                  train_dataset, test_dataset, training_arguments):
+
+def setup_trainer(
+    args, model, tokenizer, peft_config, train_dataset, test_dataset, training_arguments
+):
     """
     Configures and returns the trainer based on the provided arguments and datasets.
     """
@@ -836,7 +908,9 @@ def execute_training_and_evaluation(trainer, args, logger):
     """
     Executes the training and evaluation process based on the configured trainer and arguments.
     """
-    logger.debug("Evaluating the baseline performance of the model before fine-tuning...")
+    logger.debug(
+        "Evaluating the baseline performance of the model before fine-tuning..."
+    )
     baseline_results = trainer.evaluate()
     logger.info(f"Baseline evaluation results: {baseline_results}")
 
@@ -849,7 +923,7 @@ def execute_training_and_evaluation(trainer, args, logger):
         logger.error(e)
         raise e
 
-    if args.report_to == 'wandb':
+    if args.report_to == "wandb":
         wandb.finish()
 
     logger.info("trainer.evaluate() ...")
@@ -868,6 +942,7 @@ def execute_training_and_evaluation(trainer, args, logger):
     results_df = merge_evaluation_results(baseline_results, final_results)
     return results_df
 
+
 def train(args, logger):
     logger.info("Starting Supervised Fine Tuning...")
 
@@ -881,11 +956,15 @@ def train(args, logger):
     logger.info(compute_metrics_function)
 
     model = configure_model(args, logger)
-    max_seq_length = get_max_length(model)  # Assuming function get_max_length is pre-defined
+    max_seq_length = get_max_length(
+        model
+    )  # Assuming function get_max_length is pre-defined
 
     # Loading and preprocessing datasets
     logger.debug("Loading and preprocessing train dataset...")
-    train_dataset = load_and_preprocess_dataset(args, logger, tokenizer, max_seq_length, "train")
+    train_dataset = load_and_preprocess_dataset(
+        args, logger, tokenizer, max_seq_length, "train"
+    )
     train_set, val_set = split_dataset(train_dataset, train_ratio=0.7, seed=args.seed)
 
     # TrainingArguments setup
@@ -907,6 +986,7 @@ def train(args, logger):
 
 # ======== EVALUATION FUNCTIONS ===============
 
+
 def generate(model=None, tokenizer=None, dataset=None):
     temperature = 0.0  # [0.0, 1.0]; 0.0 means greedy sampling
     do_sample = False
@@ -916,7 +996,6 @@ def generate(model=None, tokenizer=None, dataset=None):
     repetition_penalty = 1.0  # 1.0 means no penalty
     num_return_sequences = 1  # Only generate one response
     num_beams = 1
-
 
     input_ids = tokenizer(dataset["text"])
 
@@ -945,8 +1024,9 @@ def generate(model=None, tokenizer=None, dataset=None):
     output = tokenizer.decode(seq[0])
     return output.split("[/INST]")[-1].strip()
 
+
 # TODO: INCORPORATE EXTRACT LABEL
-def extract_label(text_output, E_INST = "[/INST]"):
+def extract_label(text_output, E_INST="[/INST]"):
     # Find the 'end of instruction' token and remove text before it
     response_pos = text_output.find(E_INST)
     generated_text = text_output[response_pos + len(E_INST) :].strip()
@@ -964,6 +1044,7 @@ def extract_label(text_output, E_INST = "[/INST]"):
     # If none of the substrings are found, return -1
     return -1
 
+
 # TODO: INCORPORATE COMPUTE METRICS
 def compute_metrics(files, outputs_directory):
     acc_list = []
@@ -974,7 +1055,7 @@ def compute_metrics(files, outputs_directory):
         df = pd.read_csv(outputs_directory / file)
 
         # Make sure the 'Label:' was provided in all generated text
-        if all(df['text_output'].str.contains('Label:')):
+        if all(df["text_output"].str.contains("Label:")):
             pass
         else:
             raise ValueError("not all responses contain the substring 'Label:'")
@@ -992,6 +1073,7 @@ def compute_metrics(files, outputs_directory):
         )
 
     return acc_list, f1_list, missing_perc_list
+
 
 def evaluate_results():
     # TODO: RESULTS CODE BELOW NEEDS TO BE INCORPORATED
@@ -1029,6 +1111,7 @@ def evaluate_results():
 
 # ====== UTILS =======
 
+
 def save_model_and_tokenizer(model, tokenizer, model_dir):
     """
     Save the model and tokenizer in the trainer to the specified directory.
@@ -1054,17 +1137,19 @@ def save_model_and_tokenizer(model, tokenizer, model_dir):
     except Exception as e:
         print(f"An error occurred while saving the model and tokenizer: {e}")
 
+
 def memory_cleanup():
     # Empty VRAM
-    if 'trainer' in locals() or 'trainer' in globals():
+    if "trainer" in locals() or "trainer" in globals():
         del trainer
-    if 'model' in locals() or 'model' in globals():
+    if "model" in locals() or "model" in globals():
         del model
-    if 'pipe' in locals() or 'pipe' in globals():
+    if "pipe" in locals() or "pipe" in globals():
         del pipe
     torch.cuda.empty_cache()
     gc.collect()
     gc.collect()
+
 
 def load_models(args, logger):
     compute_dtype = args.bnb_compute_dtype
@@ -1078,7 +1163,9 @@ def load_models(args, logger):
     )
     log_dtypes(base_model, logger)
 
-    bnb_config = configure_bnb(args)  # Assuming a function configure_bnb exists to set up bnb_config
+    bnb_config = configure_bnb(
+        args
+    )  # Assuming a function configure_bnb exists to set up bnb_config
 
     # Load the fine-tuned model
     logger.debug("Creating BitsAndBytesConfig ...")
@@ -1088,12 +1175,13 @@ def load_models(args, logger):
         device_map=args.device_map,
         max_memory=CUDA_MAX_MEMORY,
         torch_dtype=compute_dtype,
-        quantization_config=bnb_config
-        )
+        quantization_config=bnb_config,
+    )
 
     log_dtypes(new_model, logger)
 
     return base_model, new_model
+
 
 def merge_models(base_model, new_model, logger):
     # Merge the LoRa layers into the base model for standalone use
@@ -1102,6 +1190,7 @@ def merge_models(base_model, new_model, logger):
     log_dtypes(peft_model, logger)
 
     return peft_model
+
 
 def save_and_push(args, peft_model):
     # Save inference
@@ -1118,6 +1207,7 @@ def save_and_push(args, peft_model):
     peft_model.push_to_hub(args.repo_name, private=True, use_temp_dir=True)
     tokenizer.push_to_hub(args.repo_name, private=True, use_temp_dir=True)
 
+
 def setup_output_directory(output_dir_path):
     """
     Sets up the output directory for saving model checkpoints and other outputs.
@@ -1125,6 +1215,7 @@ def setup_output_directory(output_dir_path):
     output_dir = output_dir_path / "final_checkpoint"
     output_dir.mkdir(mode=0o777, parents=True, exist_ok=True)
     return output_dir
+
 
 # ========= main ===========
 def main():
@@ -1149,15 +1240,18 @@ def main():
     logger.debug("Creating Tokenizer...")
     tokenizer = configure_tokenizer(args)
     logger.debug("Creating Test Dataset...")
-    test_set = load_and_preprocess_dataset(args, logger, tokenizer, max_seq_length, "test")
+    test_set = load_and_preprocess_dataset(
+        args, logger, tokenizer, max_seq_length, "test"
+    )
 
     # TODO: holdout evaluation
     output_list = []
     for i in range(len(test_set)):
         output_list.append(
-            generate(model=peft_model,
-                     tokenizer=tokenizer,
-                     dataset=test_set)
+            generate(model=peft_model, tokenizer=tokenizer, dataset=test_set)
         )
     output_list.replace("</s>", "")
+    return output_list
 
+if __name__ == "__main__":
+    main()
