@@ -1228,6 +1228,8 @@ def main():
         train(args, logger)
     except Exception as e:
         logger.error(e)
+        raise Exception(e)
+    finally:
         memory_cleanup()
 
     base_model, new_model = load_models(args, logger)
