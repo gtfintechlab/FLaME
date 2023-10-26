@@ -187,13 +187,13 @@ args_output_dir = "/fintech_3/20231018/results"
 output_dir = Path(args_output_dir) / f"{model_name}_{task_name}"
 
 # Number of training epochs
-num_train_epochs = 1
+num_train_epochs = 12
 
 # Batch size per GPU for training
-per_device_train_batch_size = 8
+per_device_train_batch_size = 32
 
 # Batch size per GPU for evaluation
-per_device_eval_batch_size = 8
+per_device_eval_batch_size = 32
 
 # Number of update steps to accumulate the gradients for
 gradient_accumulation_steps = 1
@@ -205,7 +205,7 @@ gradient_checkpointing = False
 max_grad_norm = 0.3
 
 # Initial learning rate (AdamW optimizer)
-learning_rate = 2e-4
+learning_rate = 3e-3
 
 # Weight decay to apply to all layers except bias/LayerNorm weights
 weight_decay = 0.001
