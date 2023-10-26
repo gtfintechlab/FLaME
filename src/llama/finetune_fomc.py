@@ -140,7 +140,7 @@ compute_dtype = torch.bfloat16
 fp16, bf16 = False, True
 
 CUDA_N_GPUS = torch.cuda.device_count()
-CUDA_MAX_MEMORY = f"{int(torch.cuda.mem_get_info()[0] / 1024 ** 3) - 2}GB"
+CUDA_MAX_MEMORY = f"{int(torch.cuda.mem_get_info()[0] / 1024 ** 3) - 6}GB"
 CUDA_MAX_MEMORY = {i: CUDA_MAX_MEMORY for i in range(CUDA_N_GPUS)}
 
 device_map = "auto"  # Automatically determine the device map
@@ -190,10 +190,10 @@ output_dir = Path(args_output_dir) / f"{model_name}_{task_name}"
 num_train_epochs = 12
 
 # Batch size per GPU for training
-per_device_train_batch_size = 16
+per_device_train_batch_size = 8
 
 # Batch size per GPU for evaluation
-per_device_eval_batch_size = 16
+per_device_eval_batch_size = 8
 
 # Number of update steps to accumulate the gradients for
 gradient_accumulation_steps = 1
@@ -227,7 +227,7 @@ warmup_ratio = 0.03
 group_by_length = True
 
 # Save checkpoint every X updates steps
-save_steps = 200
+save_steps = 500
 
 # Log every X updates steps
 logging_steps = 25
@@ -919,9 +919,10 @@ def execute_training_and_evaluation(trainer, args, logger):
     try:
         trainer.train()
     except Exception as e:
-        logger.info("training block failed")
         logger.error(e)
-        raise e
+        raise Exception(e)
+    finally:
+        memory_cleanup()
 
     if args.report_to == "wandb":
         wandb.finish()
@@ -1158,20 +1159,14 @@ def memory_cleanup():
 
 
 def load_models(args, logger):
-    compute_dtype = args.bnb_compute_dtype
-
     # Load the foundation model
     base_model = AutoModelForCausalLM.from_pretrained(
         args.model_id,
         device_map=args.device_map,
         max_memory=CUDA_MAX_MEMORY,
-        torch_dtype=compute_dtype,
+        torch_dtype=args.bnb_compute_dtype,
     )
     log_dtypes(base_model, logger)
-
-    bnb_config = configure_bnb(
-        args
-    )  # Assuming a function configure_bnb exists to set up bnb_config
 
     # Load the fine-tuned model
     logger.debug("Creating BitsAndBytesConfig ...")
@@ -1180,7 +1175,7 @@ def load_models(args, logger):
         args.output_dir / "final_checkpoint",
         device_map=args.device_map,
         max_memory=CUDA_MAX_MEMORY,
-        torch_dtype=compute_dtype,
+        torch_dtype=args.bnb_compute_dtype,
         quantization_config=bnb_config,
     )
 
