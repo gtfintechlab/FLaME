@@ -453,6 +453,7 @@ def log_and_save_info(model, logger, args):
 
     logger.debug("Get module names for the linear layers where we add LORA adapters...")
     layers_for_adapters = find_all_linear_names(model, 4)
+    logger.debug(f"Layers for Adapters: {layers_for_adapters}")
     info_data.append(["Layers for Adapters", layers_for_adapters])
 
     logger.info("Create PEFT config for these modules and wrap the model to PEFT...")
@@ -878,7 +879,7 @@ def setup_training_arguments(args):
 
 
 def setup_trainer(
-    args, model, tokenizer, peft_config, train_dataset, test_dataset, training_arguments
+    args, model, tokenizer, peft_config, train_dataset, eval_dataset, training_arguments
 ):
     """
     Configures and returns the trainer based on the provided arguments and datasets.
@@ -890,7 +891,7 @@ def setup_trainer(
         packing=args.packing,
         max_seq_length=max_seq_length,
         train_dataset=train_dataset,
-        eval_dataset=test_dataset,
+        eval_dataset=eval_dataset,
         peft_config=peft_config,
         callbacks=callbacks,
         dataset_text_field="text",
@@ -951,8 +952,9 @@ def train(args, logger):
 
     # Metrics setup and configuration
     logger.debug("Creating Metrics...")
-    compute_metrics_function = metric_computer(tokenizer)
-    logger.info(compute_metrics_function)
+    # TODO: incorporate rouge and bleu metrics
+    # compute_metrics_function = metric_computer(tokenizer)
+    # logger.info(compute_metrics_function)
 
     model = configure_model(args, logger)
     max_seq_length = get_max_length(
@@ -970,9 +972,14 @@ def train(args, logger):
     logger.info("Creating TrainingArguments ...")
     training_arguments = setup_training_arguments(args)
 
+    logger.info("Creating PEFT config ...")
+    layers_for_adapters = find_all_linear_names(model, 4)
+    logger.debug(f"Layers for Adapters: {layers_for_adapters}")
+    peft_config = create_peft_config(args, layers_for_adapters)
+
     # Trainer setup
     logger.info("Creating SFTTrainer ...")
-    trainer = setup_trainer(args, model, train_set, val_set, training_arguments)
+    trainer = setup_trainer(args, model, tokenizer, peft_config, train_set, val_set, training_arguments)
 
     # Training and Evaluation
     results_df = execute_training_and_evaluation(trainer, args, logger)
