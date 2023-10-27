@@ -1,0 +1,8 @@
+Info,Value
+Memory Footprint,3829940224
+Dtypes Before KBit Prep,
+Dtypes After KBit Prep,
+Layers for Adapters,"['o_proj', 'gate_proj', 'k_proj', 'v_proj', 'down_proj', 'q_proj', 'up_proj']"
+Dtypes Before PEFT Config,
+Dtypes After PEFT Config,
+Trainable Parameters,
