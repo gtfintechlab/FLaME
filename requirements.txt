@@ -9,6 +9,7 @@ pip install git+https://github.com/huggingface/trl.git@main
 datasets==2.14.5
 sentencepiece
 scipy
+fire
 wandb
 tqdm
 pandas
