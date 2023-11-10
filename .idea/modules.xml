@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/zero-shot-finance.iml" filepath="$PROJECT_DIR$/.idea/zero-shot-finance.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/FinGT.iml" filepath="$PROJECT_DIR$/.idea/FinGT.iml" />
     </modules>
   </component>
 </project>

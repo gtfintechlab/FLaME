@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="e36503e8-04c8-43ef-9505-7da56fd1bb99" name="FSIL .6">
+        <fileTransfer rootFolder="/home/AD/gmatlin3" accessType="SFTP" host="10.138.66.6" port="22" sshConfigId="178903af-58a7-422a-97bc-ec6ef64f06f5" sshConfig="gmatlin3@10.138.66.6:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
