@@ -79,3 +79,8 @@ class Evaluate():
 
 evaluator = Evaluate()
 evaluator.append_scores("/Users/hp/Desktop/ZeroNotHero/PaLM_output.csv")
+
+        
+            
+            
+            
