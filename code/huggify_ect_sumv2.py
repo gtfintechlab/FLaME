@@ -17,7 +17,14 @@ import pandas as pd
 from datasets import Dataset, DatasetDict
 
 HF_ORGANIZATION = "gtfintechlab"
-DATASET = "ectsum"
+DATASET = "ECTSum"
+
+def encode(self, label_name):
+    reversed_mapping = {v: k for k, v in self.mappings[self.task].items()}
+    return reversed_mapping.get(label_name, -1)
+
+def decode(self, label_number):
+    return self.mappings[self.task].get(label_number, "undefined").upper()
 
 
 def huggify_data_ectsum(TASK=None, seed = None, ):
@@ -25,12 +32,16 @@ def huggify_data_ectsum(TASK=None, seed = None, ):
         directory_path = ""
         ect_sum_train = pd.read_csv(f"{directory_path}/train.csv")
         ect_sum_test = pd.read_csv(f"{directory_path}/test.csv")
+        ect_sum_val = pd.read_csv(f"{directory_path}/val.csv")
         
         train_texts = ect_sum_train['input']
         train_labels = ect_sum_train['output']
         
         test_texts = ect_sum_test['input']
         test_labels = ect_sum_test['output']
+        
+        val_texts = ect_sum_val['input']
+        val_labels = ect_sum_val['output']
         
         
         splits = {}
@@ -66,7 +77,7 @@ def huggify_data_ectsum(TASK=None, seed = None, ):
             config_name="validation",
             private=True,
         )
-
+        
         return splits
     except Exception as e:
         print(f"Error processing ECT Sum dataset: {str(e)}")
