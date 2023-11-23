@@ -1,102 +1,126 @@
-import os
-import torch
-import transformers
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-import pandas as pd
 import numpy as np
-from time import time
-from datetime import date
+import pandas as pd
+import json
+import torch
+
+from datasets import load_dataset
+from datasets import load_metric
+
+from transformers import AutoConfig
+from transformers import AutoModelForCausalLM # Zero-shot LLaMA-2-7B
+from transformers import AutoModelForSequenceClassification
+from transformers import AutoTokenizer
+from transformers import pipeline
+from transformers import TrainingArguments
+from transformers import Trainer
+
+from evaluate_metrics import Evaluate
+from Document_splitter import split_document
 
 
-today = date.today()
+model = "/fintech_3/hf_models/Llama-2-7b-chat-hf"
 
 
-# load data 
-df_data = pd.read_csv('../data/poc_revenue_mcap_data.csv')
-df_data = df_data[['CONM', 'year', 'mcap', 'revt']]
-
-
-
-# set gpu
-os.environ["CUDA_VISIBLE_DEVICES"] = str("0")
-device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-print("Device assigned: ", device)
-
-model = "meta-llama/Llama-2-7b-chat-hf"
-# model = "/hdd/data_8tb_disk/llama_2_models/llama-2-7b-chat"
-
-# get model and tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model)
 
-tokenizer.add_special_tokens(
-    {
-
-        "pad_token": "<PAD>",
-    }
-)
-
-pipeline = transformers.pipeline(
+# Set pipeline for text generation
+pipeline_obj = pipeline(
     "text-generation",
     model=model,
-    tokenizer=tokenizer,
+    #tokenizer=tokenizer,
     torch_dtype=torch.bfloat16,
     trust_remote_code=True,
     device_map="auto",
 )
 
 
-for year in range(1980, 2021):
-
-    df_copy = df_data.copy()
-
-    df_copy = df_copy.loc[(df_copy['year'] == year)]
-    df_copy = df_copy.reset_index(drop=True)
-    # df_copy = df_copy.head(10)
-    print(df_copy.shape)
-    print(df_copy.head())
-    
+def llama_prompter(doc):
+    docs = split_document(doc,1000)
 
 
 
-    prompts_list = []
-    for index, row in df_copy.iterrows():
-        
-        company_name = row['CONM']
-        financial_year = year
-        message = f'What was the revenue of {company_name} in {financial_year}?'
-        prompts_list.append(message)
-
-    
-    start_t = time()
-
-    # documentation: https://huggingface.co/docs/transformers/v4.29.1/en/main_classes/text_generation
-    res = pipeline(
-        prompts_list, 
-        max_new_tokens=100, 
-        do_sample=True, 
-        use_cache=True, 
-        top_p=1.0, 
-        top_k=50, 
-        temperature=0.01, 
-        num_return_sequences=1, 
-        eos_token_id=tokenizer.eos_token_id
-        )
-    
+    # Create prompt
     output_list = []
+    for i,doc in zip(range(len(docs)),docs):
+        prompt = '''Discard all the previous instructions.
+        Behave like you are an expert at summarization tasks.
+        Below an earnings call transcript of a Russell 3000 Index company
+        is provided. Perform extractive summarization followed by
+        paraphrasing the transcript in bullet point format according to the
+        experts-written short telegram-style bullet point summaries
+        derived from corresponding Reuters articles. The target length of
+        the summary should be at most 50 words. \n\n'''
+
+        prompt += doc
+
     
-    for index, row in df_copy.iterrows():
-        #print(res[i][0]['generated_text'][len(prompts_list[i]):])
-        answer = res[index][0]['generated_text'][len(prompts_list[index]):]
-        answer = answer.strip()
 
-        temp_list = list(row)
-        temp_list.append(prompts_list[index])
-        temp_list.append(answer)
+        # Chat with model through prompt
+        res = pipeline_obj(
+                prompt,
+                max_new_tokens=64,
+                do_sample=True,
+                num_return_sequences=1,
+                #eos_token_id=tokenizer.eos_token_id,
+                )
+        output_list.append(str(res))
 
-        output_list.append(temp_list)
+    text = ""
+    for t in output_list:
+        text = text + "\n\n" + t
+    return text
 
-    results = pd.DataFrame(output_list, columns=['CONM', 'year', 'mcap', 'revt', 'prompt', "prompt_output"])
+def generate_text(input_text):
+    
+    prompt = '''Discard all the previous instructions.
+    Behave like you are an expert at summarization tasks.
+    Given below is a combination of different summaries from the same Earnings Call Transcript.
+    Perform extractive summarization followed by
+    paraphrasing the summaries as one in bullet point format according to the
+    experts-written short telegram-style bullet point summaries
+    derived from corresponding Reuters articles. The target length of
+    the summary should be at most 50 words \n\n'''
 
-    time_taken = int((time() - start_t)/60.0)
-    results.to_csv(f'../data/llm_prompt_outputs/llama_2_7b_yearly/llama_2_7b_chat_year_{year}_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False)
+    prompt += input_text
+
+    res = pipeline_obj(
+                prompt,
+                max_new_tokens=64,
+                do_sample=True,
+                num_return_sequences=1,
+                #eos_token_id=tokenizer.eos_token_id,
+                )
+    return str(res)
+
+def iterate_df(data_file) :
+    df = pd.read_csv(data_file)
+    output_list = []
+    for i,row in df.iterrows():
+        input = row["input"]
+        
+        text = generate_text(llama_prompter(input))
+        
+        #output_text = formatter(row['output'],text)
+        print(text)
+        
+        output_list.append(text)
+        
+    return output_list
+
+def save_data(data_filename, model_name, generated_output_list):
+    
+    df = pd.read_csv(data_filename)
+
+    df['predicted_text'] = generated_output_list
+
+    output_filename = f"{model_name}_output.csv"
+    df.to_csv(output_filename, index=False)
+    return output_filename
+
+
+evaluator = Evaluate()
+data = "ectsum_data.csv"
+model = "Llama-2-7b-chat-hf"
+results = iterate_df(data)
+path = save_data(data,model,results)
+evaluator.append_scores(path)
