@@ -75,10 +75,6 @@ class Evaluate():
 
         df.to_csv(file,index = False)
         
-    
-
-evaluator = Evaluate()
-evaluator.append_scores("/Users/hp/Desktop/ZeroNotHero/PaLM_output.csv")
 
         
             
