@@ -2,10 +2,8 @@
 import json
 import openai
 import pandas as pd
-from LangChain_splitter import document_splitter
-import sys
-sys.path.append("/Users/hp/Desktop/ZeroNotHero/ZeroNotHero")
-import evaluate_metrics
+from Document_splitter import document_splitter
+from evaluate_metrics import Evaluate
 
 
 openai.api_key = "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"
@@ -42,7 +40,7 @@ def generate_df(doc):
     return output_list
 
 
-#def generate_text(input_text):
+def generate_text(input_text):
     
     prompt = '''Discard all the previous instructions.
     Behave like you are an expert at summarization tasks.
@@ -55,38 +53,16 @@ def generate_df(doc):
 
     prompt += input_text
 
-    res = palm.chat(messages = prompt)
-    return res.last
-    
-    
-
-#def formatter(reference_text, predicted_text):
-    
-    prompt = '''Discard all the previous instructions.
-                Given the following text format:\n\n'''
-    
-    prompt += reference_text
-
-    prompt += '''\n\nFormat the following text in the same format with the same number of sentences.
-                    Make it concise if needed retaining the main financial takeaways.\n\n'''
-
-    prompt += predicted_text
-
-
-    res = palm.chat(messages = prompt)
-    return(res.last)   
+    res = chat_gpt(prompt)
+    return res
+      
     
 def iterate_df(data_file) :
     df = pd.read_csv(data_file)
     output_list = []
     for i,row in df.iterrows():
         input = row["input"]
-        
         text = generate_df((input))
-        
-        #output_text = formatter(row['output'],text)
-        print(text)
-        
         output_list.append(text)
         
     return output_list
@@ -101,14 +77,12 @@ def save_data(data_filename, model_name, generated_output_list):
     output_filename = f"{model_name}_output.csv"
     df.to_csv(output_filename, index=False)
     return output_filename
-    #print(f"Processed data saved to {output_filename}")
-
-
-    #data = "ectsum_data.csv"
-data = "/Users/hp/Desktop/ZeroNotHero/sample_tester.csv"
+    
+evaluator = Evaluate()
+data = "ectsum_data.csv"
 model = "GPT-4"
 results = iterate_df(data)
 path = save_data(data,model,results)
-evaluate_metrics.append_scores(path)
+evaluator.append_scores(path)
 
 
