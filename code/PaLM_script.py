@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import google.generativeai as palm
 from evaluate_metrics import Evaluate
-from LangChain_splitter import split_document
+from Document_splitter import split_document
 
 
 today = date.today()
