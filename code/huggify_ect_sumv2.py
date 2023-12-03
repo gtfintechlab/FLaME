@@ -27,7 +27,7 @@ def decode(self, label_number):
     return self.mappings[self.task].get(label_number, "undefined").upper()
 
 
-def huggify_data_ectsum(TASK=None, seed = None, ):
+def huggify_data_ectsum():
     try:
         directory_path = ""
         ect_sum_train = pd.read_csv(f"{directory_path}/train.csv")
@@ -81,3 +81,5 @@ def huggify_data_ectsum(TASK=None, seed = None, ):
         return splits
     except Exception as e:
         print(f"Error processing ECT Sum dataset: {str(e)}")
+
+huggify_data_ectsum()
