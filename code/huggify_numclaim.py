@@ -125,3 +125,5 @@ def huggify_numclaim():
         return splits
     except Exception as e:
         print(f"Error processing Numclaim dataset: {str(e)}")
+
+huggify_numclaim()
