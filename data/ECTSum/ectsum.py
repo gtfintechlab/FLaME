@@ -62,8 +62,8 @@ def huggify_data_ectsum(push_to_hub=False):
 
         # Push to HF Hub
         if push_to_hub:
-            splits["train"].push_to_hub(
-                f"{HF_ORGANIZATION}/{DATASET}-train",
+            splits.push_to_hub(
+                f"{HF_ORGANIZATION}/{DATASET}",
                 config_name="main",
                 private=True,
             )
