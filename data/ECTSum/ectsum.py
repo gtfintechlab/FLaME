@@ -1,7 +1,7 @@
 import os
 import sys
 from pathlib import Path
-from huggingface_hub import hf_hub_upload, login
+from huggingface_hub import login
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from tqdm.notebook import tqdm
@@ -14,16 +14,15 @@ DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
 if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
-
+os.environ["HF_HOME"] = "/Users/hp/Desktop/FinGT repo/FinGT/data/ECTSum"
+HF_TOKEN = "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"
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "ECTSum"
+login(HF_TOKEN)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-with open("huggingface_token") as f:
-    my_token = f.read()
-login(token=my_token)
 
 def huggify_data_ectsum(push_to_hub=False):
     try:
@@ -66,18 +65,11 @@ def huggify_data_ectsum(push_to_hub=False):
                 f"{HF_ORGANIZATION}/{DATASET}",
                 config_name="main",
                 private=True,
+                token=HF_TOKEN,
             )
-            
+
             # TODO: push the dataset dict object not the datasets individually
 
-            FILENAMES = ["train.csv", " test.csv", "val.csv"]
-            for FILENAME in FILENAMES:
-                hf_hub_upload(
-                    repo_id=f"{HF_ORGANIZATION}/{DATASET}",
-                    filename=FILENAME,
-                    repo_type="dataset",
-                    commit_message="Add {FILENAME} for ECTSum dataset",
-                )
         logger.info("Finished processing ECTSum dataset")
         return splits
 
