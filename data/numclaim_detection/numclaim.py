@@ -15,7 +15,7 @@ DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
 if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
-HF_TOKEN = "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"
+HF_TOKEN = ""
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "Numclaim"
 

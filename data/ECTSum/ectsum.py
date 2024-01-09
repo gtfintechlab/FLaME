@@ -15,7 +15,7 @@ if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
 os.environ["HF_HOME"] = "/Users/hp/Desktop/FinGT repo/FinGT/data/ECTSum"
-HF_TOKEN = "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"
+HF_TOKEN = ""
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "ECTSum"
 login(HF_TOKEN)

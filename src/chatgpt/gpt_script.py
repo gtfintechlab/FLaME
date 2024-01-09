@@ -1,5 +1,5 @@
 # chatgpt/run_script.py
-
+from datasets import load_dataset
 from chatgpt.main import Evaluate
 import os
 import pandas as pd
