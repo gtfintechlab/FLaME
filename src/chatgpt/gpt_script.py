@@ -16,10 +16,13 @@ data_directory = "data"
 
 evaluator = Evaluate()
 
-datasets = ["train.csv", "test.csv", "val.csv"]
+'''datasets = ["train.csv", "test.csv", "val.csv"]
 model_name = "GPT-3.5-Turbo"
 
 for dataset in datasets:
     dataset_file = os.path.join(data_directory, dataset)
-    process_dataset(evaluator, dataset_file, model_name)
+    process_dataset(evaluator, dataset_file, model_name)'''
+    
+dataset = load_dataset("https://huggingface.co/datasets/gtfintechlab/ECTSum")
+data_files = {"train": "train.csv", "test": "test.csv", "val":"val.csv"}
 
