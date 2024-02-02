@@ -11,8 +11,8 @@ from transformers import (
 from tqdm import tqdm
 import pytorch_lightning as pl
 
-model_path = "/fintech_3/hf_models/t5-base"
-tokenizer = T5Tokenizer.from_pretrained(model_path)
+#model_path = "/fintech_3/hf_models/t5-base"
+#tokenizer = T5Tokenizer.from_pretrained(model_path)
 
 class ECTdataset(Dataset):
     def __init__(self,
@@ -28,6 +28,7 @@ class ECTdataset(Dataset):
     def __len__(self):
         return len(self.data)
 
+    #Do no take tokenize the dataset
     def __getitem__(self, index: int):
         row = self.data.iloc[index]
         input = row["input"]
