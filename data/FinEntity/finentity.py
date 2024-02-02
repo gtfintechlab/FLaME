@@ -27,8 +27,6 @@ def huggify_data_finentity(push_to_hub=False, TASK=None, SEED=None, SPLITS=['tra
     try:
         directory_path = DATA_DIRECTORY / "FinEntity"
         logger.debug(f"Directory path: {directory_path}")
-
-        #data = pd.read_json(f"{directory_path}/FinEntity.json")
         
         dataset = load_dataset("yixuantt/FinEntity")
         
