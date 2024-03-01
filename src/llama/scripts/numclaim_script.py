@@ -7,8 +7,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 model = "meta-llama/Llama-2-7b-hf"
 task = "numclaim"
-dataset = load_dataset("gtfintechlab/Numclaim", token= "")
-api_key = ""
+dataset = load_dataset("gtfintechlab/Numclaim", token= "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")
+api_key = "1ba68d2ffcbdad1ac7dbc992797cfa0200a9031ab7c886e6701674892ba4acbf"
 
 # Initialize lists to store actual labels and model responses
 train_context = []
@@ -26,10 +26,10 @@ for sentence in dataset['train']:
     train_actual_labels.append(train_actual_label)
     model_response = generate("numclaim", model, api_key, sentence['context'])
     train_response_label = model_response["output"]["choices"][0]["text"]
+    print(train_response_label)
     train_response.append(train_response_label)
-    
-train_df = pd.DataFrame({'context': train_context, 'response': train_response, 'actual_label': train_actual_labels})
-train_df.to_csv('numclaim_train_llama_2.csv', index=False)
+    train_df = pd.DataFrame({'context': train_context, 'response': train_response, 'actual_label': train_actual_labels})
+    train_df.to_csv('numclaim_train_llama_2.csv', index=False)
 
 # Iterating through the test split of the dataset
 for sentence in dataset['test']:
@@ -39,9 +39,8 @@ for sentence in dataset['test']:
     model_response = generate("numclaim", model, api_key, sentence['context'])
     test_response_label = model_response["output"]["choices"][0]["text"]
     test_response.append(test_response_label)
-
-test_df = pd.DataFrame({'context': test_context, 'response': test_response, 'actual_label': test_actual_labels})
-test_df.to_csv('numclaim_test_llama_2.csv', index=False)
+    test_df = pd.DataFrame({'context': test_context, 'response': test_response, 'actual_label': test_actual_labels})
+    test_df.to_csv('numclaim_test_llama_2.csv', index=False)
 
 # Evaluating metrics for the train split
 train_accuracy = accuracy_score(train_actual_labels, train_response)
