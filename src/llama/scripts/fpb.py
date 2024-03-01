@@ -7,12 +7,12 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 model = "meta-llama/Llama-2-7b-hf"
 task = "fpb"
-api_key = "1ba68d2ffcbdad1ac7dbc992797cfa0200a9031ab7c886e6701674892ba4acbf"
+api_key = ""
 
 
 configs = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
 for config in configs:
-    dataset = load_dataset("financial_phrasebank", config , token= "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")
+    dataset = load_dataset("financial_phrasebank", config , token= "")
 
 # Initialize lists to store actual labels and model labels
     train_sentence = []

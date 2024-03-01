@@ -7,8 +7,8 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 model = "meta-llama/Llama-2-7b-hf"
 task = "numclaim"
-dataset = load_dataset("gtfintechlab/Numclaim", token= "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")
-api_key = "1ba68d2ffcbdad1ac7dbc992797cfa0200a9031ab7c886e6701674892ba4acbf"
+dataset = load_dataset("gtfintechlab/Numclaim", token= "")
+api_key = ""
 
 # Initialize lists to store actual labels and model responses
 train_context = []

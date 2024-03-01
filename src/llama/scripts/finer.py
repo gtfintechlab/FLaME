@@ -16,9 +16,9 @@ from sklearn.metrics import (
 model = "meta-llama/Llama-2-7b-hf"
 task = "finer"
 dataset = load_dataset(
-    "gtfintechlab/finer_ord_encoded", token="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"
+    "gtfintechlab/finer_ord_encoded", token=""
 )
-api_key = "1ba68d2ffcbdad1ac7dbc992797cfa0200a9031ab7c886e6701674892ba4acbf"
+api_key = ""
 
 # Initialize lists to store actual labels and model responses
 train_context = []

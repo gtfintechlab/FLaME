@@ -14,9 +14,9 @@ from sklearn.metrics import (
 model = "meta-llama/Llama-2-7b-hf"
 task = "fomc"
 dataset = load_dataset(
-    "gtfintechlab/fomc_communication", token="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"
+    "gtfintechlab/fomc_communication", token=""
 )
-api_key = "1ba68d2ffcbdad1ac7dbc992797cfa0200a9031ab7c886e6701674892ba4acbf"
+api_key = ""
 
 # Initialize lists to store actual labels and model responses
 train_context = []
