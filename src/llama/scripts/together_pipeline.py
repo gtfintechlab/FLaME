@@ -33,5 +33,4 @@ def generate(task, model, api_key, sentence):
         stop=["<human>", "\n\n"],
     )
 
-    # print generated text
-    print(output["output"]["choices"][0]["text"])
+    return output

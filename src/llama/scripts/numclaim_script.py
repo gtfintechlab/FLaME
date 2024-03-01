@@ -1,99 +1,77 @@
-# import pandas as pd 
-# import time
-# from transformers import AutoTokenizer, AutoModelForSequenceClassification
-# import transformers
-# from transformers import pipeline
-# import torch
-# from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, precision_score, recall_score
-# from datasets import load_dataset
-
-
-
-
-
-# #load dataset from labs hf
-# dataset = load_dataset("gtfintechlab/Numclaim", token= "")
-# #load model from hf
-# model = "meta-llama/Llama-2-7b-hf"
-# #load tokenizer for llama
-# tokenizer = AutoTokenizer.from_pretrained(model, use_auth_token=True)
-
-# #this is the pipeline object
-# pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device_map = "auto")
-
-# #this is our method to call llama
-# def get_llama_response(sentence:str) -> None:
-
-#     #prompt from the paper
-#     prompt = f'''Discard all the previous instructions. Behave like you are an expert sentence senti-
-#     ment classifier. Classify the following sentence into ‘INCLAIM’, or ‘OUTOFCLAIM’ class.
-#     Label ‘INCLAIM’ if consist of a claim and not just factual past or present information, or
-#     ‘OUTOFCLAIM’ if it has just factual past or present information. Provide the label in the
-#     first line and provide a short explanation in the second line. The sentence:{sentence}'''
-
-#     #using the pipeline object we created from above
-#     seq = pipe(
-#                 prompt,
-#                 do_sample=True,
-#                 top_k =10,
-#                 num_return_sequences=1,
-#                 eos_token_id = tokenizer.eos_token_id,
-#                 max_length = 256
-#                 )
-#     return (seq[0]['generated_text'])
-
-
-# #calling our method on all values in the train split of our dataset
-# context = []
-# response = []
-# start_time = time.time()
-# for i in range(len(dataset['train'])):
-#     context.append(dataset['train'][i]['context'])
-#     response.append(get_llama_response(dataset['train'][i]['context']))
-
-# end_time = time.time()
-# print(end_time - start_time)
-
-# #evaluating
-# accuracy_score = accuracy_score(dataset['train']['response'], response)
-# precision_score = precision_score(dataset['train']['response'], response)
-# recall_score = recall_score(dataset['train']['response'], response)
-# f1_score = f1_score(dataset['train']['response'], response)
-# roc_auc_score = roc_auc_score(dataset['train']['response'], response)
-# print(accuracy_score, precision_score, recall_score, f1_score, roc_auc_score)
-
-# #creating output csv
-# df = pd.DataFrame({'context': context, 'response': response,'accuracy':accuracy_score,'precision':precision_score, 'recall_score':recall_score, 'f1_score':f1_score, 'roc':roc_auc_score})
-# df.to_csv('numclaim_train_llama_2.csv', index=False)
-
-# #doing the same thing for the test split
-# context = []
-# response = []
-
-# start_time = time.time()
-# for i in range(len(dataset['test'])):
-#     context.append(dataset['test'][i]['context'])
-#     response.append(get_llama_response(dataset['test'][i]['context']))
-    
-# end_time = time.time()
-# print(end_time - start_time)
-
-# accuracy_score = accuracy_score(dataset['test']['response'], response)
-# precision_score = precision_score(dataset['test']['response'], response)
-# recall_score = recall_score(dataset['test']['response'], response)
-# f1_score = f1_score(dataset['test']['response'], response)
-# roc_auc_score = roc_auc_score(dataset['test']['response'], response)
-# print(accuracy_score, precision_score, recall_score, f1_score, roc_auc_score)
-
-# df = pd.DataFrame({'context': context, 'response': response,'accuracy':accuracy_score,'precision':precision_score, 'recall_score':recall_score, 'f1_score':f1_score, 'roc':roc_auc_score})
-# df.to_csv('numclaim_test_llama_2.csv', index=False)
-
-
+import pandas as pd 
+import time
 from together_pipeline import generate
+from datasets import load_dataset
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+
+
 model = "meta-llama/Llama-2-7b-hf"
 task = "numclaim"
-sentence = "however, following this deal, bce will divest about one-third of mts postpaid subscribers, for total proceeds of approximately $300 million, and 13 mts retail locations to its nearest national competitor, telus corporation to dispel regulatory concerns and trim cash outlay, as per prior agreement."
+dataset = load_dataset("gtfintechlab/Numclaim", token= "")
 api_key = ""
-generate(task,model,api_key,sentence)
+
+# Initialize lists to store actual labels and model responses
+train_context = []
+train_response = []
+train_actual_labels = []
+
+test_context = []
+test_response = []
+test_actual_labels = []
+
+# Iterating through the train split of the dataset
+for sentence in dataset['train']:
+    train_context.append(sentence['context'])
+    train_actual_label = sentence['response']
+    train_actual_labels.append(train_actual_label)
+    model_response = generate("numclaim", model, api_key, sentence['context'])
+    train_response_label = model_response["output"]["choices"][0]["text"]
+    train_response.append(train_response_label)
+    
+train_df = pd.DataFrame({'context': train_context, 'response': train_response, 'actual_label': train_actual_labels})
+train_df.to_csv('numclaim_train_llama_2.csv', index=False)
+
+# Iterating through the test split of the dataset
+for sentence in dataset['test']:
+    test_context.append(sentence['context'])
+    test_actual_label = sentence['response']  # Assuming the response key contains the actual label
+    test_actual_labels.append(test_actual_label)
+    model_response = generate("numclaim", model, api_key, sentence['context'])
+    test_response_label = model_response["output"]["choices"][0]["text"]
+    test_response.append(test_response_label)
+
+test_df = pd.DataFrame({'context': test_context, 'response': test_response, 'actual_label': test_actual_labels})
+test_df.to_csv('numclaim_test_llama_2.csv', index=False)
+
+# Evaluating metrics for the train split
+train_accuracy = accuracy_score(train_actual_labels, train_response)
+train_precision = precision_score(train_actual_labels, train_response)
+train_recall = recall_score(train_actual_labels, train_response)
+train_f1 = f1_score(train_actual_labels, train_response)
+train_roc_auc = roc_auc_score(train_actual_labels, train_response)
+
+# Evaluating metrics for the test split
+test_accuracy = accuracy_score(test_actual_labels, test_response)
+test_precision = precision_score(test_actual_labels, test_response)
+test_recall = recall_score(test_actual_labels, test_response)
+test_f1 = f1_score(test_actual_labels, test_response)
+test_roc_auc = roc_auc_score(test_actual_labels, test_response)
+
+# Creating DataFrames for metrics
+train_metrics = pd.DataFrame({'accuracy': [train_accuracy],
+                              'precision': [train_precision],
+                              'recall': [train_recall],
+                              'f1_score': [train_f1],
+                              'roc_auc': [train_roc_auc]})
+
+test_metrics = pd.DataFrame({'accuracy': [test_accuracy],
+                             'precision': [test_precision],
+                             'recall': [test_recall],
+                             'f1_score': [test_f1],
+                             'roc_auc': [test_roc_auc]})
+
+# Saving DataFrames to CSV files
+train_metrics.to_csv('numclaim_llama2_train_metrics.csv', index=False)
+test_metrics.to_csv('numclaim_llama2_test_metrics.csv', index=False)
 
 
