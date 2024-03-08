@@ -99,6 +99,22 @@ def banking77_prompt(sentence: str):
             
     return prompt
 
+def finqa_prompt(document: str):
+    
+    prompt = f'''Discard all the previous instructions. Behave like you are a financial expert in question answering. 
+                Your task is to answer a financial question based on the  providedcontext.\n\n The context:
+                {document}'''
+            
+    return prompt
 
 
+
+def convfinqa_prompt(document: str):
+    
+    prompt = f'''Discard all the previous instructions. Behave like you are a financial exprt in question answering.
+                You are to answer a series of interconnected financial questions where later questions may depend on the answers to previous ones.
+                I'll provide the series of questions as the context and you will answer the last question.\n\n The context:
+                {document}'''
+            
+    return prompt
 
