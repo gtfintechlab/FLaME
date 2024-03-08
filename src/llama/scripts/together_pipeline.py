@@ -2,6 +2,7 @@ import together
 from prompt_generator import *
 
 
+
 def generate(task, model, api_key, sentence):
     
     
