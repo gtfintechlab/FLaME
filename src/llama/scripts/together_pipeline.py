@@ -19,6 +19,27 @@ def generate(task, model, api_key, sentence):
     
     if (task == "sentiment_analysis"):
         prompt = fpb_prompt(sentence)
+        
+    if (task == "finentity"):
+        prompt = finentity_prompt(sentence)
+        
+    # if (task == "finsent"):
+    #     prompt = finsent_prompt(sentence)
+        
+    if (task == "finqa"):
+        prompt = finqa_prompt(sentence)
+        
+    if (task == "ectsum"):
+        prompt = ectsum_prompt(sentence)
+        
+    # if (task == "finbench"):
+    #     prompt = finbench_prompt(sentence)
+        
+    if (task == "banking77"):
+        prompt = banking77_prompt(sentence)
+        
+    if (task == "convfinqa"):
+        prompt = convfinqa_prompt(sentence)
     
     
 

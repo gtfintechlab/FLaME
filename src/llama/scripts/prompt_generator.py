@@ -44,3 +44,64 @@ def fpb_prompt(sentence: str):
             
     return prompt
 
+
+def finentity_prompt(sentence: str):
+    
+    prompt = f'''Discard all the previous instructions. Behave like you are an expert entity level sentiment
+                classifier. Below is a sentence from a financial document. From the sentence, identify all the entities 
+                check the starting and ending indices of the entities and give it a tag out of the following three options: 
+                ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
+                corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral.
+                Format it as such: "start": start value, "end": end value, "value": entity name, 
+                "tag":‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. The sentence:
+                {sentence}'''
+            
+    return prompt
+
+
+
+# def fibench_prompt(sentence: str):
+    
+#     prompt = f'''Discard all the previous instructions. Behave like you are an expert entity level sentiment
+#                 classifier. Below is a sentence from a financial document. From the sentence, identify all the entities 
+#                 check the starting and ending indices of the entities and give it a tag out of the following three options: 
+#                 ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
+#                 corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral.
+#                 Format it as such: "start": start value, "end": end value, "value": entity name, 
+#                 "tag":‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. The sentence:
+#                 {sentence}'''
+            
+#     return prompt
+
+def ectsum_prompt(document: str):
+    
+    prompt = f'''Discard all the previous instructions.
+        Behave like you are an expert at summarization tasks.
+        Below an earnings call transcript of a Russell 3000 Index company
+        is provided. Perform extractive summarization followed by
+        paraphrasing the transcript in bullet point format according to the
+        experts-written short telegram-style bullet point summaries
+        derived from corresponding Reuters articles. The target length of
+        the summary should be at most 50 words. \n\n The document:
+        {document}'''
+            
+    return prompt
+
+
+
+def banking77_prompt(sentence: str):
+    
+    prompt = f'''Discard all the previous instructions. Behave like you are an expert entity level sentiment
+                classifier. Below is a sentence from a financial document. From the sentence, identify all the entities 
+                check the starting and ending indices of the entities and give it a tag out of the following three options: 
+                ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
+                corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral.
+                Format it as such: "start": start value, "end": end value, "value": entity name, 
+                "tag":‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. The sentence:
+                {sentence}'''
+            
+    return prompt
+
+
+
+
