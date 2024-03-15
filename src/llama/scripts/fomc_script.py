@@ -1,5 +1,6 @@
 import pandas as pd
-import time
+from time import sleep, time
+from datetime import date
 from together_pipeline import generate
 from datasets import load_dataset
 from sklearn.metrics import (
@@ -9,12 +10,12 @@ from sklearn.metrics import (
     f1_score,
     roc_auc_score,
 )
-
+today = date.today()
 
 model = "meta-llama/Llama-2-7b-hf"
 task = "fomc"
 dataset = load_dataset(
-    "gtfintechlab/fomc_communication", token=""
+    "gtfintechlab/fomc_communication", token="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"
 )
 api_key = ""
 
@@ -25,6 +26,7 @@ complete_responses = []
 actual_labels = []
 
 # Iterating through the train split of the dataset
+start_t = time()
 for sentence in dataset["train"]:
     context.append(sentence["sentence"])
     actual_label = sentence["label"]
@@ -63,7 +65,10 @@ for sentence in dataset["test"]:
             "actual_label": actual_labels,
         }
     )
-    df.to_csv("fomc_results_llama_2.csv", index=False)
+    time_taken = int((time() - start_t)/60.0)
+    df.to_csv(f"fomc_results_llama_2_{today.strftime("%d_%m_%Y")}_{time_taken}.csv", index=False)
+    
+    
 
 # Evaluating metrics for the train split
 accuracy = accuracy_score(actual_labels, llm_responses)
@@ -82,7 +87,6 @@ metrics = pd.DataFrame(
         "roc_auc": [roc_auc],
     }
 )
-
 # Saving DataFrames to CSV files
 metrics.to_csv("fomc_llama2_metrics.csv", index=False)
 
