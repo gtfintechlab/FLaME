@@ -18,7 +18,7 @@ def generate(task, model, api_key, sentence):
     if (task == "finer"):
         prompt = finer_prompt(sentence)
     
-    if (task == "sentiment_analysis"):
+    if (task == "fpb"):
         prompt = fpb_prompt(sentence)
         
     if (task == "finentity"):
