@@ -1,6 +1,6 @@
 import pandas as pd
-from time import sleep, time
-from datetime import date
+import nltk
+from nltk.tokenize import word_tokenize
 from together_pipeline import generate
 from datasets import load_dataset
 from sklearn.metrics import (
@@ -10,27 +10,27 @@ from sklearn.metrics import (
     f1_score,
     roc_auc_score,
 )
-
 today = date.today()
-
 model = "meta-llama/Llama-2-7b-hf"
 task = "fomc"
 dataset = load_dataset(
     "gtfintechlab/fomc_communication", token="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"
 )
-api_key = "d88605e587297179a8a38ba7769c8cc8ce3a62ba173add159e7155dec7f1d30e"
+api_key = ""
 
 # Initialize lists to store actual labels and model responses
 context = []
 llm_responses = []
+llm_first_word_responses = []
 complete_responses = []
 actual_labels = []
 
 # Iterating through the train split of the dataset
 start_t = time()
-for sentence in dataset["train"]:
-    context.append(sentence["sentence"])
-    actual_label = sentence["label"]
+for i in range(len(dataset['train'])):
+    sentence = dataset['train'][i]['sentence']
+    context.append(sentence)
+    actual_label = dataset['train'][i]['label']
     actual_labels.append(actual_label)
     model_response = generate("fomc", model, api_key, sentence["sentence"])
     complete_responses.append(model_response)
@@ -45,15 +45,13 @@ for sentence in dataset["train"]:
             "actual_label": actual_labels,
         }
     )
+    df.to_csv("fomc_results_llama_2.csv", index=False)
 
-    df.to_csv(f'fomc_train_llama_2_7b',index = False)
-
-# Iterating through the train split of the dataset
-for sentence in dataset["test"]:
-    context.append(sentence["sentence"])
-    actual_label = sentence[
-        "label"
-    ]
+# Iterating through the test split of the dataset
+for i in range(len(dataset['test'])):
+    sentence = dataset['test'][i]['sentence']
+    context.append(sentence)
+    actual_label = dataset['test'][i]['label']
     actual_labels.append(actual_label)
     model_response = generate("fomc", model, api_key, sentence["sentence"])
     complete_responses.append(model_response)
@@ -67,10 +65,29 @@ for sentence in dataset["test"]:
             "actual_label": actual_labels,
         }
     )
-    #time_taken = time() - start_t
-    df.to_csv(f'fomc_test_llama_2_7b.csv', index=False)
+    time_taken = int((time() - start_t)/60.0)
+    df.to_csv(f"fomc_results_llama_2_{today.strftime("%d_%m_%Y")}_{time_taken}.csv", index=False)
     
     
 
+# Evaluating metrics for the train split
+accuracy = accuracy_score(actual_labels, llm_responses)
+precision = precision_score(actual_labels, llm_responses)
+recall = recall_score(actual_labels, llm_responses)
+f1 = f1_score(actual_labels, llm_responses)
+roc_auc = roc_auc_score(actual_labels, llm_responses)
+
+# Creating DataFrames for metrics
+metrics = pd.DataFrame(
+    {
+        "accuracy": [accuracy],
+        "precision": [precision],
+        "recall": [recall],
+        "f1_score": [f1],
+        "roc_auc": [roc_auc],
+    }
+)
+# Saving DataFrames to CSV files
+metrics.to_csv("fomc_llama2_metrics.csv", index=False)
 
 
