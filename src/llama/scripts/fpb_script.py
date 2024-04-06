@@ -9,11 +9,6 @@ from datasets import load_dataset
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from datetime import date
 
-# use this as reference 
-# goal: run scripts on each model (low priority)
-# get the output working correctly (high priority): default model, llama 
-# move the together_pipeline.py file (not really a pipeline)
-
 model = "meta-llama/Llama-2-7b-chat-hf"
 api_key = "d88605e587297179a8a38ba7769c8cc8ce3a62ba173add159e7155dec7f1d30e"
 task = "fpb"
