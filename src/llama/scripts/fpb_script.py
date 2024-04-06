@@ -17,7 +17,7 @@ configs = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sente
 for config in configs:
     dataset = load_dataset("financial_phrasebank", config, token="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")
 
-    # Initialize lists to store actual labels and model responses
+    # Initializing lists to store actual labels and model responses
     sentences = []
     llm_responses = []
     llm_first_word_responses = []
@@ -47,20 +47,20 @@ for config in configs:
 
     time_taken = time.time() - start_t
 
-    # Evaluating metrics for the train split
-    accuracy = accuracy_score(actual_labels, llm_first_word_responses)
-    precision = precision_score(actual_labels, llm_first_word_responses, average='micro')
-    recall = recall_score(actual_labels, llm_first_word_responses, average='micro')
-    f1 = f1_score(actual_labels, llm_first_word_responses, average='micro')
-    # roc_auc = roc_auc_score(actual_labels, llm_first_word_responses) # Uncomment if applicable
+    # # Evaluating metrics for the train split
+    # accuracy = accuracy_score(actual_labels, llm_first_word_responses)
+    # precision = precision_score(actual_labels, llm_first_word_responses, average='micro')
+    # recall = recall_score(actual_labels, llm_first_word_responses, average='micro')
+    # f1 = f1_score(actual_labels, llm_first_word_responses, average='micro')
+    # # roc_auc = roc_auc_score(actual_labels, llm_first_word_responses) # Uncomment if applicable
 
-    # Creating DataFrames for metrics
-    metrics = pd.DataFrame({'accuracy': [accuracy],
-                            'precision': [precision],
-                            'recall': [recall],
-                            'f1_score': [f1]})
-                            #'roc_auc': [roc_auc]}) # Uncomment if applicable
+    # # Creating DataFrames for metrics
+    # metrics = pd.DataFrame({'accuracy': [accuracy],
+    #                         'precision': [precision],
+    #                         'recall': [recall],
+    #                         'f1_score': [f1]})
+    #                         #'roc_auc': [roc_auc]}) # Uncomment if applicable
 
-    # Saving DataFrames to CSV files
-    metrics.to_csv(f'fpb_llama2_metrics_{config}_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False)
+    # # Saving DataFrames to CSV files
+    # metrics.to_csv(f'fpb_llama2_metrics_{config}_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False)
 

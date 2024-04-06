@@ -21,10 +21,6 @@ llm_responses_explanation = []
 complete_responses = []
 actual_labels = []
 
-# test_context = []
-# test_response = []
-# test_actual_labels = []
-
 # Iterating through the train split of the dataset
 start_t = time()
 for i in range(len(dataset['train'])):
@@ -75,23 +71,22 @@ df = pd.DataFrame({'context': context, 'complete_response': complete_responses,'
 df.to_csv(f'numclaim_results_llama_2_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False)
         
 
-# Evaluating metrics for the train split
-accuracy = accuracy_score(actual_labels, llm_responses_label)
-precision = precision_score(actual_labels, llm_responses_label, average='micro')
-recall = recall_score(actual_labels, llm_responses_label, average='micro')
-f1 = f1_score(actual_labels, llm_responses_label, average='micro')
-# roc_auc = roc_auc_score(actual_labels, llm_responses)
+# # Evaluating metrics for the train split
+# accuracy = accuracy_score(actual_labels, llm_responses_label)
+# precision = precision_score(actual_labels, llm_responses_label, average='micro')
+# recall = recall_score(actual_labels, llm_responses_label, average='micro')
+# f1 = f1_score(actual_labels, llm_responses_label, average='micro')
+# # roc_auc = roc_auc_score(actual_labels, llm_responses)
 
 
-# Creating DataFrames for metrics
-metrics = pd.DataFrame({'accuracy': [accuracy],
-                        'precision': [precision],
-                        'recall': [recall],
-                        'f1_score': [f1]})
-                        #'roc_auc': [roc_auc]})
+# # Creating DataFrames for metrics
+# metrics = pd.DataFrame({'accuracy': [accuracy],
+#                         'precision': [precision],
+#                         'recall': [recall],
+#                         'f1_score': [f1]})
+#                         #'roc_auc': [roc_auc]})
 
-# Saving DataFrames to CSV files
-metrics.to_csv('numclaim_llama2_metrics.csv', index=False)
-# test_metrics.to_csv('numclaim_llama2_test_metrics.csv', index=False)
+# # Saving DataFrames to CSV files
+# metrics.to_csv('numclaim_llama2_metrics.csv', index=False)
 
 
