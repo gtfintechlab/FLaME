@@ -9,12 +9,16 @@ def numclaim_prompt(sentence: str):
     return prompt
 
 def fomc_prompt(sentence: str):
-    prompt = f'''Discard all the previous instructions. Behave like you are an expert sentence clas-
-                sifier. Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
+
+    system_prompt = f'''Discard all the previous instructions. Behave like you are an expert sentence clas-
+                sifier.'''
+    user_msg = f'''Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
                 TRAL’ class. Label ‘HAWKISH’ if it is corresponding to tightening of the monetary policy,
                 ‘DOVISH’ if it is corresponding to easing of the monetary policy, or ‘NEUTRAL’ if the
                 stance is neutral. Provide the label in the first line and provide a short explanation in the
-                second line. The sentence: {sentence}'''
+                second line. This is the sentence: {sentence}'''
+    
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
             
     return prompt
 
@@ -34,13 +38,15 @@ def finer_prompt(sentence: str):
 
 
 def fpb_prompt(sentence: str):
-    
-    prompt = f'''Discard all the previous instructions. Behave like you are an expert sentence sentiment
-                classifier. Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
+        
+    system_prompt = f''' Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier  '''
+
+    user_msg = f''' Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
                 class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
                 corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
-                the label in the first line and provide a short explanation in the second line. The sentence:
-                {sentence}'''
+                the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}'''
+    
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
             
     return prompt
 

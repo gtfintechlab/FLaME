@@ -5,8 +5,9 @@ from prompt_generator import *
 
 def generate(task, model, api_key, sentence):
     
+    prompt = ""
     
-    
+   
     together.api_key = api_key
     
     if (task == "numclaim"):
@@ -45,14 +46,14 @@ def generate(task, model, api_key, sentence):
     
 
     output = together.Complete.create(
-        prompt= f"<human>: {prompt} \n<bot>:",
-        model=model,
+        prompt= prompt,
+        model= model,
         max_tokens=256,
         temperature=0.8,
         top_k=60,
         top_p=0.6,
         repetition_penalty=1.1,
-        stop=["<human>", "\n\n"],
+        stop = ["</s>", "[INST]", ".\n\n"],
     )
 
     return output
