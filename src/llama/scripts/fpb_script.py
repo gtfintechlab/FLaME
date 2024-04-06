@@ -18,15 +18,12 @@ start_t = time.time()
 configs = ["sentences_allagree"]
 for config in configs:
     dataset = load_dataset("financial_phrasebank", config , token= "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")
-
     sentences = []
     llm_responses = []
     llm_first_word_responses = []
     actual_labels = []
     complete_responses = []
 
-
-    # 
     for data_point in dataset['train']:
         sentences.append(data_point['sentence'])
         actual_label = data_point['label']
