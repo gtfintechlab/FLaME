@@ -10,14 +10,14 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from datetime import date
 
 model = "meta-llama/Llama-2-7b-chat-hf"
-api_key = "d88605e587297179a8a38ba7769c8cc8ce3a62ba173add159e7155dec7f1d30e"
+api_key = ""
 task = "fpb"
 
 today = date.today()
 start_t = time.time()
 configs = ["sentences_allagree"]
 for config in configs:
-    dataset = load_dataset("financial_phrasebank", config , token= "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")
+    dataset = load_dataset("financial_phrasebank", config , token= "")
     sentences = []
     llm_responses = []
     llm_first_word_responses = []

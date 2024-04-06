@@ -12,9 +12,9 @@ from sklearn.metrics import (
 model = "meta-llama/Llama-2-7b-chat-hf"
 task = "fomc"
 dataset = load_dataset(
-    "gtfintechlab/fomc_communication", token="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"
+    "gtfintechlab/fomc_communication", token=""
 )
-api_key = "d88605e587297179a8a38ba7769c8cc8ce3a62ba173add159e7155dec7f1d30e"
+api_key = ""
 
 # Initialize lists to store actual labels and model responses
 context = []
