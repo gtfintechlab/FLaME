@@ -1,38 +1,53 @@
+from datetime import date
 import pandas as pd 
+
 import time
 from together_pipeline import generate
 from datasets import load_dataset
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
+# use this as reference 
+# goal: run scripts on each model (low priority)
+# get the output working correctly (high priority): default model, llama 
+# move the together_pipeline.py file (not really a pipeline)
 
-model = "meta-llama/Llama-2-7b-hf"
+model = "meta-llama/Llama-2-7b-chat-hf"
+api_key = "d88605e587297179a8a38ba7769c8cc8ce3a62ba173add159e7155dec7f1d30e"
 task = "fpb"
-api_key = ""
 
-
-configs = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
+today = date.today()
+start_t = time.time()
+configs = ["sentences_allagree"]
 for config in configs:
-    dataset = load_dataset("financial_phrasebank", config , token= "")
+    dataset = load_dataset("financial_phrasebank", config , token= "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")
 
-# Initialize lists to store actual labels and model labels
-    sentence = []
+    sentences = []
     llm_responses = []
     actual_labels = []
     complete_responses =[]
 
-    # Iterating through the train split of the dataset
-    for sentence in dataset['train']:
-        sentence.append(sentence['sentence'])
-        actual_label = sentence['label']
+    # 
+    for data_point in dataset['train']:
+        sentences.append(data_point['sentence'])
+        actual_label = data_point['label']
         actual_labels.append(actual_label)
-        model_label = generate(task, model, api_key, sentence['sentence'])
+        success = False
+        while not success:
+            try:
+                model_label = generate(task, model, api_key, data_point['sentence'])
+                success = True
+            except Exception as e:
+                print(e)
+                time.sleep(20.0)  
+
         complete_responses.append(model_label)
         llm_response = model_label["output"]["choices"][0]["text"]
         print(llm_response)
         llm_responses.append(llm_response)
-        df = pd.DataFrame({'sentence': sentence, 'complete_responses': complete_responses, 'llm_responses': llm_responses, 'actual_label': actual_labels})
-        df.to_csv('fpb_llama_2.csv', index=False)
-
+    #time_taken = time() - start_t
+    df = pd.DataFrame({'sentence': sentences, 'complete_responses': complete_responses, 'llm_responses': llm_responses, 'actual_label': actual_labels})
+    df.to_csv(f'fpb_llama_2_7b.csv', index=False)
+    
     # Evaluating metrics for the train split
     accuracy = accuracy_score(actual_labels, llm_responses)
     precision = precision_score(actual_labels, llm_responses)
