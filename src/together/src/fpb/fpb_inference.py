@@ -6,6 +6,8 @@ import time
 from datasets import load_dataset
 from datetime import date
 import nltk
+# from prompt_toolkit import fpb_prompt
+from prompts_and_tokens import tokens, fpb_prompt
 from nltk.tokenize import word_tokenize
 nltk.download('punkt')
 
@@ -33,7 +35,6 @@ def fpb_inference(args):
             actual_label = dataset['train'][i]['label']
             sentences.append(sentence)
             actual_labels.append(actual_label)
-            prompt = fpb_prompt + "\n\n" + sentence
             try:
                 model_response = together.Complete.create(prompt=fpb_prompt(sentence),
                                 model=args.model,
@@ -50,12 +51,12 @@ def fpb_inference(args):
                 llm_first_word_responses.append(words[0])
                 llm_responses.append(response_label)
                 df = pd.DataFrame({'sentences': sentences, 'complete_responses': complete_responses, 'llm_responses': llm_responses, 'llm_first_word_responses': llm_first_word_responses, 'actual_labels': actual_labels})
+                df.to_csv(f"fpb_{today}.csv")
             except Exception as e:
                 print(e)
                 i = i - 1
                 time.sleep(10.0)
-
-        time_taken = time.time() - start_t
+                
     return df
 ####
 
@@ -73,20 +74,14 @@ def fpb_inference(args):
 #     # repetition_penalty=1.1,
 #     stop=["<human>", "\n\n"], # TODO: STOP WORDS SHOULD COME FROM THE MODEL ONLY
 # )
-def fpb_prompt(sentence: str):
-    system_prompt = f''' Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier  '''
+# def fpb_prompt(sentence: str):
+#     system_prompt = f''' Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier  '''
 
-    user_msg = f''' Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
-                class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
-                the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}'''
+#     user_msg = f''' Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
+#                 class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
+#                 corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
+#                 the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}'''
     
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+#     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
     
-    return prompt
-
-def tokens(model_name):
-    if model_name == "meta-llama/Llama-2-7b-chat-hf":
-        stop = ["<human>", "\n\n"]
-        
-    return stop
+#     return prompt

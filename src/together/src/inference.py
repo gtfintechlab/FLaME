@@ -3,6 +3,7 @@ from time import time
 from datetime import date
 import pandas as pd
 import together
+import task_specific_inference
 from fpb.fpb_inference import fpb_inference
 from sklearn.metrics import (
     accuracy_score,
@@ -24,7 +25,7 @@ from sklearn.metrics import (
 #     convfinqa_prompt,
 # )
 
-today = date.today()
+today = date.today() 
 
 # task_prompt_map = {
 #     "numclaim": numclaim_prompt,
@@ -60,10 +61,10 @@ def parse_arguments():
     parser.add_argument("--api_key", type=str, help="API key to use")
     parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
     parser.add_argument("--max_tokens", type=int, help="Max tokens to use, default = 128")
-    parser.add_argument("--temperature", type=int, help="Temperature to use")
-    parser.add_argument('--top_p', type=int, help='Top-p to use, default = 0.7')
+    parser.add_argument("--temperature", type=float, help="Temperature to use")
+    parser.add_argument('--top_p', type=float, help='Top-p to use, default = 0.7')
     parser.add_argument("--top_k", type=int, help="Top-k to use, default = 50")
-    parser.add_argument('--repetition_penalty', type=int, help='Repetition penalty to use, default = 1.1')
+    parser.add_argument('--repetition_penalty', type=float, help='Repetition penalty to use, default = 1.1')
     args = parser.parse_args()
     return args
 
@@ -88,9 +89,9 @@ def evaluate(df):
 def main():
     args = parse_arguments()
     inference_function = task_generation_map[args.task]
-    start_t = time.time()
+    start_t = time()
     df = inference_function(args)
-    time_taken = time.time() - start_t
+    time_taken = time() - start_t
     df.to_csv(
         f'{args.task}_results_{args.model}_{args.task}_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False
     )
