@@ -50,7 +50,7 @@ def fpb_inference(args):
                 words = word_tokenize(response_label.strip())
                 llm_first_word_responses.append(words[0])
                 llm_responses.append(response_label)
-                df = pd.DataFrame({'sentences': sentences, 'complete_responses': complete_responses, 'llm_responses': llm_responses, 'llm_first_word_responses': llm_first_word_responses, 'actual_labels': actual_labels})
+                df = pd.DataFrame({'sentences': sentences, 'llm_responses': llm_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses})
                 df.to_csv(f"fpb_{today}.csv")
             except Exception as e:
                 print(e)
