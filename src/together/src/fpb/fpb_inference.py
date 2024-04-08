@@ -5,11 +5,11 @@ from datasets import load_dataset
 from datetime import date
 from prompts_and_tokens import tokens, fpb_prompt
 
-
+today = date.today()
 
 def fpb_inference(args):
     together.api_key = args.api_key
-    today = date.today()
+    # today = date.today()
     # OPTIONAL TODO: make configs an argument of some kind LOW LOW LOW PRIORITY
     # configs = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
     configs = ["sentences_allagree"]
@@ -42,15 +42,16 @@ def fpb_inference(args):
                     success = True
                 except Exception as e:
                     print(e)
-                    time.sleep(20.0)
+                    time.sleep(10.0)
 
                 complete_responses.append(model_response)
                 response_label = model_response["output"]["choices"][0]["text"]
                 print(response_label)
                 llm_responses.append(response_label)
-        
-        df = pd.DataFrame({'sentences': sentences, 'llm_responses': llm_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses})
-                
+                df = pd.DataFrame({'sentences': sentences, 'llm_responses': llm_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses})
+                df.to_csv('/Users/hp/Desktop/FinGT_repo/FinGT/src/together/src/fpb_2024-04-08.csv')
+                time.sleep(10.0)
+            
     return df
 ####
 

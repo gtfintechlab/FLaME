@@ -35,6 +35,7 @@ def numclaim_inference(args):
     # Iterating through the train split of the dataset
     start_t = time.time()
     for i in range(len(dataset['test'])):
+        time.sleep(5.0)
         sentence = dataset['test'][i]['context']
         actual_label = dataset['test'][i]['response']
         sentences.append(sentence)
