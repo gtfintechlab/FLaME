@@ -1,15 +1,10 @@
 import together
-# from utils.prompt_generator import fpb_prompt
 import pandas as pd
 import time
-# from together_pipeline import generate
 from datasets import load_dataset
 from datetime import date
-import nltk
-# from prompt_toolkit import fpb_prompt
 from prompts_and_tokens import tokens, fpb_prompt
-from nltk.tokenize import word_tokenize
-nltk.download('punkt')
+
 
 
 def fpb_inference(args):
@@ -24,19 +19,18 @@ def fpb_inference(args):
         # Initialize lists to store actual labels and model responses
         sentences = []
         llm_responses = []
-        llm_first_word_responses = []
         actual_labels = []
         complete_responses = []
 
         # Iterating through the train split of the dataset
-        start_t = time.time()
-        for i in range(len(dataset['train'])):
-            sentence = dataset['train'][i]['sentence']
-            actual_label = dataset['train'][i]['label']
-            sentences.append(sentence)
+        for data_point in dataset['train']:
+            sentences.append(data_point['sentence'])
+            actual_label = data_point['label']
             actual_labels.append(actual_label)
-            try:
-                model_response = together.Complete.create(prompt=fpb_prompt(sentence),
+            success = False
+            while not success:
+                try:
+                    model_response = together.Complete.create(prompt=fpb_prompt(data_point['sentence']),
                                 model=args.model,
                                 max_tokens=args.max_tokens,
                                 temperature=args.temperature,
@@ -45,17 +39,17 @@ def fpb_inference(args):
                                 repetition_penalty=args.repetition_penalty,
                                 stop=tokens(args.model)
                                 )
+                    success = True
+                except Exception as e:
+                    print(e)
+                    time.sleep(20.0)
+
                 complete_responses.append(model_response)
                 response_label = model_response["output"]["choices"][0]["text"]
-                words = word_tokenize(response_label.strip())
-                llm_first_word_responses.append(words[0])
+                print(response_label)
                 llm_responses.append(response_label)
-                df = pd.DataFrame({'sentences': sentences, 'llm_responses': llm_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses})
-                df.to_csv(f"fpb_{today}.csv")
-            except Exception as e:
-                print(e)
-                i = i - 1
-                time.sleep(10.0)
+        
+        df = pd.DataFrame({'sentences': sentences, 'llm_responses': llm_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses})
                 
     return df
 ####

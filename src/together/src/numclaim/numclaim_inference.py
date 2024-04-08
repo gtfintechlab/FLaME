@@ -58,7 +58,7 @@ def numclaim_inference(args):
         except Exception as e:
             print(e)
             i = i - 1
-            time.sleep(10.0)
+            time.sleep(20.0)
             
     return df
 

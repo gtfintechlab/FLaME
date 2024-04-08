@@ -1,15 +1,9 @@
 import together
-# from utils.prompt_generator import fpb_prompt
 import pandas as pd
 import time
-from prompts_and_tokens import convfinqa_prompt, tokens
-# from together_pipeline import generate
 from datasets import load_dataset
 from datetime import date
-import nltk
-from nltk.tokenize import word_tokenize
-nltk.download('punkt')
-
+from prompts_and_tokens import tokens, convfinqa_prompt
 
 def finqa_inference(args):
     together.api_key = args.api_key

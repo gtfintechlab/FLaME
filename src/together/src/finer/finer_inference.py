@@ -52,13 +52,12 @@ def finer_inference(args):
             complete_responses.append(model_response)
             response_label = model_response["output"]["choices"][0]["text"]
             words = word_tokenize(response_label.strip())
-            llm_first_word_responses.append(words[0])
             llm_responses.append(response_label)
-            df = pd.DataFrame({'sentences': sentences, 'llm_responses': llm_responses, 'llm_first_word_responses': llm_first_word_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses})
+            df = pd.DataFrame({'sentences': sentences, 'llm_responses': llm_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses})
         except Exception as e:
             print(e)
             i = i - 1
-            time.sleep(10.0)
+            time.sleep(20.0)
             
     return df
 

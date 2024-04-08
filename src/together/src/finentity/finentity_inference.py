@@ -1,14 +1,9 @@
 import together
-# from utils.prompt_generator import fpb_prompt
 import pandas as pd
 import time
-from prompts_and_tokens import finentity_prompt, tokens
-# from together_pipeline import generate
 from datasets import load_dataset
 from datetime import date
-import nltk
-from nltk.tokenize import word_tokenize
-nltk.download('punkt')
+from prompts_and_tokens import tokens, finentity_prompt
 
 
 def finentity_inference(args):
@@ -47,10 +42,10 @@ def finentity_inference(args):
                             )
             complete_responses.append(model_response)
             response_label = model_response["output"]["choices"][0]["text"]
-            words = word_tokenize(response_label.strip())
-            llm_first_word_responses.append(words[0])
             llm_responses.append(response_label)
-            df = pd.DataFrame({'sentences': sentences, 'llm_responses': llm_responses, 'llm_first_word_responses': llm_first_word_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses})
+            df = pd.DataFrame(
+                {'sentences': sentences, 'llm_responses': llm_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses}
+                )
         except Exception as e:
             print(e)
             i = i - 1
