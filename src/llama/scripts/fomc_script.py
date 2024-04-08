@@ -16,7 +16,7 @@ dataset = load_dataset(
 )
 api_key = ""
 
-# Initializing lists to store actual labels and model responses
+# Initialize lists to store actual labels and model responses
 context = []
 llm_responses = []
 llm_first_word_responses = []
