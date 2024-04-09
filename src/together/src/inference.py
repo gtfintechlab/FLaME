@@ -99,9 +99,9 @@ def main():
         start_t = time()
         df = inference_function(args)
         time_taken = time() - start_t
-        df.to_csv(
-            f'../{task}/results/{args.model}/{task}_{args.model}_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False
-        )
+        # df.to_csv(
+        #    f'../{task}/results/{args.model}/{task}_{args.model}_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False
+       # )
         
     else:
         print(f"Task '{task}' not found in the task generation map.")
