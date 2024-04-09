@@ -89,24 +89,43 @@ def evaluate(df):
 
     return metrics
 
-
 def main():
     args = parse_arguments()
-    inference_function = task_generation_map[args.task]
-    start_t = time()
-    df = inference_function(args)
-    time_taken = time() - start_t
-    df.to_csv(
-        f'../{args.task}/results/{args.model}/{args.task}_{args.model}_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False
-    )
-    # TODO: CALCULATE METRICS USING DF
-    # model, task = args.model, args.task
+    # Trim and remove potential unexpected quotation marks from the task argument
+    task = args.task.strip('“”"')
     
-    # df_metrics = evaluate(df)
-    #  df.to_csv(
-    #      f'../{args.task}/results/{args.model}/metrics_{args.task}_{args.model}_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False
-    #)
-
+    if task in task_generation_map:
+        inference_function = task_generation_map[task]
+        start_t = time()
+        df = inference_function(args)
+        time_taken = time() - start_t
+        df.to_csv(
+            f'../{task}/results/{args.model}/{task}_{args.model}_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False
+        )
+        
+    else:
+        print(f"Task '{task}' not found in the task generation map.")
 
 if __name__ == "__main__":
     main()
+
+# def main():
+#     args = parse_arguments()
+#     inference_function = task_generation_map[args.task]
+#     start_t = time()
+#     df = inference_function(args)
+#     time_taken = time() - start_t
+#     df.to_csv(
+#         f'../{args.task}/results/{args.model}/{args.task}_{args.model}_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False
+#     )
+#     # TODO: CALCULATE METRICS USING DF
+#     # model, task = args.model, args.task
+    
+#     # df_metrics = evaluate(df)
+#     #  df.to_csv(
+#     #      f'../{args.task}/results/{args.model}/metrics_{args.task}_{args.model}_{today.strftime("%d_%m_%Y")}_{time_taken}.csv', index=False
+#     #)
+
+
+# if __name__ == "__main__":
+#     main()
