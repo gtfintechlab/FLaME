@@ -4,7 +4,11 @@ from datetime import date
 import pandas as pd
 import together
 import task_specific_inference
-from fpb.fpb_inference import fpb_inference
+# from fpb.fpb_inference import fpb_inference
+# from finentity.finentity_inference import finentity_inference
+
+from numclaim.numclaim_inference import numclaim_inference
+
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -40,8 +44,8 @@ today = date.today()
 # }
 
 task_generation_map = {
-    "fpb": fpb_inference
-    # "numclaim": numclaim_inference,
+    # "fpb": fpb_inference
+    "numclaim": numclaim_inference,
     # "fomc": fomc_inference,
     # "finer": finer_inference,
     # "finentity": finentity_inference,
