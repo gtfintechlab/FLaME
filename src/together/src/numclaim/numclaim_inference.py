@@ -58,14 +58,18 @@ def numclaim_inference(args):
             print(response_label)
             time.sleep(10)
             
-            df = pd.DataFrame({'sentences': sentences, 'complete_responses': complete_responses, 'llm_responses': llm_responses, 'llm_first_word_responses': llm_first_word_responses, 'actual_labels': actual_labels})
-            df.to_csv('numclaim_llama_7b.csv')
+            
 
         except Exception as e:
             print(e)
             i = i - 1
-            time.sleep(20.0)
-            
+            time.sleep(10.0)
+            complete_responses.append(None)  
+            llm_responses.append(None)
+            llm_first_word_responses.append(None)
+
+    df = pd.DataFrame({'sentences': sentences, 'complete_responses': complete_responses, 'llm_responses': llm_responses, 'llm_first_word_responses': llm_first_word_responses, 'actual_labels': actual_labels})
+    df.to_csv('numclaim_llama_7b.csv')   
     return df
 
 
