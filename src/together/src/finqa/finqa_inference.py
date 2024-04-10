@@ -49,6 +49,7 @@ def finqa_inference(args):
             "actual_label": actual_labels,
             'complete_responses': complete_responses
             })
+            time.sleep(10)
 
         except Exception as e:
             print(e)
