@@ -5,9 +5,10 @@ import pandas as pd
 from time import time
 from datetime import date
 from tasks_inferences import fpb_inference, fomc_inference, numclaim_inference
+from numclaim.numclaim_inference import numclaim_inference
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-from task_specific_inference import numclaim_inference
+# from task_specific_inference import numclaim_inference
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run a LLM on TogetherAI over the SuperFLUE dataset")
@@ -49,7 +50,8 @@ def main():
 
     task_label_mapping = {
         'fpb': {'POSITIVE': 2, 'NEGATIVE': 0, 'NEUTRAL': 1, 'None': np.nan},
-        'fomc': {'DOVISH': 0, 'HAWKISH': 1, 'NEUTRAL': 2, 'None': np.nan}
+        'fomc': {'DOVISH': 0, 'HAWKISH': 1, 'NEUTRAL': 2, 'None': np.nan},
+        'numclaim': {'OUTOFCLAIM': 0, 'INCLAIM': 1, 'None': np.nan}
     }
     
     task_regex = {
@@ -61,7 +63,7 @@ def main():
     task_inference_map = {
         'numclaim': numclaim_inference,
         'fpb': fpb_inference,
-        'fomc': fomc_inference,
+        'fomc': fomc_inference
     }
 
     if task in task_inference_map:
