@@ -41,14 +41,53 @@ def finer_prompt(sentence: str):
     return prompt
 
 
-def fpb_prompt(sentence: str):
-        
-    system_prompt = f''' Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier  '''
+def fpb_prompt(sentence: str, prompt_format: str):
+    if prompt_format == 'superflue':
+        system_prompt = f''' Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier'''
 
-    user_msg = f''' Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
-                class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
-                the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}'''
+        user_msg = f''' Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
+                    class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
+                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
+                    the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}'''
+                    
+    elif prompt_format == 'finben_icl':  
+        system_prompt = f''''''
+        user_msg = f''' Analyze the sentiment of this statement extracted from a financial news article.
+                        Provide your answer as either NEGATIVE, POSITIVE or NEUTRAL.
+                        For instance, ’The company’s stocks plummeted following the scandal.’ would be classified as negative. This is the sentence: {sentence}'''
+                        
+    elif prompt_format == 'finben_noicl':   
+        system_prompt = f''''''
+        user_msg = f''' Analyze the sentiment of this statement extracted from a financial news article.
+                        Provide your answer as either NEGATIVE, POSITIVE or NEUTRAL.
+                        This is the sentence: {sentence}'''
+                        
+                        
+    elif prompt_format == 'superflue_icl':
+        system_prompt = f'''Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier '''
+        user_msg = f''' Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
+                        class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
+                        corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
+                        the label in the first line and provide a short explanation in the second line.
+                        For instance: 
+                        "According to Gran , the company has no plans to move all production to Russia , although that is where the company is growing" would be classified as 'NEUTRAL.
+                        "When this investment is in place , Atria plans to expand into the Moscow market" would be classified as 'NEUTRAL'.
+                        "With the new production plant the company would increase its capacity to meet the expected increase in demand and would improve the use of raw materials and therefore increase the production profitability" would be classified as 'POSITIVE'.
+                        "For the last quarter of 2010 , Componenta's net sales doubled to EUR131m from EUR76m for the same period a year earlier , while it moved to a zero pre-tax profit from a pre-tax loss of EUR7m" would be classified as 'POSITIVE'.
+                        "Aspocomp has a large factory in China and a factory building project in India that was halted due to financing problems" would be classified as 'NEGATIVE'.
+                        "The low capacity utilisation rate in steel production considerably increases the fixed costs per unit of steel produced" would be classified as 'NEGATIVE'.
+                        This is the sentence: {sentence}'''
+
+    elif prompt_format == 'superflue_cot': # TODO modify this prompt text   
+        system_prompt = f'''Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier '''
+        user_msg = f''' Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
+                        class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
+                        corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Let's think about this sentiment classification task step by step.
+                        First, generate your reasoning steps for the classification. After your reasoning, end the response with the label that fits your reasoning.
+                        This is the sentence: {sentence}'''                        
+                        
+                        
+                        
     
     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
             

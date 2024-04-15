@@ -4,8 +4,9 @@ import numpy as np
 import pandas as pd
 from time import time
 from datetime import date
-from tasks_inferences import fpb_inference, fomc_inference, numclaim_inference
-from numclaim.numclaim_inference import numclaim_inference
+# from tasks_inferences import fpb_inference, fomc_inference, numclaim_inference
+# from numclaim.numclaim_inference import numclaim_inference
+from fpb.fpb_inference import fpb_inference
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 # from task_specific_inference import numclaim_inference
@@ -21,6 +22,7 @@ def parse_arguments():
     parser.add_argument("--top_p", type=float, default=0.7, help="Top-p to use")
     parser.add_argument("--top_k", type=int, default=50, help="Top-k to use")
     parser.add_argument("--repetition_penalty", type=float, default=1.1, help="Repetition penalty to use")
+    parser.add_argument("--prompt_format", type=str, default='superflue', help="Version of the prompt to use")
     return parser.parse_args()
 
 def extract_label(text, label_regex):
@@ -61,9 +63,9 @@ def main():
     }
 
     task_inference_map = {
-        'numclaim': numclaim_inference,
-        'fpb': fpb_inference,
-        'fomc': fomc_inference
+        # 'numclaim': numclaim_inference,
+        'fpb': fpb_inference
+        # 'fomc': fomc_inference
     }
 
     if task in task_inference_map:

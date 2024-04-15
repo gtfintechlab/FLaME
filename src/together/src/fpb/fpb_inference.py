@@ -30,7 +30,7 @@ def fpb_inference(args):
             success = False
             while not success:
                 try:
-                    model_response = together.Complete.create(prompt=fpb_prompt(data_point['sentence']),
+                    model_response = together.Complete.create(prompt=fpb_prompt(sentence=data_point['sentence'], prompt_format=args.prompt_format),
                                 model=args.model,
                                 max_tokens=args.max_tokens,
                                 temperature=args.temperature,
