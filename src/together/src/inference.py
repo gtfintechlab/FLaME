@@ -22,7 +22,7 @@ def parse_arguments():
     parser.add_argument("--top_p", type=float, default=0.7, help="Top-p to use")
     parser.add_argument("--top_k", type=int, default=50, help="Top-k to use")
     parser.add_argument("--repetition_penalty", type=float, default=1.1, help="Repetition penalty to use")
-    parser.add_argument("--prompt_format", type=str, default='superflue', help="Version of the prompt to use")
+    parser.add_argument("--prompt_format", type=str, default="superflue", help="Version of the prompt to use")
     return parser.parse_args()
 
 def extract_label(text, label_regex):

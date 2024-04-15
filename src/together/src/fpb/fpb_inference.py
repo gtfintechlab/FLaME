@@ -53,7 +53,11 @@ def fpb_inference(args):
                 print(response_label)
                 llm_responses.append(response_label)
                 df = pd.DataFrame({'sentences': sentences, 'llm_responses': llm_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses})
+<<<<<<< HEAD
                 df.to_csv('../fpb_llama_34_2024-04-15.csv')
+=======
+                df.to_csv('../fpb_llama_34_2024-04-08.csv')
+>>>>>>> 0ee8dca (modifs)
                 time.sleep(10.0)
             
     return df
