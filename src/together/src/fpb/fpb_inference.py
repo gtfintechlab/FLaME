@@ -45,11 +45,15 @@ def fpb_inference(args):
                     time.sleep(10.0)
 
                 complete_responses.append(model_response)
-                response_label = model_response["output"]["choices"][0]["text"]
+                # response_label = model_response["output"]["choices"][0]["text"]
+                if 'output' in model_response and 'choices' in model_response['output']:
+                    response_label = model_response["output"]["choices"][0]["text"]
+                else:
+                    response_label = "default_value"
                 print(response_label)
                 llm_responses.append(response_label)
                 df = pd.DataFrame({'sentences': sentences, 'llm_responses': llm_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses})
-                df.to_csv('/Users/hp/Desktop/FinGT_repo/FinGT/src/together/src/fpb_llama_34_2024-04-08.csv')
+                df.to_csv('../fpb_llama_34_2024-04-15.csv')
                 time.sleep(10.0)
             
     return df
