@@ -57,9 +57,9 @@ def main():
     }
     
     task_regex = {
-        'fpb': r'Label: (POSITIVE|NEGATIVE|NEUTRAL)',
-        'fomc': r'Label: (DOVISH|HAWKISH|NEUTRAL)',
-        'numclaim': r'Label: (OUTOFCLAIM|INCLAIM)'
+        'fpb': r'Label: (?i)(POSITIVE|NEGATIVE|NEUTRAL)',
+        'fomc': r'Label: (?i)(DOVISH|HAWKISH|NEUTRAL)',
+        'numclaim': r'Label: (?i)(OUTOFCLAIM|INCLAIM)'
     }
 
     task_inference_map = {
