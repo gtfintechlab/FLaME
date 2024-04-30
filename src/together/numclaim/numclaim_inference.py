@@ -5,6 +5,7 @@ import time
 # from together_pipeline import generate
 from datasets import load_dataset
 from datetime import date
+from FinGT import ROOT_DIR
 import nltk
 from prompts_and_tokens import tokens, numclaim_prompt
 from nltk.tokenize import word_tokenize
@@ -68,8 +69,10 @@ def numclaim_inference(args):
             llm_responses.append(None)
             llm_first_word_responses.append(None)
 
-    df = pd.DataFrame({'sentences': sentences, 'complete_responses': complete_responses, 'llm_responses': llm_responses, 'llm_first_word_responses': llm_first_word_responses, 'actual_labels': actual_labels})
-    df.to_csv('numclaim_llama_7b.csv')   
+        df = pd.DataFrame({'sentences': sentences, 'complete_responses': complete_responses, 'llm_responses': llm_responses, 'llm_first_word_responses': llm_first_word_responses, 'actual_labels': actual_labels})
+        results_path = ROOT_DIR / 'results' / args.task / args.model / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        results_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(results_path, index=False) 
     return df
 
 
