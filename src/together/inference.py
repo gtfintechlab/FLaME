@@ -1,6 +1,7 @@
 import argparse
 import re
 import numpy as np
+from FinGT import ROOT_DIR
 import pandas as pd
 from time import time
 from datetime import date
@@ -75,8 +76,10 @@ def main():
         inference_function = task_inference_map[task]
         df = inference_function(args)
         time_taken = time() - start_t
-        df.to_csv(f'../{task}/results/{args.model}/{task}_{args.model}_{date.today().strftime("%d_%m_%Y")}_{time_taken}.csv', index=False)
-        
+        print(time_taken)
+        results_path = ROOT_DIR / 'results' / task / args.model / f"{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        results_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(results_path, index=False)
         metrics = evaluate(df, 'response', task_regex[task], task_label_mapping[task])
         print(metrics)
 
