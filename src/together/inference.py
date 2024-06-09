@@ -1,11 +1,11 @@
 import argparse
 import re
 import numpy as np
-from FinGT import ROOT_DIR
 import pandas as pd
 from time import time
 from datetime import date
 from pathlib import Path
+from src import ROOT_DIR
 # from tasks_inferences import fpb_inference, fomc_inference, numclaim_inference
 from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
@@ -62,6 +62,7 @@ def main():
         'fpb': r'Label: (?i)(POSITIVE|NEGATIVE|NEUTRAL)',
         'fomc': r'Label: (?i)(DOVISH|HAWKISH|NEUTRAL)',
         'numclaim': r'Label: (?i)(OUTOFCLAIM|INCLAIM)'
+        #Add more tasks over here
     }
 
     task_inference_map = {
