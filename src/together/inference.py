@@ -9,6 +9,7 @@ from src import ROOT_DIR
 # from tasks_inferences import fpb_inference, fomc_inference, numclaim_inference
 from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
+from fomc.fomc_inference import fomc_inference
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 # from task_specific_inference import numclaim_inference
@@ -67,8 +68,8 @@ def main():
 
     task_inference_map = {
         'numclaim': numclaim_inference,
-        'fpb': fpb_inference
-        # 'fomc': fomc_inference
+        'fpb': fpb_inference,
+        'fomc': fomc_inference
     }
 
     if task in task_inference_map:
