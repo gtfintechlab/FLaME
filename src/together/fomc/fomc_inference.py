@@ -4,7 +4,7 @@ import time
 from datasets import load_dataset
 from datetime import date
 from prompts_and_tokens import tokens, fomc_prompt
-from FinGT import ROOT_DIR
+from src import ROOT_DIR
 
 
 def fomc_inference(args):
@@ -46,7 +46,7 @@ def fomc_inference(args):
             i = i - 1
             time.sleep(20.0)
             
-        results_path = ROOT_DIR / 'results' / args.task / args.model / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        results_path = ROOT_DIR / 'results' / args.task / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False) 
         
