@@ -27,26 +27,26 @@ def parse_arguments():
     parser.add_argument("--prompt_format", type=str, default="superflue", help="Version of the prompt to use")
     return parser.parse_args()
 
-def extract_label(text, label_regex):
-    match = re.search(label_regex, text)
-    return match.group(1) if match else 'None'
+# def extract_label(text, label_regex):
+#     match = re.search(label_regex, text)
+#     return match.group(1) if match else 'None'
 
-def evaluate(file, response_column, label_regex, label_mapping):
-    data = pd.read_csv(file, index_col=0)
-    data['extracted_label'] = data[response_column].apply(lambda x: extract_label(x, label_regex))
-    data['extracted_label_numeric'] = data['extracted_label'].map(label_mapping)
-    data = data.dropna(subset=['extracted_label_numeric'])
+# def evaluate(file, response_column, label_regex, label_mapping):
+#     data = pd.read_csv(file, index_col=0)
+#     data['extracted_label'] = data[response_column].apply(lambda x: extract_label(x, label_regex))
+#     data['extracted_label_numeric'] = data['extracted_label'].map(label_mapping)
+#     data = data.dropna(subset=['extracted_label_numeric'])
 
-    metrics = {
-        'accuracy': accuracy_score(data['actual_label'], data['extracted_label_numeric']),
-        'precision': precision_score(data['actual_label'], data['extracted_label_numeric'], average='micro'),
-        'recall': recall_score(data['actual_label'], data['extracted_label_numeric'], average='micro'),
-        'f1_score': f1_score(data['actual_label'], data['extracted_label_numeric'], average='micro')
-    }
+#     metrics = {
+#         'accuracy': accuracy_score(data['actual_label'], data['extracted_label_numeric']),
+#         'precision': precision_score(data['actual_label'], data['extracted_label_numeric'], average='micro'),
+#         'recall': recall_score(data['actual_label'], data['extracted_label_numeric'], average='micro'),
+#         'f1_score': f1_score(data['actual_label'], data['extracted_label_numeric'], average='micro')
+#     }
 
-    output_file_path = file.replace('.csv', '_metrics.csv')
-    pd.DataFrame([metrics]).to_csv(output_file_path, index=False)
-    return metrics
+#     output_file_path = file.replace('.csv', '_metrics.csv')
+#     pd.DataFrame([metrics]).to_csv(output_file_path, index=False)
+#     return metrics
 
 def main():
     args = parse_arguments()
@@ -77,11 +77,11 @@ def main():
         df = inference_function(args)
         time_taken = time() - start_t
         print(time_taken)
-        results_path = ROOT_DIR / 'results' / task / args.model / f"{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        results_path = ROOT_DIR / 'results' / task  / f"{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
-        metrics = evaluate(df, 'response', task_regex[task], task_label_mapping[task])
-        print(metrics)
+        # metrics = evaluate(df, 'response', task_regex[task], task_label_mapping[task])
+        # print(metrics)
 
     else:
         print(f"Task '{task}' not found in the task generation map.")
