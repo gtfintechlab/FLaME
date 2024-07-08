@@ -28,11 +28,11 @@ def finer_prompt(sentence: str):
                     identifier. '''
     user_msg = f'''Below a sentence is tokenized and each line contains a word token from the
                     sentence. Identify ‘Person’, ‘Location’, and ‘Organisation’ from them and label them. If the
-                    entity is multi token use post-fix B for the first label and I for the remaining token labels
-                    for that particular entity. The start of the separate entity should always use B post-fix for
+                    entity is multi token use post-fix_B for the first label and _I for the remaining token labels
+                    for that particular entity. The start of the separate entity should always use _B post-fix for
                     the label. If the token doesn’t fit in any of those three categories or is not a named entity
                     label it ‘Other’. Do not combine words yourself. Use a colon to separate token and label.
-                    So the format should be token:label. \n\n {{word tokens separated by \n/}}. '''
+                    So the format should be token:label. \n\n + {sentence} '''
     
     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
