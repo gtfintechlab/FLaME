@@ -2,10 +2,17 @@ import together
 import pandas as pd
 import time
 from datasets import load_dataset
-from FinGT import ROOT_DIR
+# from FinGT import ROOT_DIR
 from datetime import date
 from prompts_and_tokens import tokens, fpb_prompt
+from pathlib import Path
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 today = date.today()
 
 def fpb_inference(args):
@@ -42,25 +49,34 @@ def fpb_inference(args):
                                 )
                     success = True
                 except Exception as e:
-                    print(e)
+                    # print(e)
+                    logger.error(e)
                     time.sleep(10.0)
 
                 complete_responses.append(model_response)
                 # response_label = model_response["output"]["choices"][0]["text"]
                 if 'output' in model_response and 'choices' in model_response['output']:
                     response_label = model_response["output"]["choices"][0]["text"]
+                    logger.info(response_label)
                 else:
                     response_label = "default_value"
-                print(response_label)
+                # print(response_label)
                 llm_responses.append(response_label)
                 df = pd.DataFrame({'sentences': sentences, 'llm_responses': llm_responses, 'actual_labels': actual_labels, 'complete_responses': complete_responses})
-                results_path = ROOT_DIR / 'results' / args.task / args.model / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+                results_path = ROOT_DIR / 'results' / args.task / f"{args.task}_{get_model_name(args.model)}_{date.today().strftime('%d_%m_%Y')}.csv"
                 results_path.parent.mkdir(parents=True, exist_ok=True)
                 df.to_csv(results_path, index=False)
                 time.sleep(10.0)
             
     return df
 ####
+
+def get_model_name(model):
+    model_dict = {
+        "meta-llama/Llama-3-70b-chat-hf": "Llama-3-70b",
+    }
+    
+    return model_dict[model]
 
 
 # output = together.Complete.create(

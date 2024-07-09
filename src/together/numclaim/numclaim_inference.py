@@ -5,7 +5,9 @@ import time
 # from together_pipeline import generate
 from datasets import load_dataset
 from datetime import date
-from FinGT import ROOT_DIR
+# from FinGT import ROOT_DIR
+from pathlib import Path
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 import nltk
 from prompts_and_tokens import tokens, numclaim_prompt
 from nltk.tokenize import word_tokenize
@@ -70,9 +72,16 @@ def numclaim_inference(args):
             llm_first_word_responses.append(None)
 
         df = pd.DataFrame({'sentences': sentences, 'complete_responses': complete_responses, 'llm_responses': llm_responses, 'llm_first_word_responses': llm_first_word_responses, 'actual_labels': actual_labels})
-        results_path = ROOT_DIR / 'results' / args.task / args.model / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        results_path = ROOT_DIR / 'results' / args.task / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False) 
     return df
 
+
+def get_model_name(model):
+    model_dict = {
+        "meta-llama/Llama-3-70b-chat-hf": "Llama-3-70b",
+    }
+    
+    return model_dict[model]
 
