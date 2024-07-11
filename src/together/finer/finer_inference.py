@@ -3,13 +3,9 @@ import pandas as pd
 import time
 from datasets import load_dataset
 from datetime import date
-import nltk
 from prompts_and_tokens import finer_prompt, tokens
 from pathlib import Path
 import logging
-
-# Ensure the NLTK data is downloaded
-nltk.download('punkt')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
