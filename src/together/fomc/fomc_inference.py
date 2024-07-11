@@ -26,7 +26,7 @@ def fomc_inference(args):
     actual_labels = []
     complete_responses = []
 
-    logger.info("Starting inference on dataset...")
+    logger.info(f"Starting inference on dataset: {args.task}...")
     start_t = time.time()
 
     # Iterating through the test split of the dataset
