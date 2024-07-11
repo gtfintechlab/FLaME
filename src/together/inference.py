@@ -9,7 +9,10 @@ from pathlib import Path
 # from tasks_inferences import fpb_inference, fomc_inference, numclaim_inference
 from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
-# from fomc.fomc_inference import fomc_inference
+from fomc.fomc_inference import fomc_inference
+from finbench.finbench_inference import finbench_inference
+from finer.finer_inference import finer_inference
+from finentity.finentity_inference import finentity_inference
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 # from task_specific_inference import numclaim_inference
@@ -53,23 +56,26 @@ def main():
     args = parse_arguments()
     task = args.task.strip('“”"')
 
-    task_label_mapping = {
-        'fpb': {'POSITIVE': 2, 'NEGATIVE': 0, 'NEUTRAL': 1, 'None': np.nan},
-        'fomc': {'DOVISH': 0, 'HAWKISH': 1, 'NEUTRAL': 2, 'None': np.nan},
-        'numclaim': {'OUTOFCLAIM': 0, 'INCLAIM': 1, 'None': np.nan}
-    }
+    # task_label_mapping = {
+    #     'fpb': {'POSITIVE': 2, 'NEGATIVE': 0, 'NEUTRAL': 1, 'None': np.nan},
+    #     'fomc': {'DOVISH': 0, 'HAWKISH': 1, 'NEUTRAL': 2, 'None': np.nan},
+    #     'numclaim': {'OUTOFCLAIM': 0, 'INCLAIM': 1, 'None': np.nan}
+    # }
     
-    task_regex = {
-        'fpb': r'Label: (?i)(POSITIVE|NEGATIVE|NEUTRAL)',
-        'fomc': r'Label: (?i)(DOVISH|HAWKISH|NEUTRAL)',
-        'numclaim': r'Label: (?i)(OUTOFCLAIM|INCLAIM)'
-        #Add more tasks over here
-    }
+    # task_regex = {
+    #     'fpb': r'Label: (?i)(POSITIVE|NEGATIVE|NEUTRAL)',
+    #     'fomc': r'Label: (?i)(DOVISH|HAWKISH|NEUTRAL)',
+    #     'numclaim': r'Label: (?i)(OUTOFCLAIM|INCLAIM)'
+    #     #Add more tasks over here
+    # }
 
     task_inference_map = {
         'numclaim': numclaim_inference,
         'fpb': fpb_inference,
-        # 'fomc': fomc_inference
+        'fomc': fomc_inference,
+        'finbench': finbench_inference,
+        'finer': finer_inference,
+        'finentity': finentity_inference
     }
 
     if task in task_inference_map:
