@@ -6,6 +6,7 @@ from datetime import date
 from prompts_and_tokens import finer_prompt, tokens
 from pathlib import Path
 import logging
+from src.together.models import get_model_name
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -68,10 +69,3 @@ def finer_inference(args):
     logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df
-
-def get_model_name(model):
-    model_dict = {
-        "meta-llama/Llama-3-70b-chat-hf": "Llama-3-70b",
-    }
-    
-    return model_dict.get(model, model)

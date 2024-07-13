@@ -6,6 +6,7 @@ from datetime import date
 from pathlib import Path
 import logging
 from prompts_and_tokens import tokens, finer_prompt
+from src.together.models import get_model_name
 
 # Ensure the NLTK data is downloaded
 import nltk
@@ -72,10 +73,3 @@ def finentity_inference(args):
     logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df
-
-def get_model_name(model):
-    model_dict = {
-        "meta-llama/Llama-3-70b-chat-hf": "Llama-3-70b",
-    }
-    
-    return model_dict.get(model, model)

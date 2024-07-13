@@ -6,6 +6,7 @@ from datetime import date
 from pathlib import Path
 from prompts_and_tokens import tokens, numclaim_prompt
 from nltk.tokenize import word_tokenize
+from src.together.models import get_model_name
 import nltk
 import logging
 nltk.download('punkt')
@@ -80,10 +81,3 @@ def numclaim_inference(args):
 
     logger.info(f"Inference completed. Final results saved to {results_path}")
     return df
-
-def get_model_name(model):
-    model_dict = {
-        "meta-llama/Llama-3-70b-chat-hf": "Llama-3-70b",
-    }
-    
-    return model_dict.get(model, model)
