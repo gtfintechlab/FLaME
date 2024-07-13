@@ -3,11 +3,13 @@ import pandas as pd
 import time
 from datasets import load_dataset
 from datetime import date
-from prompts_and_tokens import tokens, fpb_prompt
+from src.together.prompts import fpb_prompt
 from pathlib import Path
 from src.together.models import get_model_name
 
 import logging
+
+from src.together.tokens import tokens
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

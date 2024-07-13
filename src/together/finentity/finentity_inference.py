@@ -5,11 +5,12 @@ from datasets import load_dataset
 from datetime import date
 from pathlib import Path
 import logging
-from prompts_and_tokens import tokens, finer_prompt
+from src.together.prompts import finer_prompt
 from src.together.models import get_model_name
 
 # Ensure the NLTK data is downloaded
 import nltk
+from src.together.tokens import tokens
 nltk.download('punkt')
 
 # Configure logging

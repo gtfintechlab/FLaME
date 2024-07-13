@@ -3,10 +3,11 @@ import pandas as pd
 import time
 from datasets import load_dataset
 from datetime import date
-from prompts_and_tokens import finer_prompt, tokens
+from src.together.prompts import finer_prompt
 from pathlib import Path
 import logging
 from src.together.models import get_model_name
+from src.together.tokens import tokens
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

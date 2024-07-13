@@ -4,11 +4,13 @@ import time
 from datasets import load_dataset
 from datetime import date
 from pathlib import Path
-from prompts_and_tokens import tokens, numclaim_prompt
+from src.together.prompts import numclaim_prompt
 from nltk.tokenize import word_tokenize
 from src.together.models import get_model_name
 import nltk
 import logging
+
+from src.together.tokens import tokens
 nltk.download('punkt')
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent

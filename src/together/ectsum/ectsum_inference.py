@@ -3,7 +3,8 @@ import pandas as pd
 import time
 from datasets import load_dataset
 from datetime import date
-from prompts_and_tokens import tokens, ectsum_prompt
+from src.together.prompts import ectsum_prompt
+from src.together.tokens import tokens
 
 
 def ectsum_inference(args):

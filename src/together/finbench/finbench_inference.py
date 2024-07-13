@@ -1,11 +1,13 @@
 import together
 import pandas as pd
 import time
-from prompts_and_tokens import tokens, finbench_prompt
+from src.together.prompts import finbench_prompt
 from datasets import load_dataset
 from datetime import date
 from pathlib import Path
 import logging
+
+from src.together.tokens import tokens
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 logging.basicConfig(level=logging.INFO)
