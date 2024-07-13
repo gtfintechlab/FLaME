@@ -12,6 +12,24 @@ from finbench.finbench_inference import finbench_inference
 from finer.finer_inference import finer_inference
 from finentity.finentity_inference import finentity_inference
 from sklearn.metrics import accuracy_score
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Run a LLM on TogetherAI over the SuperFLUE dataset")
+    parser.add_argument("--model", type=str, help="Model to use")
+    parser.add_argument("--task", type=str, help="Task to use")
+    parser.add_argument("--api_key", type=str, help="API key to use")
+    parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
+    parser.add_argument("--max_tokens", type=int, default=128, help="Max tokens to use")
+    parser.add_argument("--temperature", type=float, default=0.7, help="Temperature to use")
+    parser.add_argument("--top_p", type=float, default=0.7, help="Top-p to use")
+    parser.add_argument("--top_k", type=int, default=50, help="Top-k to use")
+    parser.add_argument("--repetition_penalty", type=float, default=1.1, help="Repetition penalty to use")
+    parser.add_argument("--prompt_format", type=str, default="superflue", help="Version of the prompt to use")
+    return parser.parse_args()
 
 def main():
     args = parse_arguments()
@@ -31,7 +49,7 @@ def main():
         inference_function = task_inference_map[task]
         df = inference_function(args)
         time_taken = time() - start_t
-        print(time_taken)
+        logger.info(f"Time taken: {time_taken:.2f} seconds")
         results_path = (
             ROOT_DIR
             / "results"
@@ -40,6 +58,7 @@ def main():
         )
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
+        logger.info(f"Results saved to {results_path}")
 
     else:
         print(f"Task '{task}' not found in the task generation map.")

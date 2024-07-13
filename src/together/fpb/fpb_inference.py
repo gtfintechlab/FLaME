@@ -23,23 +23,21 @@ def fpb_inference(args):
     for config in configs:
         dataset = load_dataset("financial_phrasebank", config, token=args.hf_token)
 
-        # Initialize lists to store actual labels and model responses
         sentences = []
         llm_responses = []
         actual_labels = []
         complete_responses = []
 
-        # Iterating through the train split of the dataset
-        for data_point in dataset["train"]:
-            sentences.append(data_point["sentence"])
-            actual_label = data_point["label"]
+        for data_point in dataset["train"]:  # type: ignore
+            sentences.append(data_point["sentence"])  # type: ignore
+            actual_label = data_point["label"]  # type: ignore
             actual_labels.append(actual_label)
             success = False
             while not success:
                 try:
                     model_response = together.Complete.create(
                         prompt=fpb_prompt(
-                            sentence=data_point["sentence"],
+                            sentence=data_point["sentence"],  # type: ignore
                             prompt_format=args.prompt_format,
                         ),
                         model=args.model,
@@ -52,18 +50,15 @@ def fpb_inference(args):
                     )
                     success = True
                 except Exception as e:
-                    # print(e)
-                    logger.error(e)
+                    logger.error(f"Error: {e}. Retrying in 10 seconds.")
                     time.sleep(10.0)
 
                 complete_responses.append(model_response)
-                # response_label = model_response["output"]["choices"][0]["text"]
                 if "output" in model_response and "choices" in model_response["output"]:
                     response_label = model_response["output"]["choices"][0]["text"]
-                    logger.info(response_label)
+                    logger.debug(response_label)
                 else:
                     response_label = "default_value"
-                # print(response_label)
                 llm_responses.append(response_label)
                 df = pd.DataFrame(
                     {
@@ -81,6 +76,9 @@ def fpb_inference(args):
                 )
                 results_path.parent.mkdir(parents=True, exist_ok=True)
                 df.to_csv(results_path, index=False)
-                time.sleep(10.0)
+                time.sleep(
+                    10.0
+                )  # Glenn: @Huzaifa, what is the purpose of this sleep? is it to prevent the API from being overloaded?
+                logger.info(f"Results saved to {results_path}")
 
     return df
