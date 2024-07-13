@@ -34,10 +34,10 @@ TASK_MAP = {
     #         "data": None,  # TODO: Get numclaim_detection data from Agam
     #         "instruction": TASK_INSTRUCTION_MAP["numclaim_detection"],
     #     },
-        "fomc_communication": {
-            "data": "lab-manual-split-combine-test",
-            "instruction": TASK_INSTRUCTION_MAP["fomc_communication"],
-        },
+    "fomc_communication": {
+        "data": "lab-manual-split-combine-test",
+        "instruction": TASK_INSTRUCTION_MAP["fomc_communication"],
+    },
     #     "finer_ord": {
     #         "data": None,  # "test.csv",
     #         "instruction": TASK_INSTRUCTION_MAP["finer_ord"],
@@ -46,7 +46,11 @@ TASK_MAP = {
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
-BOS, EOS = "<s>", "</s>" # When using the `LlamaTokenizer()` from HuggingFace the BOS/EOS tokens are handled automatically
+BOS, EOS = (
+    "<s>",
+    "</s>",
+)  # When using the `LlamaTokenizer()` from HuggingFace the BOS/EOS tokens are handled automatically
+
 
 def llama2_prompt_generator(instruction: str, sentences: List[str]):
     SYS_PROMPT = f""""Discard all the previous instructions. Below is an instruction that describes a task. Write a response that appropriately completes the request."""

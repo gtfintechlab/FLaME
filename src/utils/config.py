@@ -15,4 +15,3 @@ INVALID_MODELS = [
     "meta-llama/Llama-2-13b-hf",
     "meta-llama/Llama-2-70b-hf",
 ]
-
