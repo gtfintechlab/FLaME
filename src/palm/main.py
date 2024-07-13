@@ -6,7 +6,6 @@ from utils.doc_splitter import split_document
 from _datetime import date
 
 
-
 today = date.today()
 
 
@@ -14,11 +13,12 @@ palm.configure(api_key="")
 
 # Prompt method
 
+
 class Evaluate:
-    
+
     def __init__(self):
         self.evaluator = EvaluateMetrics()
-    
+
     def prompter(doc):
 
         docs = split_document(doc, 1000)
@@ -42,7 +42,6 @@ class Evaluate:
         for t in output_list:
             text = text + "\n\n" + t
         return text
-
 
     def generate_text(input_text):
 
@@ -69,7 +68,6 @@ class Evaluate:
             output_list.append(text)
 
         return output_list
-
 
     def save_data(data_filename, model_name, generated_output_list):
 

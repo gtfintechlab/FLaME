@@ -64,6 +64,7 @@ def generate_text(input_text):
     res = palm.chat(messages=prompt)
     return res.last
 
+
 def iterate_df(data_file):
     df = pd.read_csv(data_file)
     output_list = []
@@ -91,4 +92,3 @@ model = "PaLM"
 results = iterate_df(data_path)
 path = save_data(data_path, model, results)
 evaluator.append_scores(path)
-    
