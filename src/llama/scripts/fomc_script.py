@@ -8,12 +8,11 @@ from sklearn.metrics import (
     f1_score,
     roc_auc_score,
 )
-#today = date.today()
+
+# today = date.today()
 model = "meta-llama/Llama-2-7b-chat-hf"
 task = "fomc"
-dataset = load_dataset(
-    "gtfintechlab/fomc_communication", token=""
-)
+dataset = load_dataset("gtfintechlab/fomc_communication", token="")
 api_key = ""
 
 # Initialize lists to store actual labels and model responses
@@ -25,10 +24,10 @@ actual_labels = []
 
 # Iterating through the train split of the dataset
 # start_t = time()
-for i in range(len(dataset['train'])):
-    sentence = dataset['train'][i]['sentence']
+for i in range(len(dataset["train"])):
+    sentence = dataset["train"][i]["sentence"]
     context.append(sentence)
-    actual_label = dataset['train'][i]['label']
+    actual_label = dataset["train"][i]["label"]
     actual_labels.append(actual_label)
     model_response = generate("fomc", model, api_key, sentence)
     complete_responses.append(model_response)
@@ -46,10 +45,10 @@ for i in range(len(dataset['train'])):
     df.to_csv("fomc_train_results_llama_2_7b.csv", index=False)
 
 # Iterating through the test split of the dataset
-for i in range(len(dataset['test'])):
-    sentence = dataset['test'][i]['sentence']
+for i in range(len(dataset["test"])):
+    sentence = dataset["test"][i]["sentence"]
     context.append(sentence)
-    actual_label = dataset['test'][i]['label']
+    actual_label = dataset["test"][i]["label"]
     actual_labels.append(actual_label)
     model_response = generate("fomc", model, api_key, sentence)
     complete_responses.append(model_response)
@@ -63,10 +62,9 @@ for i in range(len(dataset['test'])):
             "actual_label": actual_labels,
         }
     )
-    
+
     df.to_csv(f"fomc_results_test_llama_2_7b.csv", index=False)
-    
-    
+
 
 # Evaluating metrics for the train split
 # accuracy = accuracy_score(actual_labels, llm_responses)
@@ -83,9 +81,7 @@ for i in range(len(dataset['test'])):
 #         "recall": [recall],
 #         "f1_score": [f1],
 #         "roc_auc": [roc_auc],
-#     }# 
+#     }#
 # )
 # # Saving DataFrames to CSV files
 # metrics.to_csv("fomc_llama2_metrics.csv", index=False)
-
-

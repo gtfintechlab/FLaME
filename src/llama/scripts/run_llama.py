@@ -36,18 +36,19 @@ def main(args):
     model, tokenizer = get_hf_model(args)
 
     # get pipeline ready for instruction text generation
-    generation_pipeline = TextGenerationPipeline(model=model,
-                                                 tokenizer=tokenizer,
-                                                 # NOTE: Set `do_sample = True` when `temperature > 0.0`
-                                                 # https://github.com/huggingface/transformers/issues/25326
-                                                 temperature=0.0,  # [0.0, 1.0]; 0.0 means greedy sampling
-                                                 do_sample=False,
-                                                 max_new_tokens=512,
-                                                 top_k=10,
-                                                 top_p=0.92,
-                                                 repetition_penalty=1.0,  # 1.0 means no penalty
-                                                 num_return_sequences=1  # Only generate one response
-                                                )
+    generation_pipeline = TextGenerationPipeline(
+        model=model,
+        tokenizer=tokenizer,
+        # NOTE: Set `do_sample = True` when `temperature > 0.0`
+        # https://github.com/huggingface/transformers/issues/25326
+        temperature=0.0,  # [0.0, 1.0]; 0.0 means greedy sampling
+        do_sample=False,
+        max_new_tokens=512,
+        top_k=10,
+        top_p=0.92,
+        repetition_penalty=1.0,  # 1.0 means no penalty
+        num_return_sequences=1,  # Only generate one response
+    )
 
     for seed in tqdm(SEEDS):
         logger.info(f"Running inference for seed {seed}")

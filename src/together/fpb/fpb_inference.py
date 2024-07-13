@@ -8,7 +8,6 @@ from pathlib import Path
 from src.together.models import get_model_name
 
 import logging
-
 from src.together.tokens import tokens
 
 logging.basicConfig(level=logging.INFO)
@@ -30,7 +29,7 @@ def fpb_inference(args):
         actual_labels = []
         complete_responses = []
 
-        for data_point in dataset["train"]:  # type: ignore
+        for data_point in tqdm(dataset["train"], desc="Processing sentences"):  # type: ignore
             sentences.append(data_point["sentence"])  # type: ignore
             actual_label = data_point["label"]  # type: ignore
             actual_labels.append(actual_label)

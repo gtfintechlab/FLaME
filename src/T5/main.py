@@ -13,7 +13,7 @@ pl.seed_everything(42)
 
 # Load data
 train_df = pd.read_csv("train.csv")  # Replace with your actual train file
-eval_df = pd.read_csv("val.csv")    # Replace with your actual eval file
+eval_df = pd.read_csv("val.csv")  # Replace with your actual eval file
 
 # Load tokenizer
 model_path = "/fintech_3/hf_models/t5-base"
@@ -35,7 +35,9 @@ trainer = pl.Trainer(max_epochs=N_EPOCHS)
 trainer.fit(model, data_module)
 
 # Load the best checkpoint
-trained_model = ECTSumModel.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
+trained_model = ECTSumModel.load_from_checkpoint(
+    trainer.checkpoint_callback.best_model_path
+)
 trained_model.freeze()
 
 # Evaluate and save results

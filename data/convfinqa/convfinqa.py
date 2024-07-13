@@ -32,36 +32,40 @@ def huggify_data_convfinqa(push_to_hub=False):
     def csv_to_dataset(file_name):
         df = pd.read_csv(f"{directory_path}/{file_name}")
         processed = process_qa_pairs(df)
-        return Dataset.from_dict({"context": processed["input"], "response": processed["output"]})
+        return Dataset.from_dict(
+            {"context": processed["input"], "response": processed["output"]}
+        )
 
-    
-    convfinqa_datadict = DatasetDict({
-        "train": csv_to_dataset("train.csv"),
-        "validation": csv_to_dataset("dev.csv"),
-    })
-    
+    convfinqa_datadict = DatasetDict(
+        {
+            "train": csv_to_dataset("train.csv"),
+            "validation": csv_to_dataset("dev.csv"),
+        }
+    )
+
     if push_to_hub:
-            convfinqa_datadict["train"].push_to_hub(
-                f"{HF_ORGANIZATION}/{DATASET}-train",
-                config_name="train",
-                private=True,
+        convfinqa_datadict["train"].push_to_hub(
+            f"{HF_ORGANIZATION}/{DATASET}-train",
+            config_name="train",
+            private=True,
+        )
+
+        convfinqa_datadict["validation"].push_to_hub(
+            f"{HF_ORGANIZATION}/{DATASET}-validation",
+            config_name="validation",
+            private=True,
+        )
+        FILENAMES = ["train.csv", "val.csv"]
+        for FILENAME in FILENAMES:
+            hf_hub_upload(
+                repo_id=f"{HF_ORGANIZATION}/{DATASET}",
+                filename=FILENAME,
+                repo_type="dataset",
+                commit_message="Add files for ConvFinqa Dataet",
             )
-        
-            convfinqa_datadict["validation"].push_to_hub(
-                f"{HF_ORGANIZATION}/{DATASET}-validation",
-                config_name="validation",
-                private=True,
-            )
-            FILENAMES = ["train.csv", "val.csv"]
-            for FILENAME in FILENAMES:
-                hf_hub_upload(
-                    repo_id=f"{HF_ORGANIZATION}/{DATASET}",
-                    filename=FILENAME,
-                    repo_type="dataset",
-                    commit_message="Add files for ConvFinqa Dataet",
-                )
     logger.info("ConvFinqa dataset done")
     return convfinqa_datadict
+
 
 if name == "__main__":
     huggify_data_convfinqa(push_to_hub=True)

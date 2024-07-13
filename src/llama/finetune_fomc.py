@@ -980,7 +980,9 @@ def train(args, logger):
 
     # Trainer setup
     logger.info("Creating SFTTrainer ...")
-    trainer = setup_trainer(args, model, tokenizer, peft_config, train_set, val_set, training_arguments)
+    trainer = setup_trainer(
+        args, model, tokenizer, peft_config, train_set, val_set, training_arguments
+    )
 
     # Training and Evaluation
     results_df = execute_training_and_evaluation(trainer, args, logger)
@@ -1256,6 +1258,7 @@ def main():
     output_list.replace("</s>", "")
     return output_list
 
+
 if __name__ == "__main__":
-    os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb=10'
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb=10"
     main()
