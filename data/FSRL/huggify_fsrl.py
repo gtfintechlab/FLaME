@@ -7,12 +7,10 @@ from datasets import Dataset, DatasetDict
 import logging
 import json
 
-# TODO: check if this is the right way to import from the src folder
 SRC_DIRECTORY = Path().cwd().resolve().parent
 DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
 if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
-
 
 HF_TOKEN = os.environ["HF_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"
@@ -22,6 +20,29 @@ login(HF_TOKEN)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def ensure_list(item):
+    if item is None:
+        return ["N/A"]
+    if isinstance(item, list):
+        return item
+    return [item]
+
+def sanitize_data(data):
+    sanitized_data = []
+    for idx, item in enumerate(data):
+        sanitized_item = {
+            "tokens": ensure_list(item.get("tokens")),
+            "nodes": ensure_list(item.get("nodes")),
+            "edges": ensure_list(item.get("edges"))
+        }
+        sanitized_data.append(sanitized_item)
+    return sanitized_data
+
+def transform_tokens_to_list(data):
+    for item in data:
+        if 'tokens' in item and isinstance(item['tokens'], str):
+            item['tokens'] = [item['tokens']]
+    return data
 
 def huggify_data_fsrl(push_to_hub=False):
     try:
@@ -37,21 +58,29 @@ def huggify_data_fsrl(push_to_hub=False):
         test_data = read_json_file(f'{directory_path}/test.json')
         val_data = read_json_file(f'{directory_path}/validation.json')
 
-        def ensure_list(item):
-            if not isinstance(item, list):
-                return [item]
-            return item
+        # Transform tokens to lists
+        train_data = transform_tokens_to_list(train_data)
+        test_data = transform_tokens_to_list(test_data)
+        val_data = transform_tokens_to_list(val_data)
+
+        # Sanitize data
+        train_data = sanitize_data(train_data)
+        test_data = sanitize_data(test_data)
+        val_data = sanitize_data(val_data)
 
         def extract_data(data):
             tokens = []
             nodes = []
             edges = []
-            for item in data:
-                if item:
-                    if 'tokens' in item and 'nodes' in item and 'edges' in item:
-                        tokens.append(ensure_list(item['tokens']))
-                        nodes.append(ensure_list(item['nodes']))
-                        edges.append(ensure_list(item['edges']))
+            for idx, item in enumerate(data):
+                try:
+                    tokens.append(item['tokens'])
+                    nodes.append(item['nodes'])
+                    edges.append(item['edges'])
+                except Exception as e:
+                    logger.error(f"Error processing item at index {idx}: {str(e)}")
+                    logger.error(f"Problematic item: {json.dumps(item, indent=2)}")
+                    raise e
             return tokens, nodes, edges
 
         # Extract tokens, nodes, and edges for train, test, and validation sets
@@ -95,7 +124,6 @@ def huggify_data_fsrl(push_to_hub=False):
                 token=HF_TOKEN,
             )
 
-
         logger.info("Finished processing FSLR dataset")
         return splits
 
@@ -103,8 +131,5 @@ def huggify_data_fsrl(push_to_hub=False):
         logger.error(f"Error processing FSLR dataset: {str(e)}")
         raise e
 
-
 if __name__ == "__main__":
     huggify_data_fsrl(push_to_hub=True)
-
-
