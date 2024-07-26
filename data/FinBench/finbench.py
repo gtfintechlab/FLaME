@@ -12,8 +12,7 @@ SRC_DIRECTORY = Path().cwd().resolve().parent
 if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
-os.environ["HF_HOME"] = ""
-HF_TOKEN = ""
+HF_TOKEN = os.environ["HF_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "FinBench"
 login(HF_TOKEN)
@@ -56,11 +55,10 @@ def huggify_finbench(push_to_hub=False, TASK=None):
         return hf_dataset
 
     except Exception as e:
-        logger.error(f"Error processing FinEntity dataset: {str(e)}")
+        logger.error(f"Error processing FinBench dataset: {str(e)}")
         raise e
 
 
 if __name__ == "__main__":
     TASK = "FinBench"
-
     huggify_finbench(push_to_hub=True, TASK=TASK)
