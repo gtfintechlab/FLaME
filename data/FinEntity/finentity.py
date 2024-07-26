@@ -13,8 +13,8 @@ DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
 if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
-os.environ["HF_HOME"] = ""
-HF_TOKEN = ""
+
+HF_TOKEN = os.environ["HF_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "finentity"
 login(HF_TOKEN)
