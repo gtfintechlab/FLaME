@@ -13,6 +13,7 @@ from fomc.fomc_inference import fomc_inference
 from finbench.finbench_inference import finbench_inference
 from finer.finer_inference import finer_inference
 from finentity.finentity_inference import finentity_inference
+from headlines.headlines_inference import headlines_inference
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 # from task_specific_inference import numclaim_inference
@@ -75,7 +76,8 @@ def main():
         'fomc': fomc_inference,
         'finbench': finbench_inference,
         'finer': finer_inference,
-        'finentity': finentity_inference
+        'finentity': finentity_inference,
+        'headlines': headlines_inference
     }
 
     if task in task_inference_map:
