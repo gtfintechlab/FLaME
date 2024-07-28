@@ -156,6 +156,21 @@ def finqa_prompt(document: str):
             
     return prompt
 
+def headlines_prompt(sentence: str):
+        
+        prompt = f'''Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
+                    Give a score of 0 for each of the following attributes if the news headline does not contain the following information or 1 if it does.
+                    Price or Not: Does the news item talk about price or not.
+                    Direction Up: Does the news headline talk about price going up or not?
+                    Direction Down: Does the news headline talk about price going down or not?
+                    Direction Constant: Does the news headline talk about price remaining constant or not?
+                    Past Price: Does the news headline talk about an event in the past?
+                    Future Price: Does the news headline talk about an event in the future?
+                    Past News: Does the news headline talk about a general event (apart from prices) in the past?
+                    The news headline is:
+                    {sentence}'''
+                
+        return prompt
 
 
 def convfinqa_prompt(document: str):
