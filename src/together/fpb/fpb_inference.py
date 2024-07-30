@@ -13,6 +13,11 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 LOG_DIR = ROOT_DIR / "logs"
 logger = setup_logger("fpb_inference", LOG_DIR / "fpb_inference.log")
 
+import yaml
+
+with open("src/utils/config.yaml", "r") as file:
+    config = yaml.safe_load(file)
+
 BATCH_SIZE = 10  # Adjust this value based on API limitations and performance
 
 def prepare_batch(data_points: List[Dict[str, Any]], args) -> List[str]:
@@ -84,11 +89,11 @@ def fpb_inference(args, make_api_call, process_api_response):
                 model_response = make_api_call(
                     prompts=[p for p in prompts if p is not None],
                     model=args.model,
-                    max_tokens=args.max_tokens,
-                    temperature=args.temperature,
-                    top_k=args.top_k,
-                    top_p=args.top_p,
-                    repetition_penalty=args.repetition_penalty,
+max_tokens=config["fpb"]["max_tokens"],
+temperature=config["fpb"]["temperature"],
+top_k=config["fpb"]["top_k"],
+top_p=config["fpb"]["top_p"],
+repetition_penalty=config["fpb"]["repetition_penalty"],
                     stop=None,
                 )
                 
