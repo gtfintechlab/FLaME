@@ -1,4 +1,3 @@
-import together
 import pandas as pd
 import time
 from datasets import load_dataset
@@ -6,80 +5,121 @@ from datetime import date
 from src.together.prompts import fpb_prompt
 from pathlib import Path
 from src.together.models import get_model_name
-
-import logging
-from src.together.tokens import tokens
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from tqdm import tqdm
+from src.utils.logging_utils import setup_logger
+from typing import List, Dict, Any
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-today = date.today()
+LOG_DIR = ROOT_DIR / "logs"
+logger = setup_logger("fpb_inference", LOG_DIR / "fpb_inference.log")
 
+BATCH_SIZE = 10  # Adjust this value based on API limitations and performance
 
-def fpb_inference(args):
-    together.api_key = args.api_key
-    # configs = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
-    configs = ["sentences_allagree"]
-    for config in configs:
-        dataset = load_dataset("financial_phrasebank", config, token=args.hf_token)
+def prepare_batch(data_points: List[Dict[str, Any]], args) -> List[str]:
+    prompts = []
+    for dp in data_points:
+        try:
+            prompt = fpb_prompt(sentence=dp["sentence"], prompt_format=args.prompt_format)
+            prompts.append(prompt)
+        except Exception as e:
+            logger.error(f"Error preparing prompt for sentence: {dp['sentence']}. Error: {str(e)}")
+            prompts.append(None)
+    return prompts
 
-        sentences = []
-        llm_responses = []
-        actual_labels = []
-        complete_responses = []
-
-        for data_point in tqdm(dataset["train"], desc="Processing sentences"):  # type: ignore
-            sentences.append(data_point["sentence"])  # type: ignore
-            actual_label = data_point["label"]  # type: ignore
-            actual_labels.append(actual_label)
-            success = False
-            while not success:
-                try:
-                    model_response = together.Complete.create(
-                        prompt=fpb_prompt(
-                            sentence=data_point["sentence"],  # type: ignore
-                            prompt_format=args.prompt_format,
-                        ),
-                        model=args.model,
-                        max_tokens=args.max_tokens,
-                        temperature=args.temperature,
-                        top_k=args.top_k,
-                        top_p=args.top_p,
-                        repetition_penalty=args.repetition_penalty,
-                        stop=tokens(args.model),
-                    )
-                    success = True
-                except Exception as e:
-                    logger.error(f"Error: {e}. Retrying in 10 seconds.")
-                    time.sleep(10.0)
-
-                complete_responses.append(model_response)
-                if "output" in model_response and "choices" in model_response["output"]:
-                    response_label = model_response["output"]["choices"][0]["text"]
-                    logger.debug(response_label)
-                else:
-                    response_label = "default_value"
-                llm_responses.append(response_label)
-                df = pd.DataFrame(
-                    {
-                        "sentences": sentences,
-                        "llm_responses": llm_responses,
-                        "actual_labels": actual_labels,
-                        "complete_responses": complete_responses,
+def process_batch_response(batch_response: Dict[str, Any], data_points: List[Dict[str, Any]], task: str, model: str) -> List[Dict[str, Any]]:
+    results = []
+    for i, choice in enumerate(batch_response["output"]["choices"]):
+        try:
+            result = {
+                "sentence": data_points[i]["sentence"],
+                "actual_label": data_points[i]["label"],
+                "llm_response": choice["text"],
+                "complete_response": {
+                    "task": task,
+                    "model": model,
+                    "response": choice,
+                    "metadata": {
+                        "timestamp": batch_response["output"]["created"]
                     }
-                )
-                results_path = (
-                    ROOT_DIR
-                    / "results"
-                    / args.task
-                    / f"{args.task}_{get_model_name(args.model)}_{date.today().strftime('%d_%m_%Y')}.csv"
-                )
-                results_path.parent.mkdir(parents=True, exist_ok=True)
-                df.to_csv(results_path, index=False)
-                time.sleep(
-                    10.0
-                )  # Glenn: @Huzaifa, what is the purpose of this sleep? is it to prevent the API from being overloaded?
-                logger.info(f"Results saved to {results_path}")
+                }
+            }
+            results.append(result)
+        except Exception as e:
+            logger.error(f"Error processing response for sentence: {data_points[i]['sentence']}. Error: {str(e)}")
+            results.append({
+                "sentence": data_points[i]["sentence"],
+                "actual_label": data_points[i]["label"],
+                "llm_response": "error",
+                "complete_response": str(e),
+            })
+    return results
 
+def fpb_inference(args, make_api_call, process_api_response):
+    import time
+    total_time = 0
+    total_batches = 0
+    logger.info(f"Starting FPB inference on {date.today()}")
+    configs = ["sentences_allagree"]
+    
+    all_results = []
+    
+    for config in configs:
+        logger.info(f"Loading dataset for config: {config}")
+        try:
+            dataset = load_dataset("financial_phrasebank", config, token=args.hf_token)
+        except Exception as e:
+            logger.error(f"Error loading dataset for config {config}: {str(e)}")
+            continue
+        
+        for i in tqdm(range(0, len(dataset["train"]), BATCH_SIZE), desc="Processing batches"):
+            batch_start_time = time.time()
+            batch = dataset["train"][i:i+BATCH_SIZE]
+            prompts = prepare_batch(batch, args)
+            
+            if not any(prompts):
+                logger.warning(f"All prompts in batch {i//BATCH_SIZE + 1} failed to prepare. Skipping batch.")
+                continue
+            
+            try:
+                model_response = make_api_call(
+                    prompts=[p for p in prompts if p is not None],
+                    model=args.model,
+                    max_tokens=args.max_tokens,
+                    temperature=args.temperature,
+                    top_k=args.top_k,
+                    top_p=args.top_p,
+                    repetition_penalty=args.repetition_penalty,
+                    stop=None,
+                )
+                
+                batch_results = process_batch_response(model_response, batch, "fpb", args.model)
+                all_results.extend(batch_results)
+                
+                process_api_response(batch_results, "fpb", args.model)
+                
+                batch_end_time = time.time()
+                batch_time = batch_end_time - batch_start_time
+                total_time += batch_time
+                total_batches += 1
+                logger.info(f"Processed batch {i//BATCH_SIZE + 1}, sentences {i+1}-{min(i+BATCH_SIZE, len(dataset['train']))}")
+                logger.info(f"Batch processing time: {batch_time:.2f} seconds")
+                
+            except Exception as e:
+                logger.error(f"Error processing batch {i//BATCH_SIZE + 1}: {str(e)}")
+                for dp in batch:
+                    all_results.append({
+                        "sentence": dp["sentence"],
+                        "actual_label": dp["label"],
+                        "llm_response": "error",
+                        "complete_response": str(e),
+                    })
+            
+            time.sleep(1)  # Rate limiting
+    
+    df = pd.DataFrame(all_results)
+    logger.info(f"FPB inference completed. Total processed sentences: {len(df)}")
+    if total_batches > 0:
+        avg_time_per_batch = total_time / total_batches
+        logger.info(f"Average time per batch: {avg_time_per_batch:.2f} seconds")
+    
     return df
