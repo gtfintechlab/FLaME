@@ -5,7 +5,7 @@ import pandas as pd
 
 openai.api_key = ""
 from utils.evaluate_ectsum import EvaluateMetrics
-from utils.doc_splitter import split_document
+from utils.document_utils import split_document
 
 
 class Evaluate:

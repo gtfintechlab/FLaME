@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import google.generativeai as palm
 from utils.evaluate_ectsum import EvaluateMetrics
-from utils.doc_splitter import split_document
+from utils.document_utils import split_document
 from _datetime import date
 
 

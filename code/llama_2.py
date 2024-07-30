@@ -15,7 +15,7 @@ from transformers import TrainingArguments
 from transformers import Trainer
 
 from evaluate_metrics import Evaluate
-from Document_splitter import split_document
+from utils.document_utils import split_document
 
 
 model = "/fintech_3/hf_models/Llama-2-7b-chat-hf"
