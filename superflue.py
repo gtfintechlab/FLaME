@@ -19,7 +19,10 @@ def main():
             args.method = config.get('method', args.method)
 
     # Load dataset
-    dataset = load_dataset('your_dataset_name_here')  # Replace with your dataset name
+parser.add_argument('--dataset', type=str, required=True, help='Name of the dataset to use.')
+
+    # Load dataset
+    dataset = load_dataset(args.dataset)
 
     # Sample the dataset
     sampled_data = sample_dataset(dataset['train'], args.sample_size, args.method)
