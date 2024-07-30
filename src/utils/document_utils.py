@@ -3,6 +3,7 @@ from nltk.tokenize import word_tokenize
 
 nltk.download("punkt")
 
+
 def split_document(document, max_tokens_per_chunk=1000):
     """Splits a document into chunks based on the maximum number of tokens per chunk.
 

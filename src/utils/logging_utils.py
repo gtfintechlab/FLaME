@@ -3,13 +3,16 @@ from logging.handlers import RotatingFileHandler
 import os
 from pathlib import Path
 
+
 def setup_logger(name, log_file, level=logging.INFO):
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
 
     log_dir = Path(log_file).parent
     os.makedirs(log_dir, exist_ok=True)
 
-    handler = RotatingFileHandler(log_file, maxBytes=10*1024*1024, backupCount=5)
+    handler = RotatingFileHandler(log_file, maxBytes=10 * 1024 * 1024, backupCount=5)
     handler.setFormatter(formatter)
 
     logger = logging.getLogger(name)

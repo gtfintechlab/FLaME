@@ -15,4 +15,3 @@ def encode(label_word):
     else:
 
         return -1
-
