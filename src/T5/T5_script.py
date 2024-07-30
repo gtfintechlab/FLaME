@@ -44,7 +44,7 @@ df = df.dropna()
 train_df, eval_df = train_test_split(df, test_size=0.1, random_state=42)
 
 
-class ECTdataset(Dataset):
+from FinGT.src.T5.T5_common import ECTdataset
     def __init__(
         self,
         data: pd.DataFrame,
