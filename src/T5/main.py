@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 from transformers import T5Tokenizer
 import pytorch_lightning as pl
-from utils.evaluate_ectsum import Evaluate
-from utils import ECTDataModule, ECTSumModel, summarize, iterate_df, save_data
+from src.utils.evaluate_ectsum import Evaluate
+from src.utils.T5_utils import ECTDataModule, ECTSumModel, summarize, iterate_df, save_data
 
 # Set seed for reproducibility
 pl.seed_everything(42)

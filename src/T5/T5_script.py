@@ -9,7 +9,8 @@ import numpy as np
 import pandas as pd
 import torch
 from pathlib import Path
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
+from FinGT.src.T5.T5_common import ECTdataset
 from transformers import (
     AutoTokenizer,
     AutoModelForSequenceClassification,

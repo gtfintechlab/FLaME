@@ -2,7 +2,8 @@
 
 import torch
 import pandas as pd
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
+from FinGT.src.T5.T5_common import ECTdataset
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 from transformers import (
     AdamW,
