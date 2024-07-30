@@ -14,15 +14,7 @@ from utils.config import SEEDS
 logger = setup_logger(__name__)
 
 
-def encode(label_word):
-    if label_word == "positive":
-        return 0
-    elif label_word == "negative":
-        return 1
-    elif label_word == "neutral":
-        return 2
-    else:
-        return -1
+from src.utils.label_utils import encode
 
 
 # def get_FPB_dataset_from_HF():
@@ -81,7 +73,10 @@ if __name__ == "__main__":
     ROOT_DIRECTORY = Path(__file__).resolve().parent.parent
     if str(ROOT_DIRECTORY) not in sys.path:
         sys.path.insert(0, str(ROOT_DIRECTORY))
-    DATA_DIRECTORY = ROOT_DIRECTORY / "data"
+with open("src/utils/config.yaml", "r") as file:
+    config = yaml.safe_load(file)
+
+DATA_DIRECTORY = Path(config["fpb"]["data_directory"])
     DATA_DIRECTORY.mkdir(parents=True, exist_ok=True)
     logger.info(
         f"Building the FinancialPhraseBank dataset in data directory {DATA_DIRECTORY}"
