@@ -24,18 +24,18 @@ def parse_arguments():
     parser.add_argument("--task", type=str, help="Task to use")
     parser.add_argument("--api_key", type=str, help="API key to use")
     parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
-    parser.add_argument("--max_tokens", type=int, default=128, help="Max tokens to use")
-    parser.add_argument(
-        "--temperature", type=float, default=0.7, help="Temperature to use"
-    )
-    parser.add_argument("--top_p", type=float, default=0.7, help="Top-p to use")
-    parser.add_argument("--top_k", type=int, default=50, help="Top-k to use")
-    parser.add_argument(
-        "--repetition_penalty",
-        type=float,
-        default=1.1,
-        help="Repetition penalty to use",
-    )
+with open("src/utils/config.yaml", "r") as file:
+    config = yaml.safe_load(file)
+
+parser.add_argument("--model", type=str, help="Model to use")
+parser.add_argument("--task", type=str, help="Task to use")
+parser.add_argument("--api_key", type=str, help="API key to use")
+parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
+parser.add_argument("--max_tokens", type=int, default=config["fpb"]["max_tokens"], help="Max tokens to use")
+parser.add_argument("--temperature", type=float, default=config["fpb"]["temperature"], help="Temperature to use")
+parser.add_argument("--top_p", type=float, default=config["fpb"]["top_p"], help="Top-p to use")
+parser.add_argument("--top_k", type=int, default=config["fpb"]["top_k"], help="Top-k to use")
+parser.add_argument("--repetition_penalty", type=float, default=config["fpb"]["repetition_penalty"], help="Repetition penalty to use")
     parser.add_argument(
         "--prompt_format",
         type=str,
