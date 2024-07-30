@@ -10,7 +10,7 @@ import pandas as pd
 import torch
 from pathlib import Path
 from torch.utils.data import DataLoader
-from FinGT.src.T5.T5_common import ECTdataset
+from src.ECT.ect_dataset import ECTdataset
 from transformers import (
     AutoTokenizer,
     AutoModelForSequenceClassification,
@@ -42,58 +42,6 @@ df = pd.read_csv("ectsum_data.csv")
 
 df = df.dropna()
 train_df, eval_df = train_test_split(df, test_size=0.1, random_state=42)
-
-
-from FinGT.src.T5.T5_common import ECTdataset
-    def __init__(
-        self,
-        data: pd.DataFrame,
-        tokenizer: T5Tokenizer,
-        source_len: int = 512,
-        target_len: int = 128,
-    ):
-        self.tokenizer = tokenizer
-        self.data = data
-        self.source_len = source_len
-        self.target_len = target_len
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, index: int):
-        row = self.data.iloc[index]
-        input = row["input"]
-        input_encoding = tokenizer(
-            input,
-            max_length=self.source_len,
-            padding="max_length",
-            truncation=True,
-            return_attention_mask=True,
-            add_special_tokens=True,
-            return_tensors="pt",
-        )
-
-        output_encoding = tokenizer(
-            row["output"],
-            max_length=self.target_len,
-            padding="max_length",
-            truncation=True,
-            return_attention_mask=True,
-            add_special_tokens=True,
-            return_tensors="pt",
-        )
-        labels = output_encoding["input_ids"]
-        labels[labels == 0] = -100
-
-        return dict(
-            input=input,
-            output=row["output"],
-            input_ids=input_encoding["input_ids"].flatten(),
-            input_attention_mask=input_encoding["attention_mask"].flatten(),
-            labels=labels.flatten(),
-            labels_attention_mask=output_encoding["attention_mask"].flatten(),
-        )
-
 
 class ECTDataModule(pl.LightningDataModule):
     def __init__(
@@ -145,7 +93,6 @@ BATCH_SIZE = 8
 
 data_module = ECTDataModule(train_df, eval_df, tokenizer, batch_size=BATCH_SIZE)
 data_module.setup()
-
 
 class ECTSumModel(pl.LightningModule):
     def __init__(self):

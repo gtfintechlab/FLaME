@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from transformers import T5Tokenizer
 import pytorch_lightning as pl
 from src.utils.evaluate_ectsum import Evaluate
-from src.utils.T5_utils import (
+from src.ECT.ect_dataset import (
     ECTDataModule,
     ECTSumModel,
     summarize,
