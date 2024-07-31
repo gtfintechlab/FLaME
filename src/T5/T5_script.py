@@ -37,52 +37,14 @@ from tqdm import tqdm
 
 pl.seed_everything(42)
 
-df = pd.read_csv("ectsum_data.csv")
+from src.ECT.ect_dataset import load_data, ECTDataModule
+
+train_df, eval_df = load_data("ectsum_data.csv")
 
 
-df = df.dropna()
-train_df, eval_df = train_test_split(df, test_size=0.1, random_state=42)
 
-class ECTDataModule(pl.LightningDataModule):
-    def __init__(
-        self,
-        train_df: pd.DataFrame,
-        eval_df: pd.DataFrame,
-        tokenizer: T5Tokenizer,
-        batch_size: int = 8,
-        source_len: int = 512,
-        target_len: int = 128,
-    ):
-        super().__init__()
-        self.train_df = train_df
-        self.eval_df = eval_df
-        self.tokenizer = tokenizer
-        self.batch_size = batch_size
-        self.source_len = source_len
-        self.target_len = target_len
 
-    def setup(self, stage=None):
-        self.train_dataset = ECTdataset(
-            self.train_df, self.tokenizer, self.source_len, self.target_len
-        )
-        self.test_dataset = ECTdataset(
-            self.eval_df, self.tokenizer, self.source_len, self.target_len
-        )
 
-    def train_dataloader(self):
-        return DataLoader(
-            self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=2
-        )
-
-    def val_dataloader(self):
-        return DataLoader(
-            self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=2
-        )
-
-    def test_dataloader(self):
-        return DataLoader(
-            self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=2
-        )
 
 
 Model = "/fintech_3/hf_models/t5-base"
@@ -94,59 +56,12 @@ BATCH_SIZE = 8
 data_module = ECTDataModule(train_df, eval_df, tokenizer, batch_size=BATCH_SIZE)
 data_module.setup()
 
-class ECTSumModel(pl.LightningModule):
-    def __init__(self):
-        super().__init__()
-        self.model = T5ForConditionalGeneration.from_pretrained(Model, return_dict=True)
-
-    def forward(self, input_ids, attention_mask, decoder_attanetion_mask, labels=None):
-        outputs = self.model(
-            input_ids,
-            attention_mask=attention_mask,
-            labels=labels,
-            decoder_attention_mask=decoder_attanetion_mask,
-        )
-        return outputs.loss, outputs.logits
-
-    def training_step(self, batch, batch_idx):
-        input_ids = batch["input_ids"]
-        attention_mask = batch["input_attention_mask"]
-        labels = batch["labels"]
-        decoder_attention_mask = batch["labels_attention_mask"]
-
-        loss, outputs = self(input_ids, attention_mask, decoder_attention_mask, labels)
-
-        self.log("train_loss", loss, prog_bar=True, logger=True)
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        input_ids = batch["input_ids"]
-        attention_mask = batch["input_attention_mask"]
-        labels = batch["labels"]
-        decoder_attention_mask = batch["labels_attention_mask"]
-
-        loss, outputs = self(input_ids, attention_mask, decoder_attention_mask, labels)
-
-        self.log("val_loss", loss, prog_bar=True, logger=True)
-        return loss
-
-    def test_step(self, batch, batch_idx):
-        input_ids = batch["input_ids"]
-        attention_mask = batch["input_attention_mask"]
-        labels = batch["labels"]
-        decoder_attention_mask = batch["labels_attention_mask"]
-
-        loss, outputs = self(input_ids, attention_mask, decoder_attention_mask, labels)
-
-        self.log("test_loss", loss, prog_bar=True, logger=True)
-        return loss
-
-    def configure_optimizers(self):
-        optimizer = AdamW(self.parameters(), lr=0.0001)
-        return optimizer
 
 
-model = ECTSumModel()
+
+from src.ECT.ect_dataset import ECTSumModel
+
+model = ECTSumModel(Model)
 
 checkpoint_callback = ModelCheckpoint(
     dirpath="checkpoints",
