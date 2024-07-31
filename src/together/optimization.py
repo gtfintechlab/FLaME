@@ -12,7 +12,7 @@ import concurrent
 from tqdm import tqdm
 import argparse
 
-# args: api_key, hf_token, dataset_name, model, starting_prompt, num_epochs, batch_size, eval_fn
+# args: api_key, hf_token, dataset_name, model, starting_prompt, num_epochs, batch_size, eval_fn, max_tokens, temperature, top_k, top_p, repetition_penalty
 def textgrad_opt_classification(args):
     together.api_key = args.api_key
     dataset = load_dataset(args.dataset_name, token=args.hf_token)
@@ -20,8 +20,12 @@ def textgrad_opt_classification(args):
     # initialize textgrad model & optimizer
     engine = get_engine(args.model)
     system_prompt = Variable(args.starting_prompt, requires_grad=True, role_description="system prompt to the language model")
-    model = textgrad.BlackboxLLM(engine, system_prompt)
-    optimizer = TextualGradientDescent(engine=engine, parameters=[system_prompt])
+    model = textgrad.BlackboxLLM(engine, system_prompt, max_tokens=args.max_tokens, 
+                                 temperature=args.temperature, top_k=args.top_k, top_p=args.top_p, 
+                                 repetition_penalty=args.repetition_penalty)
+    optimizer = TextualGradientDescent(engine=engine, parameters=[system_prompt], 
+                                 max_tokens=args.max_tokens, temperature=args.temperature, top_k=args.top_k, 
+                                 top_p=args.top_p, repetition_penalty=args.repetition_penalty)
 
     # extract training and testing data
     training_data = [(data['sentence'], data['label']) for data in dataset['train']]
@@ -124,6 +128,11 @@ def parse_arguments():
     parser.add_argument('--starting_prompt', type=str, help='Starting prompt')
     parser.add_argument('--num_epochs', type=int, help='Number of epochs')
     parser.add_argument('--batch_size', type=int, help='Batch size')
+    parser.add_argument("--max_tokens", type=int, default=128, help="Max tokens to use")
+    parser.add_argument("--temperature", type=float, default=0.7, help="Temperature to use")
+    parser.add_argument("--top_p", type=float, default=0.7, help="Top-p to use")
+    parser.add_argument("--top_k", type=int, default=50, help="Top-k to use")
+    parser.add_argument("--repetition_penalty", type=float, default=1.1, help="Repetition penalty to use")
     return parser.parse_args()
 
 def fomc_example():
