@@ -78,3 +78,27 @@ class Evaluate:
         output_filename = f"{model_name}_{today}_output.csv"
         df.to_csv(output_filename, index=False)
         return output_filename
+
+import os
+import pandas as pd
+
+
+def process_dataset(evaluator, dataset_file, model_name):
+
+    results = evaluator.iterate_df(dataset_file)
+
+    output_path = evaluator.save_data(dataset_file, model_name, results)
+
+    evaluator.append_scores(output_path)
+
+
+data_directory = "data"
+
+evaluator = Evaluate()
+
+datasets = ["train.csv", "test.csv", "val.csv"]
+model_name = "Palm"
+
+for dataset in datasets:
+    dataset_file = os.path.join(data_directory, dataset)
+    process_dataset(evaluator, dataset_file, model_name)
