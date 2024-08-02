@@ -1,8 +1,10 @@
 # chatgpt/run_script.py
-from datasets import load_dataset
-from FinGT.src.chatgpt.ect_sum_main import Evaluate
 import os
+
 import pandas as pd
+from datasets import load_dataset
+
+from FinGT.src.chatgpt.ect_sum_main import Evaluate
 
 
 def process_dataset(evaluator, dataset_file, model_name):

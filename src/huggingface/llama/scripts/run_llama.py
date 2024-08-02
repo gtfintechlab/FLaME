@@ -7,15 +7,13 @@ if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
 from time import time
-from llama.instructions import llama2_prompt_generator
+
 import numpy as np
 import pandas as pd
 import torch
-from tqdm import tqdm
-
-from llama.instructions import TASK_MAP
+from llama.instructions import TASK_MAP, llama2_prompt_generator
 from llama.pipeline import LlamaTextGenerationPipeline
-
+from tqdm import tqdm
 from transformers.pipelines import TextGenerationPipeline
 
 from utils.args import parse_args

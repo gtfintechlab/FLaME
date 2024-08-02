@@ -1,6 +1,5 @@
 import together
 
-
 together.api_key = "1ba68d2ffcbdad1ac7dbc992797cfa0200a9031ab7c886e6701674892ba4acbf"
 
 

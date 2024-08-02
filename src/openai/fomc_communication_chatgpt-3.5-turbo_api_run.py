@@ -3,8 +3,9 @@ import sys
 from datetime import date
 from time import sleep, time
 
-import openai
 import pandas as pd
+
+import openai
 
 today = date.today()
 

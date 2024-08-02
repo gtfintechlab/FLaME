@@ -1,5 +1,6 @@
-import together
 from prompt_generator import *
+
+import together
 
 
 def generate(task, model, api_key, sentence):

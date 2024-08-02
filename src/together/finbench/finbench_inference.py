@@ -1,12 +1,13 @@
-import together
-import pandas as pd
+import logging
 import time
-from src.together.prompts import finbench_prompt
-from datasets import load_dataset
 from datetime import date
 from pathlib import Path
-import logging
 
+import pandas as pd
+from datasets import load_dataset
+
+import together
+from src.together.prompts import finbench_prompt
 from src.together.tokens import tokens
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent

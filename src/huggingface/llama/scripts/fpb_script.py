@@ -1,18 +1,16 @@
-from datetime import date
-import pandas as pd
-
-
 import time
-from together_pipeline import generate
+from datetime import date
+
+import pandas as pd
 from datasets import load_dataset
 from sklearn.metrics import (
     accuracy_score,
+    f1_score,
     precision_score,
     recall_score,
-    f1_score,
     roc_auc_score,
 )
-from datetime import date
+from together_pipeline import generate
 
 model = "meta-llama/Llama-2-7b-chat-hf"
 api_key = ""

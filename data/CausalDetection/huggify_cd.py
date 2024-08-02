@@ -12,7 +12,7 @@ DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
 if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
-HF_TOKEN = os.environ['HF_TOKEN']
+HF_TOKEN = os.environ["HF_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "CausalDetection"
 login(HF_TOKEN)
@@ -29,7 +29,6 @@ def huggify_data_cd(push_to_hub=False):
         cd_train = pd.read_json(f"{directory_path}/train.json")
         cd_test = pd.read_json(f"{directory_path}/test.json")
         cd_val = pd.read_json(f"{directory_path}/valid.json")
-        
 
         train_tokens = cd_train["tokens"]
         train_tags = cd_train["tags"]
@@ -48,17 +47,9 @@ def huggify_data_cd(push_to_hub=False):
                         "tags": train_tags,
                     }
                 ),
-                "test": Dataset.from_dict(
-                    {
-                        "tokens": test_tokens,
-                        "tags": test_tags
-                    }
-                ),
+                "test": Dataset.from_dict({"tokens": test_tokens, "tags": test_tags}),
                 "validation": Dataset.from_dict(
-                    {
-                        "tokens": val_tokens, 
-                        "tags": val_tags
-                    }
+                    {"tokens": val_tokens, "tags": val_tags}
                 ),
             }
         )
@@ -82,5 +73,3 @@ def huggify_data_cd(push_to_hub=False):
 
 if __name__ == "__main__":
     huggify_data_cd(push_to_hub=True)
-
-

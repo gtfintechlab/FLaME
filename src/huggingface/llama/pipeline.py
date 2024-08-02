@@ -11,6 +11,7 @@ class ReturnType(enum.Enum):
 
 
 from llama.instructions import E_INST, llama2_prompt_generator
+
 from utils.logging import setup_logger
 
 logger = setup_logger(__name__)

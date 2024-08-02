@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from transformers import LlamaForCausalLM, LlamaTokenizer, LlamaConfig
+from transformers import LlamaConfig, LlamaForCausalLM, LlamaTokenizer
 
 
 def parse_args():

@@ -1,13 +1,13 @@
 import pandas as pd
-from together_pipeline import generate
 from datasets import load_dataset
 from sklearn.metrics import (
     accuracy_score,
+    f1_score,
     precision_score,
     recall_score,
-    f1_score,
     roc_auc_score,
 )
+from together_pipeline import generate
 
 # today = date.today()
 model = "meta-llama/Llama-2-7b-chat-hf"

@@ -1,6 +1,7 @@
-import pandas as pd
 import zipfile
 from pathlib import Path
+
+import pandas as pd
 
 
 def zip_to_csv(zip_file_path, json_file_name, csv_file_path):

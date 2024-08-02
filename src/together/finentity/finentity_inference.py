@@ -1,15 +1,16 @@
-import together
-import pandas as pd
+import logging
 import time
-from datasets import load_dataset
 from datetime import date
 from pathlib import Path
-import logging
-from src.together.prompts import finer_prompt
-from src.together.models import get_model_name
 
 # Ensure the NLTK data is downloaded
 import nltk
+import pandas as pd
+from datasets import load_dataset
+
+import together
+from src.together.models import get_model_name
+from src.together.prompts import finer_prompt
 from src.together.tokens import tokens
 
 nltk.download("punkt")

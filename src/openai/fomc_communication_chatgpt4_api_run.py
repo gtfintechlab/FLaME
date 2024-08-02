@@ -3,8 +3,9 @@ import sys
 from datetime import date
 from time import sleep, time
 
-import openai
 import pandas as pd
+
+import openai
 
 sys.path.insert(0, "/home/research/git repos/zero-shot-finance")
 from api_keys import APIKeyConstants

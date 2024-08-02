@@ -1,8 +1,10 @@
-import together
-import pandas as pd
 import time
-from datasets import load_dataset
 from datetime import date
+
+import pandas as pd
+from datasets import load_dataset
+
+import together
 from src.together.prompts import convfinqa_prompt
 from src.together.tokens import tokens
 

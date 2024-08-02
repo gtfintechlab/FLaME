@@ -1,8 +1,8 @@
-from datasets import load_dataset
+import nltk
 import pandas as pd
+from datasets import load_dataset
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-import nltk
 
 # Download necessary NLTK data
 nltk.download("punkt")

@@ -1,13 +1,14 @@
-import together
-import pandas as pd
-import time
-from datasets import load_dataset
-from datetime import date
-from src.together.prompts import fomc_prompt
-from pathlib import Path
 import logging
-import tqdm
+import time
+from datetime import date
+from pathlib import Path
 
+import pandas as pd
+import tqdm
+from datasets import load_dataset
+
+import together
+from src.together.prompts import fomc_prompt
 from src.together.tokens import tokens
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent

@@ -1,7 +1,8 @@
 import pandas as pd
+
 import openai
-from utils.evaluate_ectsum import EvaluateMetrics
 from utils.document_utils import split_document
+from utils.evaluate_ectsum import EvaluateMetrics
 
 
 class Evaluate:
