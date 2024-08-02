@@ -2,12 +2,19 @@ import argparse
 from time import time
 from datetime import date
 from pathlib import Path
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+# from src import ROOT_DIR
+# from tasks_inferences import fpb_inference, fomc_inference, numclaim_inference
 from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
 from fomc.fomc_inference import fomc_inference
 from finbench.finbench_inference import finbench_inference
 from finer.finer_inference import finer_inference
 from finentity.finentity_inference import finentity_inference
+from banking77.banking77_inference import banking77_inference
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from src.utils.api_utils import make_api_call, save_raw_output
 from src.utils.logging_utils import setup_logger
 
@@ -15,7 +22,6 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 OUTPUT_DIR = ROOT_DIR / "data" / "outputs"
 LOG_DIR = ROOT_DIR / "logs"
 logger = setup_logger("main_inference", LOG_DIR / "main_inference.log")
-
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -75,12 +81,13 @@ def main():
     task = args.task.strip('"')
 
     task_inference_map = {
-        "numclaim": numclaim_inference,
-        "fpb": fpb_inference,
-        "fomc": fomc_inference,
-        "finbench": finbench_inference,
-        "finer": finer_inference,
-        "finentity": finentity_inference,
+        'numclaim': numclaim_inference,
+        'fpb': fpb_inference,
+        'fomc': fomc_inference,
+        'finbench': finbench_inference,
+        'finer': finer_inference,
+        'finentity': finentity_inference,
+        'banking77': banking77_inference
     }
 
     if task in task_inference_map:
@@ -97,7 +104,9 @@ def main():
         )
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
-        logger.info(f"Results saved to {results_path}")
+        logger.info(f"Inference completed for {task}. Results saved to {results_path}")
+        # metrics = evaluate(df, 'response', task_regex[task], task_label_mapping[task])
+        # print(metrics)
 
     else:
         logger.error(f"Task '{task}' not found in the task generation map.")
