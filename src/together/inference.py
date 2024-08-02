@@ -4,6 +4,8 @@ from datetime import date
 from pathlib import Path
 from time import time
 
+import yaml
+
 from banking77.banking77_inference import banking77_inference
 from finbench.finbench_inference import finbench_inference
 from finentity.finentity_inference import finentity_inference
