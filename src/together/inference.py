@@ -13,6 +13,7 @@ from finer.finer_inference import finer_inference
 from fomc.fomc_inference import fomc_inference
 from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
+from src.together.causal_classification.causal_classification_inference import causal_classification_inference 
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 from src.utils.api_utils import make_api_call, save_raw_output
@@ -90,6 +91,7 @@ def main():
         "finer": finer_inference,
         "finentity": finentity_inference,
         "banking77": banking77_inference,
+        "causal_classification": causal_classification_inference,
     }
 
     if task in task_inference_map:
