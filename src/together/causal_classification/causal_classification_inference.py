@@ -31,15 +31,15 @@ def causal_classification_inference(args):
 
     logger.info(f"Starting inference on {args.task}...")
     start_t = time.time()
-    for i in range(len(dataset["test"])):
-        text = dataset["test"][i]["text"]
-        actual_label = dataset["test"][i]["label"]
+    for i in range(len(dataset["test"])): # type: ignore
+        text = dataset["test"][i]["text"] # type: ignore
+        actual_label = dataset["test"][i]["label"] # type: ignore
         texts.append(text)
         actual_labels.append(actual_label)
         try:
-            logger.info(f"Processing text {i+1}/{len(dataset['test'])}")
+            logger.info(f"Processing text {i+1}/{len(dataset['test'])}") # type: ignore
             model_response = together.Complete.create(
-                prompt=causal_prompt(text),
+                prompt=causal_classification_prompt(text),
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
@@ -49,7 +49,7 @@ def causal_classification_inference(args):
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]
+            response_label = model_response["output"]["choices"][0]["text"] # type: ignore
             llm_responses.append(response_label)
 
             df = pd.DataFrame(
