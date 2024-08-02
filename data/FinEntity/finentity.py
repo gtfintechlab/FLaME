@@ -13,8 +13,8 @@ DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
 if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
-os.environ["HF_HOME"] = ""
-HF_TOKEN = ""
+
+HF_TOKEN = os.environ["HF_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "finentity"
 login(HF_TOKEN)
@@ -23,32 +23,34 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def huggify_data_finentity(push_to_hub=False, TASK=None, SEED=None, SPLITS=['train', 'test']):
+def huggify_data_finentity(
+    push_to_hub=False, TASK=None, SEED=None, SPLITS=["train", "test"]
+):
     try:
         directory_path = DATA_DIRECTORY / "FinEntity"
         logger.debug(f"Directory path: {directory_path}")
-        
+
         dataset = load_dataset("yixuantt/FinEntity")
-        
-        df = dataset['train']
-        
+
+        df = dataset["train"]
+
         df = pd.DataFrame(df)
-        
+
         hf_dataset = DatasetDict()
-        
+
         train_df, test_df = train_test_split(df, test_size=0.3, random_state=SEED)
-        
-        #train split
-        hf_dataset['train'] = Dataset.from_pandas(train_df)
+
+        # train split
+        hf_dataset["train"] = Dataset.from_pandas(train_df)
 
         # Add test split
-        hf_dataset['test'] = Dataset.from_pandas(test_df)
+        hf_dataset["test"] = Dataset.from_pandas(test_df)
 
         # Push to HF Hub
         if push_to_hub:
             hf_dataset.push_to_hub(
                 f"{HF_ORGANIZATION}/{DATASET}",
-                config_name= str(SEED),
+                config_name=str(SEED),
                 private=True,
                 token=HF_TOKEN,
             )
@@ -64,14 +66,11 @@ def huggify_data_finentity(push_to_hub=False, TASK=None, SEED=None, SPLITS=['tra
 
 
 if __name__ == "__main__":
-    SPLITS = ['train', 'test']
+    SPLITS = ["train", "test"]
 
     TASK = "FinEntity"
 
     SEEDS = (5768, 78516, 944601)
-    
-    
 
     for SEED in list(reversed(SEEDS)):
         huggify_data_finentity(push_to_hub=True, TASK=TASK, SEED=SEED, SPLITS=SPLITS)
-

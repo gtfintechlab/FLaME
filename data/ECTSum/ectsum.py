@@ -14,8 +14,7 @@ DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
 if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
-os.environ["HF_HOME"] = "/Users/hp/Desktop/FinGT repo/FinGT/data/ECTSum"
-HF_TOKEN = ""
+HF_TOKEN = os.environ.get("HF_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "ECTSum"
 login(HF_TOKEN)
@@ -51,10 +50,16 @@ def huggify_data_ectsum(push_to_hub=False):
                     }
                 ),
                 "test": Dataset.from_dict(
-                    {"context": test_input, "response": test_output}
+                    {
+                        "context": test_input, 
+                        "response": test_output
+                    }
                 ),
                 "validation": Dataset.from_dict(
-                    {"context": val_input, "response": val_output}
+                    {
+                        "context": val_input, 
+                        "response": val_output
+                    }
                 ),
             }
         )

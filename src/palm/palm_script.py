@@ -2,13 +2,15 @@ from palm.main import Evaluate
 import os
 import pandas as pd
 
+
 def process_dataset(evaluator, dataset_file, model_name):
-    
+
     results = evaluator.iterate_df(dataset_file)
 
     output_path = evaluator.save_data(dataset_file, model_name, results)
 
     evaluator.append_scores(output_path)
+
 
 data_directory = "data"
 

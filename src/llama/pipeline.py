@@ -122,9 +122,11 @@ class LlamaTextGenerationPipeline(TextGenerationPipeline):
         # Generate text
         generated_sequence = self.model.generate(
             input_ids=input_ids.to(self.model.device),
-            attention_mask=attention_mask.to(self.model.device)
-            if attention_mask is not None
-            else None,
+            attention_mask=(
+                attention_mask.to(self.model.device)
+                if attention_mask is not None
+                else None
+            ),
             pad_token_id=self.tokenizer.pad_token_id,
             **generate_kwargs,
         )

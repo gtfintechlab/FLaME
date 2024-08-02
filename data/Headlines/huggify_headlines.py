@@ -1,0 +1,73 @@
+import os
+import sys
+from pathlib import Path
+from huggingface_hub import login
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from datasets import Dataset, DatasetDict, load_dataset
+import logging
+
+# TODO: check if this is the right way to import from the src folder
+SRC_DIRECTORY = Path().cwd().resolve().parent
+DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
+if str(SRC_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(SRC_DIRECTORY))
+
+
+HF_TOKEN = os.getenv("HF_TOKEN")
+HF_ORGANIZATION = "gtfintechlab"
+DATASET = "Headlines"
+login(HF_TOKEN)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def huggify_data_headlines(push_to_hub=False, TASK=None, SEED=None, SPLITS=['train', 'test']):
+    try:
+        directory_path = DATA_DIRECTORY / "Headlines"
+        logger.debug(f"Directory path: {directory_path}")
+        
+        df = pd.read_csv(f"{directory_path}/headlines.csv")
+        
+        hf_dataset = DatasetDict()
+        
+        train_df, test_df = train_test_split(df, test_size=0.3, random_state=SEED)
+        
+        #train split
+        hf_dataset['train'] = Dataset.from_pandas(train_df)
+
+        # Add test split
+        hf_dataset['test'] = Dataset.from_pandas(test_df)
+
+        # Push to HF Hub
+        if push_to_hub:
+            hf_dataset.push_to_hub(
+                f"{HF_ORGANIZATION}/{DATASET}",
+                config_name= str(SEED),
+                private=True,
+                token=HF_TOKEN,
+            )
+
+            # TODO: push the dataset dict object not the datasets individually
+
+        logger.info(f"Finished processing Headlines dataset for seed : {SEED}")
+        return hf_dataset
+
+    except Exception as e:
+        logger.error(f"Error processing Headlines dataset: {str(e)}")
+        raise e
+
+
+if __name__ == "__main__":
+    SPLITS = ['train', 'test']
+
+    TASK = "Headlines"
+
+    SEEDS = (5768, 78516, 944601)
+    
+    
+
+    for SEED in list(reversed(SEEDS)):
+        huggify_data_headlines(push_to_hub=True, TASK=TASK, SEED=SEED, SPLITS=SPLITS)
+
