@@ -47,17 +47,9 @@ def huggify_data_sc(push_to_hub=False):
                         "label": train_output,
                     }
                 ),
-                "test": Dataset.from_dict(
-                    {
-                        "text": test_input, 
-                        "label": test_output
-                    }
-                ),
+                "test": Dataset.from_dict({"text": test_input, "label": test_output}),
                 "validation": Dataset.from_dict(
-                    {
-                        "text": val_input, 
-                        "label": val_output
-                    }
+                    {"text": val_input, "label": val_output}
                 ),
             }
         )
@@ -81,4 +73,3 @@ def huggify_data_sc(push_to_hub=False):
 
 if __name__ == "__main__":
     huggify_data_sc(push_to_hub=True)
-
