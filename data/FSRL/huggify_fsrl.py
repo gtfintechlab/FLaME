@@ -20,6 +20,7 @@ login(HF_TOKEN)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def ensure_list(item):
     if item is None:
         return ["N/A"]
@@ -27,22 +28,25 @@ def ensure_list(item):
         return item
     return [item]
 
+
 def sanitize_data(data):
     sanitized_data = []
     for idx, item in enumerate(data):
         sanitized_item = {
             "tokens": ensure_list(item.get("tokens")),
             "nodes": ensure_list(item.get("nodes")),
-            "edges": ensure_list(item.get("edges"))
+            "edges": ensure_list(item.get("edges")),
         }
         sanitized_data.append(sanitized_item)
     return sanitized_data
 
+
 def transform_tokens_to_list(data):
     for item in data:
-        if 'tokens' in item and isinstance(item['tokens'], str):
-            item['tokens'] = [item['tokens']]
+        if "tokens" in item and isinstance(item["tokens"], str):
+            item["tokens"] = [item["tokens"]]
     return data
+
 
 def huggify_data_fsrl(push_to_hub=False):
     try:
@@ -50,13 +54,13 @@ def huggify_data_fsrl(push_to_hub=False):
         logger.debug(f"Directory path: {directory_path}")
 
         def read_json_file(file_path):
-            with open(file_path, 'r') as file:
+            with open(file_path, "r") as file:
                 data = [json.loads(line) for line in file]
             return data
-        
-        train_data = read_json_file(f'{directory_path}/train.json')
-        test_data = read_json_file(f'{directory_path}/test.json')
-        val_data = read_json_file(f'{directory_path}/validation.json')
+
+        train_data = read_json_file(f"{directory_path}/train.json")
+        test_data = read_json_file(f"{directory_path}/test.json")
+        val_data = read_json_file(f"{directory_path}/validation.json")
 
         # Transform tokens to lists
         train_data = transform_tokens_to_list(train_data)
@@ -74,9 +78,9 @@ def huggify_data_fsrl(push_to_hub=False):
             edges = []
             for idx, item in enumerate(data):
                 try:
-                    tokens.append(item['tokens'])
-                    nodes.append(item['nodes'])
-                    edges.append(item['edges'])
+                    tokens.append(item["tokens"])
+                    nodes.append(item["nodes"])
+                    edges.append(item["edges"])
                 except Exception as e:
                     logger.error(f"Error processing item at index {idx}: {str(e)}")
                     logger.error(f"Problematic item: {json.dumps(item, indent=2)}")
@@ -130,6 +134,7 @@ def huggify_data_fsrl(push_to_hub=False):
     except Exception as e:
         logger.error(f"Error processing FSLR dataset: {str(e)}")
         raise e
+
 
 if __name__ == "__main__":
     huggify_data_fsrl(push_to_hub=True)

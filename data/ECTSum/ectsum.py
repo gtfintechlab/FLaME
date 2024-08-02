@@ -50,16 +50,10 @@ def huggify_data_ectsum(push_to_hub=False):
                     }
                 ),
                 "test": Dataset.from_dict(
-                    {
-                        "context": test_input, 
-                        "response": test_output
-                    }
+                    {"context": test_input, "response": test_output}
                 ),
                 "validation": Dataset.from_dict(
-                    {
-                        "context": val_input, 
-                        "response": val_output
-                    }
+                    {"context": val_input, "response": val_output}
                 ),
             }
         )
