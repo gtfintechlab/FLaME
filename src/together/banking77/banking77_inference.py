@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 from datasets import load_dataset
-from prompts_and_tokens import banking77_prompt, tokens
+from src.together.tokens import tokens
 
 # print(dataset)
 import together
