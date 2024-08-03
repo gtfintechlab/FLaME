@@ -5,8 +5,8 @@ import pandas as pd
 from datasets import load_dataset
 
 import together
-from src.together.prompts import ectsum_prompt
-from src.together.tokens import tokens
+from src.together_code.prompts import ectsum_prompt
+from src.together_code.tokens import tokens
 
 
 def ectsum_inference(args):
