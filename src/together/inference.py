@@ -3,9 +3,10 @@ import logging
 from datetime import date
 from pathlib import Path
 from time import time
-
+import os
+import sys
 import yaml
-
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from banking77.banking77_inference import banking77_inference
 from finbench.finbench_inference import finbench_inference
 from finentity.finentity_inference import finentity_inference
@@ -13,7 +14,7 @@ from finer.finer_inference import finer_inference
 from fomc.fomc_inference import fomc_inference
 from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
-from src.together.causal_classification.causal_classification_inference import causal_classification_inference 
+from causal_classification.causal_classification_inference import causal_classification_inference 
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 from src.utils.api_utils import make_api_call, save_raw_output
@@ -34,13 +35,10 @@ def parse_arguments():
     parser.add_argument("--task", type=str, help="Task to use")
     parser.add_argument("--api_key", type=str, help="API key to use")
     parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
+    
+    # Load config.yaml
     with open("src/utils/config.yaml", "r") as file:
         config = yaml.safe_load(file)
-
-        parser.add_argument("--model", type=str, help="Model to use")
-        parser.add_argument("--task", type=str, help="Task to use")
-        parser.add_argument("--api_key", type=str, help="API key to use")
-        parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
         parser.add_argument(
             "--max_tokens",
             type=int,
@@ -71,7 +69,9 @@ def parse_arguments():
             default="superflue",
             help="Version of the prompt to use",
         )
+    
     return parser.parse_args()
+
 
 
 def process_api_response(results, task, model):
@@ -82,6 +82,7 @@ def process_api_response(results, task, model):
 def main():
     args = parse_arguments()
     task = args.task.strip('"')
+    task = args.task.strip('""')
 
     task_inference_map = {
         "numclaim": numclaim_inference,
