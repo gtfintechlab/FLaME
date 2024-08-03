@@ -1,6 +1,10 @@
 import together
 import pandas as pd
 import time
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+
 from datasets import load_dataset
 from datetime import date
 from src.together.prompts import causal_classification_prompt
@@ -15,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
-def causal_classification_inference(args):
+def causal_classification_inference(args, make_api_call, process_api_response):
     together.api_key = args.api_key
     today = date.today()
     logger.info(f"Starting Causal Classification inference on {today}")
@@ -66,14 +70,14 @@ def causal_classification_inference(args):
             time.sleep(20.0)
             continue
 
-    results_path = (
-        ROOT_DIR
-        / "results"
-        / args.task
-        / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
+        results_path = (
+            ROOT_DIR
+            / "results"
+            / args.task
+            / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+        )
+        results_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(results_path, index=False)
+        logger.info(f"Results saved to {results_path}")
 
     return df
