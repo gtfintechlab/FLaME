@@ -242,19 +242,6 @@ def convfinqa_prompt(document: str):
     return prompt
 
 
-prompt_map = {
-    "numclaim_prompt": numclaim_prompt,
-    "fomc_prompt": fomc_prompt,
-    "finer_prompt": finer_prompt,
-    "fpb_prompt": fpb_prompt,
-    "finentity_prompt": finentity_prompt,
-    "ectsum_prompt": ectsum_prompt,
-    "banking77_prompt": banking77_prompt,
-    "finqa_prompt": finqa_prompt,
-    "convfinqa_prompt": convfinqa_prompt,
-}
-
-
 def finred_prompt(sentence: str):
     
     system_prompt = f"""Discard all the previous instructions. Behave like you are an expert in financial entity and relation extraction."""
@@ -268,7 +255,18 @@ def finred_prompt(sentence: str):
     
     return prompt
 
-
+prompt_map = {
+    "numclaim_prompt": numclaim_prompt,
+    "fomc_prompt": fomc_prompt,
+    "finer_prompt": finer_prompt,
+    "fpb_prompt": fpb_prompt,
+    "finentity_prompt": finentity_prompt,
+    "ectsum_prompt": ectsum_prompt,
+    "banking77_prompt": banking77_prompt,
+    "finqa_prompt": finqa_prompt,
+    "convfinqa_prompt": convfinqa_prompt,
+    "finred_prompt": finred_prompt,
+}
 
 
 def prompt_function(prompt_name):
