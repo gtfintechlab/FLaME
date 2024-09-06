@@ -241,6 +241,22 @@ def convfinqa_prompt(document: str):
 
     return prompt
 
+def tatqa_prompt(question: str, context: str):
+    
+    system_prompt = f"""Discard all the previous instructions. Behave like an expert in table-and-text-based question answering."""
+    
+    user_msg = f"""Given the following context (which contains a mixture of tables and textual information), 
+                answer the question based on the information provided. If the context includes tables, ensure 
+                you extract relevant information from both the table and the text to form a comprehensive answer.
+                
+                The question: {question}
+                
+                The context: {context}"""
+    
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+    
+    return prompt
+
 
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
@@ -252,6 +268,7 @@ prompt_map = {
     "banking77_prompt": banking77_prompt,
     "finqa_prompt": finqa_prompt,
     "convfinqa_prompt": convfinqa_prompt,
+    "tatqa_prompt": tatqa_prompt,
 }
 
 
