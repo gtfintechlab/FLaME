@@ -24,7 +24,7 @@ def finqa_inference(args):
 
     # Iterating through the train split of the dataset
     start_t = time.time()
-    for entry in dataset["train"]:
+    for entry in dataset["train"]: # type: ignore
         pre_text = " ".join(entry["pre_text"])
         post_text = " ".join(entry["post_text"])
 
@@ -38,7 +38,7 @@ def finqa_inference(args):
         combined_text = f"{pre_text} {post_text} {table_text} {question_0} {answer_0} {question_1} {answer_1}"
         context.append(combined_text)
 
-        actual_label = entry["answer_1"]
+        actual_label = entry["answer_1"] # type: ignore
         actual_labels.append(actual_label)
         try:
             model_response = together.Complete.create(
