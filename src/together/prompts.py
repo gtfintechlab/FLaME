@@ -255,5 +255,21 @@ prompt_map = {
 }
 
 
+def finred_prompt(sentence: str):
+    
+    system_prompt = f"""Discard all the previous instructions. Behave like you are an expert in financial entity and relation extraction."""
+    
+    user_msg = f"""Identify all financial entities (such as companies, financial instruments, dates, or money) 
+                and extract the relations between these entities from the following sentence.
+                Provide the relations in the format of (Entity 1, Relation, Entity 2).
+                The sentence: {sentence}"""
+    
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+    
+    return prompt
+
+
+
+
 def prompt_function(prompt_name):
     return prompt_map.get(prompt_name, None)
