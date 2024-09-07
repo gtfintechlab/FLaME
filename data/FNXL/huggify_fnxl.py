@@ -3,16 +3,16 @@ import sys
 from pathlib import Path
 from huggingface_hub import login
 import pandas as pd
-from datasets import Dataset, DatasetDict, load_dataset
+from datasets import Dataset, DatasetDict
 import logging
 
-
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
+# Set paths and tokens
 SRC_DIRECTORY = Path().cwd().resolve().parent
+DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
 if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
-
+# Set environment variables
 HF_TOKEN = os.environ["HF_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "FNXL"
@@ -21,40 +21,45 @@ login(HF_TOKEN)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def huggify_fnxl(push_to_hub=False, TASK=None):
+def huggify_data(push_to_hub=False):
     try:
+        # Path to the dataset
         directory_path = DATA_DIRECTORY / "FNXL"
         logger.debug(f"Directory path: {directory_path}")
 
-        dataset = load_dataset("TheFinAI/flare-fnxl")
+        # Load the train, test, and validation CSV files
+        train_df = pd.read_csv(f"{directory_path}/train_sample.csv")
+        test_df = pd.read_csv(f"{directory_path}/test_sample.csv")
+        val_df = pd.read_csv(f"{directory_path}/dev_sample.csv")
+        # logger.info(f"Train shape: {train_df.shape}, Test shape: {test_df.shape}, Validation shape: {val_df.shape}")
+        # logger.info(f"Train columns: {train_df.columns}")
+        # logger.info(f"Test columns: {test_df.columns}")
+        # logger.info(f"Validation columns: {val_df.columns}")
 
-        test_set = dataset["test"] if "test" in dataset else []
-        
-        hf_dataset = DatasetDict()
-    
+        splits = DatasetDict(
+            {
+                "train": Dataset.from_pandas(train_df),
+                "test": Dataset.from_pandas(test_df),
+                "validation": Dataset.from_pandas(val_df),
+            }
+        )
 
-        # Add test split
-        hf_dataset['test'] = test_set
-        
-
-        # Push to HF Hub
+        # Push to Hugging Face Hub if requested
         if push_to_hub:
-            hf_dataset.push_to_hub(
+            splits.push_to_hub(
                 f"{HF_ORGANIZATION}/{DATASET}",
-                config_name= "main",
+                config_name="main",
                 private=True,
                 token=HF_TOKEN,
             )
 
-        logger.info(f"Finished processing FNXL")
-        return hf_dataset
+        logger.info("Dataset processing complete.")
+        return splits
 
     except Exception as e:
-        logger.error(f"Error processing FNXL dataset: {str(e)}")
+        logger.error(f"Error processing dataset: {str(e)}")
         raise e
 
 
 if __name__ == "__main__":
-    TASK = "FNXL"
-
-    huggify_fnxl(push_to_hub=True, TASK=TASK)
+    huggify_data(push_to_hub=True)
