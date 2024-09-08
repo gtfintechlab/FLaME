@@ -35,6 +35,15 @@ def load_and_process_json(file_path):
     return pd.DataFrame(records)
 
 def huggify_data_fiqa(push_to_hub=False):
+    """
+    This dataset involves analyzing English financial texts to detect and classify target 
+    aspects from a predefined list and predict sentiment scores for each target aspect. 
+    Sentiment scores range from -1 (negative) to 1 (positive), and the dataset evaluates precision, 
+    recall, F1-score, and MSE for sentiment prediction.
+
+    Source: https://huggingface.co/datasets/ChanceFocus/fiqa-sentiment-classification
+    https://sites.google.com/view/fiqa/home
+    """
     try:
 
         train_file = DATA_DIRECTORY / "train.json"
