@@ -2,13 +2,8 @@ from datasets import load_dataset
 import json
 import os
 
-# Load the dataset
 ds = load_dataset("ChanceFocus/fiqa-sentiment-classification")
 
-# Create data directories if they don't exist
-#os.makedirs("data", exist_ok=True)
-
-# Prepare the data in the required format
 def format_data(split_name):
     split_data = ds[split_name] # type: ignore
     
@@ -28,7 +23,6 @@ def format_data(split_name):
     
     return formatted_data
 
-# Format and save data
 def save_data():
     splits = ["train", "valid", "test"]
     
