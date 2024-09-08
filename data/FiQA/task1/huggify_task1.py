@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 from huggingface_hub import login
@@ -14,9 +15,28 @@ login(HF_TOKEN)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def load_and_process_json(file_path):
+    """Load a JSON file and process it into a DataFrame."""
+    with open(file_path, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+
+    records = []
+    for item in data.values():
+        sentence = item['sentence']
+        for info in item['info']:
+            records.append({
+                'sentence': sentence,
+                'snippets': ' '.join(info['snippets']),  # Convert list to a string
+                'target': info['target'],
+                'sentiment_score': info['sentiment_score'],
+                'aspects': ' '.join(info['aspects'])  # Convert list to a string
+            })
+
+    return pd.DataFrame(records)
+
 def huggify_data_fiqa(push_to_hub=False):
     try:
-        
+
         train_file = DATA_DIRECTORY / "train.json"
         test_file = DATA_DIRECTORY / "test.json"
         valid_file = DATA_DIRECTORY / "valid.json"
@@ -24,6 +44,10 @@ def huggify_data_fiqa(push_to_hub=False):
         train_data = pd.read_json(train_file)
         test_data = pd.read_json(test_file)
         valid_data = pd.read_json(valid_file)
+
+        train_data = load_and_process_json(train_file)
+        test_data = load_and_process_json(test_file)
+        valid_data = load_and_process_json(valid_file)
 
         splits = DatasetDict(
             {
