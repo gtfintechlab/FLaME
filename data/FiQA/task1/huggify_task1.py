@@ -5,7 +5,7 @@ import pandas as pd
 from datasets import Dataset, DatasetDict
 import logging
 
-DATA_DIRECTORY = Path().cwd() / "data" / "FiQA" / "task1"
+DATA_DIRECTORY = Path().cwd().parent / "data" / "FiQA" / "task1"
 HF_TOKEN = os.getenv("HF_TOKEN")  
 HF_ORGANIZATION = "gtfintechlab"  
 DATASET = "FiQA/Task2"
