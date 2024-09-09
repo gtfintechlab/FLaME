@@ -222,6 +222,15 @@ def banking77_prompt(sentence: str):
 
     return prompt
 
+def fiqa_prompt(document: str):
+
+    prompt = f"""Discard all previous instructions. Behave like you are a financial sentiment analysis expert. 
+                Your task is to analyze the provided financial sentence, identify the target aspect, and determine the sentiment score. 
+                The sentiment score should range from -1 (negative) to 1 (positive). \n\nThe context:
+                {document}"""
+
+    return prompt
+
 
 def finqa_prompt(document: str):
 
@@ -252,6 +261,7 @@ prompt_map = {
     "banking77_prompt": banking77_prompt,
     "finqa_prompt": finqa_prompt,
     "convfinqa_prompt": convfinqa_prompt,
+    "fiqa_prompt": fiqa_prompt
 }
 
 
