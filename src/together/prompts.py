@@ -251,6 +251,13 @@ def convfinqa_prompt(document: str):
     return prompt
 
 
+def fiqa_task2_prompt(document: str):
+    prompt = f"""Discard all previous instructions. Behave like you are a financial expert specialized in answering financial questions.
+                Your task is to read the provided financial context and answer the associated question as accurately and concisely as possible.\n\nThe context:
+                {document}"""
+
+    return prompt
+
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
     "fomc_prompt": fomc_prompt,
@@ -261,7 +268,8 @@ prompt_map = {
     "banking77_prompt": banking77_prompt,
     "finqa_prompt": finqa_prompt,
     "convfinqa_prompt": convfinqa_prompt,
-    "fiqa_prompt": fiqa_prompt
+    "fiqa_prompt": fiqa_prompt,
+    "fiqa_task2_prompt":fiqa_task2_prompt
 }
 
 
