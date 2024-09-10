@@ -43,11 +43,12 @@ def fiqa_task2_inference(args):
             )
             
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"].strip()
+            response_label = model_response["output"]["choices"][0]["text"]
             llm_responses.append(response_label)
+           # print(llm_responses)
             
            
-            print(f"Model response for '{question}': '{complete_responses}'")
+            # print(f"Model response for '{question}': '{complete_responses}'")
             
             
             df = pd.DataFrame(
