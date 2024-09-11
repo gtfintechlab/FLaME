@@ -131,6 +131,15 @@ def ectsum_prompt(document: str):
 
     return prompt
 
+def edtsum_prompt(document: str):
+    prompt = f"""Discard all the previous instructions.
+        Behave like you are an expert at summarization tasks.
+        You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization on this text. 
+        Use your understanding of the content to express the main ideas and crucial details in a shorter, coherent, and natural sounding text.
+        \n\n The document:
+        {document}"""
+    
+    return prompt
 
 banking77_list = [
     "activate_my_card",
@@ -265,6 +274,7 @@ prompt_map = {
     "fpb_prompt": fpb_prompt,
     "finentity_prompt": finentity_prompt,
     "ectsum_prompt": ectsum_prompt,
+    "edtsum_prompt": edtsum_prompt,
     "banking77_prompt": banking77_prompt,
     "finqa_prompt": finqa_prompt,
     "convfinqa_prompt": convfinqa_prompt,
