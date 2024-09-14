@@ -25,7 +25,8 @@ def parse_file(file_path):
     entities = []
     relations = []
 
-    with open(file_path, 'r') as file:
+    # Specify encoding when opening the file
+    with open(file_path, 'r', encoding='utf-8') as file:
         for line in file:
             if line.strip():
                 parts = line.strip().split(" | ")
@@ -46,7 +47,6 @@ def parse_file(file_path):
                         entities_list.append((entity1, entity2))
                         relations_list.append(relation)
                     except ValueError as e:
-                        # Log the error and the problematic triplet
                         logger.error(f"Error parsing triplet '{triplet}': {e}")
                         print(f"Problematic triplet: {triplet}")
                         continue
