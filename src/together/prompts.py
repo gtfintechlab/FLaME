@@ -241,6 +241,31 @@ def convfinqa_prompt(document: str):
 
     return prompt
 
+def fnxl_prompt(sentence: str, numeral_tag: str, company: str):
+    """
+    Generates a prompt for FNXL to classify numerals in a financial sentence.
+    
+    Args:
+        sentence (str): The financial sentence containing the numeral.
+        numeral_tag (str): The numeral or tag in the sentence to classify.
+        company (str): The company related to the sentence.
+        
+    Returns:
+        str: The formatted prompt for FNXL classification.
+    """
+    
+    system_prompt = f"""Discard all the previous instructions. Behave like an expert in numeric labeling of financial data."""
+    
+    user_msg = f"""Given the following sentence from a financial report, identify the extreme numeric label for the numeral: {numeral_tag}. 
+                The numeral might be an outlier or represent a significant financial event. Use the sentence context and company information to classify the numeral as ‘HIGH’, ‘LOW’, or ‘NORMAL’. 
+                
+                The sentence: {sentence}
+                
+                The company: {company}"""
+    
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+    
+    return prompt
 
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
@@ -252,6 +277,7 @@ prompt_map = {
     "banking77_prompt": banking77_prompt,
     "finqa_prompt": finqa_prompt,
     "convfinqa_prompt": convfinqa_prompt,
+    "fnxl_prompt": fnxl_prompt,
 }
 
 
