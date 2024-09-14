@@ -242,6 +242,37 @@ def convfinqa_prompt(document: str):
     return prompt
 
 
+def causal_detection_prompt(tokens: list):
+    """
+    Generates a prompt for Causal Detection to classify tokens in a sentence into cause, effect, or other categories,
+    with an explanation of the B- and I- labeling scheme.
+    
+    Args:
+        tokens (list): The list of tokens from a sentence to be classified.
+        
+    Returns:
+        str: The formatted prompt for Causal Detection classification.
+    """
+    
+    system_prompt = f"""Discard all previous instructions. Behave like an expert in cause and effect detection in text."""
+    
+    user_msg = f"""You are given the following tokenized sentence. Classify each token using the following labels:
+                - 'B-CAUSE': The beginning of a cause phrase.
+                - 'I-CAUSE': A token inside a cause phrase, but not the first token.
+                - 'B-EFFECT': The beginning of an effect phrase.
+                - 'I-EFFECT': A token inside an effect phrase, but not the first token.
+                - 'O': A token that is neither part of a cause nor an effect.
+                
+                Provide the classification for each token in the format 'token:label'.
+                
+                The tokens: {', '.join(tokens)}"""
+    
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+    
+    return prompt
+
+
+
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
     "fomc_prompt": fomc_prompt,
@@ -252,6 +283,7 @@ prompt_map = {
     "banking77_prompt": banking77_prompt,
     "finqa_prompt": finqa_prompt,
     "convfinqa_prompt": convfinqa_prompt,
+    "causal_detection_prompt": causal_detection_prompt,
 }
 
 
