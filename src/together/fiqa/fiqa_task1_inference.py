@@ -60,10 +60,12 @@ def fiqa_inference(args):
                     "complete_responses": complete_responses,
                 }
             )
-            time.sleep(10) 
+            # time.sleep(10) 
 
         except Exception as e:
             print(f"Error encountered: {e}")
+            complete_responses.append(None)
+            llm_responses.append(None)
             time.sleep(20.0)  
     
     return df
