@@ -40,13 +40,14 @@ def edtsum_inference(args):
           
             response_label = model_response["output"]["choices"][0]["text"]
 
-            time.sleep(30.0)
+            # time.sleep(30.0)
             llm_responses.append(response_label)
     
 
         except Exception as e:
             print(f"Error at index {i}: {e}")
-            
+            complete_responses.append(None)
+            llm_responses.append(None)
             time.sleep(30.0)
 
    
