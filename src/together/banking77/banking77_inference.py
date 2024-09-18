@@ -68,6 +68,9 @@ def banking77_inference(args):
         except Exception as e:
             print(e)
             i = i - 1
+            documents.pop()
+            actual_labels.pop()
+
             time.sleep(20.0)
 
         return df
