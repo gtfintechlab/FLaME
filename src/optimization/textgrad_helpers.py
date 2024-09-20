@@ -60,14 +60,15 @@ def extract_answer(prompt):
     client = Together()
     try: 
         model_response = client.chat.completions.create(
-            model='meta-llama/Meta-Llama-3-8b-Instruct',
+            model='mistralai/Mixtral-8x7B-Instruct-v0.1',
             messages=[{'role': 'system', 'content': "Discard all previous instructions. Behave as if you are an text extraction model. You are only extracting the answer."},
                         {'role': 'user', 'content': prompt}],
             max_tokens=20, temperature=0.7, top_k=50, top_p=0.7,repetition_penalty=1.1
         )
         response = model_response.choices[0].message.content
         return response.strip().split()[0]
-    except:
+    except Exception as e:
+        print(f"Error extracting answer: {e}")
         return None
     
 # Load and split huggingface dataset into training, validation, and testing sets 

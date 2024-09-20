@@ -1,7 +1,6 @@
 import together
 import numpy as np
 import pandas as pd
-from tokens import tokens
 import os
 import sys
 sys.path.insert(0, r"C:\Users\mikad\Documents\GitHub\textgrad")
@@ -29,6 +28,7 @@ def textgrad_optimization(args):
     training_data, val_data, testing_data = task_helper['load_dataset'](args.hf_token)
     starting_prompt = task_helper['starting_prompt']
     constraints = task_helper['constraints']
+    print(textgrad)
 
     # initialize textgrad model & optimizer
     engine = get_engine(args.model)
@@ -110,17 +110,23 @@ def parse_arguments():
     return parser.parse_args()
 
 def fomc_example():
+    
     args = {
         "api_key": together_token,
         "hf_token": hf_token,
         "task": "fomc_communication",
-        "model": "together-mistralai/Mistral-7B-Instruct-v0.3",
+        "model": "together-meta-llama/Meta-Llama-3-8b-Instruct-Turbo",
+        "max_tokens": 128,
+        "temperature": 0.7,
+        "top_k": 50,
+        "top_p": 0.7,
+        "repetition_penalty": 1.1,
         "num_epochs": 3,
         "batch_size": 5
     }
 
     args = argparse.Namespace(**args)
-    textgrad_optimization(args)
+    return textgrad_optimization(args)
 
 if __name__ == "__main__":
     results = fomc_example()
