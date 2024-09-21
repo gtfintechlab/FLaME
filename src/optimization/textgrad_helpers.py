@@ -72,17 +72,17 @@ def extract_answer(prompt):
         return None
     
 # Load and split huggingface dataset into training, validation, and testing sets 
-def load_hf_dataset(hf_token, dataset_name, x_column, y_column, train_size = 0.5, val_size = 0.1):
+def load_hf_dataset(hf_token, dataset_name, extract_x, y_column, train_size = 0.5, val_size = 0.1):
     if hf_token is None:
         raise ValueError("Please provide a valid Hugging Face API token.")
     if (train_size + val_size) > 1:
         raise ValueError("Train and validation sizes must sum to less than 1.")
     dataset = load_dataset(dataset_name, token=hf_token)
-    training = [(data[x_column], data[y_column]) for data in dataset['train']]
+    training = [(extract_x(data), data[y_column]) for data in dataset['train']]
     random.shuffle(training)
     training_data = training[:math.ceil(len(training)*train_size)]
     val_data = training[math.ceil(len(training)*val_size):]
-    testing_data = [(data[x_column], data[y_column]) for data in dataset['test']]
+    testing_data = [(extract_x(data), data[y_column]) for data in dataset['test']]
     return training_data, val_data, testing_data
 
 # Pick n random samples from each class in the dataset
@@ -99,14 +99,14 @@ def pick_random(data, n):
     return result
 
 # Load and split huggingface dataset into training, validation, and testing sets with equal class balance
-def load_hf_dataset_class_split(hf_token, dataset_name, x_column, y_column, num_classes, train_size = 0.5, val_size = 0.1):
+def load_hf_dataset_class_split(hf_token, dataset_name, extract_x, y_column, num_classes, train_size = 0.5, val_size = 0.1):
     if hf_token is None:
         raise ValueError("Please provide a valid Hugging Face API token.")
     if (train_size + val_size) > 1:
         raise ValueError("Train and validation sizes must sum to less than 1.")
     dataset = load_dataset(dataset_name, token=hf_token)
     
-    training = [(data[x_column], data[y_column]) for data in dataset['train']]
+    training = [(extract_x(data), data[y_column]) for data in dataset['train']]
     random.shuffle(training)
     training_data_options = training[:math.ceil(len(training)*(1-val_size*2))]
     val_data_options = training[math.ceil(len(training)*(1-val_size*2)):]
@@ -115,14 +115,14 @@ def load_hf_dataset_class_split(hf_token, dataset_name, x_column, y_column, num_
     training_data = pick_random(training_data_options, n = math.ceil(training_count // num_classes))
     val_count = math.ceil(len(training) * val_size)
     val_data = pick_random(val_data_options, n = math.ceil(val_count // num_classes))
-    testing_data = [(data[x_column], data[y_column]) for data in dataset['test']]
+    testing_data = [(extract_x(data), data[y_column]) for data in dataset['test']]
     return training_data, val_data, testing_data
 
 # Helper function for loading FOMC communication dataset
 def load_fomc_communication(hf_token):
     return load_hf_dataset_class_split(
         hf_token=hf_token, dataset_name='gtfintechlab/fomc_communication',
-        x_column = 'sentence', y_column = 'label', 
+        extract_x = lambda x : f"Sentence to classify: {x['sentence']}", y_column = 'label', 
         num_classes = 3, train_size = 0.5, val_size = 0.1
     )
 
@@ -132,11 +132,52 @@ def eval_fomc_communication(prediction: Variable, ground_truth_answer: Variable)
     pred = extract_answer(f"Extract the one word answer (HAWKISH, DOVISH, or NEUTRAL) from the following text: {str(prediction.value).lower()}.\nDo not enter any other text.")
     return int((pred != None and str(pred).lower() == str(mapping[int(ground_truth_answer.value)]).lower()))
 
-# Helper function for loading ECTSum dataset
 def load_ect_sum(hf_token):
     return load_hf_dataset(
         hf_token=hf_token, dataset_name='gtfintechlab/ECTSum',
-        x_column = 'context', y_column = 'response',
+        extract_x = lambda x : f"Context to extract: {x['context']}", y_column = 'response',
+        train_size = 0.5, val_size = 0.1
+    )
+
+def load_finbench(hf_token):
+    return load_hf_dataset(
+        hf_token=hf_token, dataset_name='gtfintechlab/finbench',
+        extract_x = lambda x : f"Tabular data: {x['X_ml']}\nProfile data: {x['X_profile']}", y_column = 'y',
+        train_size = 0.5, val_size = 0.1
+    )
+
+def load_finentity(hf_token):
+    return load_hf_dataset(
+        hf_token=hf_token, dataset_name='gtfintechlab/finentity',
+        extract_x = lambda x : f"Sentence: {x['content']}", y_column = 'annotations',
+        train_size = 0.5, val_size = 0.1
+    )
+
+def load_finer(hf_token):
+    return load_hf_dataset(
+        hf_token=hf_token, dataset_name='gtfintechlab/finer_ord_encoded',
+        extract_x = lambda x : f"Sentence: {x['context']}", y_column = 'response',
+        train_size = 0.5, val_size = 0.1
+    )
+
+def load_finqa(hf_token):
+    return load_hf_dataset(
+        hf_token=hf_token, dataset_name='gtfintechlab/finqa',
+        extract_x = lambda x : f"{' '.join(x['pre_text'])} {' '.join(x['post_text'])} {' '.join([' '.join(row) for row in x['table_ori']])}\nQuestion: {x['question']}", y_column = 'answer',
+        train_size = 0.5, val_size = 0.1
+    )
+
+def load_fpb(hf_token):
+    return load_hf_dataset(
+        hf_token=hf_token, dataset_name='gtfintechlab/financial_phrasebank',
+        extract_x = lambda x : f"Sentence: {x['sentence']}", y_column = 'label',
+        train_size = 0.5, val_size = 0.1
+    )
+
+def load_numclaim(hf_token):
+    return load_hf_dataset(
+        hf_token=hf_token, dataset_name='gtfintechlab/Numclaim',
+        extract_x = lambda x : f"Sentence: {x['context']}", y_column = 'response',
         train_size = 0.5, val_size = 0.1
     )
 
