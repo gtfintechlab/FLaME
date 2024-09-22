@@ -2,14 +2,14 @@ import logging
 import time
 from datetime import date
 from pathlib import Path
-
+import together
 import pandas as pd
 from datasets import load_dataset
 import nltk
 
 # Mock imports for the custom causal detection prompt and tokens
-from src.together.prompts import causal_detection_prompt  # To be implemented for Causal Detection
-from src.together.tokens import tokens  # Token logic for Causal Detection
+from src.together_code.prompts import causal_detection_prompt  # To be implemented for Causal Detection
+from src.together_code.tokens import tokens  # Token logic for Causal Detection
 
 nltk.download("punkt")
 
@@ -20,13 +20,13 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 
-def causal_detection_inference(args):
+def causal_detection_inference(args, make_api_call, process_api_response):
     today = date.today()
     logger.info(f"Starting Causal Detection inference on {today}")
 
     logger.info("Loading dataset...")
     # Replace with your Hugging Face or custom Causal Detection dataset path
-    dataset = load_dataset("gtfintechlab/causal_detection", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/CausalDetection", token=args.hf_token)
 
     # Initialize lists to store tokens, tags, and model responses
     tokens_list = []

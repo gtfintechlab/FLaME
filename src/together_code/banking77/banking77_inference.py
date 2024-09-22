@@ -1,23 +1,25 @@
-# from datasets import load_dataset
-
-# dataset = load_dataset("gtfintechlab/banking77", token="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")
-
 import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler()])
+logger = logging.getLogger(__name__)
+
+import together
 import time
 from datetime import date
 from pathlib import Path
-
 import pandas as pd
+import sys
 from datasets import load_dataset
-from prompts_and_tokens import banking77_prompt, tokens
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+SRC_DIRECTORY = Path().cwd().resolve() / "src"
+DATA_DIRECTORY = Path().cwd().resolve() / "data"
+logger.debug(f'SRC_DIRECTORY = {SRC_DIRECTORY}')
+logger.debug(f'DATA_DIRECTORY = {DATA_DIRECTORY}')
+if str(SRC_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(SRC_DIRECTORY))
 
-# print(dataset)
-import together
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+from src.together_code.prompts import banking77_prompt
+from src.together_code.tokens import tokens
 
 
 def banking77_inference(args):
@@ -56,7 +58,7 @@ def banking77_inference(args):
                 }
             )
             results_path = (
-                ROOT_DIR
+                SRC_DIR
                 / "results"
                 / args.task
                 / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
@@ -67,6 +69,9 @@ def banking77_inference(args):
         except Exception as e:
             print(e)
             i = i - 1
+            documents.pop()
+            actual_labels.pop()
+
             time.sleep(20.0)
 
         return df
