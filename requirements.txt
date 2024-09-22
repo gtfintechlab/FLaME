@@ -9,4 +9,8 @@ tiktoken
 requests-mock
 openai
 pyyaml
+backoff
 python-dotenv
+datasets
+nltk
+scikit-learn

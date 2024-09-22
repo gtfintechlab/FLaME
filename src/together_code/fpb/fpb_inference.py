@@ -17,7 +17,7 @@ logger = setup_logger("fpb_inference", LOG_DIR / "fpb_inference.log")
 
 import yaml
 
-with open("src/utils/config.yaml", "r") as file:
+with open("config.yaml", "r") as file:
     config = yaml.safe_load(file)
 
 BATCH_SIZE = 10  # Adjust this value based on API limitations and performance

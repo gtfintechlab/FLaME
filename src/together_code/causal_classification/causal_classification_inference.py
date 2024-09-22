@@ -7,11 +7,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../.
 
 from datasets import load_dataset
 from datetime import date
-from src.together.prompts import causal_classification_prompt
+from src.together_code.prompts import causal_classification_prompt
 from pathlib import Path
 import logging
-from src.together.models import get_model_name
-from src.together.tokens import tokens
+from src.together_code.models import get_model_name
+from src.together_code.tokens import tokens
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

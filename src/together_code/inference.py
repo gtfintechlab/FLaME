@@ -37,7 +37,7 @@ def parse_arguments():
     parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
     
     # Load config.yaml
-    with open("src/utils/config.yaml", "r") as file:
+    with open("config.yaml", "r") as file:
         config = yaml.safe_load(file)
         parser.add_argument(
             "--max_tokens",

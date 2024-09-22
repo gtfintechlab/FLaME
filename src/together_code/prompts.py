@@ -103,7 +103,8 @@ def finentity_prompt(sentence: str):
     return prompt
 
 
-# def finbench_prompt(sentence: str):
+def finbench_prompt(sentence: str):
+    pass
 
 #     prompt = f'''Discard all the previous instructions. Behave like you are an expert entity level sentiment
 #                 classifier. Below is a sentence from a financial document. From the sentence, identify all the entities

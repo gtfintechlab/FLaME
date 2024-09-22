@@ -1,5 +1,5 @@
 # SuperFLUE (Financial Language Understanding Evaluation)
-Corresponding Authors: `glennmatlin[at]gatech[dot]edu`
+Corresponding Authors: `glennmatlin[at]gatech[dot]edu` `huzaifa[at]gatech[dot]edu`
 
 ## Project Setup
 
