@@ -4,56 +4,41 @@ from datetime import date
 from pathlib import Path
 
 import pandas as pd
+import tqdm
 from datasets import load_dataset
 
 import together
-from src.together.prompts import finbench_prompt
-from src.together.tokens import tokens
+from src.together_code.prompts import fomc_prompt
+from src.together_code.tokens import tokens
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def finbench_inference(args):
+def fomc_inference(args):
     together.api_key = args.api_key
     today = date.today()
-    logger.info(f"Starting FinBench inference on {today}")
-
-    # Load dataset
+    logger.info(f"Starting FOMC inference on {today}")
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/finbench", token=args.hf_token)
-
-    # Initialize lists to store actual labels and model responses
-    X_ml_data = []
-    X_ml_unscale_data = []
-    y_data = []
+    dataset = load_dataset("gtfintechlab/fomc_communication", token=args.hf_token)
+    sentences = []
     llm_responses = []
+    actual_labels = []
     complete_responses = []
-
-    logger.info("Starting inference on dataset...")
+    logger.info(f"Starting inference on dataset: {args.task}...")
     start_t = time.time()
 
-    # Iterating through the test split of the dataset
-    for i in range(len(dataset["test"])):
-        instance = dataset["test"][i]
-        X_ml = instance["X_ml"]
-        X_ml_unscale = instance["X_ml_unscale"]
-        y = instance["y"]
-        X_ml_data.append(X_ml)
-        X_ml_unscale_data.append(X_ml_unscale)
-        y_data.append(y)
+    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"):
+        sentence = dataset["test"][i]["sentence"]
+        actual_label = dataset["test"][i]["label"]
+        sentences.append(sentence)
+        actual_labels.append(actual_label)
 
         try:
-            logger.info(f"Processing instance {i+1}/{len(dataset['test'])}")
-
-            prompt = (
-                finbench_prompt
-                + f"Tabular data: {X_ml}\nProfile data: {instance['X_profile']}\nPredict the risk category:"
-            )
-
+            logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}")
             model_response = together.Complete.create(
-                prompt=prompt,
+                prompt=fomc_prompt(sentence),
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
@@ -67,16 +52,15 @@ def finbench_inference(args):
             llm_responses.append(response_label)
 
         except Exception as e:
-            logger.error(f"Error processing instance {i+1}: {e}")
-            time.sleep(20.0)
+            logger.error(f"Error processing sentence {i+1}: {e}")
+            time.sleep(10.0)
             continue
 
     df = pd.DataFrame(
         {
-            "X_ml": X_ml_data,
-            "X_ml_unscale": X_ml_unscale_data,
-            "y": y_data,
+            "sentences": sentences,
             "llm_responses": llm_responses,
+            "actual_labels": actual_labels,
             "complete_responses": complete_responses,
         }
     )
