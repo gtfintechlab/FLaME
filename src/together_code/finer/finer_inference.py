@@ -3,17 +3,13 @@ import time
 from datetime import date
 from pathlib import Path
 
-# Ensure the NLTK data is downloaded
-import nltk
 import pandas as pd
 from datasets import load_dataset
 
 import together
-from src.together.models import get_model_name
-from src.together.prompts import finer_prompt
-from src.together.tokens import tokens
-
-nltk.download("punkt")
+from src.together_code.models import get_model_name
+from src.together_code.prompts import finer_prompt
+from src.together_code.tokens import tokens
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -22,13 +18,13 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 
-def finentity_inference(args):
+def finer_inference(args):
     together.api_key = args.api_key
     today = date.today()
-    logger.info(f"Starting FinEntity inference on {today}")
+    logger.info(f"Starting FinER inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/finentity", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/finer_ord_encoded", token=args.hf_token)
 
     # Initialize lists to store actual labels and model responses
     sentences = []
@@ -39,8 +35,8 @@ def finentity_inference(args):
     logger.info(f"Starting inference on {args.task}...")
     start_t = time.time()
     for i in range(len(dataset["test"])):
-        sentence = dataset["test"][i]["content"]
-        actual_label = dataset["test"][i]["annotations"]
+        sentence = dataset["test"][i]["context"]
+        actual_label = dataset["test"][i]["response"]
         sentences.append(sentence)
         actual_labels.append(actual_label)
         try:

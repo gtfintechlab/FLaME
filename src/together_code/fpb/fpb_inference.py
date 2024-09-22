@@ -7,8 +7,8 @@ import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
 
-from src.together.models import get_model_name
-from src.together.prompts import fpb_prompt
+from src.together_code.models import get_model_name
+from src.together_code.prompts import fpb_prompt
 from src.utils.logging_utils import setup_logger
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
