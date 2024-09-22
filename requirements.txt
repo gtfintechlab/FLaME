@@ -1,0 +1,12 @@
+together
+ruff
+pytest
+pandas
+pre-commit
+matplotlib
+seaborn
+tiktoken
+requests-mock
+openai
+pyyaml
+python-dotenv
