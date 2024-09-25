@@ -184,8 +184,23 @@ def load_numclaim(hf_token):
     )
 
 def eval_numclaim(prediction: Variable, ground_truth_answer: Variable):
-    pred = extract_answer(f"Extract the word answer (IN CLAIM, OUT OF CLAIM) from the following text: {str(prediction.value).lower()}.\nDo not enter any other text.")
+    pred = extract_answer(f"Extract the exact answer (IN CLAIM, OUT OF CLAIM) from the following text: {str(prediction.value).lower()}.\nDo not enter any other text.")
     return pred != None and (str(pred).upper().replace(' ', '') == str(ground_truth_answer))
+
+def load_banking77(hf_token):
+    return load_hf_dataset(
+        hf_token=hf_token, dataset_name='gtfintechlab/banking77',
+        extract_x = lambda x : f"Sentence: {x['text']}", y_column = 'label',
+        train_size = 0.5, val_size = 0.1
+    )
+
+banking77_list = [] # fill in later - in prompts.py
+
+def eval_banking77(prediction: Variable, ground_truth_answer: Variable):
+    pred = extract_answer(f"Extract the answer that is an option in this list {', '.join(banking77_list)} from the following text: {str(prediction.value).lower()}.\nDo not enter any other text. Your output must be in the same format as the option in the list.")
+    if (str(pred) not in banking77_list):
+        raise ValueError(f"Invalid output: {pred}. Not in banking77 list.")
+    return pred != None and (str(pred) == str(ground_truth_answer))
 
 # Map task names to task-specific helpers
 # Each task should have a starting prompt, constraints (if any exist), evaluation function, and dataset loading function
