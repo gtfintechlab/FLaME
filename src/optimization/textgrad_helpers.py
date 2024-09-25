@@ -168,6 +168,8 @@ def load_finqa(hf_token):
     )
 
 def load_fpb(hf_token):
+    # load_dataset("financial_phrasebank", "sentences_allagree")
+    # no testing dataset
     return load_hf_dataset(
         hf_token=hf_token, dataset_name='gtfintechlab/financial_phrasebank',
         extract_x = lambda x : f"Sentence: {x['sentence']}", y_column = 'label',
@@ -180,6 +182,10 @@ def load_numclaim(hf_token):
         extract_x = lambda x : f"Sentence: {x['context']}", y_column = 'response',
         train_size = 0.5, val_size = 0.1
     )
+
+def eval_numclaim(prediction: Variable, ground_truth_answer: Variable):
+    pred = extract_answer(f"Extract the word answer (IN CLAIM, OUT OF CLAIM) from the following text: {str(prediction.value).lower()}.\nDo not enter any other text.")
+    return pred != None and (str(pred).upper().replace(' ', '') == str(ground_truth_answer))
 
 # Map task names to task-specific helpers
 # Each task should have a starting prompt, constraints (if any exist), evaluation function, and dataset loading function
