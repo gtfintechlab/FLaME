@@ -11,15 +11,16 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def extraction_prompt(llm_response: str):
-    prompt = f'''Based on the following attributes, give a score of 0 if the news headline does not contain the information and 1 if it does:
-                    - Price or Not: Does the news item talk about price or not?
-                    - Direction Up: Does the news headline talk about price going up or not?
-                    - Direction Down: Does the news headline talk about price going down or not?
-                    - Direction Constant: Does the news headline talk about price remaining constant or not?
-                    - Past Price: Does the news headline talk about an event in the past?
-                    - Future Price: Does the news headline talk about an event in the future?
-                    - Past News: Does the news headline talk about a general event (apart from prices) in the past?
-                Extract the relevant information from the following response and provide a score of 0 or 1 for each attribute:
+    prompt = f'''Extract the relevant information from the following LLM response and provide a score of 0 or 1 for each attribute based on the content. Format your output as a JSON object with the following keys:
+                    - "Price_or_Not": 0 if the response does not talk about price, 1 if it does.
+                    - "Direction_Up": 0 if the response does not indicate the price going up, 1 if it does.
+                    - "Direction_Down": 0 if the response does not indicate the price going down, 1 if it does.
+                    - "Direction_Constant": 0 if the response does not mention the price remaining constant, 1 if it does.
+                    - "Past_Price": 0 if the response does not refer to a past event related to price, 1 if it does.
+                    - "Future_Price": 0 if the response does not refer to a future event related to price, 1 if it does.
+                    - "Past_News": 0 if the response does not mention a general past event (unrelated to price), 1 if it does.
+                    
+                Here is the LLM response to analyze:
                 "{llm_response}"'''
 
     return prompt
