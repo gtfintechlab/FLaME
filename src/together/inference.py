@@ -7,6 +7,7 @@ from datetime import date
 from pathlib import Path
 from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
+from fnxl.fnxl_inference import fnxl_inference
 from fomc.fomc_inference import fomc_inference
 from finbench.finbench_inference import finbench_inference
 from finer.finer_inference import finer_inference
@@ -111,6 +112,7 @@ def main():
         'fiqa_task1': fiqa_inference,
         'fiqa_task2' : fiqa_task2_inference,
         'edt_sum':edtsum_inference
+        'fnxl': fnxl_inference,
     }
 
     if task in task_inference_map:
