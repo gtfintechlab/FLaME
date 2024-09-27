@@ -9,6 +9,7 @@ from pathlib import Path
 # from tasks_inferences import fpb_inference, fomc_inference, numclaim_inference
 from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
+from fnxl.fnxl_inference import fnxl_inference
 from fomc.fomc_inference import fomc_inference
 from finbench.finbench_inference import finbench_inference
 from finer.finer_inference import finer_inference
@@ -77,7 +78,8 @@ def main():
         'finbench': finbench_inference,
         'finer': finer_inference,
         'finentity': finentity_inference,
-        'headlines': headlines_inference
+        'headlines': headlines_inference,
+        'fnxl': fnxl_inference,
     }
 
     if task in task_inference_map:
