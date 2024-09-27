@@ -5,9 +5,10 @@ import os
 from datetime import date
 from pathlib import Path
 from time import time
-
+import os
+import sys
 import yaml
-
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from banking77.banking77_inference import banking77_inference
 from finbench.finbench_inference import finbench_inference
 from finentity.finentity_inference import finentity_inference
@@ -15,6 +16,7 @@ from finer.finer_inference import finer_inference
 from fomc.fomc_inference import fomc_inference
 from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
+from causal_classification.causal_classification_inference import causal_classification_inference 
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from causal_detection.cd_inference import causal_detection_inference
 
@@ -78,7 +80,9 @@ def parse_arguments():
             default="superflue",
             help="Version of the prompt to use",
         )
+    
     return parser.parse_args()
+
 
 
 def process_api_response(results, task, model):
@@ -89,6 +93,7 @@ def process_api_response(results, task, model):
 def main():
     args = parse_arguments()
     task = args.task.strip('"')
+    task = args.task.strip('""')
 
     task_inference_map = {
         "numclaim": numclaim_inference,
@@ -99,6 +104,7 @@ def main():
         "finentity": finentity_inference,
         "banking77": banking77_inference,
         "causal_detection": causal_detection_inference,
+        "causal_classification": causal_classification_inference,
     }
 
     if task in task_inference_map:

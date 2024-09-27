@@ -242,6 +242,19 @@ def convfinqa_prompt(document: str):
 
     return prompt
 
+def causal_classification_prompt(text: str):
+    system_prompt = f"""Discard all the previous instructions. Behave like you are an expert causal classification model."""
+    user_msg = f"""Below is a sentence. Classify it into one of the following categories: 
+                    0 - Non-causal
+                    1 - Direct causal
+                    2 - Indirect causal
+                    Only return the label number without any additional text. \n\n {text}"""
+
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+
+    return prompt
+
+
 
 def causal_detection_prompt(tokens: list):
     """

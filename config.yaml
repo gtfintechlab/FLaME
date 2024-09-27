@@ -1,3 +1,8 @@
+model_name: meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo
+dataset: causal_classification_inference
+sample_size: 50
+method: random
+
 fpb:
   model_name: "your_model_name"
   max_tokens: 128
