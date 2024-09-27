@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, List
 
-from src.together.prompts import fpb_prompt
+from src.together_code.prompts import fpb_prompt
 
 logger = logging.getLogger(__name__)
 
