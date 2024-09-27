@@ -1,5 +1,7 @@
 import argparse
 import logging
+import sys
+import os
 from datetime import date
 from pathlib import Path
 from time import time
@@ -16,16 +18,23 @@ from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
 from causal_classification.causal_classification_inference import causal_classification_inference 
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from causal_detection.cd_inference import causal_detection_inference
+
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+LOG_DIR = ROOT_DIR / 'logs'
+SRC_DIRECTORY = ROOT_DIR / 'src'
+DATA_DIRECTORY = ROOT_DIR / 'data'
+OUTPUT_DIR = DATA_DIRECTORY / 'outputs'
+if str(SRC_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(SRC_DIRECTORY))
+
+from src.utils.logging_utils import setup_logger
+
+logging.basicConfig(level=logging.DEBUG)
+logger = setup_logger(name="main_inference", log_file = LOG_DIR / "main_inference.log", level=logging.DEBUG)
 
 from src.utils.api_utils import make_api_call, save_raw_output
 from src.utils.logging_utils import setup_logger
-
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-OUTPUT_DIR = ROOT_DIR / "data" / "outputs"
-LOG_DIR = ROOT_DIR / "logs"
-logging.basicConfig(level=logging.INFO)
-logger = setup_logger("main_inference", LOG_DIR / "main_inference.log")
-
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -35,10 +44,12 @@ def parse_arguments():
     parser.add_argument("--task", type=str, help="Task to use")
     parser.add_argument("--api_key", type=str, help="API key to use")
     parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
-    
-    # Load config.yaml
-    with open("config.yaml", "r") as file:
+    with open(SRC_DIRECTORY/'config.yaml', "r") as file:
         config = yaml.safe_load(file)
+        # parser.add_argument("--model", type=str, help="Model to use")
+        # parser.add_argument("--task", type=str, help="Task to use")
+        # parser.add_argument("--api_key", type=str, help="API key to use")
+        # parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
         parser.add_argument(
             "--max_tokens",
             type=int,
@@ -92,6 +103,7 @@ def main():
         "finer": finer_inference,
         "finentity": finentity_inference,
         "banking77": banking77_inference,
+        "causal_detection": causal_detection_inference,
         "causal_classification": causal_classification_inference,
     }
 
