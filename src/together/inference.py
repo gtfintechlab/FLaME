@@ -1,120 +1,101 @@
 import argparse
-import logging
+import re
+import numpy as np
+import pandas as pd
+from time import time
 from datetime import date
 from pathlib import Path
-from time import time
-
-import yaml
-
-from banking77.banking77_inference import banking77_inference
-from finbench.finbench_inference import finbench_inference
-from finentity.finentity_inference import finentity_inference
-from finer.finer_inference import finer_inference
-from fomc.fomc_inference import fomc_inference
+# from src import ROOT_DIR
+# from tasks_inferences import fpb_inference, fomc_inference, numclaim_inference
 from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
 from fnxl.fnxl_inference import fnxl_inference
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-
-from src.utils.api_utils import make_api_call, save_raw_output
-from src.utils.logging_utils import setup_logger
-
+from fomc.fomc_inference import fomc_inference
+from finbench.finbench_inference import finbench_inference
+from finer.finer_inference import finer_inference
+from finentity.finentity_inference import finentity_inference
+from headlines.headlines_inference import headlines_inference
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-OUTPUT_DIR = ROOT_DIR / "data" / "outputs"
-LOG_DIR = ROOT_DIR / "logs"
-logging.basicConfig(level=logging.INFO)
-logger = setup_logger("main_inference", LOG_DIR / "main_inference.log")
-
+# from task_specific_inference import numclaim_inference
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description="Run a LLM on TogetherAI over the SuperFLUE dataset"
-    )
+    parser = argparse.ArgumentParser(description="Run a LLM on TogetherAI over the SuperFLUE dataset")
     parser.add_argument("--model", type=str, help="Model to use")
     parser.add_argument("--task", type=str, help="Task to use")
     parser.add_argument("--api_key", type=str, help="API key to use")
     parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
-    with open("src/utils/config.yaml", "r") as file:
-        config = yaml.safe_load(file)
-
-        parser.add_argument("--model", type=str, help="Model to use")
-        parser.add_argument("--task", type=str, help="Task to use")
-        parser.add_argument("--api_key", type=str, help="API key to use")
-        parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
-        parser.add_argument(
-            "--max_tokens",
-            type=int,
-            default=config["fpb"]["max_tokens"],
-            help="Max tokens to use",
-        )
-        parser.add_argument(
-            "--temperature",
-            type=float,
-            default=config["fpb"]["temperature"],
-            help="Temperature to use",
-        )
-        parser.add_argument(
-            "--top_p", type=float, default=config["fpb"]["top_p"], help="Top-p to use"
-        )
-        parser.add_argument(
-            "--top_k", type=int, default=config["fpb"]["top_k"], help="Top-k to use"
-        )
-        parser.add_argument(
-            "--repetition_penalty",
-            type=float,
-            default=config["fpb"]["repetition_penalty"],
-            help="Repetition penalty to use",
-        )
-        parser.add_argument(
-            "--prompt_format",
-            type=str,
-            default="superflue",
-            help="Version of the prompt to use",
-        )
+    parser.add_argument("--max_tokens", type=int, default=128, help="Max tokens to use")
+    parser.add_argument("--temperature", type=float, default=0.7, help="Temperature to use")
+    parser.add_argument("--top_p", type=float, default=0.7, help="Top-p to use")
+    parser.add_argument("--top_k", type=int, default=50, help="Top-k to use")
+    parser.add_argument("--repetition_penalty", type=float, default=1.1, help="Repetition penalty to use")
+    parser.add_argument("--prompt_format", type=str, default="superflue", help="Version of the prompt to use")
     return parser.parse_args()
 
+# def extract_label(text, label_regex):
+#     match = re.search(label_regex, text)
+#     return match.group(1) if match else 'None'
 
-def process_api_response(results, task, model):
-    save_raw_output(results, task, model, OUTPUT_DIR)
-    return results
+# def evaluate(file, response_column, label_regex, label_mapping):
+#     data = pd.read_csv(file, index_col=0)
+#     data['extracted_label'] = data[response_column].apply(lambda x: extract_label(x, label_regex))
+#     data['extracted_label_numeric'] = data['extracted_label'].map(label_mapping)
+#     data = data.dropna(subset=['extracted_label_numeric'])
 
+#     metrics = {
+#         'accuracy': accuracy_score(data['actual_label'], data['extracted_label_numeric']),
+#         'precision': precision_score(data['actual_label'], data['extracted_label_numeric'], average='micro'),
+#         'recall': recall_score(data['actual_label'], data['extracted_label_numeric'], average='micro'),
+#         'f1_score': f1_score(data['actual_label'], data['extracted_label_numeric'], average='micro')
+#     }
+
+#     output_file_path = file.replace('.csv', '_metrics.csv')
+#     pd.DataFrame([metrics]).to_csv(output_file_path, index=False)
+#     return metrics
 
 def main():
     args = parse_arguments()
-    task = args.task.strip('"')
+    task = args.task.strip('“”"')
+
+    # task_label_mapping = {
+    #     'fpb': {'POSITIVE': 2, 'NEGATIVE': 0, 'NEUTRAL': 1, 'None': np.nan},
+    #     'fomc': {'DOVISH': 0, 'HAWKISH': 1, 'NEUTRAL': 2, 'None': np.nan},
+    #     'numclaim': {'OUTOFCLAIM': 0, 'INCLAIM': 1, 'None': np.nan}
+    # }
+    
+    # task_regex = {
+    #     'fpb': r'Label: (?i)(POSITIVE|NEGATIVE|NEUTRAL)',
+    #     'fomc': r'Label: (?i)(DOVISH|HAWKISH|NEUTRAL)',
+    #     'numclaim': r'Label: (?i)(OUTOFCLAIM|INCLAIM)'
+    #     #Add more tasks over here
+    # }
 
     task_inference_map = {
-        "numclaim": numclaim_inference,
-        "fpb": fpb_inference,
-        "fomc": fomc_inference,
-        "finbench": finbench_inference,
-        "finer": finer_inference,
-        "finentity": finentity_inference,
-        "banking77": banking77_inference,
-        "fnxl": fnxl_inference,
+        'numclaim': numclaim_inference,
+        'fpb': fpb_inference,
+        'fomc': fomc_inference,
+        'finbench': finbench_inference,
+        'finer': finer_inference,
+        'finentity': finentity_inference,
+        'headlines': headlines_inference,
+        'fnxl': fnxl_inference,
     }
 
     if task in task_inference_map:
         start_t = time()
         inference_function = task_inference_map[task]
-        df = inference_function(args, make_api_call, process_api_response)
+        df = inference_function(args)
         time_taken = time() - start_t
-        logger.info(f"Time taken: {time_taken:.2f} seconds")
-        results_path = (
-            OUTPUT_DIR
-            / task
-            / args.model
-            / f"{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-        )
+        print(time_taken)
+        results_path = ROOT_DIR / 'results' / task  / f"{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
-        logger.info(f"Inference completed for {task}. Results saved to {results_path}")
         # metrics = evaluate(df, 'response', task_regex[task], task_label_mapping[task])
         # print(metrics)
 
     else:
-        logger.error(f"Task '{task}' not found in the task generation map.")
-
+        print(f"Task '{task}' not found in the task generation map.")
 
 if __name__ == "__main__":
     main()
