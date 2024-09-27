@@ -1,5 +1,6 @@
 # utils/formatter.py
 
+
 class Formatter:
     def __init__(self):
         pass
@@ -9,11 +10,17 @@ class Formatter:
 
         for i, row in df.iterrows():
             if not isinstance(row["output"], list):
-                row["output"] = [line.strip() for line in row["output"].split('\n') if line.strip()]
+                row["output"] = [
+                    line.strip() for line in row["output"].split("\n") if line.strip()
+                ]
                 row["output"] = row["output"][:1]
 
             if not isinstance(row["predicted_text"], list):
-                row["predicted_text"] = [line.strip() for line in row["predicted_text"].split('\n') if line.strip()]
+                row["predicted_text"] = [
+                    line.strip()
+                    for line in row["predicted_text"].split("\n")
+                    if line.strip()
+                ]
                 row["predicted_text"] = row["predicted_text"][:1]
 
         return df

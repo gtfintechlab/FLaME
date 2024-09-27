@@ -2,6 +2,7 @@ import torch
 from transformers import LlamaConfig, LlamaForCausalLM, LlamaTokenizer
 
 from utils.config import VALID_MODELS
+
 # from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from utils.logging import setup_logger
 
@@ -15,6 +16,7 @@ from utils.logging import setup_logger
 # CACHE_DIR=str(ROOT_DIRECTORY / ".model_cache")
 
 logger = setup_logger(__name__)
+
 
 def get_hf_model(args):
     if torch.cuda.is_available():

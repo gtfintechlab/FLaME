@@ -28,10 +28,7 @@ def huggify_data_finsent(push_to_hub=False):
         directory_path = DATA_DIRECTORY / "FinSent"
         logger.debug(f"Directory path: {directory_path}")
 
-        splits = DatasetDict(
-            {
-            }
-        )
+        splits = DatasetDict({})
 
         # Push to HF Hub
         if push_to_hub:
