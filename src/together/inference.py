@@ -5,8 +5,6 @@ import pandas as pd
 from time import time
 from datetime import date
 from pathlib import Path
-# from src import ROOT_DIR
-# from tasks_inferences import fpb_inference, fomc_inference, numclaim_inference
 from fpb.fpb_inference import fpb_inference
 from numclaim.numclaim_inference import numclaim_inference
 from fnxl.fnxl_inference import fnxl_inference
@@ -15,9 +13,15 @@ from finbench.finbench_inference import finbench_inference
 from finer.finer_inference import finer_inference
 from finentity.finentity_inference import finentity_inference
 from headlines.headlines_inference import headlines_inference
+from fiqa.fiqa_task1_inference import fiqa_inference
+from fiqa.fiqa_task2_inference import fiqa_task2_inference
+from edtsum.edtsum_inference import edtsum_inference
+from src.utils.api_utils import make_api_call, save_raw_output
+from src.utils.logging_utils import setup_logger
+
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from time import time
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-# from task_specific_inference import numclaim_inference
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Run a LLM on TogetherAI over the SuperFLUE dataset")
@@ -25,12 +29,38 @@ def parse_arguments():
     parser.add_argument("--task", type=str, help="Task to use")
     parser.add_argument("--api_key", type=str, help="API key to use")
     parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
-    parser.add_argument("--max_tokens", type=int, default=128, help="Max tokens to use")
-    parser.add_argument("--temperature", type=float, default=0.7, help="Temperature to use")
-    parser.add_argument("--top_p", type=float, default=0.7, help="Top-p to use")
-    parser.add_argument("--top_k", type=int, default=50, help="Top-k to use")
-    parser.add_argument("--repetition_penalty", type=float, default=1.1, help="Repetition penalty to use")
-    parser.add_argument("--prompt_format", type=str, default="superflue", help="Version of the prompt to use")
+
+    # Directly assign defaults for FiQA task
+    parser.add_argument(
+        "--max_tokens",
+        type=int,
+        default=512,
+        help="Max tokens to use",
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0.7,
+        help="Temperature to use",
+    )
+    parser.add_argument(
+        "--top_p", type=float, default=0.7, help="Top-p to use"
+    )
+    parser.add_argument(
+        "--top_k", type=int, default=50, help="Top-k to use"
+    )
+    parser.add_argument(
+        "--repetition_penalty",
+        type=float,
+        default=1.1,
+        help="Repetition penalty to use",
+    )
+    parser.add_argument(
+        "--prompt_format",
+        type=str,
+        default="superflue",
+        help="Version of the prompt to use",
+    )
     return parser.parse_args()
 
 # def extract_label(text, label_regex):
@@ -79,6 +109,9 @@ def main():
         'finer': finer_inference,
         'finentity': finentity_inference,
         'headlines': headlines_inference,
+        'fiqa_task1': fiqa_inference,
+        'fiqa_task2' : fiqa_task2_inference,
+        'edt_sum':edtsum_inference
         'fnxl': fnxl_inference,
     }
 
@@ -91,9 +124,7 @@ def main():
         results_path = ROOT_DIR / 'results' / task  / f"{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
-        # metrics = evaluate(df, 'response', task_regex[task], task_label_mapping[task])
-        # print(metrics)
-
+        logger.info(f"Inference completed for {task}. Results saved to {results_path}")
     else:
         print(f"Task '{task}' not found in the task generation map.")
 
