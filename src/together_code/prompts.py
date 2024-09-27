@@ -256,6 +256,18 @@ def causal_classification_prompt(text: str):
 
 
 
+def finred_prompt(sentence: str):
+    
+    system_prompt = f"""Discard all the previous instructions. Behave like you are an expert in financial entity and relation extraction."""
+    
+    user_msg = f"""Identify all financial entities (such as companies, financial instruments, dates, or money) 
+                and extract the relations between these entities from the following sentence.
+                Provide the relations in the format of (Entity 1, Relation, Entity 2).
+                The sentence: {sentence}"""
+    
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+    
+    return prompt
 def causal_detection_prompt(tokens: list):
     """
     Generates a prompt for Causal Detection to classify tokens in a sentence into cause, effect, or other categories,
@@ -284,9 +296,7 @@ def causal_detection_prompt(tokens: list):
     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
     
     return prompt
-
-
-
+  
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
     "fomc_prompt": fomc_prompt,
@@ -297,6 +307,7 @@ prompt_map = {
     "banking77_prompt": banking77_prompt,
     "finqa_prompt": finqa_prompt,
     "convfinqa_prompt": convfinqa_prompt,
+    "finred_prompt": finred_prompt,
     "causal_detection_prompt": causal_detection_prompt,
 }
 
