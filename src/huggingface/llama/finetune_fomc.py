@@ -240,14 +240,14 @@ predict_with_generate = True
 # ====================== LOGGING SETUP ======================
 def setup_logging():
     logger = logging.getLogger("llama2_finetune")
-    logger.setLevel(logging.DEBUG)
-    hf_logging.set_verbosity(hf_logging.DEBUG)
+    logger.setLevel(logging.INFO)
+    hf_logging.set_verbosity(hf_logging.INFO)
 
     # Create handlers
     c_handler = logging.StreamHandler()
     f_handler = logging.FileHandler("llama2_finetune.log")
-    c_handler.setLevel(logging.DEBUG)
-    f_handler.setLevel(logging.DEBUG)
+    c_handler.setLevel(logging.INFO)
+    f_handler.setLevel(logging.INFO)
 
     # Create formatters and add it to handlers
     format = "%(name)s - %(levelname)s - %(message)s"

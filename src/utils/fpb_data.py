@@ -55,7 +55,7 @@ if __name__ == "__main__":
     ROOT_DIRECTORY = Path(__file__).resolve().parent.parent
     if str(ROOT_DIRECTORY) not in sys.path:
         sys.path.insert(0, str(ROOT_DIRECTORY))
-with open("src/utils/config.yaml", "r") as file:
+with open("config.yaml", "r") as file:
     config = yaml.safe_load(file)
 
     DATA_DIRECTORY = Path(config["fpb"]["data_directory"])

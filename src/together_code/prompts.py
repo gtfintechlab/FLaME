@@ -103,7 +103,8 @@ def finentity_prompt(sentence: str):
     return prompt
 
 
-# def finbench_prompt(sentence: str):
+def finbench_prompt(sentence: str):
+    pass
 
 #     prompt = f'''Discard all the previous instructions. Behave like you are an expert entity level sentiment
 #                 classifier. Below is a sentence from a financial document. From the sentence, identify all the entities
@@ -240,6 +241,19 @@ def convfinqa_prompt(document: str):
                 {document}"""
 
     return prompt
+
+def causal_classification_prompt(text: str):
+    system_prompt = f"""Discard all the previous instructions. Behave like you are an expert causal classification model."""
+    user_msg = f"""Below is a sentence. Classify it into one of the following categories: 
+                    0 - Non-causal
+                    1 - Direct causal
+                    2 - Indirect causal
+                    Only return the label number without any additional text. \n\n {text}"""
+
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+
+    return prompt
+
 
 
 prompt_map = {
