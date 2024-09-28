@@ -5,8 +5,9 @@ import pandas as pd
 from datasets import load_dataset
 
 import together
-from src.together_code.prompts import finqa_prompt
-from src.together_code.tokens import tokens
+from prompts import finqa_prompt
+from tokens import tokens
+from pathlib import Path
 
 
 def finqa_inference(args):
@@ -14,6 +15,16 @@ def finqa_inference(args):
     today = date.today()
     # OPTIONAL TODO: make configs an argument of some kind LOW LOW LOW PRIORITY
     # configs = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
+    ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+    results_path = (
+        ROOT_DIR
+        / "results"
+        / args.task
+        / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+
+
     dataset = load_dataset("gtfintechlab/finqa", token=args.hf_token)
     context = []
     llm_responses = []
@@ -51,6 +62,7 @@ def finqa_inference(args):
                     "complete_responses": complete_responses,
                 }
             )
+            df.to_csv(results_path, index=False)
             time.sleep(10)
 
         except Exception as e:

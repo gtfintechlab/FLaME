@@ -6,13 +6,16 @@ from time import time
 
 import yaml
 
-from banking77.banking77_inference import banking77_inference
-from finbench.finbench_inference import finbench_inference
-from finentity.finentity_inference import finentity_inference
-from finer.finer_inference import finer_inference
-from fomc.fomc_inference import fomc_inference
-from fpb.fpb_inference import fpb_inference
-from numclaim.numclaim_inference import numclaim_inference
+# from banking77.banking77_inference import banking77_inference
+# from finbench.finbench_inference import finbench_inference
+# from finentity.finentity_inference import finentity_inference
+# from finer.finer_inference import finer_inference
+# from fomc.fomc_inference import fomc_inference
+# from fpb.fpb_inference import fpb_inference
+# from numclaim.numclaim_inference import numclaim_inference
+
+from finqa.finqa_inference import finqa_inference
+from convfinqa.convfinqa_inference import convfinqa_inference
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 from src.utils.api_utils import make_api_call, save_raw_output
@@ -36,10 +39,10 @@ def parse_arguments():
     with open("src/utils/config.yaml", "r") as file:
         config = yaml.safe_load(file)
 
-        parser.add_argument("--model", type=str, help="Model to use")
-        parser.add_argument("--task", type=str, help="Task to use")
-        parser.add_argument("--api_key", type=str, help="API key to use")
-        parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
+        # parser.add_argument("--model", type=str, help="Model to use")
+        # parser.add_argument("--task", type=str, help="Task to use")
+        # parser.add_argument("--api_key", type=str, help="API key to use")
+        # parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
         parser.add_argument(
             "--max_tokens",
             type=int,
@@ -83,19 +86,21 @@ def main():
     task = args.task.strip('"')
 
     task_inference_map = {
-        "numclaim": numclaim_inference,
-        "fpb": fpb_inference,
-        "fomc": fomc_inference,
-        "finbench": finbench_inference,
-        "finer": finer_inference,
-        "finentity": finentity_inference,
-        "banking77": banking77_inference,
+        # "numclaim": numclaim_inference,
+        # "fpb": fpb_inference,
+        # "fomc": fomc_inference,
+        # "finbench": finbench_inference,
+        # "finer": finer_inference,
+        # "finentity": finentity_inference,
+        # "banking77": banking77_inference,
+        "finqa": finqa_inference,
+        'convfinqa':convfinqa_inference
     }
 
     if task in task_inference_map:
         start_t = time()
         inference_function = task_inference_map[task]
-        df = inference_function(args, make_api_call, process_api_response)
+        df = inference_function(args)
         time_taken = time() - start_t
         logger.info(f"Time taken: {time_taken:.2f} seconds")
         results_path = (

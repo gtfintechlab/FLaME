@@ -1,20 +1,25 @@
 import time
 from datetime import date
-
 import pandas as pd
 from datasets import load_dataset
-
 import together
-from src.together_code.prompts import convfinqa_prompt
-from src.together_code.tokens import tokens
+from prompts import convfinqa_prompt
+from tokens import tokens
+from pathlib import Path
 
-
-def finqa_inference(args):
+def convfinqa_inference(args):
     together.api_key = args.api_key
     today = date.today()
-    # OPTIONAL TODO: make configs an argument of some kind LOW LOW LOW PRIORITY
-    # configs = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
-    dataset = load_dataset("gtfintechlab/finqa", token=args.hf_token)
+    ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+    results_path = (
+        ROOT_DIR
+        / "results"
+        / args.task
+        / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+
+    dataset = load_dataset("gtfintechlab/ConvFinQa", token=args.hf_token)
 
     # Initialize lists to store actual labels and model responses
     context = []
@@ -32,13 +37,12 @@ def finqa_inference(args):
 
         question_0 = str(entry["question_0"]) if entry["question_0"] is not None else ""
         question_1 = str(entry["question_1"]) if entry["question_1"] is not None else ""
-        answer_0 = str(entry["answer_0"]) if entry["answer_0"] is not None else ""
         answer_1 = str(entry["answer_1"]) if entry["answer_1"] is not None else ""
 
-        combined_text = f"{pre_text} {post_text} {table_text} {question_0} {answer_0} {question_1} {answer_1}"
+        combined_text = f"{pre_text} {post_text} {table_text} {question_0} {question_1}"
         context.append(combined_text)
 
-        actual_label = entry["answer_1"]
+        actual_label = answer_1
         actual_labels.append(actual_label)
         try:
             model_response = together.Complete.create(
@@ -53,7 +57,7 @@ def finqa_inference(args):
             )
             complete_responses.append(model_response)
             response_label = model_response["output"]["choices"][0]["text"]
-            llm_responses.append(response_label)
+            llm_responses.append(response_label.strip())
 
             df = pd.DataFrame(
                 {
@@ -63,10 +67,10 @@ def finqa_inference(args):
                     "complete_responses": complete_responses,
                 }
             )
-
+            df.to_csv(results_path, index=False)
+            time.sleep(10)
         except Exception as e:
             print(e)
-            i = i - 1
             time.sleep(10.0)
 
     return df
