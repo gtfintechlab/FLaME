@@ -96,7 +96,6 @@ def fpb_inference(args, process_api_call, process_api_response):
             logger.info(f"Batch keys: {batch.keys()}")
             logger.info(f"Batch size: {len(batch['sentence'])}")
             logger.info(f"First sentence in batch: {batch['sentence'][0] if len(batch['sentence']) > 0 else 'Empty batch'}")
-            
             prompts = prepare_batch(batch, args)
 
             if not any(prompts):
@@ -105,17 +104,21 @@ def fpb_inference(args, process_api_call, process_api_response):
                 )
                 continue
 
-            try:
-                model_response = process_api_call(
-                    prompts=[p for p in prompts if p is not None],
-                    model=config["fpb"]["model_name"],
-                    max_tokens=config["fpb"]["max_tokens"],
-                    temperature=config["fpb"]["temperature"],
-                    # top_k=config["fpb"]["top_k"],
-                    top_p=config["fpb"]["top_p"],
-                    repetition_penalty=config["fpb"]["repetition_penalty"],
-                    stop=None,
-                )
+            batch_results = []
+
+            for idx, prompt in enumerate(prompts):
+                if prompt is None:
+                    continue
+                try:
+                    model_response = process_api_call(
+                        prompt=prompt,
+                        model=config["fpb"]["model_name"],
+                        max_tokens=config["fpb"]["max_tokens"],
+                        temperature=config["fpb"]["temperature"],
+                        top_p=config["fpb"]["top_p"],
+                        repetition_penalty=config["fpb"]["repetition_penalty"],
+                        stop=None,
+                    )
 
                 batch_results = process_batch_response(
                     model_response, batch, "fpb", args.model
