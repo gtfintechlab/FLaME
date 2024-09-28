@@ -1,5 +1,7 @@
 import yaml
 import argparse
+from dotenv import load_dotenv
+import os
 
 from src.superflue.together_code.inference import main as inference
 
@@ -68,4 +70,13 @@ if __name__ == "__main__":
         config = yaml.safe_load(file)
     for key, value in config.items():
         setattr(args, key, value)
+
+    load_dotenv()
+    TOGETHER_API_KEY = os.getenv('TOGETHER_API_KEY')
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+    HUGGINGFACE_KEY = os.getenv('HUGGINGFACE_KEY')
+    
+    setattr(args, 'hf_token', HUGGINGFACE_KEY)
+
     inference(args)

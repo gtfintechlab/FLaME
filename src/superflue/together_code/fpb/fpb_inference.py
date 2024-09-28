@@ -13,17 +13,17 @@ from superflue.config import LOG_DIR, PACKAGE_DIR
 logger = setup_logger("fpb_inference", LOG_DIR / "fpb_inference.log")
 import yaml
 
-def prepare_batch(data_points: List[Dict[str, Any]], args) -> List[str]:
+def prepare_batch(batch: Dict[str, List], args) -> List[str]:
     prompts = []
-    for dp in data_points:
+    for sentence in batch['sentence']:
         try:
             prompt = fpb_prompt(
-                sentence=dp["sentence"], prompt_format=args.prompt_format
+                sentence=sentence, prompt_format=args.prompt_format
             )
             prompts.append(prompt)
         except Exception as e:
             logger.error(
-                f"Error preparing prompt for sentence: {dp['sentence']}. Error: {str(e)}"
+                f"Error preparing prompt for sentence: {sentence}. Error: {str(e)}"
             )
             prompts.append(None)
     return prompts
@@ -31,7 +31,7 @@ def prepare_batch(data_points: List[Dict[str, Any]], args) -> List[str]:
 
 def process_batch_response(
     batch_response: Dict[str, Any],
-    data_points: List[Dict[str, Any]],
+    batch: Dict[str, List],
     task: str,
     model: str,
 ) -> List[Dict[str, Any]]:
@@ -39,8 +39,8 @@ def process_batch_response(
     for i, choice in enumerate(batch_response["output"]["choices"]):
         try:
             result = {
-                "sentence": data_points[i]["sentence"],
-                "actual_label": data_points[i]["label"],
+                "sentence": batch["sentence"][i],
+                "actual_label": batch["label"][i],
                 "llm_response": choice["text"],
                 "complete_response": {
                     "task": task,
@@ -52,12 +52,12 @@ def process_batch_response(
             results.append(result)
         except Exception as e:
             logger.error(
-                f"Error processing response for sentence: {data_points[i]['sentence']}. Error: {str(e)}"
+                f"Error processing response for sentence: {batch['sentence'][i]}. Error: {str(e)}"
             )
             results.append(
                 {
-                    "sentence": data_points[i]["sentence"],
-                    "actual_label": data_points[i]["label"],
+                    "sentence": batch["sentence"][i],
+                    "actual_label": batch["label"][i],
                     "llm_response": "error",
                     "complete_response": str(e),
                 }
@@ -72,23 +72,32 @@ def fpb_inference(args, process_api_call, process_api_response):
     total_time = 0
     total_batches = 0
     logger.info(f"Starting FPB inference on {date.today()}")
-    data_splits = ["sentences_allagree"]
-
+    # TODO: data_splits should be defined in the config ... or somewhere else
+    data_splits = ['5768', '78516', '944601']
     all_results = []
 
     for data_split in data_splits:
         logger.info(f"Loading dataset split: {data_split}")
         try:
-            dataset = load_dataset("financial_phrasebank", data_split, token=args.hf_token)
+            dataset = load_dataset("gtfintechlab/financial_phrasebank_sentences_allagree", data_split, token=args.hf_token, trust_remote_code=True)
         except Exception as e:
             logger.error(f"Failed to load dataset with split {data_split}: {str(e)}")
             raise
+
+        logger.info(f"Dataset type: {type(dataset['train'])}")
+        logger.info(f"First item in dataset: {dataset['train'][0]}")
 
         for i in tqdm(
             range(0, len(dataset["train"]), args.batch_size), desc="Processing batches"
         ):
             batch_start_time = time.time()
             batch = dataset["train"][i : i + args.batch_size]
+            
+            logger.info(f"Batch type: {type(batch)}")
+            logger.info(f"Batch keys: {batch.keys()}")
+            logger.info(f"Batch size: {len(batch['sentence'])}")
+            logger.info(f"First sentence in batch: {batch['sentence'][0] if len(batch['sentence']) > 0 else 'Empty batch'}")
+            
             prompts = prepare_batch(batch, args)
 
             if not any(prompts):

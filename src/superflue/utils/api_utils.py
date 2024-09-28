@@ -16,17 +16,17 @@ def make_api_call(
     model: str,
     max_tokens: int,
     temperature: float,
-    top_k: int,
+    # top_k: int,
     top_p: float,
     repetition_penalty: float,
     stop: List[str] = None,
 ) -> Dict[str, Any]:
     return together.Complete.create(
-        prompt=prompts,
+        prompt=prompts, # TODO: figure out why prompt is being given multiple prompts this is causing issues
         model=model,
         max_tokens=max_tokens,
         temperature=temperature,
-        top_k=top_k,
+        # top_k=top_k,
         top_p=top_p,
         repetition_penalty=repetition_penalty,
         stop=stop,
