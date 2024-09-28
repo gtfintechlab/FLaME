@@ -47,10 +47,7 @@ def finbench_inference(args):
         try:
             logger.info(f"Processing instance {i+1}/{len(dataset['test'])}")
 
-            prompt = (
-                finbench_prompt
-                + f"Tabular data: {X_ml}\nProfile data: {instance['X_profile']}\nPredict the risk category:"
-            )
+            prompt = finbench_prompt(instance['X_profile'])
 
             model_response = together.Complete.create(
                 prompt=prompt,

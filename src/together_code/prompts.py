@@ -232,6 +232,14 @@ def finqa_prompt(document: str):
 
     return prompt
 
+def finbench_prompt(profile: str):
+    prompt = f"""Discard all the previous instructions. Behave like you are an expect risk assessor.
+                Classify the following individual as either ‘LOW RISK’ or ‘HIGH RISK’ for approving a loan for. 
+                Categorize the person as ‘HIGH RISK’ if their profile indicates that they will likely default on 
+                the loan and not pay it back, and ‘LOW RISK’ if it is unlikely that they will fail to pay the loan back in full. 
+                Here is the information about the person:\nProfile data: {profile}\nPredict the risk category of this person:
+                """
+    return prompt
 
 def convfinqa_prompt(document: str):
 
@@ -325,6 +333,7 @@ prompt_map = {
     "tatqa_prompt": tatqa_prompt,
     "finred_prompt": finred_prompt,
     "causal_detection_prompt": causal_detection_prompt,
+    "finbench_prompt": finbench_prompt
 }
 
 
