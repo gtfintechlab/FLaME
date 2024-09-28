@@ -15,7 +15,7 @@ if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
 # Environment variables for Hugging Face authentication
-HF_TOKEN = os.environ["HF_TOKEN"]
+HF_TOKEN = os.getenv("HF_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "REFinD"
 login(HF_TOKEN)
