@@ -1,3 +1,7 @@
+def fnxl_prompt(sentence: str):
+    prompt = f"""Lorem ipsum: {sentence}"""
+    return prompt
+
 def numclaim_prompt(sentence: str):
 
     prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence senti-
