@@ -72,12 +72,15 @@ def extract_answer(prompt):
         return None
     
 # Load and split huggingface dataset into training, validation, and testing sets 
-def load_hf_dataset(hf_token, dataset_name, extract_x, y_column, train_size = 0.5, val_size = 0.1):
+def load_hf_dataset(hf_token, dataset_name, extract_x, y_column, train_size = 0.5, val_size = 0.1, **kwargs):
     if hf_token is None:
         raise ValueError("Please provide a valid Hugging Face API token.")
     if (train_size + val_size) > 1:
         raise ValueError("Train and validation sizes must sum to less than 1.")
-    dataset = load_dataset(dataset_name, token=hf_token)
+    if ('seed' in kwargs):
+        dataset = load_dataset(dataset_name, kwargs['seed'], token=hf_token)
+    else:
+        dataset = load_dataset(dataset_name, token=hf_token)
     training = [(extract_x(data), data[y_column]) for data in dataset['train']]
     random.shuffle(training)
     training_data = training[:math.ceil(len(training)*train_size)]
@@ -147,11 +150,10 @@ def load_finbench(hf_token):
     )
 
 def load_finentity(hf_token):
-    # requires extra parameter (seed)
     return load_hf_dataset(
         hf_token=hf_token, dataset_name='gtfintechlab/finentity',
         extract_x = lambda x : f"Sentence: {x['content']}", y_column = 'annotations',
-        train_size = 0.5, val_size = 0.1
+        train_size = 0.5, val_size = 0.1, seed = '5768'
     )
 
 def load_finer(hf_token):
@@ -169,11 +171,10 @@ def load_finqa(hf_token):
     )
 
 def load_fpb(hf_token):
-    # takes seed parameter
     return load_hf_dataset(
         hf_token=hf_token, dataset_name='gtfintechlab/financial_phrasebank_sentences_allagree',
         extract_x = lambda x : f"Sentence: {x['sentence']}", y_column = 'label',
-        train_size = 0.5, val_size = 0.1
+        train_size = 0.5, val_size = 0.1, seed = '5768'
     )
 
 def eval_fpb(prediction: Variable, ground_truth_answer: Variable):
@@ -198,14 +199,18 @@ def load_banking77(hf_token):
     return load_hf_dataset(
         hf_token=hf_token, dataset_name='gtfintechlab/banking77',
         extract_x = lambda x : f"Sentence: {x['text']}", y_column = 'label',
-        train_size = 0.5, val_size = 0.1
+        train_size = 0.5, val_size = 0.02
     )
 
+# append list to end of prompt and make it optimize the parts that aren't asking for the specific 
 banking77_list = ["activate_my_card", "age_limit", "apple_pay_or_google_pay", "atm_support", "automatic_top_up", "balance_not_updated_after_bank_transfer", "balance_not_updated_after_cheque_or_cash_deposit", "beneficiary_not_allowed", "cancel_transfer", "card_about_to_expire", "card_acceptance", "card_arrival", "card_delivery_estimate", "card_linking", "card_not_working", "card_payment_fee_charged", "card_payment_not_recognised", "card_payment_wrong_exchange_rate", "card_swallowed", "cash_withdrawal_charge", "cash_withdrawal_not_recognised", "change_pin", "compromised_card", "contactless_not_working", "country_support", "declined_card_payment", "declined_cash_withdrawal", "declined_transfer", "direct_debit_payment_not_recognised", "disposable_card_limits", "edit_personal_details", "exchange_charge", "exchange_rate", "exchange_via_app", "extra_charge_on_statement", "failed_transfer", "fiat_currency_support", "get_disposable_virtual_card", "get_physical_card", "getting_spare_card", "getting_virtual_card", "lost_or_stolen_card", "lost_or_stolen_phone", "order_physical_card", "passcode_forgotten", "pending_card_payment", "pending_cash_withdrawal", "pending_top_up", "pending_transfer", "pin_blocked", "receiving_money", "Refund_not_showing_up", "request_refund", "reverted_card_payment?", "supported_cards_and_currencies", "terminate_account", "top_up_by_bank_transfer_charge", "top_up_by_card_charge", "top_up_by_cash_or_cheque", "top_up_failed", "top_up_limits", "top_up_reverted", "topping_up_by_card", "transaction_charged_twice", "transfer_fee_charged", "transfer_into_account", "transfer_not_received_by_recipient", "transfer_timing", "unable_to_verify_identity", "verify_my_identity", "verify_source_of_funds", "verify_top_up", "virtual_card_not_working", "visa_or_mastercard", "why_verify_identity", "wrong_amount_of_cash_received", "wrong_exchange_rate_for_cash_withdrawal"]
 def eval_banking77(prediction: Variable, ground_truth_answer: Variable):
-    pred = extract_answer(f"Based on the following list of banking intents: {banking77_list}, extract the most relevant category rom the following response: {str(prediction.value)}.\nProvide only the category name that best matches the response.")
+    pred = extract_answer(f"Based on the following list of banking intents: {banking77_list}, extract the most relevant category from the following response: {str(prediction.value)}.\nProvide only the category name in plain text that best matches the response. The category name must be the exact same as in the list provided.")
+    pred = str(pred).replace("\\", "")
+    ground_truth_answer = banking77_list[int(str(ground_truth_answer))]
     if (str(pred) not in banking77_list):
-        raise ValueError(f"Invalid output: {pred}. Not in banking77 list.")
+        # print(f"Invalid output: {pred}. Not in banking77 list.")
+        pred = None
     return int(pred != None and (str(pred) == str(ground_truth_answer)))
 
 # Map task names to task-specific helpers
