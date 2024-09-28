@@ -1,9 +1,8 @@
-import os
 import sys
 from pathlib import Path
 from huggingface_hub import hf_hub_upload
 import pandas as pd
-from datasets import Dataset, DatasetDict
+from datasets import Dataset
 import logging
 from src.utils.process_qa import process_qa_pairs
 from src.utils.zip_to_csv import zip_to_csv

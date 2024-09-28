@@ -1,5 +1,4 @@
 import os
-import sys
 from time import sleep, time
 
 import numpy as np
@@ -9,14 +8,8 @@ import torch.optim as optim
 from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader, TensorDataset
 from transformers import (
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-    BertForSequenceClassification,
-    BertTokenizerFast,
     RobertaForSequenceClassification,
     RobertaTokenizerFast,
-    XLNetForSequenceClassification,
-    XLNetTokenizerFast,
 )
 
 # sys.path.append('..')

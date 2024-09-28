@@ -27,7 +27,7 @@ def get_hf_model(args):
             f"Using k={CUDA_N_GPUS} CUDA GPUs with max memory {CUDA_MAX_MEMORY}"
         )
     else:
-        logger.error(f"CUDA Unavailable!")
+        logger.error("CUDA Unavailable!")
         raise OSError("CUDA Unavailable!")
 
     if args.model_id not in VALID_MODELS:

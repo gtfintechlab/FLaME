@@ -2,8 +2,7 @@ import os
 import sys
 from pathlib import Path
 from huggingface_hub import login
-import pandas as pd
-from datasets import Dataset, DatasetDict, load_dataset
+from datasets import DatasetDict, load_dataset
 import logging
 
 
@@ -52,7 +51,7 @@ def huggify_finbench(push_to_hub=False, TASK=None):
                 token=HF_TOKEN,
             )
 
-        logger.info(f"Finished processing FinBench")
+        logger.info("Finished processing FinBench")
         return hf_dataset
 
     except Exception as e:

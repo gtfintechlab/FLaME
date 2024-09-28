@@ -4,7 +4,7 @@ from pathlib import Path
 from huggingface_hub import login
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from datasets import Dataset, DatasetDict, load_dataset
+from datasets import Dataset, DatasetDict
 import logging
 
 # TODO: check if this is the right way to import from the src folder

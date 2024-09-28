@@ -13,7 +13,7 @@ import torch.optim as optim
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
-from transformers import RobertaForTokenClassification, RobertaTokenizerFast, pipeline
+from transformers import RobertaForTokenClassification, RobertaTokenizerFast
 
 logging.basicConfig()
 
@@ -193,23 +193,23 @@ class BERTForNer:
     def get_current_lr(self) -> float:
         assert (
             self.current_experiment_state["learning_rate"] is not None
-        ), f"Learning rate not set for the experiment yet"
+        ), "Learning rate not set for the experiment yet"
         return self.current_experiment_state["learning_rate"]
 
     def get_current_batch_size(self) -> float:
         assert (
             self.current_experiment_state["batch_size"] is not None
-        ), f"Batch size not set for the experiment yet"
+        ), "Batch size not set for the experiment yet"
         return self.current_experiment_state["batch_size"]
 
     def get_current_seed(self) -> int:
         assert (
             self.current_experiment_state["seed"] is not None
-        ), f"Seed not set for the experiment yet"
+        ), "Seed not set for the experiment yet"
         return self.current_experiment_state["seed"]
 
     def get_criterion(self):
-        assert self.criterion is not None, f"Criterion not set yet"
+        assert self.criterion is not None, "Criterion not set yet"
         return self.criterion
 
     def fine_tune(
@@ -480,8 +480,8 @@ class BERTForNer:
             self.test_path, self.int2str
         )
 
-        assert train_str2int == val_str2int == test_str2int, f"Labels are mismatching"
-        assert train_int2str == val_int2str == test_int2str, f"Labels are mismatching"
+        assert train_str2int == val_str2int == test_str2int, "Labels are mismatching"
+        assert train_int2str == val_int2str == test_int2str, "Labels are mismatching"
 
         num_labels = len(train_int2str)
         self.set_criterion(train_str2int)

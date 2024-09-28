@@ -81,9 +81,7 @@ class Evaluate:
         return output_filename
 
 
-import os
 
-import pandas as pd
 
 
 def process_dataset(evaluator, dataset_file, model_name):

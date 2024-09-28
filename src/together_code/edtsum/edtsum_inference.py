@@ -4,7 +4,6 @@ import pandas as pd
 from datasets import load_dataset
 import together
 from src.together.prompts import edtsum_prompt
-from src.together.tokens import tokens
 
 def edtsum_inference(args):
     together.api_key = args.api_key

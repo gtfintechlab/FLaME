@@ -7,23 +7,18 @@ import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
 
-from src.together_code.models import get_model_name
 from src.together_code.prompts import fpb_prompt
 from src.utils.logging_utils import setup_logger
 
+# TODO: get rid of this pattern of defining directories this way
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 LOG_DIR = ROOT_DIR / "logs"
 logger = setup_logger("fpb_inference", LOG_DIR / "fpb_inference.log")
-import sys
-import os
 import yaml
 
 with open(ROOT_DIR / 'src' / 'config.yaml', "r") as file:
     logger.debug(file)
     config = yaml.safe_load(file)
-
-BATCH_SIZE = 10  # Adjust this value based on API limitations and performance
-
 
 def prepare_batch(data_points: List[Dict[str, Any]], args) -> List[str]:
     prompts = []
@@ -78,43 +73,42 @@ def process_batch_response(
 
 
 def fpb_inference(args, make_api_call, process_api_response):
-    import time
 
     total_time = 0
     total_batches = 0
     logger.info(f"Starting FPB inference on {date.today()}")
-    configs = ["sentences_allagree"]
+    data_splits = ["sentences_allagree"]
 
     all_results = []
 
-    for config in configs:
-        logger.info(f"Loading dataset for config: {config}")
+    for data_split in data_splits:
+        logger.info(f"Loading dataset split: {data_split}")
         try:
-            dataset = load_dataset("financial_phrasebank", config, token=args.hf_token)
+            dataset = load_dataset("financial_phrasebank", data_split, token=args.hf_token)
         except Exception as e:
-            logger.error(f"Error loading dataset for config {config}: {str(e)}")
+            logger.error(f"Error loading dataset for config {data_split}: {str(e)}")
             continue
 
         for i in tqdm(
-            range(0, len(dataset["train"]), BATCH_SIZE), desc="Processing batches"
+            range(0, len(dataset["train"]), args.batch_size), desc="Processing batches"
         ):
             batch_start_time = time.time()
-            batch = dataset["train"][i : i + BATCH_SIZE]
+            batch = dataset["train"][i : i + args.batch_size]
             prompts = prepare_batch(batch, args)
 
             if not any(prompts):
                 logger.warning(
-                    f"All prompts in batch {i//BATCH_SIZE + 1} failed to prepare. Skipping batch."
+                    f"All prompts in batch {i//args.batch_size + 1} failed to prepare. Skipping batch."
                 )
                 continue
 
             try:
                 model_response = make_api_call(
                     prompts=[p for p in prompts if p is not None],
-                    model=args.model,
+                    model=config["fpb"]["model_name"],
                     max_tokens=config["fpb"]["max_tokens"],
                     temperature=config["fpb"]["temperature"],
-                    top_k=config["fpb"]["top_k"],
+                    # top_k=config["fpb"]["top_k"],
                     top_p=config["fpb"]["top_p"],
                     repetition_penalty=config["fpb"]["repetition_penalty"],
                     stop=None,
@@ -132,12 +126,12 @@ def fpb_inference(args, make_api_call, process_api_response):
                 total_time += batch_time
                 total_batches += 1
                 logger.info(
-                    f"Processed batch {i//BATCH_SIZE + 1}, sentences {i+1}-{min(i+BATCH_SIZE, len(dataset['train']))}"
+                    f"Processed batch {i//args.batch_size + 1}, sentences {i+1}-{min(i+args.batch_size, len(dataset['train']))}"
                 )
                 logger.info(f"Batch processing time: {batch_time:.2f} seconds")
 
             except Exception as e:
-                logger.error(f"Error processing batch {i//BATCH_SIZE + 1}: {str(e)}")
+                logger.error(f"Error processing batch {i//args.batch_size + 1}: {str(e)}")
                 for dp in batch:
                     all_results.append(
                         {

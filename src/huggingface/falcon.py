@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import torch
 import transformers
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer
 
 today = date.today()
 seeds = [5768, 78516, 944601]

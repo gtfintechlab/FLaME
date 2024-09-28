@@ -2,7 +2,6 @@ import os
 import sys
 import logging
 from pathlib import Path
-from tqdm.notebook import tqdm
 from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict

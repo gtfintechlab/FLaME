@@ -1,6 +1,5 @@
 # utils/evaluate_metrics.py
 
-import bert_score
 import pandas as pd
 from evaluate import load
 from rouge_score import rouge_scorer

@@ -9,7 +9,6 @@ import pandas as pd
 from datasets import load_dataset
 
 import together
-from src.together_code.models import get_model_name
 from src.together_code.prompts import finer_prompt
 from src.together_code.tokens import tokens
 

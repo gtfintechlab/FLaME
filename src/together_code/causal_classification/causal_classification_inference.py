@@ -10,7 +10,6 @@ from datetime import date
 from src.together_code.prompts import causal_classification_prompt
 from pathlib import Path
 import logging
-from src.together_code.models import get_model_name
 from src.together_code.tokens import tokens
 
 # Configure logging

@@ -3,7 +3,6 @@ import pandas as pd
 from datasets import load_dataset
 import together
 from src.together.prompts import fiqa_task2_prompt  
-from src.together.tokens import tokens
 
 def fiqa_task2_inference(args):
     together.api_key = args.api_key

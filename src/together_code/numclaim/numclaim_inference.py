@@ -9,7 +9,6 @@ from datasets import load_dataset
 from nltk.tokenize import word_tokenize
 
 import together
-from src.together_code.models import get_model_name
 from src.together_code.prompts import numclaim_prompt
 from src.together_code.tokens import tokens
 

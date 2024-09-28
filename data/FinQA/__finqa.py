@@ -1,14 +1,11 @@
-import os
 import sys
 import requests
 from pathlib import Path
-from tqdm.notebook import tqdm
 import pandas as pd
 import json
 
 from datasets import Dataset, DatasetDict
 from huggingface_hub import notebook_login
-from huggingface_hub import hf_hub_upload, hf_hub_download
 
 SRC_DIRECTORY = Path().cwd().resolve().parent
 DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"

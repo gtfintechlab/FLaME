@@ -9,7 +9,6 @@ import nltk
 
 # Mock imports for the custom causal detection prompt and tokens
 from src.together_code.prompts import causal_detection_prompt  # To be implemented for Causal Detection
-from src.together_code.tokens import tokens  # Token logic for Causal Detection
 
 nltk.download("punkt")
 

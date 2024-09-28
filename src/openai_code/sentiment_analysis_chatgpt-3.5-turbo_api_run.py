@@ -1,5 +1,3 @@
-import os
-import sys
 from datetime import date
 from time import sleep, time
 
