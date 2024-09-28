@@ -7,10 +7,10 @@ from datasets import Dataset, DatasetDict
 import logging
 
 DATA_DIR = Path().cwd().parent / "task1"
-HF_TOKEN = os.getenv("HF_TOKEN")  
+HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")  
 HF_ORGANIZATION = "gtfintechlab"  
 DATASET = "FiQA_Task1"
-login(HF_TOKEN)
+login(HUGGINGFACEHUB_API_TOKEN)
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -71,7 +71,7 @@ def huggify_data_fiqa(push_to_hub=False):
                 f"{HF_ORGANIZATION}/{DATASET}",
                 config_name="main",
                 private=True,
-                token=HF_TOKEN,
+                token=HUGGINGFACEHUB_API_TOKEN,
             )
 
         logger.info("Successfully processed and uploaded the FiQA Task 1 dataset.")

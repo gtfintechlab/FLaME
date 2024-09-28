@@ -6,10 +6,10 @@ import logging
 from superflue.config import DATA_DIR
 
 # TODO: Cleanup and remove this code below get it from dotenv etc
-HF_TOKEN = os.getenv("HF_TOKEN")
+HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "CausalClassification"
-login(HF_TOKEN)
+login(HUGGINGFACEHUB_API_TOKEN)
 
 # TODO: use logging helper function
 logging.basicConfig(level=logging.DEBUG)
@@ -55,7 +55,7 @@ def huggify_data_sc(push_to_hub=False):
                 f"{HF_ORGANIZATION}/{DATASET}",
                 config_name="main",
                 private=True,
-                token=HF_TOKEN,
+                token=HUGGINGFACEHUB_API_TOKEN,
             )
 
         logger.info("Finished processing Causal Classification dataset")

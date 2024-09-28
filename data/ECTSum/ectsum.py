@@ -5,10 +5,10 @@ from datasets import Dataset, DatasetDict
 import logging
 from superflue.config import DATA_DIR
 
-HF_TOKEN = os.environ.get("HF_TOKEN")
+HUGGINGFACEHUB_API_TOKEN = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "ECTSum"
-login(HF_TOKEN)
+login(HUGGINGFACEHUB_API_TOKEN)
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def huggify_data_ectsum(push_to_hub=False):
                 f"{HF_ORGANIZATION}/{DATASET}",
                 config_name="main",
                 private=True,
-                token=HF_TOKEN,
+                token=HUGGINGFACEHUB_API_TOKEN,
             )
 
             # TODO: push the dataset dict object not the datasets individually

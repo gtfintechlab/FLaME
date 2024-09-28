@@ -5,10 +5,10 @@ import logging
 from superflue.config import DATA_DIR
 
 os.environ["HF_HOME"] = ""
-HF_TOKEN = ""
+HUGGINGFACEHUB_API_TOKEN = ""
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "FinSent"
-login(HF_TOKEN)
+login(HUGGINGFACEHUB_API_TOKEN)
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ def huggify_data_finsent(push_to_hub=False):
                 f"{HF_ORGANIZATION}/{DATASET}",
                 config_name="main",
                 private=True,
-                token=HF_TOKEN,
+                token=HUGGINGFACEHUB_API_TOKEN,
             )
 
             # TODO: push the dataset dict object not the datasets individually

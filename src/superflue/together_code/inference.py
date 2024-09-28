@@ -16,6 +16,7 @@ from superflue.utils.logging_utils import setup_logger
 from superflue.utils.api_utils import make_api_call, save_raw_output
 from superflue.config import LOG_DIR, RESULTS_DIR
 
+# TODO: (Glenn) get all logging levels from configs instead
 logger = setup_logger(name="together_inference", log_file = LOG_DIR / "together_inference.log", level=logging.DEBUG)
 
 def main(args):
@@ -45,10 +46,10 @@ def main(args):
         inference_function = task_inference_map[task]
         df = inference_function(args, process_api_call=make_api_call, process_api_response=save_raw_output)
         time_taken = time() - start_t
-        print(time_taken)
+        logger.info(f'Time taken for inference: {time_taken}')
         results_path = RESULTS_DIR / task / f"{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
         logger.info(f"Inference completed for {task}. Results saved to {results_path}")
     else:
-        print(f"Task '{task}' not found in the task generation map.")
+        logger.error(f"Task '{task}' not found in the task generation map.")
