@@ -9,8 +9,8 @@ from datasets import load_dataset
 import nltk
 
 # Custom imports for FNXL prompt and token handling
-from src.together.prompts import fnxl_prompt  # Custom prompt function for FNXL
-from src.together.tokens import tokens  # Custom token handling function for FNXL
+from superflue.together_code.prompts import fnxl_prompt  # Custom prompt function for FNXL
+from superflue.together_code.tokens import tokens  # Custom token handling function for FNXL
 
 nltk.download("punkt")
 

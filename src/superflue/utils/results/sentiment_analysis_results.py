@@ -17,7 +17,7 @@ if str(ROOT_DIRECTORY) not in sys.path:
 
 import nltk
 
-from src.utils.results.decode import sentiment_analysis_decode
+from superflue.utils.results.decode import sentiment_analysis_decode
 
 nltk.download("punkt")
 

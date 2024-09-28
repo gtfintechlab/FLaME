@@ -12,9 +12,23 @@ This uses `setup.py` to install SuperFLUE
 pip uninstall superflue
 pip install -e .
 ```
+
+test install
+```bash
+python
+>>> import superflue
+>>> print(superflue.__file__)
+```
+
+cleanup
 ```bash
 find . -name '*.pyc' -delete
 find . -name '__pycache__' -delete
+find . -name 'superflue.py'
+```
+```bash
+python setup.py clean --all
+rm -rf build/ dist/ *.egg-info
 ```
 
 

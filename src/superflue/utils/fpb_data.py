@@ -6,12 +6,12 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
 
-from src.utils.logging import setup_logger
+from superflue.utils.logging import setup_logger
 from utils.config import SEEDS
 
 logger = setup_logger(__name__)
 
-from src.utils.label_utils import encode
+from superflue.utils.label_utils import encode
 
 
 def get_FPB_dataset():

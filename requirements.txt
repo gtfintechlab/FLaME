@@ -1,3 +1,4 @@
+setuptools
 together
 ruff
 pytest

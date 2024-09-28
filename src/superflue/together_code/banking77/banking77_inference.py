@@ -18,8 +18,8 @@ logger.debug(f'DATA_DIRECTORY = {DATA_DIRECTORY}')
 if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
-from src.together_code.prompts import banking77_prompt
-from src.together_code.tokens import tokens
+from superflue.together_code.prompts import banking77_prompt
+from superflue.together_code.tokens import tokens
 
 
 def banking77_inference(args):

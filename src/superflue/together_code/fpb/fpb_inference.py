@@ -7,18 +7,11 @@ import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
 
-from src.together_code.prompts import fpb_prompt
-from src.utils.logging_utils import setup_logger
-
-# TODO: get rid of this pattern of defining directories this way
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
-LOG_DIR = ROOT_DIR / "logs"
+from superflue.together_code.prompts import fpb_prompt
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import LOG_DIR, PACKAGE_DIR
 logger = setup_logger("fpb_inference", LOG_DIR / "fpb_inference.log")
 import yaml
-
-with open(ROOT_DIR / 'src' / 'config.yaml', "r") as file:
-    logger.debug(file)
-    config = yaml.safe_load(file)
 
 def prepare_batch(data_points: List[Dict[str, Any]], args) -> List[str]:
     prompts = []
@@ -73,7 +66,9 @@ def process_batch_response(
 
 
 def fpb_inference(args, make_api_call, process_api_response):
-
+    with open(args.config, "r") as file:
+        logger.debug(file)
+        config = yaml.safe_load(file)
     total_time = 0
     total_batches = 0
     logger.info(f"Starting FPB inference on {date.today()}")
@@ -86,8 +81,8 @@ def fpb_inference(args, make_api_call, process_api_response):
         try:
             dataset = load_dataset("financial_phrasebank", data_split, token=args.hf_token)
         except Exception as e:
-            logger.error(f"Error loading dataset for config {data_split}: {str(e)}")
-            continue
+            logger.error(f"Failed to load dataset with split {data_split}: {str(e)}")
+            raise
 
         for i in tqdm(
             range(0, len(dataset["train"]), args.batch_size), desc="Processing batches"

@@ -8,8 +8,8 @@ import pandas as pd
 from datasets import load_dataset
 
 # Mock imports for the custom FinRED prompt and tokens
-from src.together.prompts import finred_prompt  # You need to implement finred_prompt for FinRED
-from src.together.tokens import tokens  # Token logic for FinRED
+from superflue.together_code.prompts import finred_prompt  # You need to implement finred_prompt for FinRED
+from superflue.together_code.tokens import tokens  # Token logic for FinRED
 
 nltk.download("punkt")
 

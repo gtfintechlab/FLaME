@@ -5,7 +5,7 @@ from pathlib import Path
 from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
-from src.utils.LabelMapper import LabelMapper
+from superflue.utils.LabelMapper import LabelMapper
 
 SRC_DIRECTORY = Path().cwd().resolve().parent
 DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"

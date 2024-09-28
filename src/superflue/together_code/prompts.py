@@ -11,7 +11,7 @@ def numclaim_prompt(sentence: str):
 
 def fomc_prompt(sentence: str):
 
-    system_prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
+    system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence clas-
                 sifier."""
     user_msg = f"""Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
                 TRAL’ class. Label ‘HAWKISH’ if it is corresponding to tightening of the monetary policy,
@@ -25,7 +25,7 @@ def fomc_prompt(sentence: str):
 
 
 def finer_prompt(sentence: str):
-    system_prompt = f"""Discard all the previous instructions. Behave like you are an expert named entity
+    system_prompt = """Discard all the previous instructions. Behave like you are an expert named entity
                     identifier. """
     user_msg = f"""Below a sentence is tokenized and each line contains a word token from the
                     sentence. Identify ‘Person’, ‘Location’, and ‘Organisation’ from them and label them. If the
@@ -42,7 +42,7 @@ def finer_prompt(sentence: str):
 
 def fpb_prompt(sentence: str, prompt_format: str):
     if prompt_format == "superflue":
-        system_prompt = f""" Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier"""
+        system_prompt = """ Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier"""
 
         user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
                     class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
@@ -50,19 +50,19 @@ def fpb_prompt(sentence: str, prompt_format: str):
                     the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}"""
 
     elif prompt_format == "finben_icl":
-        system_prompt = f""""""
+        system_prompt = """"""
         user_msg = f""" Analyze the sentiment of this statement extracted from a financial news article.
                         Provide your answer as either NEGATIVE, POSITIVE or NEUTRAL.
                         For instance, ’The company’s stocks plummeted following the scandal.’ would be classified as negative. This is the sentence: {sentence}"""
 
     elif prompt_format == "finben_noicl":
-        system_prompt = f""""""
+        system_prompt = """"""
         user_msg = f""" Analyze the sentiment of this statement extracted from a financial news article.
                         Provide your answer as either NEGATIVE, POSITIVE or NEUTRAL.
                         This is the sentence: {sentence}"""
 
     elif prompt_format == "superflue_icl":
-        system_prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier """
+        system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier """
         user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
                         class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
                         corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
@@ -77,7 +77,7 @@ def fpb_prompt(sentence: str, prompt_format: str):
                         This is the sentence: {sentence}"""
 
     elif prompt_format == "superflue_cot":  # TODO modify this prompt text
-        system_prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier """
+        system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier """
         user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
                         class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
                         corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Let's think about this sentiment classification task step by step.
@@ -244,7 +244,7 @@ def convfinqa_prompt(document: str):
 
 def tatqa_prompt(question: str, context: str):
     
-    system_prompt = f"""Discard all the previous instructions. Behave like an expert in table-and-text-based question answering."""
+    system_prompt = """Discard all the previous instructions. Behave like an expert in table-and-text-based question answering."""
     
     user_msg = f"""Given the following context (which contains a mixture of tables and textual information), 
                 answer the question based on the information provided. If the context includes tables, ensure 
@@ -259,7 +259,7 @@ def tatqa_prompt(question: str, context: str):
     return prompt
 
 def causal_classification_prompt(text: str):
-    system_prompt = f"""Discard all the previous instructions. Behave like you are an expert causal classification model."""
+    system_prompt = """Discard all the previous instructions. Behave like you are an expert causal classification model."""
     user_msg = f"""Below is a sentence. Classify it into one of the following categories: 
                     0 - Non-causal
                     1 - Direct causal
@@ -272,7 +272,7 @@ def causal_classification_prompt(text: str):
 
 def finred_prompt(sentence: str):
     
-    system_prompt = f"""Discard all the previous instructions. Behave like you are an expert in financial entity and relation extraction."""
+    system_prompt = """Discard all the previous instructions. Behave like you are an expert in financial entity and relation extraction."""
     
     user_msg = f"""Identify all financial entities (such as companies, financial instruments, dates, or money) 
                 and extract the relations between these entities from the following sentence.
@@ -283,7 +283,7 @@ def finred_prompt(sentence: str):
     
     return prompt
 
-  def causal_detection_prompt(tokens: list):
+def causal_detection_prompt(tokens: list):
     """
     Generates a prompt for Causal Detection to classify tokens in a sentence into cause, effect, or other categories,
     with an explanation of the B- and I- labeling scheme.
@@ -295,7 +295,7 @@ def finred_prompt(sentence: str):
         str: The formatted prompt for Causal Detection classification.
     """
     
-    system_prompt = f"""Discard all previous instructions. Behave like an expert in cause and effect detection in text."""
+    system_prompt = """Discard all previous instructions. Behave like an expert in cause and effect detection in text."""
     
     user_msg = f"""You are given the following tokenized sentence. Classify each token using the following labels:
                 - 'B-CAUSE': The beginning of a cause phrase.

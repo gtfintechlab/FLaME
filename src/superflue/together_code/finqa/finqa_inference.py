@@ -5,8 +5,8 @@ import pandas as pd
 from datasets import load_dataset
 
 import together
-from src.together_code.prompts import finqa_prompt
-from src.together_code.tokens import tokens
+from superflue.together_code.prompts import finqa_prompt
+from superflue.together_code.tokens import tokens
 
 
 def finqa_inference(args):

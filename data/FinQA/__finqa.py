@@ -12,7 +12,7 @@ DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
 if str(SRC_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SRC_DIRECTORY))
 
-from src.utils.miscellaneous import download_zip_content
+from superflue.utils.miscellaneous import download_zip_content
 import traceback
 import logging
 

@@ -9,10 +9,10 @@ ROOT_DIRECTORY = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(ROOT_DIRECTORY))
 
-from src.utils.logging import setup_logger
+from superflue.utils.logging import setup_logger
 
 logger = setup_logger(__name__)
-from src.utils.hf_model import get_hf_model
+from superflue.utils.hf_model import get_hf_model
 
 
 @pytest.mark.parametrize(

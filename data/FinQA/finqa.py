@@ -4,8 +4,8 @@ from huggingface_hub import hf_hub_upload
 import pandas as pd
 from datasets import Dataset
 import logging
-from src.utils.process_qa import process_qa_pairs
-from src.utils.zip_to_csv import zip_to_csv
+from superflue.utils.process_qa import process_qa_pairs
+from superflue.utils.zip_to_csv import zip_to_csv
 
 SRC_DIRECTORY = Path().cwd().resolve().parent
 DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"

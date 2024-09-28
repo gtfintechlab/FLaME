@@ -1,7 +1,7 @@
 
 from datasets import load_dataset
 
-from src.openai_code.ect_sum_main import Evaluate
+from superflue.openai_code.ect_sum_main import Evaluate
 
 
 def process_dataset(evaluator, dataset_file, model_name):

@@ -2,8 +2,8 @@ import time
 import pandas as pd
 from datasets import load_dataset
 import together
-from src.together.prompts import fiqa_prompt
-from src.together.tokens import tokens
+from superflue.together_code.prompts import fiqa_prompt
+from superflue.together_code.tokens import tokens
 
 def fiqa_inference(args):
     together.api_key = args.api_key

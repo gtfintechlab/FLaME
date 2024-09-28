@@ -7,8 +7,8 @@ import pandas as pd
 from datasets import load_dataset
 
 import together
-from src.together_code.prompts import finbench_prompt
-from src.together_code.tokens import tokens
+from superflue.together_code.prompts import finbench_prompt
+from superflue.together_code.tokens import tokens
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 logging.basicConfig(level=logging.INFO)
