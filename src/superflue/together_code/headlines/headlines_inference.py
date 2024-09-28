@@ -4,13 +4,11 @@ import time
 from datasets import load_dataset
 from datetime import date
 from pathlib import Path
-from prompts_and_tokens import tokens, headlines_prompt
+from superflue.together_code.tokens import tokens
+from superflue.together_code.prompts import headlines_prompt
+from superflue.config import PACKAGE_DIR
+# TODO: use logging helper function here
 import logging
-
-
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -35,7 +33,6 @@ def headlines_inference(args):
     past_news_list = []
 
     logger.info(f"Starting inference on {args.task}...")
-    start_t = time.time()
     
     for i in range(len(dataset['test'])):
         time.sleep(5.0)
@@ -93,17 +90,10 @@ def headlines_inference(args):
             'future_price': future_price_list,
             'past_news': past_news_list
         })
-        results_path = ROOT_DIR / 'results' / args.task / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        results_path = PACKAGE_DIR / 'results' / args.task / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
         logger.info(f"Intermediate results saved to {results_path}")
 
     logger.info(f"Inference completed. Final results saved to {results_path}")
     return df
-
-def get_model_name(model):
-    model_dict = {
-        "meta-llama/Llama-3-70b-chat-hf": "Llama-3-70b",
-    }
-    
-    return model_dict.get(model, model)

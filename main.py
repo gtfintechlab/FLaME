@@ -1,6 +1,7 @@
+import yaml
 import argparse
 
-from superflue.together_code.inference import main as inference
+from src.superflue.together_code.inference import main as inference
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="SuperFLUE")
@@ -10,7 +11,6 @@ def parse_arguments():
     parser.add_argument(
         "--dataset", type=str, help="Name of the dataset to use."
     )
-
     # # Glenn: Sampling is not currently working -- the dataframes are loaded in the `inference`
     # # functions for each task which means they need to have this arg info passed down
     # # to have it have an effect.
@@ -62,10 +62,10 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def main():
-    args = parse_arguments()
-    inference(args)
-
-
 if __name__ == "__main__":
-    main()
+    args = parse_arguments()
+    with open(args.config, 'r') as file:
+        config = yaml.safe_load(file)
+    for key, value in config.items():
+        setattr(args, key, value)
+    inference(args)

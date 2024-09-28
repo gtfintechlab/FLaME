@@ -65,7 +65,7 @@ def process_batch_response(
     return results
 
 
-def fpb_inference(args, make_api_call, process_api_response):
+def fpb_inference(args, process_api_call, process_api_response):
     with open(args.config, "r") as file:
         logger.debug(file)
         config = yaml.safe_load(file)
@@ -98,7 +98,7 @@ def fpb_inference(args, make_api_call, process_api_response):
                 continue
 
             try:
-                model_response = make_api_call(
+                model_response = process_api_call(
                     prompts=[p for p in prompts if p is not None],
                     model=config["fpb"]["model_name"],
                     max_tokens=config["fpb"]["max_tokens"],

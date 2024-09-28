@@ -2,6 +2,27 @@ def fnxl_prompt(sentence: str):
     prompt = f"""Lorem ipsum: {sentence}"""
     return prompt
 
+def headlines_prompt(sentence: str):
+    prompt = f"""Lorem ipsum: {sentence}"""
+    return prompt
+
+def fiqa_prompt(sentence: str):
+    prompt = f"""Lorem ipsum: {sentence}"""
+    return prompt
+
+def fiqa_task1_prompt(sentence: str):
+    prompt = f"""Lorem ipsum: {sentence}"""
+    return prompt
+
+def fiqa_task2_prompt(sentence: str):
+    prompt = f"""Lorem ipsum: {sentence}"""
+    return prompt
+
+def edtsum_prompt(sentence: str):
+    prompt = f"""Lorem ipsum: {sentence}"""
+    return prompt
+
+
 def numclaim_prompt(sentence: str):
 
     prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence senti-

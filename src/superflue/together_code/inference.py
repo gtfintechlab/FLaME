@@ -13,6 +13,7 @@ from superflue.together_code.finqa.fiqa_task1_inference import fiqa_inference
 from superflue.together_code.finqa.fiqa_task2_inference import fiqa_task2_inference
 from superflue.together_code.edtsum.edtsum_inference import edtsum_inference
 from superflue.utils.logging_utils import setup_logger
+from superflue.utils.api_utils import make_api_call, save_raw_output
 from superflue.config import LOG_DIR, RESULTS_DIR
 
 logger = setup_logger(name="together_inference", log_file = LOG_DIR / "together_inference.log", level=logging.DEBUG)
@@ -42,7 +43,7 @@ def main(args):
     if task in task_inference_map:
         start_t = time()
         inference_function = task_inference_map[task]
-        df = inference_function(args)
+        df = inference_function(args, process_api_call=make_api_call, process_api_response=save_raw_output)
         time_taken = time() - start_t
         print(time_taken)
         results_path = RESULTS_DIR / task / f"{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
