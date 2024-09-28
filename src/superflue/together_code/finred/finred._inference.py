@@ -26,7 +26,7 @@ def finred_inference(args):
 
     logger.info("Loading dataset...")
     # Replace "finred_dataset" with the appropriate Hugging Face dataset for FinRED or custom dataset
-    dataset = load_dataset("gtfintechlab/FinRed", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/FinRed")
 
     # Initialize lists to store sentences, actual labels, and model responses
     sentences = []

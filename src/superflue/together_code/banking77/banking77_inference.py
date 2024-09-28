@@ -15,7 +15,7 @@ from superflue.together_code.tokens import tokens
 
 def banking77_inference(args):
     together.api_key = args.api_key
-    dataset = load_dataset("gtfintechlab/banking77", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/banking77")
     today = date.today()
     documents = []
     llm_responses = []

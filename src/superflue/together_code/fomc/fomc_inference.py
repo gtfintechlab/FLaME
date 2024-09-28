@@ -21,7 +21,7 @@ def fomc_inference(args):
     today = date.today()
     logger.info(f"Starting FOMC inference on {today}")
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/fomc_communication", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/fomc_communication")
     sentences = []
     llm_responses = []
     actual_labels = []

@@ -17,7 +17,7 @@ def headlines_inference(args):
     logger.info(f"Starting Numclaim inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/Headlines", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/Headlines")
     
     # Initialize lists to store actual labels and model responses
     news = []

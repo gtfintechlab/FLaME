@@ -27,7 +27,7 @@ def numclaim_inference(args):
     logger.info(f"Starting Numclaim inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/Numclaim", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/Numclaim")
 
     # Initialize lists to store actual labels and model responses
     sentences = []

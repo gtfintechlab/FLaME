@@ -8,7 +8,7 @@ def fiqa_task2_inference(args):
     together.api_key = args.api_key
     
 
-    dataset = load_dataset("gtfintechlab/FiQA_Task2", split="test", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/FiQA_Task2", split="test")
     
     context = []
     llm_responses = []

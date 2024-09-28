@@ -27,7 +27,7 @@ def tatqa_inference(args):
 
     logger.info("Loading dataset...")
     # Replace with the appropriate Hugging Face dataset for TAT-QA
-    dataset = load_dataset("gtfintechlab/TATQA", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/TATQA")
 
     # Initialize lists to store the question, context, actual answers, and model responses
     questions = []

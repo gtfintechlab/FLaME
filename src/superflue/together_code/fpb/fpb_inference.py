@@ -78,7 +78,7 @@ def fpb_inference(args, process_api_call, process_api_response):
     for data_split in data_splits:
         logger.info(f"Loading dataset split: {data_split}")
         try:
-            dataset = load_dataset("gtfintechlab/financial_phrasebank_sentences_allagree", data_split, token=args.hf_token, trust_remote_code=True)
+            dataset = load_dataset("gtfintechlab/financial_phrasebank_sentences_allagree", data_split, trust_remote_code=True)
         except Exception as e:
             logger.error(f"Failed to load dataset with split {data_split}: {str(e)}")
             raise

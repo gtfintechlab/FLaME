@@ -24,7 +24,7 @@ def causal_classification_inference(args, make_api_call, process_api_response):
     logger.info(f"Starting Causal Classification inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/CausalClassification", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/CausalClassification")
 
     # Initialize lists to store actual labels and model responses
     texts = []

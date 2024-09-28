@@ -10,7 +10,7 @@ def edtsum_inference(args):
     today = date.today()
     
   
-    dataset = load_dataset("gtfintechlab/EDTSum", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/EDTSum")
    
     documents = []
     llm_responses = []

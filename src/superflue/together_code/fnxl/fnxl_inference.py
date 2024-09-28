@@ -27,7 +27,7 @@ def fnxl_inference(args):
 
     logger.info("Loading dataset...")
     # Replace with your Hugging Face or custom FNXL dataset path
-    dataset = load_dataset("gtfintechlab/fnxl", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/fnxl")
 
     # Initialize lists to store information
     sentences = []

@@ -9,7 +9,7 @@ def fiqa_inference(args):
     together.api_key = args.api_key
     
    
-    dataset = load_dataset("gtfintechlab/FiQA_Task1", split="test", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/FiQA_Task1", split="test")
     
     context = []
     llm_responses = []

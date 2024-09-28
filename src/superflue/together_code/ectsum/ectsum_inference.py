@@ -14,7 +14,7 @@ def ectsum_inference(args):
     today = date.today()
     # OPTIONAL TODO: make configs an argument of some kind LOW LOW LOW PRIORITY
     # configs = ["documents_50agree", "documents_66agree", "documents_75agree", "documents_allagree"]
-    dataset = load_dataset("gtfintechlab/ECTSum", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/ECTSum")
 
     # Initialize lists to store actual labels and model responses
     documents = []

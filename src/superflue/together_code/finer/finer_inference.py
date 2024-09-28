@@ -23,7 +23,7 @@ def finer_inference(args):
     logger.info(f"Starting FinER inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/finer_ord_encoded", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/finer_ord_encoded")
 
     # Initialize lists to store actual labels and model responses
     sentences = []

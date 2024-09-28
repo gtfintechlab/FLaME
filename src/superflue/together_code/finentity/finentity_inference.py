@@ -27,7 +27,7 @@ def finentity_inference(args):
     logger.info(f"Starting FinEntity inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/finentity", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/finentity")
 
     # Initialize lists to store actual labels and model responses
     sentences = []

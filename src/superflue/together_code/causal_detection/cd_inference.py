@@ -25,7 +25,7 @@ def causal_detection_inference(args, make_api_call, process_api_response):
 
     logger.info("Loading dataset...")
     # Replace with your Hugging Face or custom Causal Detection dataset path
-    dataset = load_dataset("gtfintechlab/CausalDetection", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/CausalDetection")
 
     # Initialize lists to store tokens, tags, and model responses
     tokens_list = []

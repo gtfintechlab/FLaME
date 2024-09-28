@@ -14,7 +14,7 @@ def finqa_inference(args):
     today = date.today()
     # OPTIONAL TODO: make configs an argument of some kind LOW LOW LOW PRIORITY
     # configs = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
-    dataset = load_dataset("gtfintechlab/finqa", token=args.hf_token)
+    dataset = load_dataset("gtfintechlab/finqa")
     context = []
     llm_responses = []
     actual_labels = []
