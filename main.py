@@ -1,7 +1,6 @@
 import argparse
 
-import yaml
-from src.together_code.inference import main as inference
+from superflue.together_code.inference import main as inference
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="SuperFLUE")
@@ -62,21 +61,10 @@ def parse_arguments():
     )
     return parser.parse_args()
 
+
 def main():
     args = parse_arguments()
-
-    # Load configuration from YAML if provided
-    if args.config:
-        with open(args.config, "r") as file:
-            config = yaml.safe_load(file)
-            # args.sample_size = config.get("sample_size", args.sample_size)
-            # args.method = config.get("method", args.method)
-            # args.dataset = config.get("dataset", args.dataset)
-            
     inference(args)
-
-    # Run inference on sampled_data
-    # print(sampled_data)
 
 
 if __name__ == "__main__":

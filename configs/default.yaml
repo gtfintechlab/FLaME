@@ -1,7 +1,6 @@
 dataset: fpb
 sample_size: 10
 method: random
-data_directory: "data"
 seeds: [42, 123, 456]
 
 model:

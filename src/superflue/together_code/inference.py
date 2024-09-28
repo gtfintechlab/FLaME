@@ -1,34 +1,19 @@
-import sys
-from pathlib import Path
 import logging
-
-# TODO: Need to figure out how to stop this pattern I hate it
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-LOG_DIR = ROOT_DIR / 'logs'
-SRC_DIRECTORY = ROOT_DIR / 'src'
-DATA_DIRECTORY = ROOT_DIR / 'data'
-OUTPUT_DIR = DATA_DIRECTORY / 'outputs'
-RESULTS_DIR = ROOT_DIR / 'results'
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
-    
-import argparse
 from time import time
 from datetime import date
-from fpb.fpb_inference import fpb_inference
-from numclaim.numclaim_inference import numclaim_inference
-from fnxl.fnxl_inference import fnxl_inference
-from fomc.fomc_inference import fomc_inference
-from finbench.finbench_inference import finbench_inference
-from finer.finer_inference import finer_inference
-from finentity.finentity_inference import finentity_inference
-from headlines.headlines_inference import headlines_inference
-from finqa.fiqa_task1_inference import fiqa_inference
-from finqa.fiqa_task2_inference import fiqa_task2_inference
-from edtsum.edtsum_inference import edtsum_inference
-from src.utils.logging_utils import setup_logger
-from datasets import load_dataset
-from src.utils.sampling_utils import sample_dataset
+from superflue.together_code.fpb.fpb_inference import fpb_inference
+from superflue.together_code.numclaim.numclaim_inference import numclaim_inference
+from superflue.together_code.fnxl.fnxl_inference import fnxl_inference
+from superflue.together_code.fomc.fomc_inference import fomc_inference
+from superflue.together_code.finbench.finbench_inference import finbench_inference
+from superflue.together_code.finer.finer_inference import finer_inference
+from superflue.together_code.finentity.finentity_inference import finentity_inference
+from superflue.together_code.headlines.headlines_inference import headlines_inference
+from superflue.together_code.finqa.fiqa_task1_inference import fiqa_inference
+from superflue.together_code.finqa.fiqa_task2_inference import fiqa_task2_inference
+from superflue.together_code.edtsum.edtsum_inference import edtsum_inference
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import LOG_DIR, RESULTS_DIR
 
 logger = setup_logger(name="together_inference", log_file = LOG_DIR / "together_inference.log", level=logging.DEBUG)
 
@@ -40,7 +25,6 @@ def main(args):
     # dataset = load_dataset(args.dataset)
     # sampled_data = sample_dataset(dataset=dataset, sample_size=args.sample_size, method=args.method, split='train')
    
-
     task_inference_map = {
         'numclaim': numclaim_inference,
         'fpb': fpb_inference,

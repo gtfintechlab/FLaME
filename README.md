@@ -1,6 +1,23 @@
 # SuperFLUE (Financial Language Understanding Evaluation)
 Corresponding Authors: `glennmatlin[at]gatech[dot]edu` `huzaifa[at]gatech[dot]edu`
 
+## GLENN WIP
+I am working on moving us away from the sys.path.insert method and towards a proper python package
+
+From the root directory you can run `pip install -e .`
+
+This uses `setup.py` to install SuperFLUE
+
+```bash
+pip uninstall superflue
+pip install -e .
+```
+```bash
+find . -name '*.pyc' -delete
+find . -name '__pycache__' -delete
+```
+
+
 ## Project Setup
 
 ### Creating and Activating the Virtual Environment

@@ -4,3 +4,5 @@
 
 
 `python3 src/together_code/inference.py --model "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo" --task "fpb"`
+
+`python superflue.py --config configs/default.yaml
