@@ -13,9 +13,9 @@ from finbench.finbench_inference import finbench_inference
 from finer.finer_inference import finer_inference
 from finentity.finentity_inference import finentity_inference
 from headlines.headlines_inference import headlines_inference
-from fiqa.fiqa_task1_inference import fiqa_inference
-from fiqa.fiqa_task2_inference import fiqa_task2_inference
-from edtsum.edtsum_inference import edtsum_inference
+from src.together_code.finqa.fiqa_task1_inference import fiqa_inference
+from src.together_code.finqa.fiqa_task2_inference import fiqa_task2_inference
+from src.together_code.edtsum.edtsum_inference import edtsum_inference
 from src.utils.api_utils import make_api_call, save_raw_output
 from src.utils.logging_utils import setup_logger
 

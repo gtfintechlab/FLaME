@@ -9,8 +9,8 @@ import pandas as pd
 from datasets import load_dataset
 
 # Mock imports for custom TATQA prompt and tokens
-from src.together.prompts import tatqa_prompt  # To be implemented for TAT-QA prompt
-from src.together.tokens import tokens  # Token logic for TAT-QA
+from src.together_code.prompts import tatqa_prompt  # To be implemented for TAT-QA prompt
+from src.together_code.tokens import tokens  # Token logic for TAT-QA
 
 nltk.download("punkt")
 
