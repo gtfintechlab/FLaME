@@ -81,7 +81,7 @@ def load_hf_dataset(hf_token, dataset_name, extract_x, y_column, train_size = 0.
     training = [(extract_x(data), data[y_column]) for data in dataset['train']]
     random.shuffle(training)
     training_data = training[:math.ceil(len(training)*train_size)]
-    val_data = training[math.ceil(len(training)*val_size):]
+    val_data = training[math.ceil(len(training)*(1-val_size)):]
     testing_data = [(extract_x(data), data[y_column]) for data in dataset['test']]
     return training_data, val_data, testing_data
 
@@ -190,7 +190,9 @@ def load_numclaim(hf_token):
 
 def eval_numclaim(prediction: Variable, ground_truth_answer: Variable):
     pred = extract_answer(f"Based on the following list of labels: ‘INCLAIM’, ‘OUTOFCLAIM’, extract the most relevant label from the following response:\n{str(prediction.value)}.\nProvide only the label that best matches the response.")
-    return pred != None and (str(pred).upper().replace(' ', '') == str(ground_truth_answer))
+    pred = str(pred).upper().replace(' ', '')
+    pred = pred[:pred.find("M") + 1]
+    return int(pred != None and (pred == str(ground_truth_answer)))
 
 def load_banking77(hf_token):
     return load_hf_dataset(
@@ -204,7 +206,7 @@ def eval_banking77(prediction: Variable, ground_truth_answer: Variable):
     pred = extract_answer(f"Based on the following list of banking intents: {banking77_list}, extract the most relevant category rom the following response: {str(prediction.value)}.\nProvide only the category name that best matches the response.")
     if (str(pred) not in banking77_list):
         raise ValueError(f"Invalid output: {pred}. Not in banking77 list.")
-    return pred != None and (str(pred) == str(ground_truth_answer))
+    return int(pred != None and (str(pred) == str(ground_truth_answer)))
 
 # Map task names to task-specific helpers
 # Each task should have a starting prompt, constraints (if any exist), evaluation function, and dataset loading function

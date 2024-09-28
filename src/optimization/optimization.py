@@ -26,9 +26,9 @@ def textgrad_optimization(args):
 
     task_helper = fetch_task_specific_helpers(args.task)
     training_data, val_data, testing_data = task_helper['load_dataset'](args.hf_token)
+    print(len(training_data), len(val_data), len(testing_data))
     starting_prompt = task_helper['starting_prompt']
     constraints = task_helper['constraints']
-    print(textgrad)
 
     # initialize textgrad model & optimizer
     engine = get_engine(args.model)
@@ -50,6 +50,8 @@ def textgrad_optimization(args):
     print(f"Starting val accuracy: {start_val_accuracy}")
 
     # evaluate on testing dataset with starting prompt
+    start_train_accuracy = np.mean(eval_dataset(training_data, eval_fn, model))
+    print(f"Starting train accuracy: {start_train_accuracy}")
         
     # optimize system prompt
     train_loader = DataLoader(training_data, batch_size=args.batch_size, shuffle=True)
@@ -90,7 +92,9 @@ def textgrad_optimization(args):
         results["prompt"].append(system_prompt.get_value())
     
     # evaluate on testing dataset with final prompt
-    return results
+    end_train_accuracy = np.mean(eval_dataset(training_data, eval_fn, model))
+    print(f"Ending train accuracy: {end_train_accuracy}")
+    return results, start_train_accuracy, end_train_accuracy
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -109,14 +113,16 @@ def parse_arguments():
     parser.add_argument("--repetition_penalty", type=float, default=1.1, help="Repetition penalty to use")
     return parser.parse_args()
 
-def fomc_example():
+def example():
     
+    os.environ['TOGETHER_API_KEY'] = together_token
+    os.environ['HF_TOKEN'] = hf_token
     args = {
         "api_key": together_token,
         "hf_token": hf_token,
-        "task": "fomc_communication",
+        "task": "numclaim",
         "model": "together-meta-llama/Meta-Llama-3-8b-Instruct-Turbo",
-        "max_tokens": 128,
+        "max_tokens": 172,
         "temperature": 0.7,
         "top_k": 50,
         "top_p": 0.7,
@@ -129,5 +135,7 @@ def fomc_example():
     return textgrad_optimization(args)
 
 if __name__ == "__main__":
-    results = fomc_example()
+    results, start_train_accuracy, end_train_accuracy = example()
+    print(f"Starting train accuracy: {start_train_accuracy}")
+    print(f"Ending train accuracy: {end_train_accuracy}")
     pd.DataFrame(results).to_csv("generalized_fomc_test.csv", index=False)
