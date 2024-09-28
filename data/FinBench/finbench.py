@@ -1,28 +1,21 @@
 import os
-import sys
-from pathlib import Path
 from huggingface_hub import login
 from datasets import DatasetDict, load_dataset
 import logging
-
-
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-SRC_DIRECTORY = Path().cwd().resolve().parent
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
+from superflue.config import DATA_DIR
 
 HF_TOKEN = os.environ["HF_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "FinBench"
 login(HF_TOKEN)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
 def huggify_finbench(push_to_hub=False, TASK=None):
     try:
-        directory_path = DATA_DIRECTORY / "FinBench"
+        directory_path = DATA_DIR / "FinBench"
         logger.debug(f"Directory path: {directory_path}")
 
         dataset = load_dataset("yuweiyin/FinBench")

@@ -1,16 +1,9 @@
-import sys
 import requests
-from pathlib import Path
 import pandas as pd
 import json
 
 from datasets import Dataset, DatasetDict
 from huggingface_hub import notebook_login
-
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
 
 from superflue.utils.miscellaneous import download_zip_content
 import traceback

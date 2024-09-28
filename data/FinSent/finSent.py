@@ -1,15 +1,8 @@
 import os
-import sys
-from pathlib import Path
 from huggingface_hub import login
 from datasets import DatasetDict
 import logging
-
-# TODO: check if this is the right way to import from the src folder
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
+from superflue.config import DATA_DIR
 
 os.environ["HF_HOME"] = ""
 HF_TOKEN = ""
@@ -17,13 +10,13 @@ HF_ORGANIZATION = "gtfintechlab"
 DATASET = "FinSent"
 login(HF_TOKEN)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
 def huggify_data_finsent(push_to_hub=False):
     try:
-        directory_path = DATA_DIRECTORY / "FinSent"
+        directory_path = DATA_DIR / "FinSent"
         logger.debug(f"Directory path: {directory_path}")
 
         splits = DatasetDict({})

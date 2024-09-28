@@ -15,7 +15,7 @@ from superflue.together_code.tokens import tokens  # Token logic for TAT-QA
 nltk.download("punkt")
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent

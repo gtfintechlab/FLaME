@@ -1,22 +1,16 @@
 import os
-import sys
-from pathlib import Path
 from huggingface_hub import login
 from datasets import Dataset, DatasetDict
 import logging
 import json
-
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
+from superflue.config import DATA_DIR
 
 HF_TOKEN = os.environ["HF_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "FSRL"
 login(HF_TOKEN)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -49,7 +43,7 @@ def transform_tokens_to_list(data):
 
 def huggify_data_fsrl(push_to_hub=False):
     try:
-        directory_path = DATA_DIRECTORY / "FSRL"
+        directory_path = DATA_DIR / "FSRL"
         logger.debug(f"Directory path: {directory_path}")
 
         def read_json_file(file_path):

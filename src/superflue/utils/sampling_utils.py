@@ -1,3 +1,4 @@
+# TODO: (Glenn) One function for one file again. Can be refactored into another file
 from datasets import Dataset, DatasetDict, IterableDatasetDict
 
 def sample_dataset(dataset, sample_size: int, method: str, split: str = 'train'):

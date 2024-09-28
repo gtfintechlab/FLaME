@@ -1,29 +1,22 @@
 import os
-import sys
-from pathlib import Path
 from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
 import logging
-
-# TODO: check if this is the right way to import from the src folder
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
+from superflue.config import DATA_DIR
 
 HF_TOKEN = os.environ.get("HF_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "ECTSum"
 login(HF_TOKEN)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
 def huggify_data_ectsum(push_to_hub=False):
     try:
-        directory_path = DATA_DIRECTORY / "ECTSum"
+        directory_path = DATA_DIR / "ECTSum"
         logger.debug(f"Directory path: {directory_path}")
 
         ect_sum_train = pd.read_csv(f"{directory_path}/train.csv")

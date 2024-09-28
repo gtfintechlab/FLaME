@@ -1,36 +1,6 @@
 # SuperFLUE (Financial Language Understanding Evaluation)
 Corresponding Authors: `glennmatlin[at]gatech[dot]edu` `huzaifa[at]gatech[dot]edu`
-
-## GLENN WIP
-I am working on moving us away from the sys.path.insert method and towards a proper python package
-
-From the root directory you can run `pip install -e .`
-
-This uses `setup.py` to install SuperFLUE
-
-```bash
-pip uninstall superflue
-pip install -e .
-```
-
-test install
-```bash
-python
->>> import superflue
->>> print(superflue.__file__)
-```
-
-cleanup
-```bash
-find . -name '*.pyc' -delete
-find . -name '__pycache__' -delete
-find . -name 'superflue.py'
-```
-```bash
-python setup.py clean --all
-rm -rf build/ dist/ *.egg-info
-```
-
+***ASSUME ALL THE TESTS ARE OBSOLETE DONT WORRY ABOUT THEM RIGHT NOW***
 
 ## Project Setup
 
@@ -58,6 +28,31 @@ To create the virtual environment in the project root and install the required p
     pip install -r requirements.txt
     ```
 
+### Installing SuperFLUE
+
+From the root directory you can run `pip install -e .` -- this uses `setup.py` to install SuperFLUE to your activate Python environment.
+
+You can re-install superflue if something goes wrong:
+```bash
+pip uninstall superflue
+pip install -e .
+```
+
+(unsure if needed) Clean-up files after install:
+```bash
+python setup.py clean --all
+rm -rf build/ dist/ *.egg-info
+find . -name '*.pyc' -delete
+find . -name '__pycache__' -delete
+```
+
+Test the installation of SuperFLUE worked:
+```bash
+python
+>>> import superflue
+>>> print(superflue.__file__)
+```
+
 ### API keys
 To configure your API keys, follow these steps:
 
@@ -80,6 +75,8 @@ Example:
 TOGETHER_API_KEY=foo
 OPENAI_API_KEY=bar
 ANTHROPIC_API_KEY=baz
+HUGGINGFACE_KEY=buzz
+```
 
 ## Project Repository
 
@@ -139,11 +136,11 @@ To run inference on any dataset using this repository, you can use the following
 #### Command Options:
 - `--model`: The name of the model you want to use for inference (e.g., GPT-3, T5, etc.).
 - `--task`: The name of the dataset task for which you are running inference.
-- `--api_key`: Your API key for external model services (e.g., OpenAI, etc.).
-- `--hf_token`: Your Hugging Face token for accessing models and datasets.
+<!-- - `--api_key`: Your API key for external model services (e.g., OpenAI, etc.). -->
+<!-- - `--hf_token`: Your Hugging Face token for accessing models and datasets. -->
 - `--max_tokens`: The maximum number of tokens to generate for each inference.
 - `--temperature`: The sampling temperature (controls randomness in predictions).
 - `--top_p`: Controls nucleus sampling.
-- `--top_k`: Controls top-k sampling.
+<!-- - `--top_k`: Controls top-k sampling. -->
 - `--repetition_penalty`: Penalty for repeated tokens during inference.
 - `--prompt_format`: Specify the format of the prompt you want to use (from `prompts.py`).

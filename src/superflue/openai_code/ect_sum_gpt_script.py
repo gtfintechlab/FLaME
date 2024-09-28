@@ -13,7 +13,7 @@ def process_dataset(evaluator, dataset_file, model_name):
     evaluator.append_scores(output_path)
 
 
-data_directory = "data"
+DATA_DIR = "data"
 
 evaluator = Evaluate()
 
@@ -21,7 +21,7 @@ evaluator = Evaluate()
 model_name = "GPT-3.5-Turbo"
 
 for dataset in datasets:
-    dataset_file = os.path.join(data_directory, dataset)
+    dataset_file = os.path.join(DATA_DIR, dataset)
     process_dataset(evaluator, dataset_file, model_name)"""
 
 dataset = load_dataset("https://huggingface.co/datasets/gtfintechlab/ECTSum")

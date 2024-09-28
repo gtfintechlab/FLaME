@@ -1,3 +1,6 @@
+# TODO: (Glenn) Evaluate code will need to be moved into its own folder not utils.
+
+# TODO: (Glenn) I prefer to avoid using NLTK unless there's something we cannot get from another package
 import nltk
 from nltk.tokenize import word_tokenize
 

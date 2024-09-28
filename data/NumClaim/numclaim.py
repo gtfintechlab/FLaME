@@ -1,18 +1,10 @@
 import os
-import sys
 import logging
-from pathlib import Path
 from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
 from superflue.utils.LabelMapper import LabelMapper
-
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-
-
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
+from superflue.config import DATA_DIR
 
 HF_TOKEN = os.environ.get("HF_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"
@@ -24,13 +16,13 @@ login(HF_TOKEN)
 label_mapper = LabelMapper(task="numclaim_detection")
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
 def huggify_numclaim(push_to_hub=False):
     try:
-        directory_path = DATA_DIRECTORY / "numclaim_detection"
+        directory_path = DATA_DIR / "numclaim_detection"
         logger.debug(f"Directory path: {directory_path}")
 
         numclaim_train = pd.read_excel(f"{directory_path}/numclaim-train-5768.xlsx")

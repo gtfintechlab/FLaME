@@ -1,22 +1,13 @@
 import logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler()])
+# TODO: fix up this logging code to use helpers
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler()])
 logger = logging.getLogger(__name__)
 
 import together
 import time
 from datetime import date
-from pathlib import Path
 import pandas as pd
-import sys
 from datasets import load_dataset
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
-SRC_DIRECTORY = Path().cwd().resolve() / "src"
-DATA_DIRECTORY = Path().cwd().resolve() / "data"
-logger.debug(f'SRC_DIRECTORY = {SRC_DIRECTORY}')
-logger.debug(f'DATA_DIRECTORY = {DATA_DIRECTORY}')
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
 
 from superflue.together_code.prompts import banking77_prompt
 from superflue.together_code.tokens import tokens

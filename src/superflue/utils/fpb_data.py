@@ -15,14 +15,14 @@ from superflue.utils.label_utils import encode
 
 
 def get_FPB_dataset():
-    zip_path = DATA_DIRECTORY / "FinancialPhraseBank-v1.0.zip"
+    zip_path = DATA_DIR / "FinancialPhraseBank-v1.0.zip"
     logger.info(f"Unzipping {zip_path}")
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall("ExtractedFinancialPhraseBank")
 
 
 def process_data():
-    FPB_DIRECTORY = DATA_DIRECTORY / "ExtractedFinancialPhraseBank"
+    FPB_DIRECTORY = DATA_DIR / "ExtractedFinancialPhraseBank"
     FPB_DIRECTORY.mkdir(parents=True, exist_ok=True)
     logger.info(f"Processing the FPB data into {FPB_DIRECTORY}")
     df = pd.read_csv(
@@ -34,9 +34,9 @@ def process_data():
     df["label"] = df["label"].apply(lambda x: encode(x))
 
     # TODO: have it build to the directories when reused i.e. numclaim_detection
-    TRAIN_DIRECTORY = DATA_DIRECTORY / "sentiment_analysis" / "train"
+    TRAIN_DIRECTORY = DATA_DIR / "sentiment_analysis" / "train"
     TRAIN_DIRECTORY.mkdir(parents=True, exist_ok=True)
-    TEST_DIRECTORY = DATA_DIRECTORY / "sentiment_analysis" / "test"
+    TEST_DIRECTORY = DATA_DIR / "sentiment_analysis" / "test"
     TEST_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
     for seed in tqdm(SEEDS):
@@ -58,10 +58,10 @@ if __name__ == "__main__":
 with open("config.yaml", "r") as file:
     config = yaml.safe_load(file)
 
-    DATA_DIRECTORY = Path(config["fpb"]["data_directory"])
-    DATA_DIRECTORY.mkdir(parents=True, exist_ok=True)
+    DATA_DIR = Path(config["fpb"]["DATA_DIR"])
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     logger.info(
-        f"Building the FinancialPhraseBank dataset in data directory {DATA_DIRECTORY}"
+        f"Building the FinancialPhraseBank dataset in data directory {DATA_DIR}"
     )
     get_FPB_dataset()
     process_data()

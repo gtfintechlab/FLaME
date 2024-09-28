@@ -1,3 +1,5 @@
+# TODO: (Glenn) I do not think we are using this file in SuperFLUE so it can be deleted/moved -- please double check before deleting!!
+# TODO: (Glenn) The file might still be useful though but im pretty sure its been replaced by other code
 import argparse
 import logging
 import sys
@@ -7,7 +9,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 ROOT_DIRECTORY = Path(__file__).resolve().parent.parent.parent.parent

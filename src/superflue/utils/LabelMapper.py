@@ -1,3 +1,4 @@
+# TODO: (Glenn) need to move LabelMapper into another file, no single-function files
 class LabelMapper:
     def __init__(self, task):
         self.mappings = {

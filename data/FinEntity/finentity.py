@@ -1,17 +1,10 @@
 import os
-import sys
-from pathlib import Path
 from huggingface_hub import login
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from datasets import Dataset, DatasetDict, load_dataset
 import logging
-
-# TODO: check if this is the right way to import from the src folder
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
+from superflue.config import DATA_DIR
 
 
 HF_TOKEN = os.environ["HF_TOKEN"]
@@ -19,7 +12,7 @@ HF_ORGANIZATION = "gtfintechlab"
 DATASET = "finentity"
 login(HF_TOKEN)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +20,7 @@ def huggify_data_finentity(
     push_to_hub=False, TASK=None, SEED=None, SPLITS=["train", "test"]
 ):
     try:
-        directory_path = DATA_DIRECTORY / "FinEntity"
+        directory_path = DATA_DIR / "FinEntity"
         logger.debug(f"Directory path: {directory_path}")
 
         dataset = load_dataset("yixuantt/FinEntity")

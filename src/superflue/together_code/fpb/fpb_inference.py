@@ -1,6 +1,5 @@
 import time
 from datetime import date
-from pathlib import Path
 from typing import Any, Dict, List
 
 import pandas as pd
@@ -9,7 +8,7 @@ from tqdm import tqdm
 
 from superflue.together_code.prompts import fpb_prompt
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import LOG_DIR, PACKAGE_DIR
+from superflue.config import LOG_DIR
 logger = setup_logger("fpb_inference", LOG_DIR / "fpb_inference.log")
 import yaml
 

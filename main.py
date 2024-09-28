@@ -10,10 +10,7 @@ def parse_arguments():
     # parser.add_argument("--api_key, required=False", type=str, help="API key to use")
     # parser.add_argument("--hf_token", type=str, help="Hugging Face token to use")
     parser.add_argument("--config", type=str, help="Path to the YAML config file.")
-    parser.add_argument(
-        "--dataset", type=str, help="Name of the dataset to use."
-    )
-    # # Glenn: Sampling is not currently working -- the dataframes are loaded in the `inference`
+    # # TODO: (Glenn) Sampling is not currently working -- the dataframes are loaded in the `inference`
     # # functions for each task which means they need to have this arg info passed down
     # # to have it have an effect.
     # parser.add_argument(
@@ -26,7 +23,9 @@ def parse_arguments():
     #     default="random",
     #     help="Sampling method.",
     # )
-
+    parser.add_argument(
+        "--dataset", type=str, help="Name of the dataset to use."
+    )
     parser.add_argument("--model", type=str, help="Model to use")
     parser.add_argument(
         "--max_tokens",

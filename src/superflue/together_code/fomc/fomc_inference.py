@@ -12,7 +12,7 @@ from superflue.together_code.prompts import fomc_prompt
 from superflue.together_code.tokens import tokens
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 

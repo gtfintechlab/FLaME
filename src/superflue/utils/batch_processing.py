@@ -5,7 +5,7 @@ from superflue.together_code.prompts import fpb_prompt
 
 logger = logging.getLogger(__name__)
 
-
+# TOOD: (Glenn) Prepare batch is a great function but it can still be in another file; refactor to avoid single file for functions
 def prepare_batch(data_points: List[Dict[str, Any]], args) -> List[str]:
 
     prompts = []

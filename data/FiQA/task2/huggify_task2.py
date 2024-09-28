@@ -5,20 +5,20 @@ import pandas as pd
 from datasets import Dataset, DatasetDict
 import logging
 
-DATA_DIRECTORY = Path().cwd().parent / "task2"
+DATA_DIR = Path().cwd().parent / "task2"
 HF_TOKEN = os.getenv("HF_TOKEN")  
 HF_ORGANIZATION = "gtfintechlab"  
 DATASET = "FiQA_Task2"
 login(HF_TOKEN)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def huggify_data_fiqa(push_to_hub=False):
     try:
         
-        train_file = DATA_DIRECTORY / "train.json"
-        test_file = DATA_DIRECTORY / "test.json"
+        train_file = DATA_DIR / "train.json"
+        test_file = DATA_DIR / "test.json"
         
         train_data = pd.read_json(train_file)
         test_data = pd.read_json(test_file)

@@ -1,4 +1,4 @@
-# utils/evaluate_metrics.py
+# TODO: (Glenn) Evaluate code will need to be moved into its own folder not utils.
 
 import pandas as pd
 from evaluate import load

@@ -1,10 +1,11 @@
+# TODO: (Glenn) Resolve overlaps between superflue.utils.logging_utils and superflue.utils.logging
 import logging
 import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 
-def setup_logger(name, log_file, level=logging.INFO):
+def setup_logger(name, log_file, level=logging.DEBUG):
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )

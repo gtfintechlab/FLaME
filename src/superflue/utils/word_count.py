@@ -1,12 +1,14 @@
-import nltk
 import pandas as pd
 from datasets import load_dataset
+# TODO: (Glenn) If possible, avoid using `nltk`, unless we need something specific not found elsewhere
+import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
-# Download necessary NLTK data
 nltk.download("punkt")
 nltk.download("stopwords")
+
+# TODO: (Glenn) `word_count.py` is written very strictly and should be either a utility we call on a dataset we provide, or something done at runtime, etc.
 
 # Load the dataset
 dataset = load_dataset("gtfintechlab/fomc_communication")

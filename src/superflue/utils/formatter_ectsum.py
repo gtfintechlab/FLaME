@@ -1,5 +1,4 @@
-# utils/formatter.py
-
+# TODO: (Glenn) If this is a formatter just for ectsum we should keep it in the associated data\task folder not here
 
 class Formatter:
     def __init__(self):

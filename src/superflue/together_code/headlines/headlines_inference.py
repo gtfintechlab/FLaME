@@ -3,13 +3,12 @@ import pandas as pd
 import time
 from datasets import load_dataset
 from datetime import date
-from pathlib import Path
 from superflue.together_code.tokens import tokens
 from superflue.together_code.prompts import headlines_prompt
 from superflue.config import PACKAGE_DIR
 # TODO: use logging helper function here
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def headlines_inference(args):

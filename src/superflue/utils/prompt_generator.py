@@ -1,3 +1,5 @@
+# TODO: (Glenn) Very low priority, but I am pretty sure we can make this section shorter with generators or classes
+
 def numclaim_prompt(sentence: str):
 
     prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence senti-

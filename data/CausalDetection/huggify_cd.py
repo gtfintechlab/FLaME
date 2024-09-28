@@ -1,28 +1,23 @@
 import os
-import sys
-from pathlib import Path
 from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
 import logging
+from superflue.config import DATA_DIR
 
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
-
+# TODO: Use logging helper function; get the HF creds from .env
 HF_TOKEN = os.environ["HF_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "CausalDetection"
 login(HF_TOKEN)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
 def huggify_data_cd(push_to_hub=False):
     try:
-        directory_path = DATA_DIRECTORY / "CausalDetection"
+        directory_path = DATA_DIR / "CausalDetection"
         logger.debug(f"Directory path: {directory_path}")
 
         cd_train = pd.read_json(f"{directory_path}/train.json")

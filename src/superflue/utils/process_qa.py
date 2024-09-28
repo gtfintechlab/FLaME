@@ -1,5 +1,5 @@
 import pandas as pd
-
+# TODO: (Glenn) This function is used to process QAs, but its one file one function. we can move it elsewhere or put it in a folder.
 
 def process_qa_pairs(data):
     inputs, outputs = [], []

@@ -17,7 +17,7 @@ nltk.download("punkt")
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 

@@ -1,5 +1,5 @@
 from nltk import word_tokenize
-
+# TODO: (Glenn) Lets refactor all the decode/encode functions together into one place
 
 def finer_ord_decode(label_word):
     label_word = label_word.lower()

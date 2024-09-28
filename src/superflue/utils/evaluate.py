@@ -1,5 +1,5 @@
 import pandas as pd
-
+# TODO: (Glenn) Evaluate code will need to be moved into its own folder not utils.
 import openai
 from utils.evaluate_ectsum import EvaluateMetrics
 
