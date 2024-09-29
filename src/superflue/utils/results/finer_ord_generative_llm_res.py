@@ -54,7 +54,8 @@ for file in files_xls:
                     )
                 else:
                     predicted_labels.append(-1)
-            except:
+            except Exception as e:
+                print(e)
                 predicted_labels.append(-1)
             sub_index_gold = sub_index_gold + 1
 

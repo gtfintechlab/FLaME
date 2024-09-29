@@ -3,7 +3,7 @@ from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
 import logging
-from superflue.config import DATA_DIR
+from superflue.config import DATA_DIR, LOG_LEVEL
 
 # Set environment variables
 HUGGINGFACEHUB_API_TOKEN = os.environ["HUGGINGFACEHUB_API_TOKEN"]
@@ -11,7 +11,7 @@ HF_ORGANIZATION = "gtfintechlab"
 DATASET = "FNXL"
 login(HUGGINGFACEHUB_API_TOKEN)
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 

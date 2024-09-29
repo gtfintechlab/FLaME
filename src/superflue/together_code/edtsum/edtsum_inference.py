@@ -14,7 +14,7 @@ logger = setup_logger(
 def edtsum_inference(args):
     # today = date.today()
 
-    dataset = load_dataset("gtfintechlab/EDTSum")
+    dataset = load_dataset("gtfintechlab/EDTSum", trust_remote_code=True)
 
     documents = []
     llm_responses = []

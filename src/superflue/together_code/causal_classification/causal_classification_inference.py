@@ -9,24 +9,23 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.
 from datasets import load_dataset
 from datetime import date
 from superflue.together_code.prompts import causal_classification_prompt
-from pathlib import Path
-import logging
 from superflue.together_code.tokens import tokens
+from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
+from superflue.utils.logging_utils import setup_logger
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logger = setup_logger(
+    name="causal_classification_inference",
+    log_file=LOG_DIR / "causal_classification_inference.log",
+    level=LOG_LEVEL,
+)
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
-
-def causal_classification_inference(args, make_api_call, process_api_response):
-    together.api_key = args.api_key
+def causal_classification_inference(args):
     today = date.today()
     logger.info(f"Starting Causal Classification inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/CausalClassification")
+    dataset = load_dataset("gtfintechlab/CausalClassification", trust_remote_code=True)
 
     # Initialize lists to store actual labels and model responses
     texts = []
@@ -35,7 +34,7 @@ def causal_classification_inference(args, make_api_call, process_api_response):
     complete_responses = []
 
     logger.info(f"Starting inference on {args.task}...")
-    start_t = time.time()
+    # start_t = time.time()
     for i in range(len(dataset["test"])):  # type: ignore
         text = dataset["test"][i]["text"]  # type: ignore
         actual_label = dataset["test"][i]["label"]  # type: ignore
@@ -72,8 +71,7 @@ def causal_classification_inference(args, make_api_call, process_api_response):
             continue
 
         results_path = (
-            ROOT_DIR
-            / "results"
+            RESULTS_DIR
             / args.task
             / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
         )

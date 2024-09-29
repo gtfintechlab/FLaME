@@ -14,16 +14,14 @@ logger = setup_logger(
 )
 
 
-
-
 def fpb_inference(args):
     # TODO: (Glenn) Very low priority, we can set the data_split as configurable in yaml
     # data_splits = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
-    logger.info(f"Starting FPB inference")
+    logger.info("Starting FPB inference")
     logger.info("Loading dataset...")
     # for data_split in data_splits:
     data_split = "sentences_allagree"
-    dataset = load_dataset("financial_phrasebank", data_split)
+    dataset = load_dataset("financial_phrasebank", data_split, trust_remote_code=True)
 
     sentences = []
     llm_responses = []
@@ -58,7 +56,7 @@ def fpb_inference(args):
             else:
                 response_label = "default_value"
             llm_responses.append(response_label)
-        
+
         except Exception as e:
             logger.error(f"Error: {e}. Retrying in 10 seconds.")
             time.sleep(10.0)

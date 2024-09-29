@@ -6,6 +6,7 @@ import together
 import pandas as pd
 from datasets import load_dataset
 import nltk
+from superflue.config import LOG_LEVEL
 
 # Mock imports for the custom causal detection prompt and tokens
 from superflue.together_code.prompts import (
@@ -15,19 +16,19 @@ from superflue.together_code.prompts import (
 nltk.download("punkt")
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 
-def causal_detection_inference(args, make_api_call, process_api_response):
+def causal_detection_inference(args):
     today = date.today()
     logger.info(f"Starting Causal Detection inference on {today}")
 
     logger.info("Loading dataset...")
     # Replace with your Hugging Face or custom Causal Detection dataset path
-    dataset = load_dataset("gtfintechlab/CausalDetection")
+    dataset = load_dataset("gtfintechlab/CausalDetection", trust_remote_code=True)
 
     # Initialize lists to store tokens, tags, and model responses
     tokens_list = []
@@ -36,7 +37,7 @@ def causal_detection_inference(args, make_api_call, process_api_response):
     complete_responses = []
 
     logger.info(f"Starting inference on {args.task}...")
-    start_t = time.time()
+    # start_t = time.time()
     for i in range(len(dataset["test"])):
         tokens = dataset["test"][i]["tokens"]
         actual_tag = dataset["test"][i]["tags"]

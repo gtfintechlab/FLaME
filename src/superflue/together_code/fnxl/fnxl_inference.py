@@ -30,7 +30,7 @@ def fnxl_inference(args):
 
     logger.info("Loading dataset...")
     # Replace with your Hugging Face or custom FNXL dataset path
-    dataset = load_dataset("gtfintechlab/fnxl")
+    dataset = load_dataset("gtfintechlab/fnxl", trust_remote_code=True)
 
     # Initialize lists to store information
     sentences = []
@@ -41,7 +41,7 @@ def fnxl_inference(args):
     complete_responses = []
 
     logger.info(f"Starting inference on {args.task}...")
-    start_t = time.time()
+    # start_t = time.time()
     for i in range(len(dataset["test"])):  # type: ignore
         sentence = dataset["test"][i]["sentence"]  # type: ignore
         numeral_tag = dataset["test"][i]["numerals-tags"]  # type: ignore

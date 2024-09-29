@@ -357,4 +357,3 @@ prompt_map = {
 
 def prompt_function(prompt_name):
     return prompt_map.get(prompt_name, None)
-    

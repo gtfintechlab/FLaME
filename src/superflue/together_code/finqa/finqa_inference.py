@@ -1,5 +1,4 @@
 import time
-from datetime import date
 
 import pandas as pd
 from datasets import load_dataset
@@ -19,13 +18,13 @@ logger = setup_logger(
 
 def finqa_inference(args):
     together.api_key = args.api_key
-    today = date.today()
-    dataset = load_dataset("gtfintechlab/finqa")
+    # today = date.today()
+    dataset = load_dataset("gtfintechlab/finqa", trust_remote_code=True)
     context = []
     llm_responses = []
     actual_labels = []
     complete_responses = []
-    start_t = time.time()
+    # start_t = time.time()
     for entry in dataset["test"]:  # type: ignore
         pre_text = " ".join(entry["pre_text"])  # type: ignore
         post_text = " ".join(entry["post_text"])  # type: ignore
@@ -61,7 +60,7 @@ def finqa_inference(args):
 
         except Exception as e:
             logger.error(e)
-            i = i - 1
+            # i = i - 1
             time.sleep(20.0)
 
     return df

@@ -28,7 +28,7 @@ def numclaim_inference(args):
     logger.info(f"Starting Numclaim inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/Numclaim")
+    dataset = load_dataset("gtfintechlab/Numclaim", trust_remote_code=True)
 
     # Initialize lists to store actual labels and model responses
     sentences = []
@@ -38,7 +38,7 @@ def numclaim_inference(args):
     complete_responses = []
 
     logger.info(f"Starting inference on {args.task}...")
-    start_t = time.time()
+    # start_t = time.time()
     for i in range(len(dataset["test"])):
         time.sleep(5.0)
         sentence = dataset["test"][i]["context"]

@@ -20,13 +20,13 @@ def fomc_inference(args):
     today = date.today()
     logger.info(f"Starting FOMC inference on {today}")
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/fomc_communication")
+    dataset = load_dataset("gtfintechlab/fomc_communication", trust_remote_code=True)
     sentences = []
     llm_responses = []
     actual_labels = []
     complete_responses = []
     logger.info(f"Starting inference on dataset: {args.task}...")
-    start_t = time.time()
+    # start_t = time.time()
 
     for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"):
         sentence = dataset["test"][i]["sentence"]

@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from datasets import Dataset, DatasetDict, load_dataset
 import logging
-from superflue.config import DATA_DIR
+from superflue.config import DATA_DIR, LOG_LEVEL
 
 
 HUGGINGFACEHUB_API_TOKEN = os.environ["HUGGINGFACEHUB_API_TOKEN"]
@@ -12,7 +12,7 @@ HF_ORGANIZATION = "gtfintechlab"
 DATASET = "finentity"
 login(HUGGINGFACEHUB_API_TOKEN)
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +23,7 @@ def huggify_data_finentity(
         directory_path = DATA_DIR / "FinEntity"
         logger.debug(f"Directory path: {directory_path}")
 
-        dataset = load_dataset("yixuantt/FinEntity")
+        dataset = load_dataset("yixuantt/FinEntity", trust_remote_code=True)
 
         df = dataset["train"]
 

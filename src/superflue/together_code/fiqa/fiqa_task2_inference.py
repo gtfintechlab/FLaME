@@ -16,7 +16,9 @@ logger = setup_logger(
 
 
 def fiqa_task2_inference(args):
-    dataset = load_dataset("gtfintechlab/FiQA_Task2", split="test")
+    dataset = load_dataset(
+        "gtfintechlab/FiQA_Task2", split="test", trust_remote_code=True
+    )
 
     context = []
     llm_responses = []

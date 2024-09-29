@@ -1,4 +1,3 @@
-import logging
 from time import time
 from datetime import date
 from superflue.together_code.fpb.fpb_inference import fpb_inference
@@ -13,7 +12,7 @@ from superflue.together_code.fiqa.fiqa_task1_inference import fiqa_inference
 from superflue.together_code.fiqa.fiqa_task2_inference import fiqa_task2_inference
 from superflue.together_code.edtsum.edtsum_inference import edtsum_inference
 from superflue.utils.logging_utils import setup_logger
-from superflue.utils.api_utils import make_api_call, save_raw_output
+
 from superflue.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL
 
 logger = setup_logger(
@@ -28,7 +27,7 @@ def main(args):
 
     # # Glenn: Right now there is no need to load the dataset in the inference module because the
     # # individual inference functions below are doing the data loading
-    # dataset = load_dataset(args.dataset)
+    # dataset = load_dataset(args.dataset, trust_remote_code=True)
     # sampled_data = sample_dataset(dataset=dataset, sample_size=args.sample_size, method=args.method, split='train')
 
     task_inference_map = {
@@ -48,9 +47,7 @@ def main(args):
     if task in task_inference_map:
         start_t = time()
         inference_function = task_inference_map[task]
-        df = inference_function(
-            args, process_api_call=make_api_call, process_api_response=save_raw_output
-        )
+        df = inference_function(args)
         time_taken = time() - start_t
         logger.info(f"Time taken for inference: {time_taken}")
         results_path = (

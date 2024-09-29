@@ -4,7 +4,7 @@ from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
 from superflue.utils.LabelMapper import LabelMapper
-from superflue.config import DATA_DIR
+from superflue.config import DATA_DIR, LOG_LEVEL
 
 HUGGINGFACEHUB_API_TOKEN = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"
@@ -16,7 +16,7 @@ login(HUGGINGFACEHUB_API_TOKEN)
 label_mapper = LabelMapper(task="numclaim_detection")
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 

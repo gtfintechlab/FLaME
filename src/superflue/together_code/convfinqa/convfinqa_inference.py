@@ -1,5 +1,4 @@
 import time
-from datetime import date
 
 import pandas as pd
 from datasets import load_dataset
@@ -11,10 +10,10 @@ from superflue.together_code.tokens import tokens
 
 def finqa_inference(args):
     together.api_key = args.api_key
-    today = date.today()
+    # today = date.today()
     # OPTIONAL TODO: make configs an argument of some kind LOW LOW LOW PRIORITY
     # configs = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
-    dataset = load_dataset("gtfintechlab/finqa")
+    dataset = load_dataset("gtfintechlab/finqa", trust_remote_code=True)
 
     # Initialize lists to store actual labels and model responses
     context = []
@@ -23,7 +22,7 @@ def finqa_inference(args):
     complete_responses = []
 
     # Iterating through the train split of the dataset
-    start_t = time.time()
+    # start_t = time.time()
     for entry in dataset["train"]:  # type: ignore
         pre_text = " ".join(entry["pre_text"])
         post_text = " ".join(entry["post_text"])
@@ -66,7 +65,7 @@ def finqa_inference(args):
 
         except Exception as e:
             print(e)
-            i = i - 1
+            # i = i - 1
             time.sleep(10.0)
 
     return df

@@ -34,7 +34,8 @@ def fomc_communication_decode(x):
             return 2
         else:
             return -1
-    except:
+    except Exception as e:
+        print(e)
         return -1
 
 

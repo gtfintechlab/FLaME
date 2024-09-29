@@ -4,12 +4,12 @@ from datasets import Dataset
 import logging
 from superflue.utils.process_qa import process_qa_pairs
 from superflue.utils.zip_to_csv import zip_to_csv
-from superflue.config import DATA_DIR
+from superflue.config import DATA_DIR, LOG_LEVEL
 
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "finqa"
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 
@@ -59,5 +59,5 @@ def huggify_data_finqa(push_to_hub=False):
     return finqa_datadict
 
 
-if name == "__main__":
+if __name__ == "__main__":
     huggify_data_finqa(push_to_hub=True)

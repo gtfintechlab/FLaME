@@ -34,7 +34,7 @@ for seed in [5768, 78516, 944601]:
                 {"role": "user", "content": message},
             ]
             try:
-                chat_completion = openai_code.ChatCompletion.create(
+                chat_completion = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     messages=prompt_json,
                     temperature=0.0,

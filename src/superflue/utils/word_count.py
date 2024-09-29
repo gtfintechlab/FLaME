@@ -12,7 +12,7 @@ nltk.download("stopwords")
 # TODO: (Glenn) `word_count.py` is written very strictly and should be either a utility we call on a dataset we provide, or something done at runtime, etc.
 
 # Load the dataset
-dataset = load_dataset("gtfintechlab/fomc_communication")
+dataset = load_dataset("gtfintechlab/fomc_communication", trust_remote_code=True)
 
 # Initialize containers for the data
 train_context, train_actual_labels = [], []

@@ -2,17 +2,19 @@ import os
 from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
-import logging
-from superflue.config import DATA_DIR
+from superflue.config import DATA_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import setup_logger
+
+logger = setup_logger(
+    name=__name__, log_file=LOG_DIR / "CausalDetectionhuggify.log", level=LOG_LEVEL
+)
+
 
 # TODO: Use logging helper function; get the HF creds from .env
 HUGGINGFACEHUB_API_TOKEN = os.environ["HUGGINGFACEHUB_API_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "CausalDetection"
 login(HUGGINGFACEHUB_API_TOKEN)
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 
 def huggify_data_cd(push_to_hub=False):

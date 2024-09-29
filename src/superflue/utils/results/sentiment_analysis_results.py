@@ -1,27 +1,20 @@
-# TODO: (Glenn) I do not think we are using this file in SuperFLUE so it can be deleted/moved -- please double check before deleting!!
-# TODO: (Glenn) The file might still be useful though but im pretty sure its been replaced by other code
 import argparse
-import logging
-import sys
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
-ROOT_DIRECTORY = Path(__file__).resolve().parent.parent.parent.parent
-logger.debug(f"Root directory: {str(ROOT_DIRECTORY)}")
-if str(ROOT_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIRECTORY))
+from superflue.config import LOG_LEVEL, RESULTS_DIR, LOG_DIR
+from superflue.utils.logging_utils import setup_logger
 
 import nltk
 
 from superflue.utils.results.decode import sentiment_analysis_decode
 
 nltk.download("punkt")
+
+logger = setup_logger(
+    name=__name__, log_file=LOG_DIR / "sentiment_analysis_results.log", level=LOG_LEVEL
+)
 
 
 def compute_metrics(files, outputs_directory):
@@ -49,11 +42,7 @@ def compute_metrics(files, outputs_directory):
 
 def main(args):
     LLM_OUTPUTS_DIRECTORY = (
-        ROOT_DIRECTORY
-        / "data"
-        / args.task_name
-        / "llm_prompt_outputs"
-        / args.quantization
+        RESULTS_DIR / args.task_name / "llm_prompt_outputs" / args.quantization
     )
 
     # Filter out relevant files

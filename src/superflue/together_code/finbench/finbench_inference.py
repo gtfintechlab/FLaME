@@ -23,7 +23,7 @@ def finbench_inference(args):
 
     # Load dataset
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/finbench")
+    dataset = load_dataset("gtfintechlab/finbench", trust_remote_code=True)
 
     # Initialize lists to store actual labels and model responses
     X_ml_data = []

@@ -17,7 +17,7 @@ logger = setup_logger(
 def ectsum_inference(args):
     # TODO: (Glenn) Low priority, make data splits configurable
     # configs = ["documents_50agree", "documents_66agree", "documents_75agree", "documents_allagree"]
-    dataset = load_dataset("gtfintechlab/ECTSum")
+    dataset = load_dataset("gtfintechlab/ECTSum", trust_remote_code=True)
 
     # Initialize lists to store actual labels and model responses
     documents = []

@@ -1,8 +1,9 @@
 # import logging
 import time
 from datetime import date
-# from pathlib import Path
 
+# from pathlib import Path
+import together
 import nltk
 import pandas as pd
 from datasets import load_dataset
@@ -29,7 +30,7 @@ def finred_inference(args):
 
     logger.info("Loading dataset...")
     # Replace "finred_dataset" with the appropriate Hugging Face dataset for FinRED or custom dataset
-    dataset = load_dataset("gtfintechlab/FinRed")
+    dataset = load_dataset("gtfintechlab/FinRed", trust_remote_code=True)
 
     # Initialize lists to store sentences, actual labels, and model responses
     sentences = []

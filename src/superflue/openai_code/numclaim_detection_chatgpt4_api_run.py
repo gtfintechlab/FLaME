@@ -7,10 +7,10 @@ import pandas as pd
 import openai
 
 sys.path.insert(0, "/home/research/git repos/zero-shot-finance")
-from api_keys import APIKeyConstants
+# from api_keys import APIKeyConstants
 
 today = date.today()
-openai.api_key = APIKeyConstants.OPENAI_API_KEY
+# openai.api_key = APIKeyConstants.OPENAI_API_KEY
 
 for seed in [5768, 78516, 944601]:
     for data_category in ["numclaim"]:
@@ -36,7 +36,7 @@ for seed in [5768, 78516, 944601]:
                 {"role": "user", "content": message},
             ]
             try:
-                chat_completion = openai_code.ChatCompletion.create(
+                chat_completion = openai.ChatCompletion.create(
                     model="gpt-4",
                     messages=prompt_json,
                     temperature=0.0,

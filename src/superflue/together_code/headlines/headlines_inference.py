@@ -20,7 +20,7 @@ def headlines_inference(args):
     logger.info(f"Starting Headlines inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/Headlines")
+    dataset = load_dataset("gtfintechlab/Headlines", trust_remote_code=True)
 
     # Initialize lists to store actual labels and model responses
     news = []

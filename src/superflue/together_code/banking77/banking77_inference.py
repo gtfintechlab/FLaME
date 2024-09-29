@@ -9,10 +9,14 @@ from superflue.together_code.tokens import tokens
 from superflue.config import RESULTS_DIR
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import LOG_LEVEL
-logger = setup_logger(name="banking77_inference", log_file="banking77_inference.log", level=LOG_LEVEL)
+
+logger = setup_logger(
+    name="banking77_inference", log_file="banking77_inference.log", level=LOG_LEVEL
+)
+
 
 def banking77_inference(args):
-    dataset = load_dataset("gtfintechlab/banking77")
+    dataset = load_dataset("gtfintechlab/banking77", trust_remote_code=True)
     today = date.today()
     documents = []
     llm_responses = []

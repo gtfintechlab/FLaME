@@ -1,9 +1,6 @@
-# import logging
 import time
 from datetime import date
-# from pathlib import Path
 
-# Ensure the NLTK data is downloaded
 import nltk
 import pandas as pd
 from datasets import load_dataset
@@ -30,7 +27,7 @@ def finentity_inference(args):
     logger.info(f"Starting FinEntity inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/finentity")
+    dataset = load_dataset("gtfintechlab/finentity", trust_remote_code=True)
 
     # Initialize lists to store actual labels and model responses
     sentences = []

@@ -22,5 +22,7 @@ for dataset in datasets:
     dataset_file = os.path.join(DATA_DIR, dataset)
     process_dataset(evaluator, dataset_file, model_name)"""
 
-dataset = load_dataset("https://huggingface.co/datasets/gtfintechlab/ECTSum")
+dataset = load_dataset(
+    "https://huggingface.co/datasets/gtfintechlab/ECTSum", trust_remote_code=True
+)
 data_files = {"train": "train.csv", "test": "test.csv", "val": "val.csv"}
