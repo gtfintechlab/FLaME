@@ -2,6 +2,7 @@ import yaml
 import argparse
 from dotenv import load_dotenv
 import os
+from superflue.together_code.inference import main as inference
 
 
 def parse_arguments():
@@ -41,7 +42,6 @@ if __name__ == "__main__":
     print(f"HUGGINGFACEHUB_API_TOKEN: {os.getenv('HUGGINGFACEHUB_API_TOKEN')}")
 
     # Now import the inference function
-    from superflue.together_code.inference import main as inference
 
     args = parse_arguments()
     with open(args.config, "r") as file:

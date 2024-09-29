@@ -1,13 +1,3 @@
-import logging
-
-# TODO: fix up this logging code to use helpers
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()],
-)
-logger = logging.getLogger(__name__)
-
 import together
 import time
 from datetime import date
@@ -17,10 +7,11 @@ from datasets import load_dataset
 from superflue.together_code.prompts import banking77_prompt
 from superflue.together_code.tokens import tokens
 from superflue.config import RESULTS_DIR
-
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import LOG_LEVEL
+logger = setup_logger(name="banking77_inference", log_file="banking77_inference.log", level=LOG_LEVEL)
 
 def banking77_inference(args):
-    together.api_key = args.api_key
     dataset = load_dataset("gtfintechlab/banking77")
     today = date.today()
     documents = []
