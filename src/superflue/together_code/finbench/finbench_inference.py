@@ -1,7 +1,5 @@
-import logging
 import time
 from datetime import date
-from pathlib import Path
 
 import pandas as pd
 from datasets import load_dataset
@@ -9,14 +7,17 @@ from datasets import load_dataset
 import together
 from superflue.together_code.prompts import finbench_prompt
 from superflue.together_code.tokens import tokens
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logger = setup_logger(
+    name="finbench_inference",
+    log_file=LOG_DIR / "finbench_inference.log",
+    level=LOG_LEVEL,
+)
 
 
 def finbench_inference(args):
-    together.api_key = args.api_key
     today = date.today()
     logger.info(f"Starting FinBench inference on {today}")
 
@@ -32,7 +33,7 @@ def finbench_inference(args):
     complete_responses = []
 
     logger.info("Starting inference on dataset...")
-    start_t = time.time()
+    # start_t = time.time()
 
     # Iterating through the test split of the dataset
     for i in range(len(dataset["test"])):
@@ -82,8 +83,7 @@ def finbench_inference(args):
     )
 
     results_path = (
-        ROOT_DIR
-        / "results"
+        RESULTS_DIR
         / args.task
         / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
     )

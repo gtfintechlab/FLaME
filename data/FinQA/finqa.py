@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def huggify_data_finqa(push_to_hub=False):
-    directory_path = DATA_DIR/ "finqa"
+    directory_path = DATA_DIR / "finqa"
     logger.debug(f"Directory path: {directory_path}")
 
     zip_to_csv(

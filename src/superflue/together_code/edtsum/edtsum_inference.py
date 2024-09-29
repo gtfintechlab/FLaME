@@ -1,23 +1,27 @@
 import time
-from datetime import date
 import pandas as pd
 from datasets import load_dataset
 import together
 from superflue.together_code.prompts import edtsum_prompt
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import LOG_DIR, LOG_LEVEL
+
+logger = setup_logger(
+    name="edtsum_inference", log_file=LOG_DIR / "edtsum_inference.log", level=LOG_LEVEL
+)
+
 
 def edtsum_inference(args):
-    together.api_key = args.api_key
-    today = date.today()
-    
-  
+    # today = date.today()
+
     dataset = load_dataset("gtfintechlab/EDTSum")
-   
+
     documents = []
     llm_responses = []
     actual_labels = []
     complete_responses = []
 
-    start_t = time.time()
+    # start_t = time.time()
     for i in range(len(dataset["test"])):
         document = dataset["test"][i]["text"]
         actual_label = dataset["test"][i]["answer"]
@@ -36,24 +40,25 @@ def edtsum_inference(args):
                 # stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-          
+
             response_label = model_response["output"]["choices"][0]["text"]
 
             # time.sleep(30.0)
             llm_responses.append(response_label)
-    
 
         except Exception as e:
-            print(f"Error at index {i}: {e}")
+            logger.error(f"Error at index {i}: {e}")
             complete_responses.append(None)
             llm_responses.append(None)
             time.sleep(30.0)
 
-   
-    assert len(documents) == len(llm_responses) == len(actual_labels) == len(complete_responses), \
-        "Lists are not of equal length!"
+    assert (
+        len(documents)
+        == len(llm_responses)
+        == len(actual_labels)
+        == len(complete_responses)
+    ), "Lists are not of equal length!"
 
- 
     df = pd.DataFrame(
         {
             "documents": documents,
@@ -62,5 +67,5 @@ def edtsum_inference(args):
             "complete_responses": complete_responses,
         }
     )
-   
+
     return df

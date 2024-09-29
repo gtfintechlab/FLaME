@@ -22,7 +22,7 @@ def make_api_call(
     stop: List[str] = None,
 ) -> Dict[str, Any]:
     return together.Complete.create(
-        prompt=prompts, # TODO: (Glenn) PRIORITY! Figure out why prompt is being given multiple prompts this is causing issues
+        prompt=prompts,  # TODO: (Glenn) PRIORITY! Figure out why prompt is being given multiple prompts this is causing issues
         model=model,
         max_tokens=max_tokens,
         temperature=temperature,

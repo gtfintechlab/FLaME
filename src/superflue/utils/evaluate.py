@@ -1,17 +1,15 @@
 import pandas as pd
+
 # TODO: (Glenn) Evaluate code will need to be moved into its own folder not utils.
 import openai
 from utils.evaluate_ectsum import EvaluateMetrics
 
 
 class Evaluate:
-
     def __init__(self):
-
         self.evaluator = EvaluateMetrics()
 
     def chat_gpt(self, prompt_text):
-
         resp = openai.Completion.create(
             model="gpt-3.5-turbo",
             prompt=prompt_text,
@@ -25,7 +23,6 @@ class Evaluate:
         return resp
 
     def generate_df(self, doc):
-
         output_list = []
 
         prompt = (
@@ -48,7 +45,6 @@ class Evaluate:
         return output_list
 
     def generate_text(self, input_text):
-
         prompt = (
             "Discard all the previous instructions. "
             "Behave like you are an expert at summarization tasks. "
@@ -67,13 +63,11 @@ class Evaluate:
         return res
 
     def iterate_df(self, data_file):
-
         df = pd.read_csv(data_file)
 
         output_list = []
 
         for i, row in df.iterrows():
-
             input_text = row["input"]
 
             text = self.generate_df(input_text)
@@ -83,7 +77,6 @@ class Evaluate:
         return output_list
 
     def save_data(self, data_filename, model_name, generated_output_list):
-
         df = pd.read_csv(data_filename)
 
         df["predicted_text"] = generated_output_list

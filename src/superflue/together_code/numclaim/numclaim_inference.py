@@ -1,7 +1,5 @@
-import logging
 import time
 from datetime import date
-from pathlib import Path
 
 import nltk
 import pandas as pd
@@ -14,11 +12,14 @@ from superflue.together_code.tokens import tokens
 
 nltk.download("punkt")
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logger = setup_logger(
+    name="numclaim_inference",
+    log_file=LOG_DIR / "numclaim_inference.log",
+    level=LOG_LEVEL,
+)
 
 
 def numclaim_inference(args):
@@ -81,8 +82,7 @@ def numclaim_inference(args):
             }
         )
         results_path = (
-            ROOT_DIR
-            / "results"
+            RESULTS_DIR
             / args.task
             / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
         )

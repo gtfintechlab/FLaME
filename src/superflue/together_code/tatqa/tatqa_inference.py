@@ -1,7 +1,8 @@
-import logging
+# import logging
 import time
 from datetime import date
-from pathlib import Path
+
+# from pathlib import Path
 import together
 
 import nltk
@@ -9,16 +10,20 @@ import pandas as pd
 from datasets import load_dataset
 
 # Mock imports for custom TATQA prompt and tokens
-from superflue.together_code.prompts import tatqa_prompt  # To be implemented for TAT-QA prompt
+from superflue.together_code.prompts import (
+    tatqa_prompt,
+)  # To be implemented for TAT-QA prompt
 from superflue.together_code.tokens import tokens  # Token logic for TAT-QA
 
 nltk.download("punkt")
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+
+logger = setup_logger(
+    name="tatqa_inference", log_file=LOG_DIR / "tatqa_inference.log", level=LOG_LEVEL
+)
 
 
 def tatqa_inference(args):
@@ -45,7 +50,7 @@ def tatqa_inference(args):
         questions.append(question)
         contexts.append(context)
         actual_answers.append(actual_answer)
-        
+
         try:
             logger.info(f"Processing question {i+1}/{len(dataset['test'])}")
             # TAT-QA-specific prompt logic, create the prompt for table and text-based QA
@@ -76,8 +81,7 @@ def tatqa_inference(args):
             continue
 
     results_path = (
-        ROOT_DIR
-        / "results"
+        RESULTS_DIR
         / args.task
         / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
     )

@@ -5,15 +5,13 @@ from superflue.together_code.prompts import fpb_prompt
 
 logger = logging.getLogger(__name__)
 
+
 # TOOD: (Glenn) Prepare batch is a great function but it can still be in another file; refactor to avoid single file for functions
 def prepare_batch(data_points: List[Dict[str, Any]], args) -> List[str]:
-
     prompts = []
 
     for dp in data_points:
-
         try:
-
             prompt = fpb_prompt(
                 sentence=dp["sentence"], prompt_format=args.prompt_format
             )
@@ -21,7 +19,6 @@ def prepare_batch(data_points: List[Dict[str, Any]], args) -> List[str]:
             prompts.append(prompt)
 
         except Exception as e:
-
             logger.error(
                 f"Error preparing prompt for sentence: {dp['sentence']}. Error: {str(e)}"
             )
@@ -37,13 +34,10 @@ def process_batch_response(
     task: str,
     model: str,
 ) -> List[Dict[str, Any]]:
-
     results = []
 
     for i, choice in enumerate(batch_response["output"]["choices"]):
-
         try:
-
             result = {
                 "sentence": data_points[i]["sentence"],
                 "actual_label": data_points[i]["label"],
@@ -59,7 +53,6 @@ def process_batch_response(
             results.append(result)
 
         except Exception as e:
-
             logger.error(
                 f"Error processing response for sentence: {data_points[i]['sentence']}. Error: {str(e)}"
             )

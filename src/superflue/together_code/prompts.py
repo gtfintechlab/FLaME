@@ -2,21 +2,26 @@ def fnxl_prompt(sentence: str):
     prompt = f"""Lorem ipsum: {sentence}"""
     return prompt
 
+
 def headlines_prompt(sentence: str):
     prompt = f"""Lorem ipsum: {sentence}"""
     return prompt
+
 
 def fiqa_prompt(sentence: str):
     prompt = f"""Lorem ipsum: {sentence}"""
     return prompt
 
+
 def fiqa_task1_prompt(sentence: str):
     prompt = f"""Lorem ipsum: {sentence}"""
     return prompt
 
+
 def fiqa_task2_prompt(sentence: str):
     prompt = f"""Lorem ipsum: {sentence}"""
     return prompt
+
 
 def edtsum_prompt(sentence: str):
     prompt = f"""Lorem ipsum: {sentence}"""
@@ -24,7 +29,6 @@ def edtsum_prompt(sentence: str):
 
 
 def numclaim_prompt(sentence: str):
-
     prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence senti-
             ment classifier. Classify the following sentence into ‘INCLAIM’, or ‘OUTOFCLAIM’ class.
             Label ‘INCLAIM’ if consist of a claim and not just factual past or present information, or
@@ -35,7 +39,6 @@ def numclaim_prompt(sentence: str):
 
 
 def fomc_prompt(sentence: str):
-
     system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence clas-
                 sifier."""
     user_msg = f"""Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
@@ -115,7 +118,6 @@ def fpb_prompt(sentence: str, prompt_format: str):
 
 
 def finentity_prompt(sentence: str):
-
     prompt = f"""Discard all the previous instructions. Behave like you are an expert entity level sentiment
                 classifier. Below is a sentence from a financial document. From the sentence, identify all the entities 
                 check the starting and ending indices of the entities and give it a tag out of the following three options: 
@@ -131,6 +133,7 @@ def finentity_prompt(sentence: str):
 def finbench_prompt(sentence: str):
     pass
 
+
 #     prompt = f'''Discard all the previous instructions. Behave like you are an expert entity level sentiment
 #                 classifier. Below is a sentence from a financial document. From the sentence, identify all the entities
 #                 check the starting and ending indices of the entities and give it a tag out of the following three options:
@@ -144,7 +147,6 @@ def finbench_prompt(sentence: str):
 
 
 def ectsum_prompt(document: str):
-
     prompt = f"""Discard all the previous instructions.
         Behave like you are an expert at summarization tasks.
         Below an earnings call transcript of a Russell 3000 Index company
@@ -240,7 +242,6 @@ banking77_list = [
 
 
 def banking77_prompt(sentence: str):
-
     prompt = f"""Discard all the previous instructions. Behave like you are an expert at
                 fine-grained single-domain intent detection. From the following list: {banking77_list}, identify
                 which category does the following sentence belong to.
@@ -250,7 +251,6 @@ def banking77_prompt(sentence: str):
 
 
 def finqa_prompt(document: str):
-
     prompt = f"""Discard all the previous instructions. Behave like you are a financial expert in question answering. 
                 Your task is to answer a financial question based on the  provided context.\n\n The context:
                 {document}"""
@@ -259,7 +259,6 @@ def finqa_prompt(document: str):
 
 
 def convfinqa_prompt(document: str):
-
     prompt = f"""Discard all the previous instructions. Behave like you are a financial expert in question answering.
                 You are to answer a series of interconnected financial questions where later questions may depend on the answers to previous ones.
                 I'll provide the series of questions as the context and you will answer the last question.\n\n The context:
@@ -267,10 +266,10 @@ def convfinqa_prompt(document: str):
 
     return prompt
 
+
 def tatqa_prompt(question: str, context: str):
-    
     system_prompt = """Discard all the previous instructions. Behave like an expert in table-and-text-based question answering."""
-    
+
     user_msg = f"""Given the following context (which contains a mixture of tables and textual information), 
                 answer the question based on the information provided. If the context includes tables, ensure 
                 you extract relevant information from both the table and the text to form a comprehensive answer.
@@ -278,10 +277,11 @@ def tatqa_prompt(question: str, context: str):
                 The question: {question}
                 
                 The context: {context}"""
-    
+
     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-    
+
     return prompt
+
 
 def causal_classification_prompt(text: str):
     system_prompt = """Discard all the previous instructions. Behave like you are an expert causal classification model."""
@@ -295,33 +295,34 @@ def causal_classification_prompt(text: str):
 
     return prompt
 
+
 def finred_prompt(sentence: str):
-    
     system_prompt = """Discard all the previous instructions. Behave like you are an expert in financial entity and relation extraction."""
-    
+
     user_msg = f"""Identify all financial entities (such as companies, financial instruments, dates, or money) 
                 and extract the relations between these entities from the following sentence.
                 Provide the relations in the format of (Entity 1, Relation, Entity 2).
                 The sentence: {sentence}"""
-    
+
     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-    
+
     return prompt
+
 
 def causal_detection_prompt(tokens: list):
     """
     Generates a prompt for Causal Detection to classify tokens in a sentence into cause, effect, or other categories,
     with an explanation of the B- and I- labeling scheme.
-    
+
     Args:
         tokens (list): The list of tokens from a sentence to be classified.
-        
+
     Returns:
         str: The formatted prompt for Causal Detection classification.
     """
-    
+
     system_prompt = """Discard all previous instructions. Behave like an expert in cause and effect detection in text."""
-    
+
     user_msg = f"""You are given the following tokenized sentence. Classify each token using the following labels:
                 - 'B-CAUSE': The beginning of a cause phrase.
                 - 'I-CAUSE': A token inside a cause phrase, but not the first token.
@@ -332,11 +333,12 @@ def causal_detection_prompt(tokens: list):
                 Provide the classification for each token in the format 'token:label'.
                 
                 The tokens: {', '.join(tokens)}"""
-    
+
     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-    
+
     return prompt
-  
+
+
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
     "fomc_prompt": fomc_prompt,

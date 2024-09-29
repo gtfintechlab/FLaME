@@ -8,7 +8,9 @@ from datasets import load_dataset
 import nltk
 
 # Mock imports for the custom causal detection prompt and tokens
-from superflue.together_code.prompts import causal_detection_prompt  # To be implemented for Causal Detection
+from superflue.together_code.prompts import (
+    causal_detection_prompt,
+)  # To be implemented for Causal Detection
 
 nltk.download("punkt")
 
@@ -41,7 +43,7 @@ def causal_detection_inference(args, make_api_call, process_api_response):
 
         tokens_list.append(tokens)
         actual_tags.append(actual_tag)
-        
+
         try:
             logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")
             # Causal Detection-specific prompt logic to classify each token
@@ -56,7 +58,9 @@ def causal_detection_inference(args, make_api_call, process_api_response):
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            predicted_tag = model_response["output"]["choices"][0]["text"].split()  # Assumed token-wise classification
+            predicted_tag = model_response["output"]["choices"][0][
+                "text"
+            ].split()  # Assumed token-wise classification
             predicted_tags.append(predicted_tag)
 
             df = pd.DataFrame(

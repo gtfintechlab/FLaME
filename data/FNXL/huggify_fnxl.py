@@ -14,6 +14,7 @@ login(HUGGINGFACEHUB_API_TOKEN)
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
 def huggify_data(push_to_hub=False):
     try:
         # Path to the dataset

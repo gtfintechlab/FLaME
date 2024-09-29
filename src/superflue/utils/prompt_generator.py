@@ -1,7 +1,7 @@
 # TODO: (Glenn) Very low priority, but I am pretty sure we can make this section shorter with generators or classes
 
-def numclaim_prompt(sentence: str):
 
+def numclaim_prompt(sentence: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence senti-
             ment classifier. Classify the following sentence into ‘INCLAIM’, or ‘OUTOFCLAIM’ class.
             Label ‘INCLAIM’ if consist of a claim and not just factual past or present information, or
@@ -12,7 +12,6 @@ def numclaim_prompt(sentence: str):
 
 
 def fomc_prompt(sentence: str):
-
     system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence clas-
                 sifier."""
     user_msg = f"""Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
@@ -27,7 +26,6 @@ def fomc_prompt(sentence: str):
 
 
 def finer_prompt(sentence: str):
-
     prompt = """Discard all the previous instructions. Behave like you are an expert named entity
                     identifier. Below a sentence is tokenized and each line contains a word token from the
                     sentence. Identify ‘Person’, ‘Location’, and ‘Organisation’ from them and label them. If the
@@ -41,7 +39,6 @@ def finer_prompt(sentence: str):
 
 
 def fpb_prompt(sentence: str):
-
     system_prompt = """ Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier  """
 
     user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
@@ -55,7 +52,6 @@ def fpb_prompt(sentence: str):
 
 
 def finentity_prompt(sentence: str):
-
     prompt = f"""Discard all the previous instructions. Behave like you are an expert entity level sentiment
                 classifier. Below is a sentence from a financial document. From the sentence, identify all the entities 
                 check the starting and ending indices of the entities and give it a tag out of the following three options: 
@@ -67,8 +63,8 @@ def finentity_prompt(sentence: str):
 
     return prompt
 
-def ectsum_prompt(document: str):
 
+def ectsum_prompt(document: str):
     prompt = f"""Discard all the previous instructions.
         Behave like you are an expert at summarization tasks.
         Below an earnings call transcript of a Russell 3000 Index company
@@ -164,7 +160,6 @@ banking77_list = [
 
 
 def banking77_prompt(sentence: str):
-
     prompt = f"""Discard all the previous instructions. Behave like you are an expert at
                 fine-grained single-domain intent detection. From the following list: {banking77_list}, identify
                 which category does the following sentence belong to.
@@ -174,7 +169,6 @@ def banking77_prompt(sentence: str):
 
 
 def finqa_prompt(document: str):
-
     prompt = f"""Discard all the previous instructions. Behave like you are a financial expert in question answering. 
                 Your task is to answer a financial question based on the  provided context.\n\n The context:
                 {document}"""
@@ -183,7 +177,6 @@ def finqa_prompt(document: str):
 
 
 def convfinqa_prompt(document: str):
-
     prompt = f"""Discard all the previous instructions. Behave like you are a financial expert in question answering.
                 You are to answer a series of interconnected financial questions where later questions may depend on the answers to previous ones.
                 I'll provide the series of questions as the context and you will answer the last question.\n\n The context:

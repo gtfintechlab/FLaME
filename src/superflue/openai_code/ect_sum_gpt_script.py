@@ -1,11 +1,9 @@
-
 from datasets import load_dataset
 
 from superflue.openai_code.ect_sum_main import Evaluate
 
 
 def process_dataset(evaluator, dataset_file, model_name):
-
     results = evaluator.iterate_df(dataset_file)
 
     output_path = evaluator.save_data(dataset_file, model_name, results)

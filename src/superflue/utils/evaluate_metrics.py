@@ -9,7 +9,6 @@ from rouge_score import rouge_scorer
 
 
 class Evaluate:
-
     def __init__(self) -> None:
         pass
 

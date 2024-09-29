@@ -40,7 +40,6 @@ def process_qa_pairs(data):
             questions.append(row["qa"].get("question"))
             answers.append(row["qa"].get("answer"))
         else:
-
             questions.append(None)
             answers.append(None)
 
@@ -57,7 +56,6 @@ def process_qa_pairs(data):
 
 def huggify_data_finqa(task_name="finqa", namespace="Yangvivian"):
     try:
-
         notebook_login()
 
         hf_dataset = DatasetDict()

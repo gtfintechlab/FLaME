@@ -1,7 +1,7 @@
-import logging
+# import logging
 import time
 from datetime import date
-from pathlib import Path
+# from pathlib import Path
 
 # Ensure the NLTK data is downloaded
 import nltk
@@ -14,11 +14,14 @@ from superflue.together_code.tokens import tokens
 
 nltk.download("punkt")
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+logger = setup_logger(
+    name="finentity_inference",
+    log_file=LOG_DIR / "finentity_inference.log",
+    level=LOG_LEVEL,
+)
 
 
 def finentity_inference(args):
@@ -36,7 +39,7 @@ def finentity_inference(args):
     complete_responses = []
 
     logger.info(f"Starting inference on {args.task}...")
-    start_t = time.time()
+    # start_t = time.time()
     for i in range(len(dataset["test"])):
         sentence = dataset["test"][i]["content"]
         actual_label = dataset["test"][i]["annotations"]
@@ -73,8 +76,7 @@ def finentity_inference(args):
             continue
 
     results_path = (
-        ROOT_DIR
-        / "results"
+        RESULTS_DIR
         / args.task
         / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
     )

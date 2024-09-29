@@ -7,13 +7,19 @@ from datasets import load_dataset
 import together
 from superflue.together_code.prompts import finqa_prompt
 from superflue.together_code.tokens import tokens
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import LOG_DIR, LOG_LEVEL
+
+# TODO: (Glenn) Is FinQA saving results to a file properly?
+
+logger = setup_logger(
+    name="finqa_inference", log_file=LOG_DIR / "finqa_inference.log", level=LOG_LEVEL
+)
 
 
 def finqa_inference(args):
     together.api_key = args.api_key
     today = date.today()
-    # OPTIONAL TODO: make configs an argument of some kind LOW LOW LOW PRIORITY
-    # configs = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
     dataset = load_dataset("gtfintechlab/finqa")
     context = []
     llm_responses = []
@@ -54,7 +60,7 @@ def finqa_inference(args):
             time.sleep(10)
 
         except Exception as e:
-            print(e)
+            logger.error(e)
             i = i - 1
             time.sleep(20.0)
 

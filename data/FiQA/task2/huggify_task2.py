@@ -6,20 +6,20 @@ from datasets import Dataset, DatasetDict
 import logging
 
 DATA_DIR = Path().cwd().parent / "task2"
-HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")  
-HF_ORGANIZATION = "gtfintechlab"  
+HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+HF_ORGANIZATION = "gtfintechlab"
 DATASET = "FiQA_Task2"
 login(HUGGINGFACEHUB_API_TOKEN)
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
 def huggify_data_fiqa(push_to_hub=False):
     try:
-        
         train_file = DATA_DIR / "train.json"
         test_file = DATA_DIR / "test.json"
-        
+
         train_data = pd.read_json(train_file)
         test_data = pd.read_json(test_file)
 

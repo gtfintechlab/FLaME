@@ -1,5 +1,4 @@
 import time
-from datetime import date
 
 import pandas as pd
 from datasets import load_dataset
@@ -7,24 +6,28 @@ from datasets import load_dataset
 import together
 from superflue.together_code.prompts import ectsum_prompt
 from superflue.together_code.tokens import tokens
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import LOG_DIR, LOG_LEVEL
+
+logger = setup_logger(
+    name="ectsum_inference", log_file=LOG_DIR / "ectsum_inference.log", level=LOG_LEVEL
+)
 
 
 def ectsum_inference(args):
-    together.api_key = args.api_key
-    today = date.today()
-    # OPTIONAL TODO: make configs an argument of some kind LOW LOW LOW PRIORITY
+    # TODO: (Glenn) Low priority, make data splits configurable
     # configs = ["documents_50agree", "documents_66agree", "documents_75agree", "documents_allagree"]
     dataset = load_dataset("gtfintechlab/ECTSum")
 
     # Initialize lists to store actual labels and model responses
     documents = []
     llm_responses = []
-    llm_first_word_responses = []
+    # llm_first_word_responses = []
     actual_labels = []
     complete_responses = []
 
     # Iterating through the train split of the dataset
-    start_t = time.time()
+    # start_t = time.time()
     for i in range(len(dataset["test"])):
         document = dataset["test"][i]["context"]
         actual_label = dataset["test"][i]["response"]
@@ -52,8 +55,9 @@ def ectsum_inference(args):
                     "complete_responses": complete_responses,
                 }
             )
+            logger.info(f"Processed {i} of {len(dataset['test'])}")
         except Exception as e:
-            print(e)
+            logger.error(e)
             i = i - 1
             time.sleep(20.0)
 

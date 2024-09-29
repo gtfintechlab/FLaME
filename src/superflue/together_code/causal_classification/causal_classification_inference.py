@@ -3,7 +3,8 @@ import pandas as pd
 import time
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
 from datasets import load_dataset
 from datetime import date
@@ -17,6 +18,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+
 
 def causal_classification_inference(args, make_api_call, process_api_response):
     together.api_key = args.api_key
@@ -34,13 +36,13 @@ def causal_classification_inference(args, make_api_call, process_api_response):
 
     logger.info(f"Starting inference on {args.task}...")
     start_t = time.time()
-    for i in range(len(dataset["test"])): # type: ignore
-        text = dataset["test"][i]["text"] # type: ignore
-        actual_label = dataset["test"][i]["label"] # type: ignore
+    for i in range(len(dataset["test"])):  # type: ignore
+        text = dataset["test"][i]["text"]  # type: ignore
+        actual_label = dataset["test"][i]["label"]  # type: ignore
         texts.append(text)
         actual_labels.append(actual_label)
         try:
-            logger.info(f"Processing text {i+1}/{len(dataset['test'])}") # type: ignore
+            logger.info(f"Processing text {i+1}/{len(dataset['test'])}")  # type: ignore
             model_response = together.Complete.create(
                 prompt=causal_classification_prompt(text),
                 model=args.model,
@@ -52,7 +54,7 @@ def causal_classification_inference(args, make_api_call, process_api_response):
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"] # type: ignore
+            response_label = model_response["output"]["choices"][0]["text"]  # type: ignore
             llm_responses.append(response_label)
 
             df = pd.DataFrame(

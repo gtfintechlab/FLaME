@@ -5,6 +5,7 @@ import pandas as pd
 
 # TODO: (Glenn) We really want to avoid one-function-one-file pattern
 
+
 def zip_to_csv(zip_file_path, json_file_name, csv_file_path):
     with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
         zip_ref.extract(json_file_name, Path(zip_file_path).parent)

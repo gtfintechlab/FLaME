@@ -1,7 +1,5 @@
-import logging
 import time
 from datetime import date
-from pathlib import Path
 
 import pandas as pd
 import tqdm
@@ -10,14 +8,15 @@ from datasets import load_dataset
 import together
 from superflue.together_code.prompts import fomc_prompt
 from superflue.together_code.tokens import tokens
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logger = setup_logger(
+    name="fomc_inference", log_file=LOG_DIR / "fomc_inference.log", level=LOG_LEVEL
+)
 
 
 def fomc_inference(args):
-    together.api_key = args.api_key
     today = date.today()
     logger.info(f"Starting FOMC inference on {today}")
     logger.info("Loading dataset...")
@@ -66,13 +65,11 @@ def fomc_inference(args):
     )
 
     results_path = (
-        ROOT_DIR
-        / "results"
-        / args.task
+        RESULTS_DIR
+        / args.task  # (Glenn) Do we really need to use args.task if we are already running the FOMC task?
         / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
-
     logger.info(f"Inference completed. Results saved to {results_path}")
     return df

@@ -1,7 +1,5 @@
-import logging
 import time
 from datetime import date
-from pathlib import Path
 import together
 
 import pandas as pd
@@ -9,16 +7,21 @@ from datasets import load_dataset
 import nltk
 
 # Custom imports for FNXL prompt and token handling
-from superflue.together_code.prompts import fnxl_prompt  # Custom prompt function for FNXL
-from superflue.together_code.tokens import tokens  # Custom token handling function for FNXL
+from superflue.together_code.prompts import (
+    fnxl_prompt,
+)  # Custom prompt function for FNXL
+from superflue.together_code.tokens import (
+    tokens,
+)  # Custom token handling function for FNXL
 
 nltk.download("punkt")
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+logger = setup_logger(
+    name="fnxl_inference", log_file=LOG_DIR / "fnxl_inference.log", level=LOG_LEVEL
+)
 
 
 def fnxl_inference(args):
@@ -39,11 +42,11 @@ def fnxl_inference(args):
 
     logger.info(f"Starting inference on {args.task}...")
     start_t = time.time()
-    for i in range(len(dataset["test"])): # type: ignore
-        sentence = dataset["test"][i]["sentence"] # type: ignore
-        numeral_tag = dataset["test"][i]["numerals-tags"] # type: ignore
-        company = dataset["test"][i]["company"] # type: ignore
-        actual_label = dataset["test"][i]["ner_tags"] # type: ignore
+    for i in range(len(dataset["test"])):  # type: ignore
+        sentence = dataset["test"][i]["sentence"]  # type: ignore
+        numeral_tag = dataset["test"][i]["numerals-tags"]  # type: ignore
+        company = dataset["test"][i]["company"]  # type: ignore
+        actual_label = dataset["test"][i]["ner_tags"]  # type: ignore
 
         sentences.append(sentence)
         numerals_tags.append(numeral_tag)
@@ -51,7 +54,7 @@ def fnxl_inference(args):
         actual_labels.append(actual_label)
 
         try:
-            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
+            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
             # FNXL-specific prompt to classify numerals in financial sentences
             model_response = together.Complete.create(
                 prompt=fnxl_prompt(sentence, numeral_tag, company),
@@ -64,7 +67,7 @@ def fnxl_inference(args):
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            predicted_label = model_response["output"]["choices"][0]["text"] # type: ignore
+            predicted_label = model_response["output"]["choices"][0]["text"]  # type: ignore
             predicted_labels.append(predicted_label)
 
             df = pd.DataFrame(
@@ -84,8 +87,7 @@ def fnxl_inference(args):
             continue
 
     results_path = (
-        ROOT_DIR
-        / "results"
+        RESULTS_DIR
         / args.task
         / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
     )

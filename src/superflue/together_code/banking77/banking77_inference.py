@@ -1,6 +1,11 @@
 import logging
+
 # TODO: fix up this logging code to use helpers
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler()])
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()],
+)
 logger = logging.getLogger(__name__)
 
 import together
@@ -11,6 +16,7 @@ from datasets import load_dataset
 
 from superflue.together_code.prompts import banking77_prompt
 from superflue.together_code.tokens import tokens
+from superflue.config import RESULTS_DIR
 
 
 def banking77_inference(args):
@@ -49,8 +55,7 @@ def banking77_inference(args):
                 }
             )
             results_path = (
-                SRC_DIR
-                / "results"
+                RESULTS_DIR
                 / args.task
                 / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
             )
