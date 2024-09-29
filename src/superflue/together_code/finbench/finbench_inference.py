@@ -2,6 +2,7 @@ import time
 from datetime import date
 
 import pandas as pd
+import tqdm
 from datasets import load_dataset
 
 import together
@@ -11,9 +12,7 @@ from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
 logger = setup_logger(
-    name="finbench_inference",
-    log_file=LOG_DIR / "finbench_inference.log",
-    level=LOG_LEVEL,
+    name="finbench_inference", log_file=LOG_DIR / "finbench_inference.log", level=LOG_LEVEL
 )
 
 
