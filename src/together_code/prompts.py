@@ -103,7 +103,8 @@ def finentity_prompt(sentence: str):
     return prompt
 
 
-# def finbench_prompt(sentence: str):
+def finbench_prompt(sentence: str):
+    pass
 
 #     prompt = f'''Discard all the previous instructions. Behave like you are an expert entity level sentiment
 #                 classifier. Below is a sentence from a financial document. From the sentence, identify all the entities
@@ -241,7 +242,76 @@ def convfinqa_prompt(document: str):
 
     return prompt
 
+def tatqa_prompt(question: str, context: str):
+    
+    system_prompt = f"""Discard all the previous instructions. Behave like an expert in table-and-text-based question answering."""
+    
+    user_msg = f"""Given the following context (which contains a mixture of tables and textual information), 
+                answer the question based on the information provided. If the context includes tables, ensure 
+                you extract relevant information from both the table and the text to form a comprehensive answer.
+                
+                The question: {question}
+                
+                The context: {context}"""
+    
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+    
+    return prompt
 
+def causal_classification_prompt(text: str):
+    system_prompt = f"""Discard all the previous instructions. Behave like you are an expert causal classification model."""
+    user_msg = f"""Below is a sentence. Classify it into one of the following categories: 
+                    0 - Non-causal
+                    1 - Direct causal
+                    2 - Indirect causal
+                    Only return the label number without any additional text. \n\n {text}"""
+
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+
+    return prompt
+
+def finred_prompt(sentence: str):
+    
+    system_prompt = f"""Discard all the previous instructions. Behave like you are an expert in financial entity and relation extraction."""
+    
+    user_msg = f"""Identify all financial entities (such as companies, financial instruments, dates, or money) 
+                and extract the relations between these entities from the following sentence.
+                Provide the relations in the format of (Entity 1, Relation, Entity 2).
+                The sentence: {sentence}"""
+    
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+    
+    return prompt
+
+  def causal_detection_prompt(tokens: list):
+    """
+    Generates a prompt for Causal Detection to classify tokens in a sentence into cause, effect, or other categories,
+    with an explanation of the B- and I- labeling scheme.
+    
+    Args:
+        tokens (list): The list of tokens from a sentence to be classified.
+        
+    Returns:
+        str: The formatted prompt for Causal Detection classification.
+    """
+    
+    system_prompt = f"""Discard all previous instructions. Behave like an expert in cause and effect detection in text."""
+    
+    user_msg = f"""You are given the following tokenized sentence. Classify each token using the following labels:
+                - 'B-CAUSE': The beginning of a cause phrase.
+                - 'I-CAUSE': A token inside a cause phrase, but not the first token.
+                - 'B-EFFECT': The beginning of an effect phrase.
+                - 'I-EFFECT': A token inside an effect phrase, but not the first token.
+                - 'O': A token that is neither part of a cause nor an effect.
+                
+                Provide the classification for each token in the format 'token:label'.
+                
+                The tokens: {', '.join(tokens)}"""
+    
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+    
+    return prompt
+  
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
     "fomc_prompt": fomc_prompt,
@@ -252,6 +322,9 @@ prompt_map = {
     "banking77_prompt": banking77_prompt,
     "finqa_prompt": finqa_prompt,
     "convfinqa_prompt": convfinqa_prompt,
+    "tatqa_prompt": tatqa_prompt,
+    "finred_prompt": finred_prompt,
+    "causal_detection_prompt": causal_detection_prompt,
 }
 
 

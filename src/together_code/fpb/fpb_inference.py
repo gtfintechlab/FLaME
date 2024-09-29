@@ -11,13 +11,15 @@ from src.together_code.models import get_model_name
 from src.together_code.prompts import fpb_prompt
 from src.utils.logging_utils import setup_logger
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 LOG_DIR = ROOT_DIR / "logs"
 logger = setup_logger("fpb_inference", LOG_DIR / "fpb_inference.log")
-
+import sys
+import os
 import yaml
 
-with open("src/utils/config.yaml", "r") as file:
+with open(ROOT_DIR / 'src' / 'config.yaml', "r") as file:
+    logger.debug(file)
     config = yaml.safe_load(file)
 
 BATCH_SIZE = 10  # Adjust this value based on API limitations and performance
