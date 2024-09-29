@@ -13,6 +13,7 @@ logger = setup_logger(
     name="fpb_inference", log_file=LOG_DIR / "fpb_inference.log", level=LOG_LEVEL
 )
 
+data_seed = '5768'
 
 def fpb_inference(args):
     # TODO: (Glenn) Very low priority, we can set the data_split as configurable in yaml
@@ -20,24 +21,23 @@ def fpb_inference(args):
     logger.info("Starting FPB inference")
     logger.info("Loading dataset...")
     # for data_split in data_splits:
-    data_split = "sentences_allagree"
-    dataset = load_dataset("financial_phrasebank", data_split, trust_remote_code=True)
+    dataset = load_dataset("gtfintechlab/financial_phrasebank_sentences_allagree", data_seed, trust_remote_code=True)
 
     sentences = []
     llm_responses = []
     actual_labels = []
     complete_responses = []
 
-    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"):  # type: ignore
-        sentence = dataset["test"][i]["sentence"]
-        actual_label = dataset["test"][i]["label"]
+    for i in tqdm(range(len(dataset['test'])), desc="Processing sentences"):  # type: ignore
+        sentence = dataset['test'][i]["sentence"]
+        actual_label = dataset['test'][i]["label"]
         sentences.append(sentence)
         actual_labels.append(actual_label)
         try:
             logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}")
             model_response = together.Complete.create(
                 prompt=fpb_prompt(
-                    sentence=i["sentence"],  # type: ignore
+                    sentence=sentence,  # type: ignore
                     prompt_format=args.prompt_format,
                 ),
                 model=args.model,

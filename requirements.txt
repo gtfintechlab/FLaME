@@ -16,3 +16,4 @@ datasets
 nltk
 scikit-learn
 python-dotenv
+huggingface_hub
