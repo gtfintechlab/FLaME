@@ -1,7 +1,7 @@
 import logging
 from time import time
 from datetime import date
-from superflue.together_code.fpb.batched_fpb_inference import fpb_inference
+from superflue.together_code.fpb.fpb_inference import fpb_inference
 from superflue.together_code.numclaim.numclaim_inference import numclaim_inference
 from superflue.together_code.fnxl.fnxl_inference import fnxl_inference
 from superflue.together_code.fomc.fomc_inference import fomc_inference
@@ -14,13 +14,12 @@ from superflue.together_code.fiqa.fiqa_task2_inference import fiqa_task2_inferen
 from superflue.together_code.edtsum.edtsum_inference import edtsum_inference
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.api_utils import make_api_call, save_raw_output
-from superflue.config import LOG_DIR, RESULTS_DIR
+from superflue.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL
 
-# TODO: (Glenn) get all logging levels from configs instead
 logger = setup_logger(
     name="together_inference",
     log_file=LOG_DIR / "together_inference.log",
-    level=logging.DEBUG,
+    level=LOG_LEVEL,
 )
 
 
