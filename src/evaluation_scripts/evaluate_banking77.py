@@ -105,6 +105,11 @@ def extraction_prompt(llm_response: str):
 def map_extracted_label_to_number(extracted_label: str):
     return banking77_label_map.get(extracted_label, -1)  # Return -1 if the label is not found
 
+def save_progress(df, path):
+    """Save the current progress to a CSV file."""
+    df.to_csv(path, index=False)
+    logger.info(f"Progress saved to {path}")
+
 def extract_and_evaluate_responses(args):
     together.api_key = args.api_key  # type: ignore
     results_file = (
@@ -119,7 +124,23 @@ def extract_and_evaluate_responses(args):
     extracted_labels = []
     correct_labels = df['actual_labels'].tolist()
 
+    # Continual save path
+    evaluation_results_path = (
+        ROOT_DIR
+        / "evaluation_results"
+        / args.task
+        / f"evaluation_{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+    )
+
+    # Initialize the columns for storing results if they don't exist
+    if 'extracted_labels' not in df.columns:
+        df['extracted_labels'] = None
+
     for i, llm_response in enumerate(df["llm_responses"]):
+        if pd.notna(df.at[i, 'extracted_labels']):
+            # Skip already processed rows
+            continue
+
         try:
             model_response = together.Complete.create(  # type: ignore
                 prompt=extraction_prompt(llm_response),
@@ -133,8 +154,13 @@ def extract_and_evaluate_responses(args):
             )
             extracted_label = model_response["output"]["choices"][0]["text"].strip()  # type: ignore
             numerical_label = map_extracted_label_to_number(extracted_label)
+            df.at[i, 'extracted_labels'] = numerical_label
             extracted_labels.append(numerical_label)
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
+            
+            # Save progress after each row
+            save_progress(df, evaluation_results_path)
+
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
             extracted_labels.append(None)
@@ -143,16 +169,6 @@ def extract_and_evaluate_responses(args):
     correct_predictions = sum(1 for x, y in zip(correct_labels, extracted_labels) if x == y)
     total_predictions = len(correct_labels)
     accuracy = correct_predictions / total_predictions
-
-    # Save the evaluation results
-    df['extracted_labels'] = extracted_labels
-    evaluation_results_path = (
-        ROOT_DIR
-        / "evaluation_results"
-        / args.task
-        / f"evaluation_{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    df.to_csv(evaluation_results_path, index=False)
 
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
     return df, accuracy
