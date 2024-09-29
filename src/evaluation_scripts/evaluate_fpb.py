@@ -9,15 +9,19 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
-
 def extraction_prompt(llm_response: str):
-    prompt = f"""Based on the following list of labels: ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’ , extract the most relevant label from the following response:
+    prompt = f"""Based on the following list of labels: ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’, extract the most relevant label from the following response:
                 "{llm_response}"
                 Provide only the label that best matches the response."""
     return prompt
 
+def save_progress(df, path):
+    """Save the current progress to a CSV file."""
+    df.to_csv(path, index=False)
+    logger.info(f"Progress saved to {path}")
+
 def extract_and_evaluate_responses(args):
-    together.api_key = args.api_key # type: ignore
+    together.api_key = args.api_key  # type: ignore
     results_file = (
         ROOT_DIR
         / "results"
@@ -30,9 +34,25 @@ def extract_and_evaluate_responses(args):
     extracted_labels = []
     correct_labels = df['actual_labels'].tolist()
 
+    # Path to save evaluation results continuously
+    evaluation_results_path = (
+        ROOT_DIR
+        / "evaluation_results"
+        / args.task
+        / f"evaluation_{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+    )
+
+    # Initialize the columns for storing results if they don't exist
+    if 'extracted_labels' not in df.columns:
+        df['extracted_labels'] = None
+
     for i, llm_response in enumerate(df["llm_responses"]):
+        if pd.notna(df.at[i, 'extracted_labels']):
+            # Skip already processed rows
+            continue
+
         try:
-            model_response = together.Complete.create( # type: ignore
+            model_response = together.Complete.create(  # type: ignore
                 prompt=extraction_prompt(llm_response),
                 model=args.model,
                 max_tokens=args.max_tokens,
@@ -42,29 +62,22 @@ def extract_and_evaluate_responses(args):
                 repetition_penalty=args.repetition_penalty,
                 stop=tokens(args.model),
             )
-            extracted_label = model_response["output"]["choices"][0]["text"].strip() # type: ignore
+            extracted_label = model_response["output"]["choices"][0]["text"].strip()  # type: ignore
+            df.at[i, 'extracted_labels'] = extracted_label
             extracted_labels.append(extracted_label)
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
+            
+            # Save progress after each row
+            save_progress(df, evaluation_results_path)
+
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
             extracted_labels.append(None)
-
-    # Add extracted labels to the dataframe
-    df['extracted_labels'] = extracted_labels
 
     # Evaluate the performance
     correct_predictions = sum(1 for x, y in zip(correct_labels, extracted_labels) if x == y)
     total_predictions = len(correct_labels)
     accuracy = correct_predictions / total_predictions
-
-    # Save the evaluation results
-    evaluation_results_path = (
-        ROOT_DIR
-        / "evaluation_results"
-        / args.task
-        / f"evaluation_{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    df.to_csv(evaluation_results_path, index=False)
 
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
     return df, accuracy
@@ -72,5 +85,4 @@ def extract_and_evaluate_responses(args):
 tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
 def tokens(model_name):
     return tokens_map.get(model_name, [])
-
 
