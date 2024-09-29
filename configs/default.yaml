@@ -1,0 +1,11 @@
+dataset: fpb
+sample_size: 10
+method: random
+seeds: [42, 123, 456]
+splits: [5768, 78516, 944601]
+batch_size: 10
+model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+max_tokens: 128
+temperature: 0.0
+top_p: 0.9
+repetition_penalty: 1.0

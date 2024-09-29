@@ -1,27 +1,20 @@
-import os
-import sys
-from pathlib import Path
 from huggingface_hub import hf_hub_upload
 import pandas as pd
-from datasets import Dataset, DatasetDict
+from datasets import Dataset
 import logging
-from src.utils.process_qa import process_qa_pairs
-from src.utils.zip_to_csv import zip_to_csv
-
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
+from superflue.utils.process_qa import process_qa_pairs
+from superflue.utils.zip_to_csv import zip_to_csv
+from superflue.config import DATA_DIR, LOG_LEVEL
 
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "finqa"
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 
 def huggify_data_finqa(push_to_hub=False):
-    directory_path = DATA_DIRECTORY / "finqa"
+    directory_path = DATA_DIR / "finqa"
     logger.debug(f"Directory path: {directory_path}")
 
     zip_to_csv(
@@ -66,5 +59,5 @@ def huggify_data_finqa(push_to_hub=False):
     return finqa_datadict
 
 
-if name == "__main__":
+if __name__ == "__main__":
     huggify_data_finqa(push_to_hub=True)

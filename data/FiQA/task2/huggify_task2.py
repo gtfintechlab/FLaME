@@ -4,22 +4,23 @@ from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
 import logging
+from superflue.config import LOG_LEVEL
 
-DATA_DIRECTORY = Path().cwd().parent / "task2"
-HF_TOKEN = os.getenv("HF_TOKEN")  
-HF_ORGANIZATION = "gtfintechlab"  
+DATA_DIR = Path().cwd().parent / "task2"
+HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+HF_ORGANIZATION = "gtfintechlab"
 DATASET = "FiQA_Task2"
-login(HF_TOKEN)
+login(HUGGINGFACEHUB_API_TOKEN)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
+
 
 def huggify_data_fiqa(push_to_hub=False):
     try:
-        
-        train_file = DATA_DIRECTORY / "train.json"
-        test_file = DATA_DIRECTORY / "test.json"
-        
+        train_file = DATA_DIR / "train.json"
+        test_file = DATA_DIR / "test.json"
+
         train_data = pd.read_json(train_file)
         test_data = pd.read_json(test_file)
 
@@ -35,7 +36,7 @@ def huggify_data_fiqa(push_to_hub=False):
                 f"{HF_ORGANIZATION}/{DATASET}",
                 config_name="main",
                 private=True,
-                token=HF_TOKEN,
+                token=HUGGINGFACEHUB_API_TOKEN,
             )
 
         logger.info("Successfully processed and uploaded the FiQA dataset.")
