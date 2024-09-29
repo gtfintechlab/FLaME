@@ -1,3 +1,4 @@
+setuptools
 together
 ruff
 pytest
@@ -14,3 +15,5 @@ python-dotenv
 datasets
 nltk
 scikit-learn
+python-dotenv
+huggingface_hub

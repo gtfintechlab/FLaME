@@ -1,31 +1,22 @@
 import os
-import sys
-from pathlib import Path
 from huggingface_hub import login
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from datasets import Dataset, DatasetDict, load_dataset
+from datasets import DatasetDict
 import logging
-
-# TODO: check if this is the right way to import from the src folder
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
+from superflue.config import DATA_DIR, LOG_LEVEL
 
 os.environ["HF_HOME"] = ""
-HF_TOKEN = ""
+HUGGINGFACEHUB_API_TOKEN = ""
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "FinSent"
-login(HF_TOKEN)
+login(HUGGINGFACEHUB_API_TOKEN)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 
 def huggify_data_finsent(push_to_hub=False):
     try:
-        directory_path = DATA_DIRECTORY / "FinSent"
+        directory_path = DATA_DIR / "FinSent"
         logger.debug(f"Directory path: {directory_path}")
 
         splits = DatasetDict({})
@@ -36,7 +27,7 @@ def huggify_data_finsent(push_to_hub=False):
                 f"{HF_ORGANIZATION}/{DATASET}",
                 config_name="main",
                 private=True,
-                token=HF_TOKEN,
+                token=HUGGINGFACEHUB_API_TOKEN,
             )
 
             # TODO: push the dataset dict object not the datasets individually

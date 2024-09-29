@@ -1,5 +1,6 @@
 # SuperFLUE (Financial Language Understanding Evaluation)
 Corresponding Authors: `glennmatlin[at]gatech[dot]edu` `huzaifa[at]gatech[dot]edu`
+***ASSUME ALL THE TESTS ARE OBSOLETE DONT WORRY ABOUT THEM RIGHT NOW***
 
 ## Project Setup
 
@@ -27,6 +28,31 @@ To create the virtual environment in the project root and install the required p
     pip install -r requirements.txt
     ```
 
+### Installing SuperFLUE
+
+From the root directory you can run `pip install -e .` -- this uses `setup.py` to install SuperFLUE to your activate Python environment.
+
+You can re-install superflue if something goes wrong:
+```bash
+pip uninstall superflue
+pip install -e .
+```
+
+(unsure if needed) Clean-up files after install:
+```bash
+python setup.py clean --all
+rm -rf build/ dist/ *.egg-info
+find . -name '*.pyc' -delete
+find . -name '__pycache__' -delete
+```
+
+Test the installation of SuperFLUE worked:
+```bash
+python
+>>> import superflue
+>>> print(superflue.__file__)
+```
+
 ### API keys
 To configure your API keys, follow these steps:
 
@@ -49,6 +75,8 @@ Example:
 TOGETHER_API_KEY=foo
 OPENAI_API_KEY=bar
 ANTHROPIC_API_KEY=baz
+HUGGINGFACE_KEY=buzz
+```
 
 ## Project Repository
 
@@ -102,17 +130,15 @@ The file src/together/prompts.py holds various zero-shot prompts that are used f
 
 To run inference on any dataset using this repository, you can use the following command:
 
-`python3 src/together/inference.py --model "{model_name}" --task "{dataset_name}" --api_key "{api_key}" --hf_token "{hf_token}" --max_tokens {max_tokens} --temperature {temperature} --top_p {top_p} --top_k {top_k} --repetition_penalty {repetition_penalty} --prompt_format "{prompt_format}"`
+`python3 src/together/inference.py --model "{model_name}" --task "{dataset_name}" --max_tokens {max_tokens} --temperature {temperature} --top_p {top_p} --top_k {top_k} --repetition_penalty {repetition_penalty} --prompt_format "{prompt_format}"`
 
 
 #### Command Options:
 - `--model`: The name of the model you want to use for inference (e.g., GPT-3, T5, etc.).
 - `--task`: The name of the dataset task for which you are running inference.
-- `--api_key`: Your API key for external model services (e.g., OpenAI, etc.).
-- `--hf_token`: Your Hugging Face token for accessing models and datasets.
 - `--max_tokens`: The maximum number of tokens to generate for each inference.
 - `--temperature`: The sampling temperature (controls randomness in predictions).
 - `--top_p`: Controls nucleus sampling.
-- `--top_k`: Controls top-k sampling.
+<!-- - `--top_k`: Controls top-k sampling. -->
 - `--repetition_penalty`: Penalty for repeated tokens during inference.
 - `--prompt_format`: Specify the format of the prompt you want to use (from `prompts.py`).
