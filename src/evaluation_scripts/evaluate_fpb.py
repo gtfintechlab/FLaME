@@ -9,11 +9,23 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
+# Define label mapping
+label_mapping = {
+    "NEUTRAL": 1,
+    "NEGATIVE": 0,
+    "POSITIVE": 2
+}
+
 def extraction_prompt(llm_response: str):
     prompt = f"""Based on the following list of labels: ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’, extract the most relevant label from the following response:
                 "{llm_response}"
                 Provide only the label that best matches the response."""
     return prompt
+
+def map_label_to_number(label: str):
+    """Map the extracted label to its corresponding numerical value after normalizing."""
+    normalized_label = label.strip().upper()  # Normalize label to uppercase
+    return label_mapping.get(normalized_label, -1)  # Return -1 if the label is not found
 
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
@@ -63,8 +75,9 @@ def extract_and_evaluate_responses(args):
                 stop=tokens(args.model),
             )
             extracted_label = model_response["output"]["choices"][0]["text"].strip()  # type: ignore
-            df.at[i, 'extracted_labels'] = extracted_label
-            extracted_labels.append(extracted_label)
+            mapped_label = map_label_to_number(extracted_label)
+            df.at[i, 'extracted_labels'] = mapped_label
+            extracted_labels.append(mapped_label)
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
             
             # Save progress after each row
