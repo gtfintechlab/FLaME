@@ -8,8 +8,8 @@ from superflue.together_code.prompts import convfinqa_prompt
 from superflue.together_code.tokens import tokens
 
 
-def finqa_inference(args):
-    together.api_key = args.api_key
+def convfinqa_inference(args):
+    
     # today = date.today()
     # OPTIONAL TODO: make configs an argument of some kind LOW LOW LOW PRIORITY
     # configs = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]

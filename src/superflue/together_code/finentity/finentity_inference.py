@@ -22,7 +22,7 @@ logger = setup_logger(
 
 
 def finentity_inference(args):
-    together.api_key = args.api_key
+    
     today = date.today()
     logger.info(f"Starting FinEntity inference on {today}")
 
