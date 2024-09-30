@@ -2,7 +2,7 @@ import time
 from datetime import date
 
 import pandas as pd
-import tqdm
+from tqdm import tqdm
 from datasets import load_dataset
 
 import together
@@ -25,7 +25,7 @@ def fomc_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
-    logger.info(f"Starting inference on dataset: {args.task}...")
+    logger.info(f"Starting inference on dataset: fomc...")
     # start_t = time.time()
 
     for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"): # type: ignore
@@ -47,7 +47,7 @@ def fomc_inference(args):
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]
+            response_label = model_response["choices"][0]["text"]
             llm_responses.append(response_label)
 
         except Exception as e:
@@ -66,8 +66,8 @@ def fomc_inference(args):
 
     results_path = (
         RESULTS_DIR
-        / args.task  # (Glenn) Do we really need to use args.task if we are already running the FOMC task?
-        / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        / 'fomc/fomc_meta-llama/' 
+        / f"{'fomc'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)

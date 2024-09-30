@@ -39,15 +39,12 @@ def numclaim_prompt(sentence: str):
 
 
 def fomc_prompt(sentence: str):
-    system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence clas-
-                sifier."""
-    user_msg = f"""Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
+                sifier. Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
                 TRAL’ class. Label ‘HAWKISH’ if it is corresponding to tightening of the monetary policy,
                 ‘DOVISH’ if it is corresponding to easing of the monetary policy, or ‘NEUTRAL’ if the
                 stance is neutral. Provide the label in the first line and provide a short explanation in the
                 second line. This is the sentence: {sentence}"""
-
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
     return prompt
 
