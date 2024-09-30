@@ -26,6 +26,7 @@ def finqa_inference(args):
 
 
     dataset = load_dataset("gtfintechlab/finqa", token=args.hf_token)
+    # print(len(dataset["test"]))
     context = []
     llm_responses = []
     actual_labels = []
@@ -39,6 +40,7 @@ def finqa_inference(args):
         context.append(combined_text)
         actual_label = entry["answer"]  # type: ignore
         actual_labels.append(actual_label)
+        
         try:
             model_response = together.Complete.create(
                 prompt=finqa_prompt(combined_text),

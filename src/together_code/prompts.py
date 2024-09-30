@@ -283,7 +283,7 @@ def finred_prompt(sentence: str):
     
     return prompt
 
-  def causal_detection_prompt(tokens: list):
+def causal_detection_prompt(tokens: list):
     """
     Generates a prompt for Causal Detection to classify tokens in a sentence into cause, effect, or other categories,
     with an explanation of the B- and I- labeling scheme.

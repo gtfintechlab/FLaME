@@ -27,24 +27,23 @@ def convfinqa_inference(args):
     actual_labels = []
     complete_responses = []
 
-    # Iterating through the train split of the dataset
     start_t = time.time()
-    for entry in dataset["train"]: # type: ignore
-        pre_text = " ".join(entry["pre_text"])
-        post_text = " ".join(entry["post_text"])
-
-        table_text = " ".join([" ".join(map(str, row)) for row in entry["table_ori"]])
-
-        question_0 = str(entry["question_0"]) if entry["question_0"] is not None else ""
-        question_1 = str(entry["question_1"]) if entry["question_1"] is not None else ""
-        answer_1 = str(entry["answer_1"]) if entry["answer_1"] is not None else ""
-
-        combined_text = f"{pre_text} {post_text} {table_text} {question_0} {question_1}"
-        context.append(combined_text)
-
-        actual_label = answer_1
-        actual_labels.append(actual_label)
+    
+    for entry in dataset["train"]:  # type: ignore
         try:
+            pre_text = " ".join(entry["pre_text"])
+            post_text = " ".join(entry["post_text"])
+            table_text = " ".join([" ".join(map(str, row)) for row in entry["table_ori"]])
+            question_0 = str(entry["question_0"]) if entry["question_0"] is not None else ""
+            question_1 = str(entry["question_1"]) if entry["question_1"] is not None else ""
+            answer_1 = str(entry["answer_1"]) if entry["answer_1"] is not None else ""
+
+            combined_text = f"{pre_text} {post_text} {table_text} {question_0} {question_1}"
+
+            # Prepare the context and actual label only if the rest is successful
+            actual_label = answer_1
+            
+            # Call the API for model response
             model_response = together.Complete.create(
                 prompt=convfinqa_prompt(combined_text),
                 model=args.model,
@@ -55,10 +54,16 @@ def convfinqa_inference(args):
                 repetition_penalty=args.repetition_penalty,
                 stop=tokens(args.model),
             )
-            complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]
-            llm_responses.append(response_label.strip())
 
+            response_label = model_response["output"]["choices"][0]["text"].strip()
+
+       
+            context.append(combined_text)
+            actual_labels.append(actual_label)
+            llm_responses.append(response_label)
+            complete_responses.append(model_response)
+
+      
             df = pd.DataFrame(
                 {
                     "context": context,
@@ -69,8 +74,9 @@ def convfinqa_inference(args):
             )
             df.to_csv(results_path, index=False)
             time.sleep(10)
+
         except Exception as e:
-            print(e)
-            time.sleep(10.0)
+            print(f"Error encountered: {e}")
+            time.sleep(10.0)  # Adding a delay before continuing the loop
 
     return df
