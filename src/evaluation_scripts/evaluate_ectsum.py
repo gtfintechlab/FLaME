@@ -10,7 +10,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 def summarization_prompt(input_text: str):
     # Adjust the prompt to generate financial summaries based on the input text
-    prompt = f'''Generate a financial summary based on the following input. The summary should include key financial information such as earnings per share, revenue, and other significant figures.
+    prompt = f'''Generate a financial summary in about 50 words in line-by-line bullet format based on the following input. The summary should include key financial information such as earnings per share, revenue, and other significant figures.
                 
                 Here is the input to analyze:
                 "{input_text}"'''
