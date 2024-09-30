@@ -23,7 +23,7 @@ def finqa_inference(args):
 
     # Iterating through the train split of the dataset
     # start_t = time.time()
-    for entry in dataset["test"]:  # type: ignore
+    for entry in dataset["train"]:  # type: ignore
         pre_text = " ".join(entry["pre_text"]) # type: ignore
         post_text = " ".join(entry["post_text"]) # type: ignore
 

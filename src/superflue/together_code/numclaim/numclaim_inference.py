@@ -23,7 +23,7 @@ logger = setup_logger(
 
 
 def numclaim_inference(args):
-    together.api_key = args.api_key
+    
     today = date.today()
     logger.info(f"Starting Numclaim inference on {today}")
 
