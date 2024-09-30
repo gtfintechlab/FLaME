@@ -22,9 +22,9 @@ def banking77_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
-    for i in range(len(dataset["test"])):
-        document = dataset["test"][i]["text"]
-        actual_label = dataset["test"][i]["label"]
+    for i in range(len(dataset["test"])): # type: ignore
+        document = dataset["test"][i]["text"] # type: ignore
+        actual_label = dataset["test"][i]["label"] # type: ignore
         documents.append(document)
         actual_labels.append(actual_label)
         try:

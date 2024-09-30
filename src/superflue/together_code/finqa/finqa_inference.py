@@ -17,7 +17,7 @@ logger = setup_logger(
 
 
 def finqa_inference(args):
-    together.api_key = args.api_key
+    
     # today = date.today()
     dataset = load_dataset("gtfintechlab/finqa", trust_remote_code=True)
     context = []

@@ -36,16 +36,16 @@ def headlines_inference(args):
 
     logger.info(f"Starting inference on {args.task}...")
 
-    for i in range(len(dataset["test"])):
+    for i in range(len(dataset["test"])): # type: ignore
         time.sleep(5.0)
-        sentence = dataset["test"][i]["News"]
-        price_or_not = dataset["test"][i]["PriceOrNot"]
-        direction_up = dataset["test"][i]["DirectionUp"]
-        direction_down = dataset["test"][i]["DirectionDown"]
-        direction_constant = dataset["test"][i]["DirectionConstant"]
-        past_price = dataset["test"][i]["PastPrice"]
-        future_price = dataset["test"][i]["FuturePrice"]
-        past_news = dataset["test"][i]["PastNews"]
+        sentence = dataset["test"][i]["News"] # type: ignore
+        price_or_not = dataset["test"][i]["PriceOrNot"] # type: ignore
+        direction_up = dataset["test"][i]["DirectionUp"] # type: ignore
+        direction_down = dataset["test"][i]["DirectionDown"] # type: ignore
+        direction_constant = dataset["test"][i]["DirectionConstant"] # type: ignore
+        past_price = dataset["test"][i]["PastPrice"] # type: ignore
+        future_price = dataset["test"][i]["FuturePrice"] # type: ignore
+        past_news = dataset["test"][i]["PastNews"] # type: ignore
 
         news.append(sentence)
         price_or_not_list.append(price_or_not)
@@ -57,7 +57,7 @@ def headlines_inference(args):
         past_news_list.append(past_news)
 
         try:
-            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")
+            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
             model_response = together.Complete.create(
                 prompt=headlines_prompt(sentence),
                 model=args.model,

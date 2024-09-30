@@ -30,13 +30,13 @@ def finer_inference(args):
     complete_responses = []
 
     logger.info(f"Starting inference on {args.task}...")
-    for i in range(len(dataset["test"])):
-        sentence = dataset["test"][i]["context"]
-        actual_label = dataset["test"][i]["response"]
+    for i in range(len(dataset["test"])): # type: ignore
+        sentence = dataset["test"][i]["context"] # type: ignore
+        actual_label = dataset["test"][i]["response"] # type: ignore
         sentences.append(sentence)
         actual_labels.append(actual_label)
         try:
-            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")
+            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
             model_response = together.Complete.create(
                 prompt=finer_prompt(sentence),
                 model=args.model,

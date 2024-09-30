@@ -28,14 +28,14 @@ def fomc_inference(args):
     logger.info(f"Starting inference on dataset: {args.task}...")
     # start_t = time.time()
 
-    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"):
-        sentence = dataset["test"][i]["sentence"]
-        actual_label = dataset["test"][i]["label"]
+    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"): # type: ignore
+        sentence = dataset["test"][i]["sentence"] # type: ignore
+        actual_label = dataset["test"][i]["label"] # type: ignore
         sentences.append(sentence)
         actual_labels.append(actual_label)
 
         try:
-            logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}")
+            logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
             model_response = together.Complete.create(
                 prompt=fomc_prompt(sentence),
                 model=args.model,

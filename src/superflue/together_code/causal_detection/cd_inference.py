@@ -38,15 +38,15 @@ def causal_detection_inference(args):
 
     logger.info(f"Starting inference on {args.task}...")
     # start_t = time.time()
-    for i in range(len(dataset["test"])):
-        tokens = dataset["test"][i]["tokens"]
-        actual_tag = dataset["test"][i]["tags"]
+    for i in range(len(dataset["test"])): # type: ignore
+        tokens = dataset["test"][i]["tokens"] # type: ignore
+        actual_tag = dataset["test"][i]["tags"] # type: ignore
 
         tokens_list.append(tokens)
         actual_tags.append(actual_tag)
 
         try:
-            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")
+            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
             # Causal Detection-specific prompt logic to classify each token
             model_response = together.Complete.create(
                 prompt=causal_detection_prompt(tokens),
