@@ -29,12 +29,12 @@ def fpb_inference(args):
     complete_responses = []
 
     for i in tqdm(range(len(dataset['test'])), desc="Processing sentences"):  # type: ignore
-        sentence = dataset['test'][i]["sentence"]
-        actual_label = dataset['test'][i]["label"]
+        sentence = dataset['test'][i]["sentence"] # type: ignore
+        actual_label = dataset['test'][i]["label"] # type: ignore
         sentences.append(sentence)
         actual_labels.append(actual_label)
         try:
-            logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}")
+            logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
             model_response = together.Complete.create(
                 prompt=fpb_prompt(
                     sentence=sentence,  # type: ignore

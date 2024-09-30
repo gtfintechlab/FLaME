@@ -28,9 +28,9 @@ def ectsum_inference(args):
 
     # Iterating through the train split of the dataset
     # start_t = time.time()
-    for i in range(len(dataset["test"])):
-        document = dataset["test"][i]["context"]
-        actual_label = dataset["test"][i]["response"]
+    for i in range(len(dataset["test"])): # type: ignore
+        document = dataset["test"][i]["context"] # type: ignore
+        actual_label = dataset["test"][i]["response"] # type: ignore
         documents.append(document)
         actual_labels.append(actual_label)
         try:
@@ -55,7 +55,7 @@ def ectsum_inference(args):
                     "complete_responses": complete_responses,
                 }
             )
-            logger.info(f"Processed {i} of {len(dataset['test'])}")
+            logger.info(f"Processed {i} of {len(dataset['test'])}") # type: ignore
         except Exception as e:
             logger.error(e)
             i = i - 1

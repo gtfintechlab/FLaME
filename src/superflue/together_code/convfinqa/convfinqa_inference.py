@@ -23,16 +23,16 @@ def finqa_inference(args):
 
     # Iterating through the train split of the dataset
     # start_t = time.time()
-    for entry in dataset["train"]:  # type: ignore
-        pre_text = " ".join(entry["pre_text"])
-        post_text = " ".join(entry["post_text"])
+    for entry in dataset["test"]:  # type: ignore
+        pre_text = " ".join(entry["pre_text"]) # type: ignore
+        post_text = " ".join(entry["post_text"]) # type: ignore
 
-        table_text = " ".join([" ".join(map(str, row)) for row in entry["table_ori"]])
+        table_text = " ".join([" ".join(map(str, row)) for row in entry["table_ori"]]) # type: ignore
 
-        question_0 = str(entry["question_0"]) if entry["question_0"] is not None else ""
-        question_1 = str(entry["question_1"]) if entry["question_1"] is not None else ""
-        answer_0 = str(entry["answer_0"]) if entry["answer_0"] is not None else ""
-        answer_1 = str(entry["answer_1"]) if entry["answer_1"] is not None else ""
+        question_0 = str(entry["question_0"]) if entry["question_0"] is not None else "" # type: ignore
+        question_1 = str(entry["question_1"]) if entry["question_1"] is not None else "" # type: ignore
+        answer_0 = str(entry["answer_0"]) if entry["answer_0"] is not None else "" # type: ignore
+        answer_1 = str(entry["answer_1"]) if entry["answer_1"] is not None else "" # type: ignore
 
         combined_text = f"{pre_text} {post_text} {table_text} {question_0} {answer_0} {question_1} {answer_1}"
         context.append(combined_text)

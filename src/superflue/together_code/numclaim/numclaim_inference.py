@@ -39,14 +39,14 @@ def numclaim_inference(args):
 
     logger.info(f"Starting inference on {args.task}...")
     # start_t = time.time()
-    for i in range(len(dataset["test"])):
+    for i in range(len(dataset["test"])): # type: ignore
         time.sleep(5.0)
-        sentence = dataset["test"][i]["context"]
-        actual_label = dataset["test"][i]["response"]
+        sentence = dataset["test"][i]["context"] # type: ignore
+        actual_label = dataset["test"][i]["response"] # type: ignore
         sentences.append(sentence)
         actual_labels.append(actual_label)
         try:
-            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")
+            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
             model_response = together.Complete.create(
                 prompt=numclaim_prompt(sentence),
                 model=args.model,

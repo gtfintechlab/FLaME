@@ -28,8 +28,8 @@ def fiqa_task2_inference(args):
     # start_time = time.time()
 
     for entry in dataset:
-        question = entry["question"]
-        actual_answer = entry["answer"]
+        question = entry["question"] # type: ignore
+        actual_answer = entry["answer"] # type: ignore
 
         combined_text = f"Question: {question}. Provide a concise and accurate answer."
         context.append(combined_text)

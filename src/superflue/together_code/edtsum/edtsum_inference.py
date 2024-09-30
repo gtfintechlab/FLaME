@@ -22,9 +22,9 @@ def edtsum_inference(args):
     complete_responses = []
 
     # start_t = time.time()
-    for i in range(len(dataset["test"])):
-        document = dataset["test"][i]["text"]
-        actual_label = dataset["test"][i]["answer"]
+    for i in range(len(dataset["test"])): # type: ignore
+        document = dataset["test"][i]["text"] # type: ignore
+        actual_label = dataset["test"][i]["answer"] # type: ignore
         documents.append(document)
         actual_labels.append(actual_label)
 
