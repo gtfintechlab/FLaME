@@ -35,8 +35,8 @@ def finbench_inference(args):
     # start_t = time.time()
 
     # Iterating through the test split of the dataset
-    for i in range(len(dataset["test"])):
-        instance = dataset["test"][i]
+    for i in range(len(dataset["test"])): # type: ignore
+        instance = dataset["test"][i] # type: ignore
         X_ml = instance["X_ml"]
         X_ml_unscale = instance["X_ml_unscale"]
         y = instance["y"]
@@ -45,9 +45,11 @@ def finbench_inference(args):
         y_data.append(y)
 
         try:
-            logger.info(f"Processing instance {i+1}/{len(dataset['test'])}")
+            logger.info(f"Processing instance {i+1}/{len(dataset['test'])}") # type: ignore
+
 
             prompt = finbench_prompt(instance['X_profile'])
+
 
             model_response = together.Complete.create(
                 prompt=prompt,

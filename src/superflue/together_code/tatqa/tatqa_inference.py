@@ -42,17 +42,17 @@ def tatqa_inference(args):
 
     logger.info(f"Starting inference on {args.task}...")
     # start_t = time.time()
-    for i in range(len(dataset["test"])):
-        question = dataset["test"][i]["query"]
-        context = dataset["test"][i]["text"]
-        actual_answer = dataset["test"][i]["answer"]
+    for i in range(len(dataset["test"])): # type: ignore
+        question = dataset["test"][i]["query"] # type: ignore
+        context = dataset["test"][i]["text"] # type: ignore
+        actual_answer = dataset["test"][i]["answer"] # type: ignore
 
         questions.append(question)
         contexts.append(context)
         actual_answers.append(actual_answer)
 
         try:
-            logger.info(f"Processing question {i+1}/{len(dataset['test'])}")
+            logger.info(f"Processing question {i+1}/{len(dataset['test'])}") # type: ignore
             # TAT-QA-specific prompt logic, create the prompt for table and text-based QA
             model_response = together.Complete.create(
                 prompt=tatqa_prompt(question, context),

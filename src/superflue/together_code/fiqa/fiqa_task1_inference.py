@@ -28,10 +28,10 @@ def fiqa_inference(args):
     # start_time = time.time()
 
     for entry in dataset:
-        sentence = entry["sentence"]
-        snippets = entry["snippets"]
-        target = entry["target"]
-        sentiment_score = entry["sentiment_score"]
+        sentence = entry["sentence"] # type: ignore
+        snippets = entry["snippets"] # type: ignore
+        target = entry["target"] # type: ignore
+        sentiment_score = entry["sentiment_score"] # type: ignore
 
         combined_text = f"Sentence: {sentence}. Snippets: {snippets}. Target aspect: {target}. What is the sentiment?"
         context.append(combined_text)

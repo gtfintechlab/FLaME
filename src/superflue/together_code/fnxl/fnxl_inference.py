@@ -57,7 +57,7 @@ def fnxl_inference(args):
             logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
             # FNXL-specific prompt to classify numerals in financial sentences
             model_response = together.Complete.create(
-                prompt=fnxl_prompt(sentence, numeral_tag, company),
+                prompt=fnxl_prompt(sentence, numeral_tag, company), # type: ignore
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
