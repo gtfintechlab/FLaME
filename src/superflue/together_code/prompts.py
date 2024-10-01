@@ -44,7 +44,7 @@ def fomc_prompt(sentence: str):
                 TRAL’ class. Label ‘HAWKISH’ if it is corresponding to tightening of the monetary policy,
                 ‘DOVISH’ if it is corresponding to easing of the monetary policy, or ‘NEUTRAL’ if the
                 stance is neutral. Provide the label in the first line and provide a short explanation in the
-                second line. This is the sentence: {sentence}"""
+                second line. Explain how you came to your classification decision. This is the sentence: {sentence}"""
 
     return prompt
 
@@ -66,13 +66,23 @@ def finer_prompt(sentence: str):
 
 
 def fpb_prompt(sentence: str, prompt_format: str):
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
+                    sifier. Classify the following sentence from FOMC into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’ 
+                    class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
+                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. 
+                    Provide the label in the first line and provide a short explanation in the
+                    second line. Explain how you came to your classification decision. This is the sentence: {sentence}"""
+
+    return prompt
+
     if prompt_format == "superflue":
         system_prompt = """ Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier"""
 
         user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
                     class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
-                    the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}"""
+                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. 
+                    Provide the label in the first line and provide a short explanation in the second line.
+                    Explain how you came to your classification decision. This is the sentence: {sentence}."""
 
     elif prompt_format == "finben_icl":
         system_prompt = """"""
@@ -109,7 +119,8 @@ def fpb_prompt(sentence: str, prompt_format: str):
                         First, generate your reasoning steps for the classification. After your reasoning, end the response with the label that fits your reasoning.
                         This is the sentence: {sentence}"""
 
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+    prompt = f"""{system_prompt}\n{user_msg}"""
+    print(prompt)
 
     return prompt
 
@@ -127,20 +138,15 @@ def finentity_prompt(sentence: str):
     return prompt
 
 
-def finbench_prompt(sentence: str):
-    pass
-
-
-#     prompt = f'''Discard all the previous instructions. Behave like you are an expert entity level sentiment
-#                 classifier. Below is a sentence from a financial document. From the sentence, identify all the entities
-#                 check the starting and ending indices of the entities and give it a tag out of the following three options:
-#                 ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-#                 corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral.
-#                 Format it as such: "start": start value, "end": end value, "value": entity name,
-#                 "tag":‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. The sentence:
-#                 {sentence}'''
-
-#     return prompt
+def finbench_prompt(profile: str):
+    prompt = f"""Discard all the previous instructions. Behave like you are an expect risk assessor.
+                Classify the following individual as either ‘LOW RISK’ or ‘HIGH RISK’ for approving a loan for. 
+                Categorize the person as ‘HIGH RISK’ if their profile indicates that they will likely default on 
+                the loan and not pay it back, and ‘LOW RISK’ if it is unlikely that they will fail to pay the loan back in full.
+                Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision.
+                Here is the information about the person:\nProfile data: {profile}\nPredict the risk category of this person:
+                """
+    return prompt
 
 
 def ectsum_prompt(document: str):
@@ -349,6 +355,7 @@ prompt_map = {
     "tatqa_prompt": tatqa_prompt,
     "finred_prompt": finred_prompt,
     "causal_detection_prompt": causal_detection_prompt,
+    'finbench_prompt': finbench_prompt
 }
 
 

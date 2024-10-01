@@ -38,7 +38,7 @@ def fpb_inference(args):
             model_response = together.Complete.create(
                 prompt=fpb_prompt(
                     sentence=sentence,  # type: ignore
-                    prompt_format=args.prompt_format,
+                    prompt_format='superflue',
                 ),
                 model=args.model,
                 max_tokens=args.max_tokens,
@@ -50,11 +50,7 @@ def fpb_inference(args):
             )
 
             complete_responses.append(model_response)
-            if "output" in model_response and "choices" in model_response["output"]:
-                response_label = model_response["output"]["choices"][0]["text"]
-                logger.debug(response_label)
-            else:
-                response_label = "default_value"
+            response_label = model_response["choices"][0]["text"]
             llm_responses.append(response_label)
 
         except Exception as e:
@@ -72,8 +68,8 @@ def fpb_inference(args):
     )
     results_path = (
         RESULTS_DIR
-        / args.task
-        / f"{args.task}_{args.model_name}_{date.today().strftime('%d_%m_%Y')}.csv"
+        / 'fpb/fpb_meta-llama-3.1-8b/'
+        / f"{'fpb'}_{'llama-3.1'}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)

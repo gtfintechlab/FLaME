@@ -66,7 +66,7 @@ def fomc_inference(args):
 
     results_path = (
         RESULTS_DIR
-        / 'fomc/fomc_meta-llama/' 
+        / 'fomc/fomc_meta-llama-3.1-8b/' 
         / f"{'fomc'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)

@@ -3,6 +3,7 @@ from datetime import date
 
 import pandas as pd
 from datasets import load_dataset
+from tqdm import tqdm
 
 import together
 from superflue.together_code.prompts import finbench_prompt
@@ -36,7 +37,7 @@ def finbench_inference(args):
     # start_t = time.time()
 
     # Iterating through the test split of the dataset
-    for i in range(len(dataset["test"])): # type: ignore
+    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"): # type: ignore
         instance = dataset["test"][i] # type: ignore
         X_ml = instance["X_ml"]
         X_ml_unscale = instance["X_ml_unscale"]
@@ -48,10 +49,7 @@ def finbench_inference(args):
         try:
             logger.info(f"Processing instance {i+1}/{len(dataset['test'])}") # type: ignore
 
-            prompt = (
-                finbench_prompt
-                + f"Tabular data: {X_ml}\nProfile data: {instance['X_profile']}\nPredict the risk category:"
-            ) # type: ignore
+            prompt = finbench_prompt(instance['X_profile'])
 
             model_response = together.Complete.create(
                 prompt=prompt,
@@ -64,7 +62,7 @@ def finbench_inference(args):
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]
+            response_label = model_response["choices"][0]["text"]
             llm_responses.append(response_label)
 
         except Exception as e:
@@ -84,8 +82,8 @@ def finbench_inference(args):
 
     results_path = (
         RESULTS_DIR
-        / args.task
-        / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        / 'finbench/finbench_meta-llama-3.1-8b/'
+        / f"{'finbench'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
