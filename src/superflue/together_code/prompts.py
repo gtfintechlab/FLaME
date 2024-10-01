@@ -14,12 +14,19 @@ def fiqa_prompt(sentence: str):
 
 
 def fiqa_task1_prompt(sentence: str):
-    prompt = f"""Lorem ipsum: {sentence}"""
+    prompt = f"""Discard all previous instructions. Behave like you are a financial sentiment analysis expert.
+                Your task is to analyze the provided financial sentence and determine the sentiment score.
+                The sentiment score should range from -1 (negative) to 1 (positive). Provide the score.  \n\nThe context:
+                {sentence}"""
     return prompt
 
 
 def fiqa_task2_prompt(sentence: str):
-    prompt = f"""Lorem ipsum: {sentence}"""
+    prompt = f"""Discard all previous instructions. 
+    Behave like you are a financial  expert.
+    Your task is to answer opinion-based financial
+    questions by analyzing a corpus of structured and unstructured financial data (e.g., microblogs, reports, news). 
+    Identify relevant entities, aspects, sentiment polarity, and opinion holders from the text to generate a precise and relevant answer.{sentence} """
     return prompt
 
 
@@ -341,6 +348,8 @@ def causal_detection_prompt(tokens: list):
 
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
+    "fiqa_task1_prompt":fiqa_task1_prompt,
+    "fiqa_task2_prompt":fiqa_task2_prompt,
     "fomc_prompt": fomc_prompt,
     "finer_prompt": finer_prompt,
     "fpb_prompt": fpb_prompt,

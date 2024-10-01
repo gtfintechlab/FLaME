@@ -2,12 +2,12 @@ import time
 
 import pandas as pd
 from datasets import load_dataset
-
+from datetime import date
 import together
 from superflue.together_code.prompts import finqa_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import LOG_DIR, LOG_LEVEL
+from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
 # TODO: (Glenn) Is FinQA saving results to a file properly?
 
@@ -45,7 +45,7 @@ def finqa_inference(args):
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]
+            response_label = model_response["choices"][0]["text"]
             llm_responses.append(response_label)
 
             df = pd.DataFrame(
@@ -57,6 +57,13 @@ def finqa_inference(args):
                 }
             )
             time.sleep(10)
+            results_path = (
+                RESULTS_DIR
+                / 'finqa/finqa_meta-llama/'
+                / f"{'finqa'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
+            )
+            results_path.parent.mkdir(parents=True, exist_ok=True)
+            df.to_csv(results_path, index=False)
 
         except Exception as e:
             logger.error(e)
