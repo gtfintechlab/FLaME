@@ -3,7 +3,7 @@ import pandas as pd
 import time
 from datasets import load_dataset
 from datetime import date
-from superflue.together_code.tokens import tokens
+from superflue.together_code.chat import get_stop_tokens
 from superflue.together_code.prompts import headlines_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -66,7 +66,7 @@ def headlines_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                stop=get_stop_tokens(args.model),
             )
             complete_responses.append(model_response)
             response_label = model_response["output"]["choices"][0]["text"]

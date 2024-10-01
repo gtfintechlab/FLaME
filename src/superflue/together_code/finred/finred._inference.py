@@ -12,7 +12,7 @@ from datasets import load_dataset
 from superflue.together_code.prompts import (
     finred_prompt,
 )  # You need to implement finred_prompt for FinRED
-from superflue.together_code.tokens import tokens  # Token logic for FinRED
+from superflue.together_code.chat import get_stop_tokens  # Token logic for FinRED
 
 nltk.download("punkt")
 
@@ -56,7 +56,7 @@ def finred_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                stop=get_stop_tokens(args.model),
             )
             complete_responses.append(model_response)
             response_label = model_response["output"]["choices"][0]["text"]

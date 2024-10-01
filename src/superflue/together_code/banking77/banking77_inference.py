@@ -5,7 +5,7 @@ import pandas as pd
 from datasets import load_dataset
 
 from superflue.together_code.prompts import banking77_prompt
-from superflue.together_code.tokens import tokens
+from superflue.together_code.chat import get_stop_tokens
 from superflue.config import RESULTS_DIR
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import LOG_LEVEL
@@ -36,7 +36,7 @@ def banking77_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                stop=get_stop_tokens(args.model),
             )
             complete_responses.append(model_response)
             response_label = model_response["output"]["choices"][0]["text"]

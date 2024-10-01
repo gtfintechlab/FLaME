@@ -10,8 +10,8 @@ import nltk
 from superflue.together_code.prompts import (
     fnxl_prompt,
 )  # Custom prompt function for FNXL
-from superflue.together_code.tokens import (
-    tokens,
+from superflue.together_code.chat import (
+    get_stop_tokens,
 )  # Custom token handling function for FNXL
 
 nltk.download("punkt")
@@ -64,7 +64,7 @@ def fnxl_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                stop=get_stop_tokens(args.model),
             )
             complete_responses.append(model_response)
             predicted_label = model_response["output"]["choices"][0]["text"]  # type: ignore

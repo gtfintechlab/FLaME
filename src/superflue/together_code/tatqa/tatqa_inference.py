@@ -13,7 +13,7 @@ from datasets import load_dataset
 from superflue.together_code.prompts import (
     tatqa_prompt,
 )  # To be implemented for TAT-QA prompt
-from superflue.together_code.tokens import tokens  # Token logic for TAT-QA
+from superflue.together_code.chat import get_stop_tokens  # Token logic for TAT-QA
 
 nltk.download("punkt")
 
@@ -62,7 +62,7 @@ def tatqa_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                stop=get_stop_tokens(args.model),
             )
             model_responses.append(model_response["output"]["choices"][0]["text"])
 
