@@ -4,6 +4,7 @@ from datasets import load_dataset
 import together
 from superflue.together_code.prompts import edtsum_prompt
 from superflue.utils.logging_utils import setup_logger
+from superflue.together_code.tokens import tokens
 from superflue.config import LOG_DIR, LOG_LEVEL
 
 logger = setup_logger(
@@ -37,13 +38,12 @@ def edtsum_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                # stop=tokens(args.model),
+                stop=tokens(args.model)
             )
             complete_responses.append(model_response)
 
-            response_label = model_response["output"]["choices"][0]["text"]
-
-            # time.sleep(30.0)
+            response_label = model_response["choices"][0]["text"]
+            # print(response_label)
             llm_responses.append(response_label)
 
         except Exception as e:
