@@ -55,7 +55,7 @@ def fomc_prompt(sentence: str):
 def finer_prompt(sentence: str):
     system_prompt = """Discard all the previous instructions. Behave like you are an expert named entity
                     identifier. """
-    user_msg = f"""Below a sentence is tokenized and each line contains a word token from the
+    user_msg = f"""Below a sentence is tokenized and each list item contains a word token from the
                     sentence. Identify ‘Person’, ‘Location’, and ‘Organisation’ from them and label them. If the
                     entity is multi token use post-fix_B for the first label and _I for the remaining token labels
                     for that particular entity. The start of the separate entity should always use _B post-fix for
