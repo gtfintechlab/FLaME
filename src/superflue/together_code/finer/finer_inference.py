@@ -38,7 +38,7 @@ def finer_inference(args):
         sentences.append(sentence)
         actual_labels.append(actual_label)
         try:
-            
+            logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
             model_response = client.chat.completions.create(
             model=args.model,
             messages=[{"role": "user", "content": finer_prompt(sentence)}],
