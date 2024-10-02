@@ -6,7 +6,8 @@ import pandas as pd
 from datasets import load_dataset
 
 import together
-from superflue.together_code.prompts import finer_prompt
+from together import Together
+from superflue.together_code.prompts import finentity_prompt
 from superflue.together_code.tokens import tokens
 
 nltk.download("punkt")
@@ -20,6 +21,7 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+client = Together()
 
 def finentity_inference(args):
     
@@ -27,7 +29,7 @@ def finentity_inference(args):
     logger.info(f"Starting FinEntity inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/finentity", trust_remote_code=True)
+    dataset = load_dataset("gtfintechlab/finentity", "5768", trust_remote_code=True)
 
     # Initialize lists to store actual labels and model responses
     sentences = []
@@ -35,7 +37,7 @@ def finentity_inference(args):
     actual_labels = []
     complete_responses = []
 
-    logger.info(f"Starting inference on {args.task}...")
+    logger.info(f"Starting inference on FinEntity...")
     # start_t = time.time()
     for i in range(len(dataset["test"])): # type: ignore
         sentence = dataset["test"][i]["content"] # type: ignore
@@ -43,19 +45,21 @@ def finentity_inference(args):
         sentences.append(sentence)
         actual_labels.append(actual_label)
         try:
-            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
-            model_response = together.Complete.create(
-                prompt=finer_prompt(sentence),
-                model=args.model,
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+            logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
+            model_response = client.chat.completions.create(
+            model=args.model,
+            messages=[{"role": "user", "content": finentity_prompt(sentence)}],
+            tokens=args.max_tokens,
+            temperature=args.temperature,
+            top_k=args.top_k,
+            top_p=args.top_p,
+            repetition_penalty=args.repetition_penalty,
+            stop=tokens(args.model),
             )
+            
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]
+            logger.info(f"Model response: {model_response.choices[0].message.content}") # type: ignore
+            response_label = model_response.choices[0].message.content # type: ignore
             llm_responses.append(response_label)
 
             df = pd.DataFrame(
@@ -74,8 +78,8 @@ def finentity_inference(args):
 
     results_path = (
         RESULTS_DIR
-        / args.task
-        / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+        / "finentity"
+        / f"finentity_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
