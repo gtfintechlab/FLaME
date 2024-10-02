@@ -1,6 +1,5 @@
 import time
 from datetime import date
-from pathlib import Path
 import os
 import pandas as pd
 from datasets import load_dataset
@@ -38,27 +37,16 @@ def subjectiveqa_inference(args):
     # Load only the 'test' split of the dataset
     dataset = load_dataset("gtfintechlab/subjectiveqa", "5768", split="test", trust_remote_code=True)
 
-    # Initialize lists to store actual labels and model responses
+    # Initialize lists to store actual labels, model responses, and complete responses
     questions = []
     answers = []
     feature_responses = {feature: [] for feature in definition_map.keys()}
     feature_labels = {feature: [] for feature in definition_map.keys()}
-
-    # Define path to save results
-    results_path = (
-        RESULTS_DIR
-        / "subjectiveqa"
-        / args.model
-        / f"subjectiveqa_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Check if file exists to handle headers properly
-    file_exists = os.path.isfile(results_path)
+    complete_responses = []  # To store complete responses for further analysis
 
     logger.info(f"Starting inference on SubjectiveQA with model {args.model}...")
 
-    for i, row in enumerate(dataset):  # More efficient to use enumerate
+    for i, row in enumerate(dataset):
         logger.info(f"Processing row {i+1}/{len(dataset)}") # type: ignore
         question = row["QUESTION"]
         answer = row["ANSWER"]
@@ -68,8 +56,6 @@ def subjectiveqa_inference(args):
         row_data = {"questions": [question], "answers": [answer]}  # Collect row-specific data
         
         try:
-            logger.info(f"Processing question {i+1}/{len(dataset)}: {question}") # type: ignore
-            
             for feature, definition in definition_map.items():
                 actual_label = row[feature]
                 feature_labels[feature].append(actual_label)
@@ -90,9 +76,10 @@ def subjectiveqa_inference(args):
                         stop=tokens(args.model),
                     )
                     
-                    response_label = model_response.choices[0].message.content.strip() # type: ignore
+                    response_label = model_response.choices[0].message.content.strip()  # type: ignore
                     feature_responses[feature].append(response_label)
                     row_data[feature] = [response_label]
+                    complete_responses.append(model_response)  # Store the full response
 
                     logger.info(f"Processed {feature} for row {i+1}: {response_label}")
 
@@ -101,19 +88,8 @@ def subjectiveqa_inference(args):
                     feature_responses[feature].append("error")
                     row_data[feature] = ["error"]
 
-            # Save row-level results to CSV
-            df_row = pd.DataFrame(row_data)
-            df_row.to_csv(
-                results_path,
-                mode='a',  # Append to the CSV file
-                header=not file_exists,  # Write the header only if the file doesn't exist
-                index=False
-            )
-            
-            file_exists = True  # Ensure the header is not written again
-
             # Delay between requests to avoid hitting rate limits
-            time.sleep(3.0)  # Increase delay for safer API limits
+            time.sleep(3.0)
 
         except Exception as e:
             logger.error(f"Error processing row {i+1}: {e}")
@@ -121,15 +97,26 @@ def subjectiveqa_inference(args):
                 feature_responses[feature].append("error")
             continue
 
-    # Create final DataFrame to store all results
+    # Create a DataFrame to store the results
     df = pd.DataFrame(
         {
             "questions": questions,
             "answers": answers,
-            **feature_responses,
-            **feature_labels,
+            **{f"{feature}_response": feature_responses[feature] for feature in definition_map.keys()},
+            **{f"{feature}_actual_label": feature_labels[feature] for feature in definition_map.keys()},
+            "complete_responses": complete_responses,  # Add complete responses for each question
         }
     )
-    df.to_csv(results_path, mode='a', header=not file_exists, index=False)  # Final save
-    logger.info(f"Inference completed. Final results saved to {results_path}")
+
+    # Define new path to save results (e.g., CSV file inside subjectiveqa folder)
+    results_path = (
+        RESULTS_DIR
+        / "subjectiveqa"
+        / f"subjectiveqa_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+
+    df.to_csv(results_path, index=False)
+    logger.info(f"Inference completed. Results saved to {results_path}")
+
     return df
