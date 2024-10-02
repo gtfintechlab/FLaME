@@ -49,6 +49,7 @@ def causal_classification_inference(args):
             model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
             messages=[{"role": "user", "content": causal_classification_prompt(text)}],
             temperature=args.temperature,
+            tokens=args.max_tokens,
             top_k=args.top_k,
             top_p=args.top_p,
             repetition_penalty=args.repetition_penalty,
