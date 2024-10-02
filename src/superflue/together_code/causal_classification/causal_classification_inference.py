@@ -1,6 +1,5 @@
 import together
 from together import Together
-client = Together()
 import pandas as pd
 import time
 import sys
@@ -21,6 +20,7 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+client = Together()
 
 def causal_classification_inference(args):
     today = date.today()
