@@ -46,7 +46,7 @@ def causal_classification_inference(args):
             logger.info(f"Processing text {i+1}/{len(dataset['test'])}")  # type: ignore
     
             model_response = client.chat.completions.create(
-            model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+            model=args.model,
             messages=[{"role": "user", "content": causal_classification_prompt(text)}],
             temperature=args.temperature,
             tokens=args.max_tokens,
