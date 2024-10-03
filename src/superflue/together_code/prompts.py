@@ -47,7 +47,7 @@ def fomc_prompt(sentence: str):
                 TRAL’ class. Label ‘HAWKISH’ if it is corresponding to tightening of the monetary policy,
                 ‘DOVISH’ if it is corresponding to easing of the monetary policy, or ‘NEUTRAL’ if the
                 stance is neutral. Provide the label in the first line and provide a short explanation in the
-                second line. Explain how you came to your classification decision. This is the sentence: {sentence}"""
+                second line. This is the sentence: {sentence}"""
 
     return prompt
 
@@ -70,11 +70,10 @@ def finer_prompt(sentence: str):
 
 def fpb_prompt(sentence: str, prompt_format: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
-                    sifier. Classify the following sentence from FOMC into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’ 
+                    sifier. Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
                     class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. 
-                    Provide the label in the first line and provide a short explanation in the
-                    second line. Explain how you came to your classification decision. This is the sentence: {sentence}"""
+                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
+                    the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}"""
 
     return prompt
 

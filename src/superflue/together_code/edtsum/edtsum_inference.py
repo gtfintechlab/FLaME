@@ -1,7 +1,7 @@
 import time
 import pandas as pd
 from datasets import load_dataset
-import together
+from together import Together
 from superflue.together_code.prompts import edtsum_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.together_code.tokens import tokens
@@ -21,6 +21,7 @@ def edtsum_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+    client = Together()
 
     # start_t = time.time()
     for i in range(len(dataset["test"])): # type: ignore
@@ -30,9 +31,9 @@ def edtsum_inference(args):
         actual_labels.append(actual_label)
 
         try:
-            model_response = together.Complete.create(
-                prompt=edtsum_prompt(document),
+            model_response = client.chat.completions.create(
                 model=args.model,
+                messages=[{"role": "user", "content": edtsum_prompt(document)}],
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
@@ -40,10 +41,9 @@ def edtsum_inference(args):
                 repetition_penalty=args.repetition_penalty,
                 stop=tokens(args.model)
             )
+            logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
-
-            response_label = model_response["choices"][0]["text"]
-            # print(response_label)
+            response_label = model_response.choices[0].message.content # type: ignore
             llm_responses.append(response_label)
 
         except Exception as e:
