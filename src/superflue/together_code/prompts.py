@@ -70,7 +70,7 @@ def fomc_prompt(sentence: str):
 def finer_prompt(sentence: str):
     system_prompt = """Discard all the previous instructions. Behave like you are an expert named entity
                     identifier. """
-    user_msg = f"""Below a sentence is tokenized and each line contains a word token from the
+    user_msg = f"""Below a sentence is tokenized and each list item contains a word token from the
                     sentence. Identify ‘Person’, ‘Location’, and ‘Organisation’ from them and label them. If the
                     entity is multi token use post-fix_B for the first label and _I for the remaining token labels
                     for that particular entity. The start of the separate entity should always use _B post-fix for
@@ -353,6 +353,19 @@ def causal_detection_prompt(tokens: list):
 
     return prompt
 
+def subjectiveqa_prompt(feature, definition, question, answer):
+    system_prompt = """Discard all the previous instructions. Behave like you are an expert named entity
+                    identifier. """
+    user_msg = f"""Given the following feature: {feature} and its corresponding definition: {definition}\n
+              Give the answer a rating of:\n
+              2: If the answer positively demonstrates the chosen feature, with regards to the question.\n
+              1: If there is no evident/neutral correlation between the question and the answer for the feature.\n
+              0: If the answer negatively correlates to the question on the chosen feature.\n
+              Provide the rating only. No explanations. This is the question: {question} and this is the answer: {answer}."""
+              
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+
+    return prompt
 
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
