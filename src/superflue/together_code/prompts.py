@@ -1,10 +1,25 @@
-def fnxl_prompt(sentence: str):
-    prompt = f"""Lorem ipsum: {sentence}"""
+def fnxl_prompt(sentence: str, numeral_tag: str, company: str):
+    system_prompt = f"""Discard all the previous instructions. Behave like an expert in numeric labeling of financial data."""
+    user_msg = f"""Given the following sentence from a financial report, identify the extreme numeric label for the numeral: {numeral_tag}. 
+                The numeral might be an outlier or represent a significant financial event. Use the sentence context and company information to classify the numeral as ‘HIGH’, ‘LOW’, or ‘NORMAL’. 
+                The sentence: {sentence}
+                The company: {company}"""
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
     return prompt
-
+    
 
 def headlines_prompt(sentence: str):
-    prompt = f"""Lorem ipsum: {sentence}"""
+    prompt = f'''Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
+                    Give a score of 0 for each of the following attributes if the news headline does not contain the following information or 1 if it does.
+                    Price or Not: Does the news item talk about price or not.
+                    Direction Up: Does the news headline talk about price going up or not?
+                    Direction Down: Does the news headline talk about price going down or not?
+                    Direction Constant: Does the news headline talk about price remaining constant or not?
+                    Past Price: Does the news headline talk about an event in the past?
+                    Future Price: Does the news headline talk about an event in the future?
+                    Past News: Does the news headline talk about a general event (apart from prices) in the past?
+                    The news headline is:
+                    {sentence}'''
     return prompt
 
 
@@ -33,7 +48,7 @@ def numclaim_prompt(sentence: str):
             ment classifier. Classify the following sentence into ‘INCLAIM’, or ‘OUTOFCLAIM’ class.
             Label ‘INCLAIM’ if consist of a claim and not just factual past or present information, or
             ‘OUTOFCLAIM’ if it has just factual past or present information. Provide the label in the
-            first line and provide a short explanation in the second line. The sentence:{sentence}"""
+            first line. The sentence:{sentence}"""
 
     return prompt
 

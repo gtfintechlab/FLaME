@@ -4,7 +4,7 @@ from datetime import date
 
 # from pathlib import Path
 import together
-import nltk
+#import nltk
 import pandas as pd
 from datasets import load_dataset
 
@@ -14,7 +14,7 @@ from superflue.together_code.prompts import (
 )  # You need to implement finred_prompt for FinRED
 from superflue.together_code.tokens import tokens  # Token logic for FinRED
 
-nltk.download("punkt")
+#nltk.download("punkt")
 
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -32,17 +32,20 @@ def finred_inference(args):
     # Replace "finred_dataset" with the appropriate Hugging Face dataset for FinRED or custom dataset
     dataset = load_dataset("gtfintechlab/FinRed", trust_remote_code=True)
 
+    logger.info(f"Dataset structure: {dataset['test'].column_names}")  # type: ignore
+
     # Initialize lists to store sentences, actual labels, and model responses
     sentences = []
     llm_responses = []
     actual_labels = []
     complete_responses = []
 
-    logger.info(f"Starting inference on {args.task}...")
+    #logger.info(f"Starting inference on {args.task}...")
     # start_t = time.time()
+    df = pd.DataFrame()
     for i in range(len(dataset["test"])): # type: ignore
-        sentence = dataset["test"][i]["content"] # type: ignore
-        actual_label = dataset["test"][i]["annotations"] # type: ignore
+        sentence = dataset["test"][i]["sentence"] # type: ignore
+        actual_label = dataset["test"][i]["relations"] # type: ignore
         sentences.append(sentence)
         actual_labels.append(actual_label)
         try:
@@ -59,7 +62,7 @@ def finred_inference(args):
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]
+            response_label = model_response["choices"][0]["text"]
             llm_responses.append(response_label)
 
             df = pd.DataFrame(
@@ -73,13 +76,13 @@ def finred_inference(args):
 
         except Exception as e:
             logger.error(f"Error processing sentence {i+1}: {e}")
-            time.sleep(20.0)
+            #time.sleep(20.0)
             continue
 
     results_path = (
         RESULTS_DIR
-        / args.task
-        / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+        / "finred"
+        / f"finred_llama-3-8b_{today.strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
