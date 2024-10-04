@@ -6,6 +6,7 @@ from superflue.together_code.prompts import edtsum_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.together_code.tokens import tokens
 from superflue.config import LOG_DIR, LOG_LEVEL
+from tqdm import tqdm
 
 logger = setup_logger(
     name="edtsum_inference", log_file=LOG_DIR / "edtsum_inference.log", level=LOG_LEVEL
@@ -24,7 +25,7 @@ def edtsum_inference(args):
     client = Together()
 
     # start_t = time.time()
-    for i in range(len(dataset["test"])): # type: ignore
+    for i in tqdm(range(len(dataset["test"])),  desc="Processing sentences"): # type: ignore
         document = dataset["test"][i]["text"] # type: ignore
         actual_label = dataset["test"][i]["answer"] # type: ignore
         documents.append(document)
