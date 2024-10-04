@@ -20,7 +20,7 @@ def headlines_inference(args):
     logger.info(f"Starting Headlines inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/Headlines", trust_remote_code=True)
+    dataset = load_dataset("gtfintechlab/Headlines", '5768', trust_remote_code=True)
 
     # Initialize lists to store actual labels and model responses
     news = []
@@ -34,10 +34,10 @@ def headlines_inference(args):
     future_price_list = []
     past_news_list = []
 
-    logger.info(f"Starting inference on {args.task}...")
-
+    #logger.info(f"Starting inference on {args.task}...")
+    df = pd.DataFrame()
     for i in range(len(dataset["test"])): # type: ignore
-        time.sleep(5.0)
+        #time.sleep(5.0)
         sentence = dataset["test"][i]["News"] # type: ignore
         price_or_not = dataset["test"][i]["PriceOrNot"] # type: ignore
         direction_up = dataset["test"][i]["DirectionUp"] # type: ignore
@@ -69,14 +69,14 @@ def headlines_inference(args):
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]
+            response_label = model_response["choices"][0]["text"]
             llm_responses.append(response_label)
             logger.info(f"Model response: {response_label}")
-            time.sleep(10)
+            #time.sleep(10)
 
         except Exception as e:
             logger.error(f"Error processing sentence {i+1}: {e}")
-            time.sleep(10.0)
+            #time.sleep(10.0)
             complete_responses.append(None)
             llm_responses.append(None)
 
@@ -96,8 +96,8 @@ def headlines_inference(args):
         )
         results_path = (
             RESULTS_DIR
-            / args.task
-            / f"{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+            / "headlines"
+            / f"headlines_llama-3-8b_{date.today().strftime('%d_%m_%Y')}.csv"
         )
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
