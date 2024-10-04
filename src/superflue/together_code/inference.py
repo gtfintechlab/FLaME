@@ -13,6 +13,8 @@ from superflue.together_code.fiqa.fiqa_task2_inference import fiqa_task2_inferen
 from superflue.together_code.edtsum.edtsum_inference import edtsum_inference
 from superflue.utils.logging_utils import setup_logger
 from superflue.together_code.finqa.finqa_inference import finqa_inference
+from superflue.together_code.tatqa.tatqa_inference import tatqa_inference
+from superflue.together_code.causal_detection.cd_inference import cd_inference
 
 from superflue.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL
 
@@ -44,6 +46,8 @@ def main(args):
         "fiqa_task2": fiqa_task2_inference,
         "edt_sum": edtsum_inference,
         "fnxl": fnxl_inference,
+        "tatqa":tatqa_inference,
+        "cd": cd_inference
     }
 
     if task in task_inference_map:
@@ -52,13 +56,13 @@ def main(args):
         df = inference_function(args)
         time_taken = time() - start_t
         logger.info(f"Time taken for inference: {time_taken}")
-        # results_path = (
-        #     RESULTS_DIR
-        #     / task
-        #     / f"{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-        # )
-        # results_path.parent.mkdir(parents=True, exist_ok=True)
-        # df.to_csv(results_path, index=False)
+        results_path = (
+            RESULTS_DIR
+            / task
+            / f"{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        )
+        results_path.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(results_path, index=False)
         logger.info(f"Inference completed for {task}. Results saved to {results_path}")
     else:
         logger.error(f"Task '{task}' not found in the task generation map.")

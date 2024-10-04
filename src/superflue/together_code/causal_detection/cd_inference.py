@@ -1,69 +1,53 @@
-import logging
 import time
 from datetime import date
 from pathlib import Path
-import together
 import pandas as pd
 from datasets import load_dataset
-import nltk
-from superflue.config import LOG_LEVEL
+import together
+from superflue.together_code.prompts import causal_detection_prompt
+from superflue.together_code.tokens import tokens
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
-# Mock imports for the custom causal detection prompt and tokens
-from superflue.together_code.prompts import (
-    causal_detection_prompt,
-)  # To be implemented for Causal Detection
+logger = setup_logger(
+    name="cd_inference", log_file=LOG_DIR / "cd_inference.log", level=LOG_LEVEL
+)
 
-nltk.download("punkt")
-
-# Configure logging
-logging.basicConfig(level=LOG_LEVEL)
-logger = logging.getLogger(__name__)
-
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-
-
-def causal_detection_inference(args):
+def cd_inference(args):
     today = date.today()
-    logger.info(f"Starting Causal Detection inference on {today}")
-
-    logger.info("Loading dataset...")
-    # Replace with your Hugging Face or custom Causal Detection dataset path
     dataset = load_dataset("gtfintechlab/CausalDetection", trust_remote_code=True)
 
-    # Initialize lists to store tokens, tags, and model responses
+    # Initialize lists to store tokens, actual tags, predicted tags, and complete responses
     tokens_list = []
     actual_tags = []
     predicted_tags = []
     complete_responses = []
 
-    logger.info(f"Starting inference on {args.task}...")
-    # start_t = time.time()
-    for i in range(len(dataset["test"])): # type: ignore
-        tokens = dataset["test"][i]["tokens"] # type: ignore
-        actual_tag = dataset["test"][i]["tags"] # type: ignore
-
-        tokens_list.append(tokens)
+    for entry in dataset["test"]:  # type: ignore
+        tokens1 = entry["tokens"]  # type: ignore
+        actual_tag = entry["tags"]  # type: ignore
+        
+        tokens_list.append(tokens1)
         actual_tags.append(actual_tag)
 
         try:
-            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
+            logger.info(f"Processing entry {len(tokens_list)}")
             # Causal Detection-specific prompt logic to classify each token
             model_response = together.Complete.create(
-                prompt=causal_detection_prompt(tokens),
+                prompt=causal_detection_prompt(tokens1),
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                stop=tokens(args.model)
             )
             complete_responses.append(model_response)
-            predicted_tag = model_response["output"]["choices"][0][
-                "text"
-            ].split()  # Assumed token-wise classification
+            predicted_tag = model_response["choices"][0]["text"].split() 
             predicted_tags.append(predicted_tag)
 
+            # Periodically save results
             df = pd.DataFrame(
                 {
                     "tokens": tokens_list,
@@ -73,19 +57,19 @@ def causal_detection_inference(args):
                 }
             )
 
+            time.sleep(10)
+
+            results_path = (
+                RESULTS_DIR
+                / 'cd/cd_meta-llama/'
+                / f"{'cd'}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
+            )
+            results_path.parent.mkdir(parents=True, exist_ok=True)
+            df.to_csv(results_path, index=False)
+
         except Exception as e:
-            logger.error(f"Error processing sentence {i+1}: {e}")
+            logger.error(f"Error processing entry {len(tokens_list)}: {e}")
             time.sleep(20.0)
-            continue
 
-    results_path = (
-        ROOT_DIR
-        / "results"
-        / args.task
-        / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")
-
     return df

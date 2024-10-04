@@ -274,31 +274,26 @@ def convfinqa_prompt(document: str):
     return prompt
 
 
-def tatqa_prompt(question: str, context: str):
-    system_prompt = """Discard all the previous instructions. Behave like an expert in table-and-text-based question answering."""
-
-    user_msg = f"""Given the following context (which contains a mixture of tables and textual information), 
-                answer the question based on the information provided. If the context includes tables, ensure 
-                you extract relevant information from both the table and the text to form a comprehensive answer.
+def tatqa_prompt(document: str):
+    prompt = f"""Discard all previous instructions. Behave like an expert in table-and-text-based question answering.
+                Your task is to answer a question by extracting relevant information from both tables and text 
+                provided in the context. Ensure that you use both sources comprehensively to generate an accurate response.
                 
-                The question: {question}
-                
-                The context: {context}"""
-
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-
+                The context: {document}"""
+    
     return prompt
 
 
+
 def causal_classification_prompt(text: str):
-    system_prompt = """Discard all the previous instructions. Behave like you are an expert causal classification model."""
-    user_msg = f"""Below is a sentence. Classify it into one of the following categories: 
+    
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert causal classification model.
+    Below is a sentence. Classify it into one of the following categories: 
                     0 - Non-causal
                     1 - Direct causal
                     2 - Indirect causal
                     Only return the label number without any additional text. \n\n {text}"""
 
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
     return prompt
 
@@ -317,33 +312,22 @@ def finred_prompt(sentence: str):
 
 
 def causal_detection_prompt(tokens: list):
-    """
-    Generates a prompt for Causal Detection to classify tokens in a sentence into cause, effect, or other categories,
-    with an explanation of the B- and I- labeling scheme.
+    prompt = f"""Discard all previous instructions. Behave like an expert in cause and effect detection in text.
+    You are given the following tokenized sentence. Classify each token using the following labels:
+                    - 'B-CAUSE': The beginning of a cause phrase.
+                    - 'I-CAUSE': A token inside a cause phrase, but not the first token.
+                    - 'B-EFFECT': The beginning of an effect phrase.
+                    - 'I-EFFECT': A token inside an effect phrase, but not the first token.
+                    - 'O': A token that is neither part of a cause nor an effect.
+                    
+    Only return the sequence of labels corresponding to each token, without repeating the tokens themselves.
+    Just provide the labels in the same order as the tokens.
 
-    Args:
-        tokens (list): The list of tokens from a sentence to be classified.
-
-    Returns:
-        str: The formatted prompt for Causal Detection classification.
-    """
-
-    system_prompt = """Discard all previous instructions. Behave like an expert in cause and effect detection in text."""
-
-    user_msg = f"""You are given the following tokenized sentence. Classify each token using the following labels:
-                - 'B-CAUSE': The beginning of a cause phrase.
-                - 'I-CAUSE': A token inside a cause phrase, but not the first token.
-                - 'B-EFFECT': The beginning of an effect phrase.
-                - 'I-EFFECT': A token inside an effect phrase, but not the first token.
-                - 'O': A token that is neither part of a cause nor an effect.
-                
-                Provide the classification for each token in the format 'token:label'.
-                
-                The tokens: {', '.join(tokens)}"""
-
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-
+    The tokens: {', '.join(tokens)}"""
+    
     return prompt
+
+
 
 
 prompt_map = {
