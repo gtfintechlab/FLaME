@@ -249,7 +249,7 @@ banking77_list = [
 def banking77_prompt(sentence: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert at
                 fine-grained single-domain intent detection. From the following list: {banking77_list}, identify
-                which category does the following sentence belong to.
+                which category the following sentence belongs to.
                 {sentence}"""
 
     return prompt
