@@ -4,7 +4,7 @@ import together
 
 import pandas as pd
 from datasets import load_dataset
-import nltk
+#import nltk
 
 # Custom imports for FNXL prompt and token handling
 from superflue.together_code.prompts import (
@@ -14,7 +14,7 @@ from superflue.together_code.tokens import (
     tokens,
 )  # Custom token handling function for FNXL
 
-nltk.download("punkt")
+#nltk.download("punkt")
 
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -40,7 +40,7 @@ def fnxl_inference(args):
     actual_labels = []
     complete_responses = []
 
-    logger.info(f"Starting inference on {args.task}...")
+    #logger.info(f"Starting inference on {args.task}...")
     # start_t = time.time()
     for i in range(len(dataset["test"])):  # type: ignore
         sentence = dataset["test"][i]["sentence"]  # type: ignore
@@ -67,7 +67,7 @@ def fnxl_inference(args):
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            predicted_label = model_response["output"]["choices"][0]["text"]  # type: ignore
+            predicted_label = model_response["choices"][0]["text"]  # type: ignore
             predicted_labels.append(predicted_label)
 
             df = pd.DataFrame(
@@ -88,8 +88,8 @@ def fnxl_inference(args):
 
     results_path = (
         RESULTS_DIR
-        / args.task
-        / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+        / "fnxl"
+        / f"fnxl_llama-3-8b_{today.strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)

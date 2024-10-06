@@ -1,4 +1,5 @@
 import together
+from together import Together
 import pandas as pd
 import time
 import sys
@@ -19,6 +20,7 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+client = Together()
 
 def causal_classification_inference(args):
     today = date.today()
@@ -33,7 +35,7 @@ def causal_classification_inference(args):
     actual_labels = []
     complete_responses = []
 
-    logger.info(f"Starting inference on {args.task}...")
+    logger.info(f"Starting inference on causal classification task with model {args.model}")
     # start_t = time.time()
     for i in range(len(dataset["test"])):  # type: ignore
         text = dataset["test"][i]["text"]  # type: ignore
@@ -42,18 +44,20 @@ def causal_classification_inference(args):
         actual_labels.append(actual_label)
         try:
             logger.info(f"Processing text {i+1}/{len(dataset['test'])}")  # type: ignore
-            model_response = together.Complete.create(
-                prompt=causal_classification_prompt(text),
-                model=args.model,
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+    
+            model_response = client.chat.completions.create(
+            model=args.model,
+            messages=[{"role": "user", "content": causal_classification_prompt(text)}],
+            temperature=args.temperature,
+            tokens=args.max_tokens,
+            top_k=args.top_k,
+            top_p=args.top_p,
+            repetition_penalty=args.repetition_penalty,
+            stop=tokens(args.model),
             )
-            complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]  # type: ignore
+            logger.info(f"Model response: {model_response.choices[0].message.content}")  # type: ignore
+            complete_responses.append(model_response.choices[0].message.content) # type: ignore
+            response_label = model_response.choices[0].message.content # type: ignore
             llm_responses.append(response_label)
 
             df = pd.DataFrame(
@@ -67,13 +71,13 @@ def causal_classification_inference(args):
 
         except Exception as e:
             logger.error(f"Error processing text {i+1}: {e}")
-            time.sleep(20.0)
+            time.sleep(10.0)
             continue
 
         results_path = (
             RESULTS_DIR
-            / args.task
-            / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+            / "causal_classification"
+            / f"causal_classification_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
         )
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
