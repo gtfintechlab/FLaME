@@ -9,10 +9,21 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
+label_mapping = {
+    "LOW RISK": 0,
+    "HIGH RISK": 1
+}
 
 def extraction_prompt(llm_response: str):
-    prompt = f""""""
+    prompt = f"""Based on the following list of labels: ‘HIGH RISK’, ‘LOW RISK’, extract the most relevant label from the following response:
+                "{llm_response}"
+                Provide only the label that best matches the response."""
     return prompt
+
+def map_label_to_number(label: str):
+    """Map the extracted label to its corresponding numerical value after normalizing."""
+    normalized_label = label.strip().upper()  # Normalize label to uppercase
+    return label_mapping.get(normalized_label, -1)  # Return -1 if the label is not found
 
 def extract_and_evaluate_responses(args):
     together.api_key = args.api_key # type: ignore
@@ -41,7 +52,8 @@ def extract_and_evaluate_responses(args):
                 stop=tokens(args.model),
             )
             extracted_label = model_response["output"]["choices"][0]["text"].strip() # type: ignore
-            extracted_labels.append(extracted_label)
+            mapped_label = map_label_to_number(extracted_label)
+            extracted_labels.append(mapped_label)
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
