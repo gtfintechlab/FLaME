@@ -14,6 +14,7 @@ from superflue.together_code.edtsum.edtsum_inference import edtsum_inference
 from superflue.utils.logging_utils import setup_logger
 from superflue.together_code.finqa.finqa_inference import finqa_inference
 from superflue.together_code.tatqa.tatqa_inference import tatqa_inference
+from superflue.together_code.convfinqa.convfinqa_inference import convfinqa_inference
 from superflue.together_code.causal_detection.cd_inference import cd_inference
 
 from superflue.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL
@@ -40,6 +41,7 @@ def main(args):
         "finbench": finbench_inference,
         "finqa": finqa_inference,
         "finer": finer_inference,
+        "convfinqa":convfinqa_inference,
         "finentity": finentity_inference,
         "headlines": headlines_inference,
         "fiqa_task1": fiqa_task1_inference, 

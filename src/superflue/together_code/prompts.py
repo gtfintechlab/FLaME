@@ -266,11 +266,13 @@ def finqa_prompt(document: str):
 
 
 def convfinqa_prompt(document: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are a financial expert in question answering.
-                You are to answer a series of interconnected financial questions where later questions may depend on the answers to previous ones.
-                I'll provide the series of questions as the context and you will answer the last question.\n\n The context:
-                {document}"""
-
+    prompt = f"""
+    Discard all previous instructions. You are a financial expert specializing in answering questions.
+    The context provided includes a previous question and its answer, followed by a new question that you need to answer.
+    Focus on answering only the final question based on the entire provided context:
+    {document}.
+    Answer the final question based on the context above.
+    """
     return prompt
 
 
@@ -312,18 +314,17 @@ def finred_prompt(sentence: str):
 
 
 def causal_detection_prompt(tokens: list):
-    prompt = f"""Discard all previous instructions. Behave like an expert in cause and effect detection in text.
-    You are given the following tokenized sentence. Classify each token using the following labels:
-                    - 'B-CAUSE': The beginning of a cause phrase.
-                    - 'I-CAUSE': A token inside a cause phrase, but not the first token.
-                    - 'B-EFFECT': The beginning of an effect phrase.
-                    - 'I-EFFECT': A token inside an effect phrase, but not the first token.
-                    - 'O': A token that is neither part of a cause nor an effect.
-                    
-    Only return the sequence of labels corresponding to each token, without repeating the tokens themselves.
-    Just provide the labels in the same order as the tokens.
+    prompt = f"""You are an expert in detecting cause and effect phrases in text.
+    You are given the following tokenized sentence. For each token, assign one of these labels:
+        - 'B-CAUSE': The first token of a cause phrase.
+        - 'I-CAUSE': A token inside a cause phrase, but not the first token.
+        - 'B-EFFECT': The first token of an effect phrase.
+        - 'I-EFFECT': A token inside an effect phrase, but not the first token.
+        - 'O': A token that is neither part of a cause nor an effect phrase.
+        
+    Return only the list of labels in the same order as the tokens, without additional commentary or repeating the tokens themselves. 
 
-    The tokens: {', '.join(tokens)}"""
+    Tokens: {', '.join(tokens)}"""
     
     return prompt
 
