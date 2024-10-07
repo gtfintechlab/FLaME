@@ -11,10 +11,10 @@ from superflue.together_code.headlines.headlines_inference import headlines_infe
 from superflue.together_code.fiqa.fiqa_task1_inference import fiqa_inference
 from superflue.together_code.fiqa.fiqa_task2_inference import fiqa_task2_inference
 from superflue.together_code.edtsum.edtsum_inference import edtsum_inference
-from superflue.together_code.finred.finred_inference import finred_inference
 from superflue.together_code.causal_classification.causal_classification_inference import causal_classification_inference
 from superflue.together_code.subjectiveqa.subjectiveqa_inference import subjectiveqa_inference
 from superflue.together_code.ectsum.ectsum_inference import ectsum_inference
+
 from superflue.utils.logging_utils import setup_logger
 
 from superflue.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL
@@ -46,7 +46,6 @@ def main(args):
         "fiqa_task2": fiqa_task2_inference,
         "edt_sum": edtsum_inference,
         "fnxl": fnxl_inference,
-        "finred": finred_inference
         "causal_classification": causal_classification_inference,
         "subjectiveqa": subjectiveqa_inference,
         "ectsum": ectsum_inference,
