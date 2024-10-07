@@ -63,7 +63,7 @@ def fnxl_inference(args):
             # FNXL-specific prompt to classify numerals in financial sentences
             model_response = client.chat.completions.create(
                 model=args.model,
-                messages=[{"role": "user", "content": fnxl_prompt(sentence, numeral_tag, company)}],
+                messages=[{"role": "user", "content": fnxl_prompt(sentence, numeral_tag, company)}], # type: ignore
                 tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
@@ -77,7 +77,7 @@ def fnxl_inference(args):
             predicted_label = model_response.choices[0].message.content.strip()  # type: ignore
             predicted_labels.append(predicted_label)
 
-            #logger.info(f"Model response for sentence {i+1}: {predicted_label}")
+            logger.info(f"Model response for sentence {i+1}: {predicted_label}")
 
         except Exception as e:
             # Log the error and retry the same sentence after a delay

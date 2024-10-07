@@ -70,7 +70,7 @@ def numclaim_inference(args):
             response_text = model_response.choices[0].message.content.strip()  # type: ignore
             llm_responses.append(response_text)
 
-            #logger.info(f"Model response for sentence {i+1}: {response_text}")
+            logger.info(f"Model response for sentence {i+1}: {response_text}")
 
         except Exception as e:
             # Log the error and retry the same sentence after a delay

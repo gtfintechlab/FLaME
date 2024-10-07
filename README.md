@@ -72,10 +72,10 @@ To configure your API keys, follow these steps:
 
 Example:
 ```
-TOGETHER_API_KEY=foo
-OPENAI_API_KEY=bar
-ANTHROPIC_API_KEY=baz
-HUGGINGFACE_KEY=buzz
+HUGGINGFACEHUB_API_TOKEN=foo
+TOGETHER_API_KEY=bar
+OPENAI_API_KEY=buzz
+ANTHROPIC_API_KEY=buzz
 ```
 
 ## Project Repository

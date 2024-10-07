@@ -8,6 +8,7 @@ from superflue.together_code.prompts import fpb_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from together import Together
 
 logger = setup_logger(
     name="fpb_inference", log_file=LOG_DIR / "fpb_inference.log", level=LOG_LEVEL
@@ -27,6 +28,7 @@ def fpb_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+    client = Together()
 
     for i in tqdm(range(len(dataset['test'])), desc="Processing sentences"):  # type: ignore
         sentence = dataset['test'][i]["sentence"] # type: ignore
@@ -35,26 +37,19 @@ def fpb_inference(args):
         actual_labels.append(actual_label)
         try:
             logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
-            model_response = together.Complete.create(
-                prompt=fpb_prompt(
-                    sentence=sentence,  # type: ignore
-                    prompt_format=args.prompt_format,
-                ),
+            model_response = client.chat.completions.create(
                 model=args.model,
+                messages=[{"role": "user", "content": fpb_prompt(sentence, prompt_format='superflue')}],
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                stop=tokens(args.model)
             )
-
+            logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
-            if "output" in model_response and "choices" in model_response["output"]:
-                response_label = model_response["output"]["choices"][0]["text"]
-                logger.debug(response_label)
-            else:
-                response_label = "default_value"
+            response_label = model_response.choices[0].message.content # type: ignore
             llm_responses.append(response_label)
 
         except Exception as e:
@@ -72,8 +67,8 @@ def fpb_inference(args):
     )
     results_path = (
         RESULTS_DIR
-        / args.task
-        / f"{args.task}_{args.model_name}_{date.today().strftime('%d_%m_%Y')}.csv"
+        / 'fpb/fpb_meta-llama-3.1-8b/'
+        / f"{'fpb'}_{'llama-3.1'}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
