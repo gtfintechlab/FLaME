@@ -48,7 +48,6 @@ def main(args):
         "fiqa_task2": fiqa_task2_inference,
         "edt_sum": edtsum_inference,
         "fnxl": fnxl_inference,
-        "banking77": banking77_inference,
         "finred": finred_inference,
         "causal_classification": causal_classification_inference,
         "subjectiveqa": subjectiveqa_inference,
