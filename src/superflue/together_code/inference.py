@@ -16,6 +16,7 @@ from superflue.together_code.finred.finred_inference import finred_inference
 from superflue.together_code.causal_classification.causal_classification_inference import causal_classification_inference
 from superflue.together_code.subjectiveqa.subjectiveqa_inference import subjectiveqa_inference
 from superflue.together_code.ectsum.ectsum_inference import ectsum_inference
+
 from superflue.utils.logging_utils import setup_logger
 
 from superflue.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL
