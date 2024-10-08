@@ -39,10 +39,10 @@ def fiqa_task2_prompt(sentence: str):
 
 
 def edtsum_prompt(document: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert at summarization tasks.
-        You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization on this text. 
-        Use your understanding of the content to express the main ideas and crucial details in a shorter, coherent, and natural sounding text. Do not output any code.
-        \n\n The document:\n{document}.\nOutput your concise summary below:"""
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert at summarization tasks.	
+        You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization 
+        on this text. Use your understanding of the content to express the main ideas and crucial details in a shorter, coherent, and natural sounding text.
+        \nThe text:\n{document}.\nOutput your concise summary below. Try to keep your summary to one sentence and a maximum of 50 words, preferably around 25 words."""
     return prompt
 
 

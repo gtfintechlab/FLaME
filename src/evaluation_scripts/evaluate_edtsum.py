@@ -3,6 +3,10 @@ import logging
 from datetime import date
 from pathlib import Path
 import together
+from together import Together
+from evaluate import load
+import numpy as np
+bertscore = load("bertscore")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -17,60 +21,50 @@ def summarization_prompt(input_text: str):
     return prompt
 
 def extract_and_evaluate_responses(args):
-    together.api_key = args.api_key  # type: ignore
     results_file = (
         ROOT_DIR
         / "results"
-        / args.task
-        / f"{args.task}_{args.model}_{args.date}.csv"
+        / 'edtsum'
+        / 'edtsum_meta-llama'
+        / "Meta-Llama-3.1-8B-Instruct-Turbo_07_10_2024.csv"
     )
 
     df = pd.read_csv(results_file)
-    generated_summaries = []
     # Assuming the output column contains the expected summaries
-    correct_summaries = df['output'].tolist()
+    correct_summaries = df['actual_labels'].tolist()
+    llm_responses = df['llm_responses'].tolist()
+    bert_scores = bertscore.compute(predictions=llm_responses, references=correct_summaries, model_type="distilbert-base-uncased")
+    print(bert_scores)
 
-    for i, input_text in enumerate(df["input"]):
-        try:
-            model_response = together.Complete.create(  # type: ignore
-                prompt=summarization_prompt(input_text),
-                model=args.model,
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
-            )
-            generated_summary = model_response["output"]["choices"][0]["text"].strip()  # type: ignore
-            generated_summaries.append(generated_summary)
-            logger.info(f"Processed {i + 1}/{len(df)} inputs.")
-        except Exception as e:
-            logger.error(f"Error processing input {i}: {e}")
-            generated_summaries.append(None)
+    df['precision'] = bert_scores["precision"]
+    df['recall'] = bert_scores["recall"]
+    df['f1'] = bert_scores["f1"]
 
-    # Add generated summaries to the dataframe
-    df['generated_summaries'] = generated_summaries
-
-    # Evaluate the performance
-    correct_predictions = sum(1 for x, y in zip(correct_summaries, generated_summaries) if x == y)
-    total_predictions = len(correct_summaries)
-    accuracy = correct_predictions / total_predictions
-
+    print(f"BERTScore Precision: {np.mean(bert_scores['precision'])}")
+    print(f"BERTScore Recall: {np.mean(bert_scores['recall'])}")
+    print(f"BERTScore F1: {np.mean(bert_scores['f1'])}")
+    
     # Save the evaluation results
     evaluation_results_path = (
         ROOT_DIR
         / "evaluation_results"
-        / args.task
-        / f"evaluation_{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        / 'edtsum'
+        / f"evaluation_{'edtsum'}_{'meta-llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
+    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(evaluation_results_path, index=False)
 
-    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
-    return df, accuracy
+    eval_df = pd.DataFrame({'precision' : [np.mean(bert_scores['precision'])], 'recall' : [np.mean(bert_scores['recall'])], 'f1' : [np.mean(bert_scores['f1'])]})
+    eval_df.to_csv(Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv"), index=False)
+
+    logger.info(f"Evaluation completed. Results saved to {evaluation_results_path}")
+    return df
 
 # Helper function for stop tokens
 tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
 
 def tokens(model_name):
     return tokens_map.get(model_name, [])
+
+if __name__ == "__main__":
+    extract_and_evaluate_responses(None)
