@@ -4,6 +4,7 @@ from datetime import date
 from pathlib import Path
 import together
 from together import Together
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +34,7 @@ def map_label_to_number(label: str):
 
 def extract_and_evaluate_responses(args):
     client = Together()
+    together.api_key = args.api_key # type: ignore
     
     results_file = (
         ROOT_DIR
@@ -89,6 +91,11 @@ def extract_and_evaluate_responses(args):
     df.to_csv(evaluation_results_path, index=False)
 
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
+    accuracy = accuracy_score(correct_labels, extracted_labels)
+    precision, recall, f1, _ = precision_recall_fscore_support(correct_labels, extracted_labels, average='weighted')
+    eval_df = pd.DataFrame({'accuracy': [accuracy], 'precision': [precision], 'recall': [recall], 'f1': [f1]})
+    eval_df.to_csv(Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv"), index=False)
+    
     return df, accuracy
 
 tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
