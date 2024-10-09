@@ -132,7 +132,7 @@ def load_fomc_communication(hf_token):
 # Helper function for evaluating FOMC communication responses
 def eval_fomc_communication(prediction: Variable, ground_truth_answer: Variable):
     mapping = {0: 'dovish', 1: 'hawkish', 2: 'neutral'}
-    pred = extract_answer(f"Based on the following list of labels: ‘HAWKISH’, ‘DOVISH’, or ‘NEUTRAL’ , extract the most relevant label from the following response:\n{str(prediction.value)}.\nProvide only the label that best matches the response.")
+    pred = extract_answer(f"Based on the following list of labels: ‘HAWKISH’, ‘DOVISH’, or ‘NEUTRAL’ , extract the most relevant label from the following response:\n{str(prediction.value)}.\nProvide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation.")
     return int((pred != None and str(pred).lower() == str(mapping[int(ground_truth_answer.value)]).lower()))
 
 def load_ect_sum(hf_token):
@@ -145,9 +145,14 @@ def load_ect_sum(hf_token):
 def load_finbench(hf_token):
     return load_hf_dataset(
         hf_token=hf_token, dataset_name='gtfintechlab/finbench',
-        extract_x = lambda x : f"Tabular data: {x['X_ml']}\nProfile data: {x['X_profile']}", y_column = 'y',
+        extract_x = lambda x : f"Profile data: {x['X_profile']}", y_column = 'y',
         train_size = 0.5, val_size = 0.1
     )
+
+def eval_finbench(prediction: Variable, ground_truth_answer: Variable):
+    mapping = {0: 'lowrisk', 1: 'highrisk'}
+    pred = extract_answer(f"Based on the following list of labels: ‘LOWRISK’, ‘HIGHRISK’, extract the most relevant label from the following response:\n{str(prediction.value)}.\nProvide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation.")
+    return int(pred != None and str(pred).lower() == str(mapping[int(ground_truth_answer.value)]).lower())
 
 def load_finentity(hf_token):
     return load_hf_dataset(
@@ -179,7 +184,7 @@ def load_fpb(hf_token):
 
 def eval_fpb(prediction: Variable, ground_truth_answer: Variable):
     mapping = {0: 'positive', 1: 'negative', 2: 'neutral'}
-    pred = extract_answer(f"Based on the following list of labels: ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’ , extract the most relevant label from the following response:\n{str(prediction.value)}.\nProvide only the label that best matches the response.")
+    pred = extract_answer(f"Based on the following list of labels: ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’ , extract the most relevant label from the following response:\n{str(prediction.value)}.\nProvide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation.")
     return int((pred != None and str(pred).lower() == str(mapping[int(ground_truth_answer.value)]).lower()))
 
 def load_numclaim(hf_token):
@@ -190,7 +195,7 @@ def load_numclaim(hf_token):
     )
 
 def eval_numclaim(prediction: Variable, ground_truth_answer: Variable):
-    pred = extract_answer(f"Based on the following list of labels: ‘INCLAIM’, ‘OUTOFCLAIM’, extract the most relevant label from the following response:\n{str(prediction.value)}.\nProvide only the label that best matches the response.")
+    pred = extract_answer(f"Based on the following list of labels: ‘INCLAIM’, ‘OUTOFCLAIM’, extract the most relevant label from the following response:\n{str(prediction.value)}.\nProvide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation.")
     pred = str(pred).upper().replace(' ', '')
     pred = pred[:pred.find("M") + 1]
     return int(pred != None and (pred == str(ground_truth_answer)))
@@ -205,7 +210,7 @@ def load_banking77(hf_token):
 # append list to end of prompt and make it optimize the parts that aren't asking for the specific 
 banking77_list = ["activate_my_card", "age_limit", "apple_pay_or_google_pay", "atm_support", "automatic_top_up", "balance_not_updated_after_bank_transfer", "balance_not_updated_after_cheque_or_cash_deposit", "beneficiary_not_allowed", "cancel_transfer", "card_about_to_expire", "card_acceptance", "card_arrival", "card_delivery_estimate", "card_linking", "card_not_working", "card_payment_fee_charged", "card_payment_not_recognised", "card_payment_wrong_exchange_rate", "card_swallowed", "cash_withdrawal_charge", "cash_withdrawal_not_recognised", "change_pin", "compromised_card", "contactless_not_working", "country_support", "declined_card_payment", "declined_cash_withdrawal", "declined_transfer", "direct_debit_payment_not_recognised", "disposable_card_limits", "edit_personal_details", "exchange_charge", "exchange_rate", "exchange_via_app", "extra_charge_on_statement", "failed_transfer", "fiat_currency_support", "get_disposable_virtual_card", "get_physical_card", "getting_spare_card", "getting_virtual_card", "lost_or_stolen_card", "lost_or_stolen_phone", "order_physical_card", "passcode_forgotten", "pending_card_payment", "pending_cash_withdrawal", "pending_top_up", "pending_transfer", "pin_blocked", "receiving_money", "Refund_not_showing_up", "request_refund", "reverted_card_payment?", "supported_cards_and_currencies", "terminate_account", "top_up_by_bank_transfer_charge", "top_up_by_card_charge", "top_up_by_cash_or_cheque", "top_up_failed", "top_up_limits", "top_up_reverted", "topping_up_by_card", "transaction_charged_twice", "transfer_fee_charged", "transfer_into_account", "transfer_not_received_by_recipient", "transfer_timing", "unable_to_verify_identity", "verify_my_identity", "verify_source_of_funds", "verify_top_up", "virtual_card_not_working", "visa_or_mastercard", "why_verify_identity", "wrong_amount_of_cash_received", "wrong_exchange_rate_for_cash_withdrawal"]
 def eval_banking77(prediction: Variable, ground_truth_answer: Variable):
-    pred = extract_answer(f"Based on the following list of banking intents: {banking77_list}, extract the most relevant category from the following response: {str(prediction.value)}.\nProvide only the category name in plain text that best matches the response. The category name must be the exact same as in the list provided.")
+    pred = extract_answer(f"Based on the following list of banking intents: {banking77_list}, extract the most relevant category from the following response: {str(prediction.value)}.\nProvide only the category name in plain text that best matches the response. The category name must be the exact same as in the list provided. Only output alphanumeric characters and spaces and underscores. Do not include any special characters or punctuation.")
     pred = str(pred).replace("\\", "")
     ground_truth_answer = banking77_list[int(str(ground_truth_answer))]
     if (str(pred) not in banking77_list):
@@ -217,7 +222,7 @@ def eval_banking77(prediction: Variable, ground_truth_answer: Variable):
 # Each task should have a starting prompt, constraints (if any exist), evaluation function, and dataset loading function
 textgrad_task_map = {
     'fomc_communication': {
-        'starting_prompt': "Behave like you are an expert sentence classifer. Classify the following sentence from FOMC into hawkish, dovish, or neutral based on its stance on monetary policy. Label ‘HAWKISH’ if it is corresponding to tightening of the monetary policy, ‘DOVISH’ if it is corresponding to easing of the monetary policy, or ‘NEUTRAL’ if the stance is neutral.",
+        'starting_prompt': "Discard all the previous instructions. Behave like you are an expert sentence classifier. Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEUTRAL’ class. Label ‘HAWKISH’ if it is corresponding to tightening of the monetary policy, ‘DOVISH’ if it is corresponding to easing of the monetary policy, or ‘NEUTRAL’ if the stance is neutral. Provide the label in the first line and provide a short explanation in thesecond line.",
         'constraints': "Must include text instructions to output one of hawkish, dovish, and neutral, written with those exact labels and not synonyms.",
         'eval_fn': eval_fomc_communication,
         'load_dataset': load_fomc_communication
@@ -229,22 +234,28 @@ textgrad_task_map = {
         'load_dataset': load_ect_sum
     }, 
     'financial_phrasebank': {
-        'starting_prompt': "Behave like you are an expert sentence sentiment classifier. Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’ class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral.",
+        'starting_prompt': "Discard all the previous instructions. Behave like you are an expert sentence classifier. Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’ class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide the label in the first line and provide a short explanation in the second line.",
         'constraints': "Must include text instructions to output one of positive, negative, and neutral, written with those exact labels and not synonyms.",
         'eval_fn': eval_fpb,
         'load_dataset': load_fpb
     },
     'banking77': {
-        'starting_prompt': f"Behave like you are an expert at fine-grained single-domain intent detection. From the following list: {banking77_list}, identify which category does the following sentence belong to.",
+        'starting_prompt': f"Discard all the previous instructions. Behave like you are an expert at fine-grained single-domain intent detection. From the following list: {banking77_list}, identify which category does the following sentence belong to.",
         'constraints': f"Must include text instructions to output one of the banking categories from this list {banking77_list}.",
         'eval_fn': eval_banking77,
         'load_dataset': load_banking77
     }, 
     'numclaim': {
-        'starting_prompt': "Behave like you are an expert sentence sentiment classifier. Classify the following sentence into ‘INCLAIM’, or ‘OUTOFCLAIM’ class. Label ‘INCLAIM’ if consist of a claim and not just factual past or present information, or ‘OUTOFCLAIM’ if it has just factual past or present information.",
+        'starting_prompt': "Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier. Classify the following sentence into ‘INCLAIM’, or ‘OUTOFCLAIM’ class. Label ‘INCLAIM’ if consist of a claim and not just factual past or present information, or ‘OUTOFCLAIM’ if it has just factual past or present information. Provide the label in the first line.",
         'constraints': "Must include text instructions to output one of inclaim and outofclaim.",
         'eval_fn': eval_numclaim,
         'load_dataset': load_numclaim
+    },
+    'finbench': {
+        'starting_prompt': "Discard all the previous instructions. Behave like you are an expect risk assessor. Classify the following individual as either ‘LOWRISK’ or ‘HIGHRISK’ for approving a loan for. Categorize the person as ‘HIGHRISK’ if their profile indicates that they will likely default on the loan and not pay it back, and ‘LOWRISK’ if it is unlikely that they will fail to pay the loan back in full. Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision. Predict the risk category of this person: ",
+        'constraints': "Must include text instructions to output one of lowrisk and highrisk.",
+        'eval_fn': eval_finbench,
+        'load_dataset': load_finbench
     }
 }
 
