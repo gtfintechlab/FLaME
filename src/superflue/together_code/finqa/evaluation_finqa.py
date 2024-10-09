@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument("--task", type=str, required=True, help="Task name")
     parser.add_argument("--api_key", type=str, required=True, help="API Key")
     parser.add_argument("--hf_token", type=str, required=True, help="Hugging Face token")
-    parser.add_argument("--max_tokens", type=int, default=512, help="Maximum number of tokens")
+    parser.add_argument("--max_tokens", type=int, default=10, help="Maximum number of tokens")
     parser.add_argument("--temperature", type=float, default=0.7, help="Temperature for sampling")
     parser.add_argument("--top_p", type=float, default=0.7, help="Top-p sampling parameter")
     parser.add_argument("--top_k", type=int, default=50, help="Top-k sampling parameter")
@@ -28,13 +28,14 @@ def parse_args():
     parser.add_argument("--date", type=str, help="Date for the results file")
     return parser.parse_args()
 
-def evaluation_prompt(llm_response: str, actual_answer: str):
+def evaluation_prompt(llm_response: str, actual_answer: str, context: str):
     prompt = f"""
-    The correct answer is {actual_answer}. Based on the model's response, extract the numerical value closest to the correct label. 
-    Return only the number and no additional words, punctuation, or text. For example, 13 or 90%. 
-    If there are multiple numbers, return only the most relevant one.
+    Context: {context}
+    
+    The correct answer is {actual_answer}. Based on the model's response, extract the numerical value closest to the correct answer.
+    Return only the number. For example, 13 or 90%.
 
-    Response: {llm_response}
+    Model Response: {llm_response}
     """
     return prompt
 
@@ -66,10 +67,10 @@ def extract_and_evaluate_responses(args):
     )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
-    for i, (llm_response, actual_answer) in enumerate(zip(df["response"], df["actual_label"])):
+    for i, (llm_response, actual_answer, context) in enumerate(zip(df["response"], df["actual_label"], df["context"])):
         try:
             model_response = together.Complete.create(  # type: ignore
-                prompt=evaluation_prompt(llm_response,actual_answer),
+                prompt=evaluation_prompt(llm_response, actual_answer, context),
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
@@ -78,8 +79,9 @@ def extract_and_evaluate_responses(args):
                 repetition_penalty=args.repetition_penalty,
                 stop=tokens(args.model),
             )
-            evaluation_result = model_response["choices"][0]["text"].strip()  # type: ignore
-            evaluation_results[i] = evaluation_result  # Update the evaluation result at index i
+            extracted_text = model_response["choices"][0]["text"]  # type: ignore
+           
+            evaluation_results[i] = extracted_text  # Store the raw extracted number as is
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
@@ -104,7 +106,7 @@ def extract_and_evaluate_responses(args):
     return df, accuracy
 
 # Token function to retrieve stop tokens
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
+tokens_map = {"meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo": ["<human>", "\n\n"]}
 def tokens(model_name):
     return tokens_map.get(model_name, [])
 
