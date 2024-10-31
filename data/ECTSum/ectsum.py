@@ -1,31 +1,22 @@
 import os
-import sys
-from pathlib import Path
 from huggingface_hub import login
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from tqdm.notebook import tqdm
-from datasets import Dataset, DatasetDict, load_dataset
+from datasets import Dataset, DatasetDict
 import logging
+from superflue.config import DATA_DIR, LOG_LEVEL
 
-# TODO: check if this is the right way to import from the src folder
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
-
-HF_TOKEN = os.environ.get("HF_TOKEN")
+HUGGINGFACEHUB_API_TOKEN = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "ECTSum"
-login(HF_TOKEN)
+login(HUGGINGFACEHUB_API_TOKEN)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 
 def huggify_data_ectsum(push_to_hub=False):
     try:
-        directory_path = DATA_DIRECTORY / "ECTSum"
+        directory_path = DATA_DIR / "ECTSum"
         logger.debug(f"Directory path: {directory_path}")
 
         ect_sum_train = pd.read_csv(f"{directory_path}/train.csv")
@@ -64,7 +55,7 @@ def huggify_data_ectsum(push_to_hub=False):
                 f"{HF_ORGANIZATION}/{DATASET}",
                 config_name="main",
                 private=True,
-                token=HF_TOKEN,
+                token=HUGGINGFACEHUB_API_TOKEN,
             )
 
             # TODO: push the dataset dict object not the datasets individually

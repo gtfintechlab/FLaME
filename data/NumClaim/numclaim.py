@@ -1,37 +1,28 @@
 import os
-import sys
 import logging
-from pathlib import Path
-from tqdm.notebook import tqdm
 from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
-from src.utils.LabelMapper import LabelMapper
+from superflue.utils.LabelMapper import LabelMapper
+from superflue.config import DATA_DIR, LOG_LEVEL
 
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-
-
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
-
-HF_TOKEN = os.environ.get("HF_TOKEN")
+HUGGINGFACEHUB_API_TOKEN = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "Numclaim"
 
-login(HF_TOKEN)
+login(HUGGINGFACEHUB_API_TOKEN)
 
 # Include the LabelMapper instantiation for 'numclaim_detection' task
 label_mapper = LabelMapper(task="numclaim_detection")
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 
 def huggify_numclaim(push_to_hub=False):
     try:
-        directory_path = DATA_DIRECTORY / "numclaim_detection"
+        directory_path = DATA_DIR / "numclaim_detection"
         logger.debug(f"Directory path: {directory_path}")
 
         numclaim_train = pd.read_excel(f"{directory_path}/numclaim-train-5768.xlsx")
@@ -65,7 +56,7 @@ def huggify_numclaim(push_to_hub=False):
                 f"{HF_ORGANIZATION}/{DATASET}",
                 config_name="main",
                 private=True,
-                token=HF_TOKEN,
+                token=HUGGINGFACEHUB_API_TOKEN,
             )
 
             logger.info("Finished processing Numclaim dataset")

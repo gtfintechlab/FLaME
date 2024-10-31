@@ -1,27 +1,22 @@
-import os
-import sys
-from pathlib import Path
 from huggingface_hub import hf_hub_upload
 import pandas as pd
 from datasets import Dataset, DatasetDict
-import logging
-from src.utils.process_qa import process_qa_pairs
-from src.utils.zip_to_csv import zip_to_csv
+from superflue.utils.process_qa import process_qa_pairs
+from superflue.utils.zip_to_csv import zip_to_csv
 
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
+from superflue.config import DATA_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import setup_logger
+
+logger = setup_logger(
+    name=__name__, log_file=LOG_DIR / "convfinqahuggify.log", level=LOG_LEVEL
+)
 
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "convfinqa"
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 
 def huggify_data_convfinqa(push_to_hub=False):
-    directory_path = DATA_DIRECTORY / "convfinqa"
+    directory_path = DATA_DIR / "convfinqa"
     logger.debug(f"Directory path: {directory_path}")
 
     zip_file_path = f"{directory_path}/train.json.zip"
@@ -67,5 +62,5 @@ def huggify_data_convfinqa(push_to_hub=False):
     return convfinqa_datadict
 
 
-if name == "__main__":
+if __name__ == "__main__":
     huggify_data_convfinqa(push_to_hub=True)

@@ -1,21 +1,11 @@
-import os
-import sys
 import requests
-from pathlib import Path
-from tqdm.notebook import tqdm
 import pandas as pd
 import json
 
 from datasets import Dataset, DatasetDict
 from huggingface_hub import notebook_login
-from huggingface_hub import hf_hub_upload, hf_hub_download
 
-SRC_DIRECTORY = Path().cwd().resolve().parent
-DATA_DIRECTORY = Path().cwd().resolve().parent.parent / "data"
-if str(SRC_DIRECTORY) not in sys.path:
-    sys.path.insert(0, str(SRC_DIRECTORY))
-
-from src.utils.miscellaneous import download_zip_content
+from superflue.utils.miscellaneous import download_zip_content
 import traceback
 import logging
 
@@ -37,37 +27,8 @@ logger.setLevel(logging.INFO)
 # TODO: use `login()` not `notebook_login()`
 
 
-def process_qa_pairs(data):
-    pre_text, post_text, table_ori = [], [], []
-    questions, answers = [], []
-
-    for _, row in data.iterrows():
-        pre_text.append(row["pre_text"])
-        post_text.append(row["post_text"])
-        table_ori.append(row["table_ori"])
-
-        if pd.notna(row["qa"]):
-            questions.append(row["qa"].get("question"))
-            answers.append(row["qa"].get("answer"))
-        else:
-
-            questions.append(None)
-            answers.append(None)
-
-    return pd.DataFrame(
-        {
-            "pre_text": pre_text,
-            "post_text": post_text,
-            "table_ori": table_ori,
-            "question": questions,
-            "answer": answers,
-        }
-    )
-
-
 def huggify_data_finqa(task_name="finqa", namespace="Yangvivian"):
     try:
-
         notebook_login()
 
         hf_dataset = DatasetDict()
@@ -94,7 +55,32 @@ def huggify_data_finqa(task_name="finqa", namespace="Yangvivian"):
     return hf_dataset
 
 
-########################################################################################################################################################################################################
+# # Duplicated functions `process_qa_pairs`
+# def process_qa_pairs(data):
+#     pre_text, post_text, table_ori = [], [], []
+#     questions, answers = [], []
+
+#     for _, row in data.iterrows():
+#         pre_text.append(row["pre_text"])
+#         post_text.append(row["post_text"])
+#         table_ori.append(row["table_ori"])
+
+#         if pd.notna(row["qa"]):
+#             questions.append(row["qa"].get("question"))
+#             answers.append(row["qa"].get("answer"))
+#         else:
+#             questions.append(None)
+#             answers.append(None)
+
+#     return pd.DataFrame(
+#         {
+#             "pre_text": pre_text,
+#             "post_text": post_text,
+#             "table_ori": table_ori,
+#             "question": questions,
+#             "answer": answers,
+#         }
+#     )
 
 
 def process_qa_pairs(data):
@@ -170,7 +156,7 @@ def huggify_data_convfinqa(task_name="convfinqa", namespace="Yangvivian"):
 
 
 def main():
-    HF_ORGANIZATION = "gtfintechlab"
+    # HF_ORGANIZATION = "gtfintechlab"
     namespace = "gtfintechlab"
     task_name = "finqa"
     hf_dataset = huggify_data_finqa(task_name=task_name, namespace=namespace)
@@ -185,7 +171,7 @@ def main():
     # Example usage
     namespace = "Yangvivian"  # change to gtfintechlab if necessary
     task_name = "convfinqa"
-    REPO_ID = ""
+    # REPO_ID = ""
 
 
 if __name__ == "__main__":
