@@ -47,7 +47,7 @@ def main(args):
         "headlines": headlines_inference,
         "fiqa_task1": fiqa_inference,  # double check this i think it might be _task1_
         "fiqa_task2": fiqa_task2_inference,
-        "edt_sum": edtsum_inference,
+        "edtsum": edtsum_inference,
         "fnxl": fnxl_inference,
         "finred": finred_inference,
         "causal_classification": causal_classification_inference,
