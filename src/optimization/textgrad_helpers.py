@@ -14,13 +14,17 @@ from together import Together
 def eval_sample(x, y, eval_fn, model):
     x = Variable(x, requires_grad=False, role_description="query to the language model")
     y = Variable(y, requires_grad=False, role_description="correct answer for the query")
-    response = model(x)
+    try:
+        response = model(x)
+    except Exception as e:
+        print(f"Error evaluating sample: {e}")
+        return 0
     inputs = dict(prediction = response, ground_truth_answer = y)
     eval_output_variable = eval_fn(inputs = inputs)
     return eval_output_variable
     
 # Evaluate dataset using custom evaluation function
-def eval_dataset(test_set, eval_fn, model, max_samples = None, max_workers = 24):
+def eval_dataset(test_set, eval_fn, model, max_samples = None, max_workers = 6):
     if max_samples is None: 
         max_samples = len(test_set)
     accuracy_list = []
@@ -234,7 +238,7 @@ textgrad_task_map = {
         'load_dataset': load_ect_sum
     }, 
     'financial_phrasebank': {
-        'starting_prompt': "Discard all the previous instructions. Behave like you are an expert sentence classifier. Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’ class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide the label in the first line and provide a short explanation in the second line.",
+        'starting_prompt': "Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier. Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’ class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide the label in the first line and provide a short explanation in the second line.",
         'constraints': "Must include text instructions to output one of positive, negative, and neutral, written with those exact labels and not synonyms.",
         'eval_fn': eval_fpb,
         'load_dataset': load_fpb
@@ -252,8 +256,8 @@ textgrad_task_map = {
         'load_dataset': load_numclaim
     },
     'finbench': {
-        'starting_prompt': "Discard all the previous instructions. Behave like you are an expect risk assessor. Classify the following individual as either ‘LOWRISK’ or ‘HIGHRISK’ for approving a loan for. Categorize the person as ‘HIGHRISK’ if their profile indicates that they will likely default on the loan and not pay it back, and ‘LOWRISK’ if it is unlikely that they will fail to pay the loan back in full. Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision. Predict the risk category of this person: ",
-        'constraints': "Must include text instructions to output one of lowrisk and highrisk.",
+        'starting_prompt': "Discard all the previous instructions. Behave like you are an expect risk assessor. Classify the following individual as either ‘LOW RISK’ or ‘HIGH RISK’ for approving a loan for. Categorize the person as ‘HIGH RISK’ if their profile indicates that they will likely default on the loan and not pay it back, and ‘LOW RISK’ if it is unlikely that they will fail to pay the loan back in full. Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision. Predict the risk category of this person: ",
+        'constraints': "Must include text instructions to output one of low risk and high risk.",
         'eval_fn': eval_finbench,
         'load_dataset': load_finbench
     }

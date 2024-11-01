@@ -1,0 +1,287 @@
+val_accuracy,prompt,new_prompt,new_prompt_val_accuracy
+0.43223443223443225,"Discard all the previous instructions. Behave like you are an expect risk assessor. Classify the following individual as either ‘LOW RISK’ or ‘HIGH RISK’ for approving a loan for. Categorize the person as ‘HIGH RISK’ if their profile indicates that they will likely default on the loan and not pay it back, and ‘LOW RISK’ if it is unlikely that they will fail to pay the loan back in full. Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision. Predict the risk category of this person: ","Discard all the previous instructions. Behave like you are an expect risk assessor. Classify the following individual as either ‘LOW RISK’ or ‘HIGH RISK’ for approving a loan for. Categorize the person as ‘HIGH RISK’ if their profile indicates that they will likely default on the loan and not pay it back, and ‘LOW RISK’ if it is unlikely that they will fail to pay the loan back in full. Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision. Predict the risk category of this person: ",0.43223443223443225
+0.43223443223443225,"Discard all the previous instructions. Behave like you are an expect risk assessor. Classify the following individual as either ‘LOW RISK’ or ‘HIGH RISK’ for approving a loan for. Categorize the person as ‘HIGH RISK’ if their profile indicates that they will likely default on the loan and not pay it back, and ‘LOW RISK’ if it is unlikely that they will fail to pay the loan back in full. Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision. Predict the risk category of this person: ","Discard all the previous instructions. Behave like you are an expert risk assessor tasked with providing a nuanced and evidence-based classification of the individual's risk profile. Your decision should be supported by specific reasons and data points. Predict the risk category of this person: 
+
+Consider the following factors that may influence the individual's risk profile, such as their credit score, income, employment history, financial obligations, and behavior. Use language that acknowledges the complexity of the individual's risk profile and avoids making simplistic or binary classifications. Provide concrete evidence to support your classification, such as specific data points or metrics that demonstrate the individual's high-risk or low-risk status.
+
+To improve the accuracy of the response, consider adding more specific and relevant details to the input prompt, such as:
+
+* A clear definition of what constitutes a ""low-risk"" and",0.12087912087912088
+0.5824175824175825,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a detailed explanation for your classification decision, including specific reasons and relevant data used to support your conclusion. Avoid ambiguity and jargon, and use clear and concise language. Your explanation should include at least two specific points about the individual's profile data that support your classification.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: [insert employment history]
+* Loan repayment behavior: [insert loan repayment behavior]
+* Debt-to-income ratio: [insert debt-to-income ratio]
+* Credit history: [insert credit history]
+
+Consider the following additional factors","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a detailed explanation for your classification decision, including specific reasons and relevant data used to support your conclusion. Avoid ambiguity and jargon, and use clear and concise language. Your explanation should include at least two specific points about the individual's profile data that support your classification.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: [insert employment history]
+* Loan repayment behavior: [insert loan repayment behavior]
+* Debt-to-income ratio: [insert debt-to-income ratio]
+* Credit history: [insert credit history]
+
+Consider the following additional factors",0.5824175824175825
+0.5824175824175825,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a detailed explanation for your classification decision, including specific reasons and relevant data used to support your conclusion. Avoid ambiguity and jargon, and use clear and concise language. Your explanation should include at least two specific points about the individual's profile data that support your classification.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: [insert employment history]
+* Loan repayment behavior: [insert loan repayment behavior]
+* Debt-to-income ratio: [insert debt-to-income ratio]
+* Credit history: [insert credit history]
+
+Consider the following additional factors","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a detailed explanation for your classification decision, including specific reasons and relevant data used to support your conclusion. Avoid ambiguity and jargon, and use clear and concise language. Your explanation should include at least two specific points about the individual's profile data that support your classification.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score], specifically considering the credit score range and FICO score to better understand the individual's creditworthiness.
+* Income: [insert income], taking into account the individual's financial history and debt-to-income ratio to assess their ability to manage debt obligations.
+* Employment history: [insert",0.48717948717948717
+0.5824175824175825,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, including specific reasons and relevant data used to support your conclusion. Avoid ambiguity and jargon, and use clear and concise language. Your explanation should include at least two specific points about the individual's profile data that support your classification.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: [insert employment history]
+* Loan repayment behavior: [insert loan repayment behavior]
+* Debt-to-income ratio: [insert debt-to-income ratio]
+* Credit history: Provide a detailed breakdown of the individual's credit","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, including specific reasons and relevant data used to support your conclusion. Avoid ambiguity and jargon, and use clear and concise language. Your explanation should include at least two specific points about the individual's profile data that support your classification.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: [insert employment history]
+* Loan repayment behavior: [insert loan repayment behavior]
+* Debt-to-income ratio: [insert debt-to-income ratio]
+* Credit history: Provide a detailed breakdown of the individual's credit",0.5824175824175825
+0.7802197802197802,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: [insert loan repayment behavior]
+* Debt-to-income: [insert debt-to-income ratio]
+* Additional context: Please provide specific examples or anecdotes that illustrate the individual's behavior over an extended period,","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: [insert loan repayment behavior]
+* Debt-to-income: [insert debt-to-income ratio]
+* Additional context: Please provide specific examples or anecdotes that illustrate the individual's behavior over an extended period,",0.7802197802197802
+0.7802197802197802,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: [insert loan repayment behavior]
+* Debt-to-income: [insert debt-to-income ratio]
+* Additional context: Please provide specific examples or anecdotes that illustrate the individual's behavior over an extended period,","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score] with a detailed breakdown of the credit score, including the credit utilization ratio, credit mix, and credit age. Be specific about the credit score range and its implications for loan approval.
+* Income: [insert income] with a clear indication of the income stability and growth over time. Provide concrete evidence of income stability, such as a consistent job history or a stable industry. Specifically, ask the model to identify the",0.6959706959706959
+0.7802197802197802,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: [insert loan repayment behavior]
+* Debt-to-income: [insert debt-to-income ratio]
+* Additional context: Please provide specific examples or anecdotes that illustrate the individual's behavior over an extended period,","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score], including specific details about the credit issues, such as late payments, high credit utilization, or public records. Be explicit about the credit score's impact on loan repayment.
+* Income: [insert income], highlighting any fluctuations or irregularities that may impact loan repayment. Provide a detailed breakdown of the individual's income, including any bonuses, commissions, or other sources of income. Specifically, ask the model to identify and:",0.6593406593406593
+0.7802197802197802,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: [insert loan repayment behavior]
+* Debt-to-income: [insert debt-to-income ratio]
+* Additional context: Please provide specific examples or anecdotes that illustrate the individual's behavior over an extended period,","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed. Specify the exact dates of employment and any gaps in employment. Additionally, please provide specific examples or anecdotes that illustrate the individual's behavior over an extended period, including their ability to:
+	+ Manage debt by paying off credit responsibly",0.7362637362637363
+0.7802197802197802,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: [insert loan repayment behavior]
+* Debt-to-income: [insert debt-to-income ratio]
+* Additional context: Please provide specific examples or anecdotes that illustrate the individual's behavior over an extended period,","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: Provide a detailed analysis of the credit score trends over time, including specific credit score ranges, loan amounts, and payment frequencies. This will help me provide more accurate and relevant information that aligns with the ground truth answer.
+* Income: In addition to the annual income, please provide specific examples of income fluctuations over time, such as bonuses, commissions, or variable income. Highlight any potential red flags, such as sudden changes in income or",0.6227106227106227
+0.8095238095238095,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: Provide a detailed analysis of the individual's payment history, including:
+	+ Number of late payments
+	+ Total amount owed
+	+ Payment schedule
+	+ Any notable payment milestones or achievements","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: Provide a detailed analysis of the individual's payment history, including:
+	+ Number of late payments
+	+ Total amount owed
+	+ Payment schedule
+	+ Any notable payment milestones or achievements",0.8095238095238095
+0.8095238095238095,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: Provide a detailed analysis of the individual's payment history, including:
+	+ Number of late payments
+	+ Total amount owed
+	+ Payment schedule
+	+ Any notable payment milestones or achievements","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including:
+	+ Job titles
+	+ Duration of employment
+	+ Notable achievements or skills developed
+	+ Company industry, size, and reputation
+* Loan repayment behavior: Provide a detailed analysis of the individual's payment history, including:
+	+ Number of late payments (specifically,",0.7252747252747253
+0.8095238095238095,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: Provide a detailed analysis of the individual's payment history, including:
+	+ Number of late payments
+	+ Total amount owed
+	+ Payment schedule
+	+ Any notable payment milestones or achievements","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: Provide a detailed analysis of the individual's payment history, including:
+	+ Number of late payments
+	+ Total amount owed
+	+ Payment schedule
+	+ Any notable payment milestones or achievements",0.8095238095238095
+0.8095238095238095,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: Provide a detailed analysis of the individual's payment history, including:
+	+ Number of late payments
+	+ Total amount owed
+	+ Payment schedule
+	+ Any notable payment milestones or achievements","Discard all the previous instructions. Behave like you are an expert risk assessor with a nuanced understanding of the complexities involved in loan approval. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan, providing a clear and concise explanation for your classification decision. Be cautious of overestimating the individual's ability to service the debt and acknowledge any limitations in the available information.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]. How does this credit score compare to the average credit score for individuals in similar financial situations? Be specific about the credit score range and its implications for loan repayment. Provide concrete evidence to support your classification, such as:
+	+ ""The credit score of [insert credit score] falls within the [insert credit score range",0.28205128205128205
+0.8095238095238095,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: Provide a detailed analysis of the individual's payment history, including:
+	+ Number of late payments
+	+ Total amount owed
+	+ Payment schedule
+	+ Any notable payment milestones or achievements","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including:
+	+ Job titles and descriptions
+	+ Duration of employment (in years and months)
+	+ Notable achievements, skills developed, and any relevant certifications
+	+ Industry or sector in which the individual worked
+	+ Specific company or organization employed by
+* Loan repayment behavior: Provide a",0.7655677655677655
+0.8095238095238095,"Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including job titles, duration of employment, and any notable achievements or skills developed.
+* Loan repayment behavior: Provide a detailed analysis of the individual's payment history, including:
+	+ Number of late payments
+	+ Total amount owed
+	+ Payment schedule
+	+ Any notable payment milestones or achievements","Discard all the previous instructions. Behave like you are an expert risk assessor. Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan. Provide a clear and concise explanation for your classification decision, focusing on the individual's strengths and highlighting specific points that support your conclusion.
+
+Consider the following factors in your assessment:
+
+* Credit score: [insert credit score]
+* Income: [insert income]
+* Employment history: Provide a detailed breakdown of the individual's employment history, including:
+	+ Job title
+	+ Industry
+	+ Company
+	+ Duration of employment
+	+ Notable achievements or skills developed
+* Loan repayment behavior: Provide a detailed analysis of the individual's payment history, including:
+	+ Number of late payments
+	+ Total amount owed",0.7728937728937729
