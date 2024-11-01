@@ -16,6 +16,7 @@ from superflue.together_code.finred.finred_inference import finred_inference
 from superflue.together_code.causal_classification.causal_classification_inference import causal_classification_inference
 from superflue.together_code.subjectiveqa.subjectiveqa_inference import subjectiveqa_inference
 from superflue.together_code.ectsum.ectsum_inference import ectsum_inference
+from superflue.together_code.refind.refind_inference import refind_inference
 
 from superflue.utils.logging_utils import setup_logger
 
@@ -51,7 +52,8 @@ def main(args):
         "finred": finred_inference,
         "causal_classification": causal_classification_inference,
         "subjectiveqa": subjectiveqa_inference,
-        "ectsum": ectsum_inference
+        "ectsum": ectsum_inference,
+        "refind": refind_inference
     }
 
     if task in task_inference_map:
