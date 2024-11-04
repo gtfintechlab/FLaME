@@ -30,8 +30,11 @@ def fiqa_task2_prompt(sentence: str):
     return prompt
 
 
-def edtsum_prompt(sentence: str):
-    prompt = f"""Lorem ipsum: {sentence}"""
+def edtsum_prompt(document: str):
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert at summarization tasks.
+        You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization on this text. 
+        Use your understanding of the content to express the main ideas and crucial details in a shorter, coherent, and natural sounding text. Do not output any code.
+        \n\n The document:\n{document}.\nOutput your concise summary below:"""
     return prompt
 
 
@@ -46,15 +49,12 @@ def numclaim_prompt(sentence: str):
 
 
 def fomc_prompt(sentence: str):
-    system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence clas-
-                sifier."""
-    user_msg = f"""Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
+                sifier. Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
                 TRAL’ class. Label ‘HAWKISH’ if it is corresponding to tightening of the monetary policy,
                 ‘DOVISH’ if it is corresponding to easing of the monetary policy, or ‘NEUTRAL’ if the
                 stance is neutral. Provide the label in the first line and provide a short explanation in the
                 second line. This is the sentence: {sentence}"""
-
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
     return prompt
 
@@ -62,7 +62,7 @@ def fomc_prompt(sentence: str):
 def finer_prompt(sentence: str):
     system_prompt = """Discard all the previous instructions. Behave like you are an expert named entity
                     identifier. """
-    user_msg = f"""Below a sentence is tokenized and each line contains a word token from the
+    user_msg = f"""Below a sentence is tokenized and each list item contains a word token from the
                     sentence. Identify ‘Person’, ‘Location’, and ‘Organisation’ from them and label them. If the
                     entity is multi token use post-fix_B for the first label and _I for the remaining token labels
                     for that particular entity. The start of the separate entity should always use _B post-fix for
@@ -76,13 +76,22 @@ def finer_prompt(sentence: str):
 
 
 def fpb_prompt(sentence: str, prompt_format: str):
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
+                    sifier. Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
+                    class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
+                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
+                    the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}"""
+
+    return prompt
+
     if prompt_format == "superflue":
         system_prompt = """ Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier"""
 
         user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
                     class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
-                    the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}"""
+                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. 
+                    Provide the label in the first line and provide a short explanation in the second line.
+                    Explain how you came to your classification decision. This is the sentence: {sentence}."""
 
     elif prompt_format == "finben_icl":
         system_prompt = """"""
@@ -119,7 +128,8 @@ def fpb_prompt(sentence: str, prompt_format: str):
                         First, generate your reasoning steps for the classification. After your reasoning, end the response with the label that fits your reasoning.
                         This is the sentence: {sentence}"""
 
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+    prompt = f"""{system_prompt}\n{user_msg}"""
+    print(prompt)
 
     return prompt
 
@@ -137,20 +147,15 @@ def finentity_prompt(sentence: str):
     return prompt
 
 
-def finbench_prompt(sentence: str):
-    pass
-
-
-#     prompt = f'''Discard all the previous instructions. Behave like you are an expert entity level sentiment
-#                 classifier. Below is a sentence from a financial document. From the sentence, identify all the entities
-#                 check the starting and ending indices of the entities and give it a tag out of the following three options:
-#                 ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-#                 corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral.
-#                 Format it as such: "start": start value, "end": end value, "value": entity name,
-#                 "tag":‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. The sentence:
-#                 {sentence}'''
-
-#     return prompt
+def finbench_prompt(profile: str):
+    prompt = f"""Discard all the previous instructions. Behave like you are an expect risk assessor.
+                Classify the following individual as either ‘LOW RISK’ or ‘HIGH RISK’ for approving a loan for. 
+                Categorize the person as ‘HIGH RISK’ if their profile indicates that they will likely default on 
+                the loan and not pay it back, and ‘LOW RISK’ if it is unlikely that they will fail to pay the loan back in full.
+                Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision.
+                Here is the information about the person:\nProfile data: {profile}\nPredict the risk category of this person:
+                """
+    return prompt
 
 
 def ectsum_prompt(document: str):
@@ -251,7 +256,7 @@ banking77_list = [
 def banking77_prompt(sentence: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert at
                 fine-grained single-domain intent detection. From the following list: {banking77_list}, identify
-                which category does the following sentence belong to.
+                which category the following sentence belongs to.
                 {sentence}"""
 
     return prompt
@@ -260,7 +265,7 @@ def banking77_prompt(sentence: str):
 def finqa_prompt(document: str):
     prompt = f"""Discard all the previous instructions. Behave like you are a financial expert in question answering. 
                 Your task is to answer a financial question based on the  provided context.\n\n The context:
-                {document}"""
+                {document}. Repeat you final answer at the end of your response. """
 
     return prompt
 
@@ -271,7 +276,7 @@ def convfinqa_prompt(document: str):
     The context provided includes a previous question and its answer, followed by a new question that you need to answer.
     Focus on answering only the final question based on the entire provided context:
     {document}.
-    Answer the final question based on the context above.
+    Answer the final question based on the context above. Repeat your final answer at the end of your response. 
     """
     return prompt
 
@@ -328,6 +333,19 @@ def causal_detection_prompt(tokens: list):
     
     return prompt
 
+def subjectiveqa_prompt(feature, definition, question, answer):
+    system_prompt = """Discard all the previous instructions. Behave like you are an expert named entity
+                    identifier. """
+    user_msg = f"""Given the following feature: {feature} and its corresponding definition: {definition}\n
+              Give the answer a rating of:\n
+              2: If the answer positively demonstrates the chosen feature, with regards to the question.\n
+              1: If there is no evident/neutral correlation between the question and the answer for the feature.\n
+              0: If the answer negatively correlates to the question on the chosen feature.\n
+              Provide the rating only. No explanations. This is the question: {question} and this is the answer: {answer}."""
+              
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+
+    return prompt
 
 
 
@@ -340,12 +358,14 @@ prompt_map = {
     "fpb_prompt": fpb_prompt,
     "finentity_prompt": finentity_prompt,
     "ectsum_prompt": ectsum_prompt,
+    "edtsum_prompt": edtsum_prompt,
     "banking77_prompt": banking77_prompt,
     "finqa_prompt": finqa_prompt,
     "convfinqa_prompt": convfinqa_prompt,
     "tatqa_prompt": tatqa_prompt,
     "finred_prompt": finred_prompt,
     "causal_detection_prompt": causal_detection_prompt,
+    'finbench_prompt': finbench_prompt
 }
 
 

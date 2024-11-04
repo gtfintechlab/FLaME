@@ -11,6 +11,12 @@ from superflue.together_code.headlines.headlines_inference import headlines_infe
 from superflue.together_code.fiqa.fiqa_task1_inference import fiqa_task1_inference
 from superflue.together_code.fiqa.fiqa_task2_inference import fiqa_task2_inference
 from superflue.together_code.edtsum.edtsum_inference import edtsum_inference
+from superflue.together_code.banking77.banking77_inference import banking77_inference
+from superflue.together_code.finred.finred_inference import finred_inference
+from superflue.together_code.causal_classification.causal_classification_inference import causal_classification_inference
+from superflue.together_code.subjectiveqa.subjectiveqa_inference import subjectiveqa_inference
+from superflue.together_code.ectsum.ectsum_inference import ectsum_inference
+
 from superflue.utils.logging_utils import setup_logger
 from superflue.together_code.finqa.finqa_inference import finqa_inference
 from superflue.together_code.tatqa.tatqa_inference import tatqa_inference
@@ -49,7 +55,11 @@ def main(args):
         "edt_sum": edtsum_inference,
         "fnxl": fnxl_inference,
         "tatqa":tatqa_inference,
-        "cd": cd_inference
+        "cd": cd_inference,
+        "finred": finred_inference,
+        "causal_classification": causal_classification_inference,
+        "subjectiveqa": subjectiveqa_inference,
+        "ectsum": ectsum_inference
     }
 
     if task in task_inference_map:

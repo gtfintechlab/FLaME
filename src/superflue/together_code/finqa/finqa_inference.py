@@ -3,7 +3,7 @@ import time
 import pandas as pd
 from datasets import load_dataset
 from datetime import date
-import together
+from together import Together
 from superflue.together_code.prompts import finqa_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
@@ -24,6 +24,7 @@ def finqa_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+    client = Together()
     # start_t = time.time()
     for entry in dataset["test"]:  # type: ignore
         pre_text = " ".join(entry["pre_text"])  # type: ignore
@@ -34,19 +35,24 @@ def finqa_inference(args):
         actual_label = entry["answer"]  # type: ignore
         actual_labels.append(actual_label)
         try:
-            model_response = together.Complete.create(
-                prompt=finqa_prompt(combined_text),
+            model_response = client.chat.completions.create(
                 model=args.model,
+                messages=[{"role": "user", "content": finqa_prompt(combined_text)}],
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                stop=tokens(args.model)
             )
+            
+            # Log and process the response
+            logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
-            response_label = model_response["choices"][0]["text"]
+            response_label = model_response.choices[0].message.content  # type: ignore
+            print(response_label)
             llm_responses.append(response_label)
+
 
             df = pd.DataFrame(
                 {
