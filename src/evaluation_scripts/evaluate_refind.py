@@ -6,19 +6,19 @@ import together
 from together import Together
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
+from superflue.together_code.tokens import tokens
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
-
 def extraction_prompt(llm_response: str):
-    prompt = f'''Extract the classification label from the following LLM response. The label should be one of the following: ‘PER-TITLE’, ‘PER-GOV’, ‘PER-ORG’, ‘PER-UNIV’, ‘ORG-ORG’, ‘ORG-MONEY’, ‘ORG-GPE’, ‘ORG-DATE’, or ‘NO-REL’. List ‘NO-REL’ if the LLM did not output a clear answer.
+    prompt = f'''Extract the classification label from the following LLM response. The label should be one of the following: ‘PERSON-TITLE’, ‘PERSON-GOV_AGY’, ‘PERSON-ORG’, ‘PERSON-UNIV’, ‘ORG-ORG’, ‘ORG-MONEY’, ‘ORG-GPE’, or ‘ORG-DATE’. List ‘NO-REL’ if the LLM did not output a clear answer.
                 
                 Here is the LLM response to analyze:
                 "{llm_response}"
-                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation.'''
+                Provide only the label that best matches the response, exactly as it is listed above. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation.'''
 
     return prompt
 
@@ -32,7 +32,7 @@ def extract_and_evaluate_responses(args):
         / "results"
         / 'refind'
         / 'refind_meta-llama'
-        / "Meta-Llama-3.1-8B-Instruct-Turbo_01_11_2024.csv"
+        / "Meta-Llama-3.1-8B-Instruct-Turbo_03_11_2024.csv"
     )
 
     # Load the CSV file with the LLM responses
@@ -57,6 +57,7 @@ def extract_and_evaluate_responses(args):
                 extracted_label = 'ERROR'
                 print(f"Error processing response {i}: {llm_response}")
                 logger.error(f"Error processing response {i}: {llm_response}")
+            extracted_label = extracted_label.replace(' ', '').upper()
             extracted_labels.append(extracted_label)
             logger.debug(f"Processed {i + 1}/{len(df)} responses.")
         except Exception as e:
@@ -88,10 +89,6 @@ def extract_and_evaluate_responses(args):
     eval_df.to_csv(Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv"), index=False)
     
     return df, accuracy
-
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
-def tokens(model_name):
-    return tokens_map.get(model_name, [])
 
 if __name__ == "__main__":
     extract_and_evaluate_responses(None)
