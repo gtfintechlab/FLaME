@@ -1,5 +1,21 @@
+# def fnxl_prompt(sentence: str):
+#     prompt = f"""Lorem ipsum: {sentence}"""
+#     return prompt
+
 def fnxl_prompt(sentence: str):
-    prompt = f"""Lorem ipsum: {sentence}"""
+    system_prompt = """You are an expert in financial text processing focused on numeric data tagging for financial documents."""
+
+    user_msg = f"""Identify the numerical figures in the following financial text, and assign each a label according to the FNXL taxonomy. 
+                Use one of these categories based on the context:
+                - 0 (No special label needed for this numeral)
+                - 1 (Rarely used numeral label for financial extremes)
+                - Higher integers as appropriate based on the prominence or financial significance. 
+                Output as a list of integers with the length matching the number of numerical figures identified in the text.
+                
+                Sentence: {sentence}"""
+
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+
     return prompt
 
 
@@ -301,17 +317,32 @@ def causal_classification_prompt(text: str):
     return prompt
 
 
-def finred_prompt(sentence: str):
-    system_prompt = """Discard all the previous instructions. Behave like you are an expert in financial entity and relation extraction."""
+# def finred_prompt(sentence: str):
+#     system_prompt = """Discard all the previous instructions. Behave like you are an expert in financial entity and relation extraction."""
 
-    user_msg = f"""Identify all financial entities (such as companies, financial instruments, dates, or money) 
-                and extract the relations between these entities from the following sentence.
-                Provide the relations in the format of (Entity 1, Relation, Entity 2).
-                The sentence: {sentence}"""
+#     user_msg = f"""Identify all financial entities (such as companies, financial instruments, dates, or money) 
+#                 and extract the relations between these entities from the following sentence.
+#                 Provide the relations in the format of (Entity 1, Relation, Entity 2).
+#                 The sentence: {sentence}"""
+
+#     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+
+#     return prompt
+
+def finred_prompt(sentence: str, entity1: str, entity2: str, relationship_options: str):
+    
+    system_prompt = """You are an expert in financial entity and relation extraction, particularly in entity-pair relationship classification."""
+    
+    user_msg = f"""Classify the relationship between [ENT1] {entity1} [/ENT1] and [ENT2] {entity2} [/ENT2] within the following sentence:
+    "{sentence}"
+    The relationship should match one of the following categories:
+    {relationship_options}
+    """
 
     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
     return prompt
+
 
 
 def causal_detection_prompt(tokens: list):
