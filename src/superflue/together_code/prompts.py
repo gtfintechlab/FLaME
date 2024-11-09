@@ -40,10 +40,10 @@ def fiqa_task2_prompt(sentence: str):
 
 
 def edtsum_prompt(document: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert at summarization tasks.
-        You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization on this text. 
-        Use your understanding of the content to express the main ideas and crucial details in a shorter, coherent, and natural sounding text. Do not output any code.
-        \n\n The document:\n{document}.\nOutput your concise summary below:"""
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert at summarization tasks.	
+        You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization 
+        on this text. Use your understanding of the content to express the main ideas and crucial details in a shorter, coherent, and natural sounding text.
+        \nThe text:\n{document}.\nOutput your concise summary below. Try to keep your summary to one sentence and a maximum of 50 words, preferably around 25 words."""
     return prompt
 
 
@@ -388,6 +388,11 @@ def subjectiveqa_prompt(feature, definition, question, answer):
 
     return prompt
 
+def refind_prompt(entities):
+    relations = "PERSON/TITLE - person subject, title object, relation title\nPERSON/GOV_AGY - person subject, government agency object, relation member_of\nPERSON/UNIV - person subject, university object, relation employee_of, member_of, attended\nPERSON/ORG - person subject, organization object, relation employee_of, member_of, founder_of\nORG/DATE - organization subject, date object, relation formed_on, acquired_on\nORG/MONEY - organization subject, money object, relation revenue_of, profit_of, loss_of, cost_of\nORG/GPE - organization subject, geopolitical entity object, relation headquartered_in, operations_in, formed_in\nORG/ORG - organization subject, organization object, relation shares_of, subsidiary_of, acquired_by, agreement_with"
+    prompt = f"Classify the following relationship between ENT1 (the subject) and ENT2 (the object). The entities are marked by being enclosed in [ENT1] and [/EN1] and [ENT2] and [/ENT2] respectively. The subject entity will either be a person (PER) or an organization (ORG). The possible relationships are as follows, with the subject listed first and object listed second:\n{relations}\nText about entities: {entities}"
+    return prompt
+
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
     "fomc_prompt": fomc_prompt,
@@ -402,7 +407,8 @@ prompt_map = {
     "tatqa_prompt": tatqa_prompt,
     "finred_prompt": finred_prompt,
     "causal_detection_prompt": causal_detection_prompt,
-    'finbench_prompt': finbench_prompt
+    'finbench_prompt': finbench_prompt,
+    'refind_prompt': refind_prompt
 }
 
 
