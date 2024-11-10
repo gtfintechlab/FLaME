@@ -316,34 +316,18 @@ def causal_classification_prompt(text: str):
 
     return prompt
 
+possible_relationships = ['product or material produced', 'manufacturer', 'distributed by', 'industry', 'position held', 'original broadcaster', 'owned by', 'founded by', 'distribution format', 'headquarters location', 'stock exchange', 'currency', 'parent organization', 'chief executive officer', 'director/manager', 'owner of', 'operator', 'member of', 'employer', 'chairperson', 'platform', 'subsidiary', 'legal form', 'publisher', 'developer', 'brand', 'business division', 'location of formation', 'creator']
 
-# def finred_prompt(sentence: str):
-#     system_prompt = """Discard all the previous instructions. Behave like you are an expert in financial entity and relation extraction."""
-
-#     user_msg = f"""Identify all financial entities (such as companies, financial instruments, dates, or money) 
-#                 and extract the relations between these entities from the following sentence.
-#                 Provide the relations in the format of (Entity 1, Relation, Entity 2).
-#                 The sentence: {sentence}"""
-
-#     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-
-#     return prompt
-
-def finred_prompt(sentence: str, entity1: str, entity2: str, relationship_options: str):
-    
-    system_prompt = """You are an expert in financial entity and relation extraction, particularly in entity-pair relationship classification."""
-    
-    user_msg = f"""Classify the relationship between [ENT1] {entity1} [/ENT1] and [ENT2] {entity2} [/ENT2] within the following sentence:
+def finred_prompt(sentence: str, entity1: str, entity2: str):
+    prompt = f"""Classify what relationship {entity2} (the head) has to {entity1} (the tail) within the following sentence:
     "{sentence}"
-    The relationship should match one of the following categories:
-    {relationship_options}
+    
+    The relationship should match one of the following categories, where the relationship is what the head entity is to the tail entity:
+    {', '.join(possible_relationships)}.
+
+    You must output one, and only one, relationship out of the previous list that connects the head entity {entity2} to the tail entity {entity1}. Find what relationship best fits {entity2} 'RELATIONSHIP' {entity1} for this sentence.
     """
-
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-
     return prompt
-
-
 
 def causal_detection_prompt(tokens: list):
     """

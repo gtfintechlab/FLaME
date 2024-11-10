@@ -10,13 +10,8 @@ from superflue.together_code.prompts import finred_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from tqdm import tqdm
 
-# Load relationship options from relations.txt file
-root_dir = Path(__file__).resolve().parents[4]
-relations_path = root_dir / "data" / "FinRed" / "relations.txt"
-with open(relations_path, "r") as file:
-    relationship_options = file.read()
-    
 # Setup logger for FinRED inference
 logger = setup_logger(
     name="finred_inference", log_file=LOG_DIR / "finred_inference.log", level=LOG_LEVEL
@@ -50,22 +45,22 @@ def finred_inference(args):
     logger.info(f"Starting inference on FinRED with model {args.model}...")
 
     # Iterate through the test split of the dataset
-    for i in range(len(dataset["test"])):  # type: ignore
+    for i in tqdm(range(len(dataset["test"]))):  # type: ignore
         sentence = dataset["test"][i]["sentence"]  # Extract sentence # type: ignore
         entity_pairs = dataset["test"][i]["entities"]  # Extract entity pairs # type: ignore
         actual_label = dataset["test"][i]["relations"]  # Extract the actual label (relations) # type: ignore
-        sentences.append(sentence)
-        actual_labels.append(actual_label)
 
         # Process each entity pair in the sentence
         for entity_pair, true_relation in zip(entity_pairs, actual_label):
             entity1, entity2 = entity_pair
+            sentences.append(sentence)
+            actual_labels.append(true_relation)
             entities_list.append((entity1, entity2))
 
             try:
-                logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}, entity pair {entity1}-{entity2}") # type: ignore
+                logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}, entity pair {entity1}-{entity2}") # type: ignore
 
-                prompt = finred_prompt(sentence, entity1, entity2, relationship_options)
+                prompt = finred_prompt(sentence, entity1, entity2)
                 model_response = client.chat.completions.create(
                     model=args.model,
                     messages=[{"role": "user", "content": prompt}],
@@ -80,12 +75,14 @@ def finred_inference(args):
                 response_text = model_response.choices[0].message.content.strip()  # type: ignore
                 llm_responses.append(response_text)
 
-                logger.info(f"Model response for sentence {i+1}, entity pair {entity1}-{entity2}: {response_text}")
+                logger.debug(f"Model response for sentence {i+1}, entity pair {entity1}-{entity2}: {response_text}")
 
             except Exception as e:
                 # Log the error and retry the same sentence after a delay
                 logger.error(f"Error processing sentence {i+1}, entity pair {entity1}-{entity2}: {e}")
                 time.sleep(10.0)
+                complete_responses.append(None)
+                llm_responses.append(None)
                 continue  # Proceed to the next sentence after sleeping
 
     # Create the final DataFrame after the loop
