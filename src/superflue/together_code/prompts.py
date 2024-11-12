@@ -14,11 +14,13 @@ def fiqa_prompt(sentence: str):
 
 
 def fiqa_task1_prompt(sentence: str):
-    prompt = f"""Discard all previous instructions. Behave like you are a financial sentiment analysis expert.
-                Your task is to analyze the provided financial sentence and determine the sentiment score.
-                The sentiment score should range from -1 (negative) to 1 (positive). Provide the score.  \n\nThe context:
+    prompt = f"""You are a financial sentiment analysis expert. Analyze the provided sentence, identify relevant target aspects (such as companies, products, or strategies), and assign a sentiment score for each target. 
+                The sentiment score should be between -1 (highly negative) and 1 (highly positive), using up to three decimal places to capture nuances in sentiment.
+
+                Financial sentence:
                 {sentence}"""
     return prompt
+
 
 
 def fiqa_task2_prompt(sentence: str):
@@ -282,9 +284,10 @@ def convfinqa_prompt(document: str):
 
 
 def tatqa_prompt(document: str):
-    prompt = f"""Discard all previous instructions. Behave like an expert in table-and-text-based question answering.
+    prompt = f"""Discard all previous instructions. Behave like an expert in table-and-text-based financial question answering.
                 Your task is to answer a question by extracting relevant information from both tables and text 
-                provided in the context. Ensure that you use both sources comprehensively to generate an accurate response.
+                provided in the context. Ensure that you use both sources comprehensively to generate an accurate response. Repeat your final answer at the
+                end of your response. 
                 
                 The context: {document}"""
     
