@@ -23,12 +23,21 @@ def fiqa_task1_prompt(sentence: str):
 
 
 
-def fiqa_task2_prompt(sentence: str):
-    prompt = f"""Discard all previous instructions. 
-    Behave like you are a financial  expert.
-    Your task is to answer opinion-based financial
-    questions by analyzing a corpus of structured and unstructured financial data (e.g., microblogs, reports, news). 
-    Identify relevant entities, aspects, sentiment polarity, and opinion holders from the text to generate a precise and relevant answer.{sentence} """
+def fiqa_task2_prompt(question: str):
+    prompt = f"""
+    You are a financial analysis expert tasked with answering opinion-based financial questions. Your answer should be drawn from a broad corpus of structured and unstructured financial data sources, such as microblogs, reports, and news articles. 
+
+    Carefully analyze the given question and identify:
+    - Relevant financial entities (e.g., companies, products, indexes)
+    - Key aspects (e.g., market trends, corporate strategies, economic indicators)
+    - Sentiment polarity (positive, neutral, or negative)
+    - Opinion holders (e.g., analysts, companies, general public sentiment)
+
+    Use this information to provide a precise and contextually relevant answer that reflects the financial opinions expressed in the data. Answer in a concise manner, focusing on the opinions and insights that directly address the question.
+
+    Financial Question:
+    {question}
+    """
     return prompt
 
 
