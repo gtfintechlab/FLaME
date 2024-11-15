@@ -22,7 +22,7 @@ INPUT_FILE_PATH = os.path.join(RESULTS_DIR, "finentity", "finentity_meta-llama",
 # Define prompt for formatting JSON output
 def finentity_prompt(model_response: str):
     prompt = f"""Reformat the following extracted entity list into a structured JSON array.
-                Use the exact format below, ensuring each entity has "start", "end", "value", "tag", and "label".
+                Use the exact format below, ensuring each entity has 'value', 'tag', and 'label'.
                 Return only the JSON list, with no additional text.
 
                 Original output:
@@ -30,12 +30,18 @@ def finentity_prompt(model_response: str):
 
                 Example format:
                 [
-                {{"start": 0, "end": 15, "value": "EntityName", "tag": "NEUTRAL", "label": "NEUTRAL"}},
-                {{"start": 16, "end": 30, "value": "EntityName2", "tag": "POSITIVE", "label": "POSITIVE"}}
+                {{'value': 'EntityName', 'tag': 'NEUTRAL', 'label': 'NEUTRAL'}},
+                {{'value': 'EntityName2', 'tag': 'POSITIVE', 'label': 'POSITIVE'}}
                 ]
 
                 Please ensure the format is valid JSON with all required fields."""
     return prompt
+
+
+# Helper function to save progress to CSV
+def save_progress(df, path):
+    df.to_csv(path, index=False)
+    logger.info(f"Progress saved to {path}")
 
 # Sanitize JSON string to fix common issues before parsing
 def sanitize_json_string(json_str):
@@ -56,42 +62,38 @@ def parse_json_content(content):
             logger.error(f"Failed content: {content}")
             return []
 
-# Helper function to save progress to CSV
-def save_progress(df, path):
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
+# Normalize entities for comparison
+def normalize_entities(entities):
+    return [
+        {
+            "value": entity["value"].strip().lower(),
+            "tag": entity["tag"].strip().lower(),
+            "label": entity["label"].strip().lower()
+        }
+        for entity in entities
+        if "value" in entity and "tag" in entity and "label" in entity
+    ]
 
-# Evaluation function for matching extracted and actual entities
+# Evaluation function focusing on 'value', 'tag', and 'label'
 def evaluate_entities(pred_entities, true_entities):
-    matched, unmatched_pred, unmatched_true = [], [], []
+    normalized_pred = normalize_entities(pred_entities)
+    normalized_true = normalize_entities(true_entities)
 
-    for true_entity in true_entities:
-        match_found = False
-        for pred_entity in pred_entities:
-            iou = compute_iou(true_entity, pred_entity)
-            if iou > 0.5 and true_entity["tag"] == pred_entity["tag"]:
-                matched.append(pred_entity)
-                match_found = True
-                break
-        if not match_found:
-            unmatched_true.append(true_entity)
+    logger.debug(f"Normalized Predicted: {normalized_pred}")
+    logger.debug(f"Normalized True: {normalized_true}")
 
-    unmatched_pred = [e for e in pred_entities if e not in matched]
+    matched = sum(1 for entity in normalized_pred if entity in normalized_true)
+    unmatched_pred = len(normalized_pred) - matched
+    unmatched_true = len(normalized_true) - matched
 
-    precision = len(matched) / (len(matched) + len(unmatched_pred)) if len(matched) + len(unmatched_pred) > 0 else 0
-    recall = len(matched) / (len(matched) + len(unmatched_true)) if len(matched) + len(unmatched_true) > 0 else 0
-    f1 = 2 * (precision * recall) / (precision + recall) if precision + recall > 0 else 0
-    accuracy = len(matched) / len(true_entities) if len(true_entities) > 0 else 0
+    logger.info(f"Matched: {matched}, Unmatched Predicted: {unmatched_pred}, Unmatched True: {unmatched_true}")
+
+    precision = matched / (matched + unmatched_pred) if (matched + unmatched_pred) > 0 else 0
+    recall = matched / (matched + unmatched_true) if (matched + unmatched_true) > 0 else 0
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    accuracy = matched / len(normalized_true) if len(normalized_true) > 0 else 0
 
     return {"precision": precision, "recall": recall, "f1": f1, "accuracy": accuracy}
-
-# IoU function for matching entity position
-def compute_iou(entity_a, entity_b):
-    start_a, end_a = entity_a["start"], entity_a["end"]
-    start_b, end_b = entity_b["start"], entity_b["end"]
-    intersection = max(0, min(end_a, end_b) - max(start_a, start_b))
-    union = max(end_a, end_b) - min(start_a, start_b)
-    return intersection / union if union > 0 else 0
 
 # Function to extract and evaluate entities from responses
 def extract_and_evaluate_entities(args):
@@ -127,7 +129,7 @@ def extract_and_evaluate_entities(args):
                 repetition_penalty=args.repetition_penalty,
                 stop=tokens(args.model),
             )
-            extracted_label = model_response.choices[0].message.content.strip()
+            extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
             extracted_label = sanitize_json_string(extracted_label)
 
             logger.info(f"Raw model response for row {i}: {extracted_label}")
@@ -185,3 +187,4 @@ if __name__ == "__main__":
 
     args = Args()
     extract_and_evaluate_entities(args)
+
