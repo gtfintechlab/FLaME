@@ -126,18 +126,31 @@ def fpb_prompt(sentence: str, prompt_format: str):
 
     return prompt
 
-
 def finentity_prompt(sentence: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert entity level sentiment
-                classifier. Below is a sentence from a financial document. From the sentence, identify all the entities 
-                check the starting and ending indices of the entities and give it a tag out of the following three options: 
-                ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral.
-                Format it as such: "start": start value, "end": end value, "value": entity name, 
-                "tag":‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. The sentence:
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert entity recognizer and sentiment classifier. Identify the entities which are companies or organizations from the following content and classify the sentiment of the corresponding entities into ‘Neutral’ ‘Positive’ or ‘Negative’ classes. Considering every paragraph as a String in Python, provide the entities with the start and end index to mark the boundaries of it including spaces and punctuation using zero-based indexing. In the output, 
+    Tag means sentiment; value means entity name. If no entity is found in the paragraph, 
+    the response should be empty. Only give the output, not python code. The output should be a list that looks like:
+    [{{'end': 210,
+   'label': 'Neutral',
+   'start': 207,
+   'tag': 'Neutral',
+   'value': 'FAA'}},
+  {{'end': 7, 'label': 'Neutral', 'start': 4, 'tag': 'Neutral', 'value': 'FAA'}},
+  {{'end': 298,
+   'label': 'Neutral',
+   'start': 295,
+   'tag': 'Neutral',
+   'value': 'FAA'}},
+  {{'end': 105,
+   'label': 'Neutral',
+   'start': 99,
+   'tag': 'Neutral',
+   'value': 'Boeing'}}]
+   Do not repeat any JSON object in the list. Evey JSON object should be unique.
+   The paragraph:
                 {sentence}"""
-
     return prompt
+
 
 
 def finbench_prompt(profile: str):
