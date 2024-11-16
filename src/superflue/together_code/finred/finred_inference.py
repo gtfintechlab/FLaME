@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 from datetime import date
 import pandas as pd
@@ -9,6 +10,7 @@ from superflue.together_code.prompts import finred_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from tqdm import tqdm
 
 # Setup logger for FinRED inference
 logger = setup_logger(
@@ -38,49 +40,58 @@ def finred_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+    entities_list = []  # To store entity pairs
 
     logger.info(f"Starting inference on FinRED with model {args.model}...")
 
     # Iterate through the test split of the dataset
-    for i in range(len(dataset["test"])):  # type: ignore
+    for i in tqdm(range(len(dataset["test"]))):  # type: ignore
         sentence = dataset["test"][i]["sentence"]  # Extract sentence # type: ignore
+        entity_pairs = dataset["test"][i]["entities"]  # Extract entity pairs # type: ignore
         actual_label = dataset["test"][i]["relations"]  # Extract the actual label (relations) # type: ignore
-        sentences.append(sentence)
-        actual_labels.append(actual_label)
 
-        try:
-            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
-            # Generate the model's response using Together API
-            model_response = client.chat.completions.create(
-                model=args.model,
-                messages=[{"role": "user", "content": finred_prompt(sentence)}],
-                tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
-            )
+        # Process each entity pair in the sentence
+        for entity_pair, true_relation in zip(entity_pairs, actual_label):
+            entity1, entity2 = entity_pair
+            sentences.append(sentence)
+            actual_labels.append(true_relation)
+            entities_list.append((entity1, entity2))
 
-            # Append the model response and complete response for the sentence
-            complete_responses.append(model_response)
-            response_text = model_response.choices[0].message.content.strip()  # type: ignore
-            llm_responses.append(response_text)
+            try:
+                logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}, entity pair {entity1}-{entity2}") # type: ignore
 
-            logger.info(f"Model response for sentence {i+1}: {response_text}")
+                prompt = finred_prompt(sentence, entity1, entity2)
+                model_response = client.chat.completions.create(
+                    model=args.model,
+                    messages=[{"role": "user", "content": prompt}],
+                    tokens=args.max_tokens,
+                    temperature=args.temperature,
+                    top_k=args.top_k,
+                    top_p=args.top_p,
+                    repetition_penalty=args.repetition_penalty,
+                    stop=tokens(args.model),
+                )
+                complete_responses.append(model_response)
+                response_text = model_response.choices[0].message.content.strip()  # type: ignore
+                llm_responses.append(response_text)
 
-        except Exception as e:
-            # Log the error and retry the same sentence after a delay
-            logger.error(f"Error processing sentence {i+1}: {e}")
-            time.sleep(10.0)
-            continue  # Proceed to the next sentence after sleeping
+                logger.debug(f"Model response for sentence {i+1}, entity pair {entity1}-{entity2}: {response_text}")
+
+            except Exception as e:
+                # Log the error and retry the same sentence after a delay
+                logger.error(f"Error processing sentence {i+1}, entity pair {entity1}-{entity2}: {e}")
+                time.sleep(10.0)
+                complete_responses.append(None)
+                llm_responses.append(None)
+                continue  # Proceed to the next sentence after sleeping
 
     # Create the final DataFrame after the loop
     df = pd.DataFrame(
         {
-            "sentences": sentences,
-            "llm_responses": llm_responses,
+            "sentence": sentences,
+            "entity_pairs": entities_list,
             "actual_labels": actual_labels,
+            "llm_responses": llm_responses,
             "complete_responses": complete_responses,
         }
     )
