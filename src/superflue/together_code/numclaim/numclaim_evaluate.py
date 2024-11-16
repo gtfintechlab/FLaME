@@ -1,0 +1,138 @@
+import pandas as pd
+import logging
+from datetime import date
+from pathlib import Path
+import together
+from together import Together
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+from superflue.config import RESULTS_DIR, ROOT_DIR
+from superflue.utils.logging_utils import setup_logger
+import os
+client = Together()
+logger = setup_logger(
+    name="numclaim_evaluate",
+    log_file=Path("logs/numclaim_evaluate.log"),
+    level=logging.INFO,
+)
+
+INPUT_FILE_PATH = os.path.join(RESULTS_DIR, "numclaim", "numclaim_meta-llama", "Meta-Llama-3.1-8B-Instruct-Turbo_07_10_2024.csv")
+# Define prompt for extraction
+def extraction_prompt(llm_response: str):
+    prompt = f"""Based on the provided response, extract the following information:
+                - Label the response as ‘INCLAIM’ if it contains a numeric value or quantitative assertion.
+                - Label the response as ‘OUTCLAIM’ if it does not contain any numeric value or quantitative assertion.
+                Provide only the label that best matches the response.
+                The response: "{llm_response}"."""
+    return prompt
+
+# Mapping function to convert labels to binary
+def map_labels(label):
+    return 1 if label == "INCLAIM" else 0
+
+# Save progress function
+def save_progress(df, path):
+    """Save the current progress to a CSV file."""
+    df.to_csv(path, index=False)
+    logger.info(f"Progress saved to {path}")
+
+# Evaluation function
+def extract_and_evaluate_responses(args):
+    results_file = INPUT_FILE_PATH
+
+    # Load data from CSV
+    df = pd.read_csv(results_file)
+    correct_labels = df['actual_labels'].apply(map_labels).tolist()
+    llm_responses = df['llm_responses'].tolist()
+    extracted_labels = []
+
+    # Continual save path
+    evaluation_results_path = (
+        ROOT_DIR
+        / "evaluation_results"
+        / args.task
+        / f"evaluation_{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+    )
+    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Initialize the column for storing extracted labels if it doesn't exist
+    if 'extracted_labels' not in df.columns:
+        df['extracted_labels'] = None
+
+    for i, llm_response in enumerate(llm_responses):
+        if pd.notna(df.at[i, 'extracted_labels']):
+            # Skip already processed rows
+            continue
+
+        try:
+            # Correct Together API call structure
+            model_response = client.chat.completions.create(
+                model=args.model,
+                messages=[
+                    {"role": "system", "content": "You are an expert sentence classifier focused on identifying claims."},
+                    {"role": "user", "content": extraction_prompt(llm_response)},
+                ],
+                max_tokens=args.max_tokens,
+                temperature=args.temperature,
+                top_p=args.top_p,
+                repetition_penalty=args.repetition_penalty,
+                stop=tokens(args.model),
+            )
+            extracted_label = model_response.choices[0].message.content.strip() # type: ignore
+            mapped_extracted_label = map_labels(extracted_label)  # Apply mapping here
+            df.at[i, 'extracted_labels'] = mapped_extracted_label
+            extracted_labels.append(mapped_extracted_label)
+            logger.info(f"Processed {i + 1}/{len(df)} responses.")
+            
+            # Save progress after each row
+            save_progress(df, evaluation_results_path)
+
+        except Exception as e:
+            logger.error(f"Error processing response {i}: {e}")
+            extracted_labels.append(None)
+
+    # Calculate evaluation metrics
+    precision = precision_score(correct_labels, extracted_labels, average="binary")
+    recall = recall_score(correct_labels, extracted_labels, average="binary")
+    f1 = f1_score(correct_labels, extracted_labels, average="binary")
+    accuracy = accuracy_score(correct_labels, extracted_labels)
+
+    # Log the evaluation metrics
+    logger.info(f"Precision: {precision:.4f}")
+    logger.info(f"Recall: {recall:.4f}")
+    logger.info(f"F1 Score: {f1:.4f}")
+    logger.info(f"Accuracy: {accuracy:.4f}")
+
+    # Save evaluation metrics to DataFrame and CSV
+    eval_df = pd.DataFrame({
+        "Precision": [precision],
+        "Recall": [recall],
+        "F1 Score": [f1],
+        "Accuracy": [accuracy]
+    })
+    eval_df.to_csv(Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv"), index=False)
+
+    # Save full results to CSV
+    df.to_csv(evaluation_results_path, index=False)
+    logger.info(f"Evaluation completed. Results saved to {evaluation_results_path}")
+
+    return df, eval_df
+
+# Helper function for stop tokens
+tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
+
+def tokens(model_name):
+    return tokens_map.get(model_name, [])
+
+if __name__ == "__main__":
+    # Placeholder args; replace with actual argument values
+    class Args:
+        task = "numclaim"
+        model = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+        date = date.today().strftime('%d_%m_%Y')
+        max_tokens = 50
+        temperature = 0.0
+        top_p = 0.9
+        repetition_penalty = 1.0
+
+    args = Args()
+    extract_and_evaluate_responses(args)

@@ -1,0 +1,2 @@
+Accuracy (Entry-Level),Length Mismatch Rate,Element Mismatch Rate,Precision (Token-Level),Recall (Token-Level),F1 Score (Token-Level)
+0.07348837209302325,0.6102325581395349,0.293953488372093,0.3200676069766381,0.5139200621490595,0.3669978701359518
