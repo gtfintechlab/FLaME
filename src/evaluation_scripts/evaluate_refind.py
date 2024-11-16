@@ -13,6 +13,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
+possible_relationships = ['PERSON-TITLE', 'PERSON-GOV_AGY', 'PERSON-ORG', 'PERSON-UNIV', 'ORG-ORG', 'ORG-MONEY', 'ORG-GPE', 'ORG-DATE']
+
 def extraction_prompt(llm_response: str):
     prompt = f'''Extract the classification label from the following LLM response. The label should be one of the following: ‘PERSON-TITLE’, ‘PERSON-GOV_AGY’, ‘PERSON-ORG’, ‘PERSON-UNIV’, ‘ORG-ORG’, ‘ORG-MONEY’, ‘ORG-GPE’, or ‘ORG-DATE’. List ‘NO-REL’ if the LLM did not output a clear answer.
                 
@@ -24,7 +26,6 @@ def extraction_prompt(llm_response: str):
 
 def extract_and_evaluate_responses(args):
     client = Together()
-    together.api_key = '9c813c6191dc53f8db8a6a778744c6fb43b97eb5576b112eb6969250cd7cfb88'
     # together.api_key = args.api_key # type: ignore
     
     results_file = (
@@ -54,10 +55,12 @@ def extract_and_evaluate_responses(args):
             )
             extracted_label = model_response.choices[0].message.content.strip() # type: ignore
             if (extracted_label == None):
-                extracted_label = 'ERROR'
+                extracted_label = 'NO-REL'
                 print(f"Error processing response {i}: {llm_response}")
                 logger.error(f"Error processing response {i}: {llm_response}")
             extracted_label = extracted_label.replace(' ', '').upper()
+            if extracted_label not in possible_relationships:
+                extracted_label = 'NO-REL'
             extracted_labels.append(extracted_label)
             logger.debug(f"Processed {i + 1}/{len(df)} responses.")
         except Exception as e:
