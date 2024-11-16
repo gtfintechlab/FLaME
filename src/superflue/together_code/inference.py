@@ -53,6 +53,7 @@ def main(args):
         "causal_classification": causal_classification_inference,
         "subjectiveqa": subjectiveqa_inference,
         "ectsum": ectsum_inference,
+        "fnxl": fnxl_inference,
         "refind": refind_inference
     }
 
