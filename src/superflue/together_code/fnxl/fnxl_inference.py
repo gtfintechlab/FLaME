@@ -3,6 +3,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 import together
+import json
 
 # Custom imports for FNXL prompt and token handling
 from superflue.together_code.prompts import fnxl_prompt  # Custom prompt function for FNXL
@@ -41,6 +42,8 @@ def fnxl_inference(args):
     companies = []
     predicted_labels = []
     actual_labels = []
+    doc_types = []
+    llm_responses = []
     complete_responses = []
 
     logger.info(f"Starting inference on FNXL with model {args.model}...")
@@ -48,22 +51,28 @@ def fnxl_inference(args):
     # Iterate through the test split of the dataset
     for i in range(len(dataset["test"])):  # type: ignore
         sentence = dataset["test"][i]["sentence"]  # Extract sentence # type: ignore
-        numeral_tag = dataset["test"][i]["numerals-tags"]  # Extract numeral tag # type: ignore
+        # numeral_tag = json.loads(dataset["test"][i]["numerals-tags"]).values().tolist()  # Extract numeral tag # type: ignore
+        numeral_tag = dataset["test"][i]["numerals-tags"].replace("'", '"')  # Extract numeral tag # type: ignore
+        numeral_tag = json.loads(numeral_tag)
+        numeral_tag = list(numeral_tag.values())
         company = dataset["test"][i]["company"]  # Extract company # type: ignore
-        actual_label = dataset["test"][i]["ner_tags"]  # Extract actual label (NER tags) # type: ignore
+        # actual_label = dataset["test"][i]["ner_tags"]  # Extract actual label (NER tags) # type: ignore
+        doc_type = dataset["test"][i]["docType"]  # Extract document type # type: ignore
+        actual_label = json.loads(dataset["test"][i]["numerals-tags"].replace("'", '"')) # type: ignore
 
         # Append to respective lists
         sentences.append(sentence)
         numerals_tags.append(numeral_tag)
         companies.append(company)
-        actual_labels.append(actual_label)
+        doc_types.append(doc_type)
+        # actual_labels.append(actual_label)
 
         try:
             logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
             # FNXL-specific prompt to classify numerals in financial sentences
             model_response = client.chat.completions.create(
                 model=args.model,
-                messages=[{"role": "user", "content": fnxl_prompt(sentence, numeral_tag, company)}], # type: ignore
+                messages=[{"role": "user", "content": fnxl_prompt(sentence, numeral_tag, company, doc_type)}], # type: ignore
                 tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
@@ -74,10 +83,10 @@ def fnxl_inference(args):
 
             # Append the model response and predicted label for the sentence
             complete_responses.append(model_response)
-            predicted_label = model_response.choices[0].message.content.strip()  # type: ignore
-            predicted_labels.append(predicted_label)
+            llm_response = model_response.choices[0].message.content.strip()  # type: ignore
+            llm_responses.append(llm_response)
 
-            logger.info(f"Model response for sentence {i+1}: {predicted_label}")
+            logger.info(f"Model response for sentence {i+1}: {llm_response}")
 
         except Exception as e:
             # Log the error and retry the same sentence after a delay
@@ -93,7 +102,8 @@ def fnxl_inference(args):
             "sentences": sentences,
             "numerals_tags": numerals_tags,
             "companies": companies,
-            "predicted_labels": predicted_labels,
+            "doc_types": doc_types,
+            "llm_responses": predicted_labels,
             "actual_labels": actual_labels,
             "complete_responses": complete_responses,
         }

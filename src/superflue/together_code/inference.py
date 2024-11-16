@@ -51,7 +51,8 @@ def main(args):
         "finred": finred_inference,
         "causal_classification": causal_classification_inference,
         "subjectiveqa": subjectiveqa_inference,
-        "ectsum": ectsum_inference
+        "ectsum": ectsum_inference,
+        "fnxl": fnxl_inference,
     }
 
     if task in task_inference_map:

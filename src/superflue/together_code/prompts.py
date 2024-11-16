@@ -1,8 +1,3 @@
-def fnxl_prompt(sentence: str):
-    prompt = f"""Lorem ipsum: {sentence}"""
-    return prompt
-
-
 def headlines_prompt(sentence: str):
     prompt = f"""Lorem ipsum: {sentence}"""
     return prompt
@@ -369,6 +364,42 @@ def subjectiveqa_prompt(feature, definition, question, answer):
     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
     return prompt
+
+def fnxl_prompt(sentence, numerals, company, doc_type):
+    """
+    Generates a prompt for the LLM to associate numerals with the correct XBRL tags.
+    
+    Parameters:
+    - sentence (str): The sentence containing financial numerals.
+    - numerals (list): List of numerals to be tagged.
+    - company (str): The name of the company (for additional context).
+    - doc_type (str): The document type (e.g., "10-K").
+
+    Returns:
+    - str: The prompt to be passed to the LLM.
+    """
+    # Example prompt format
+    prompt = f"""
+You are a financial assistant skilled in SEC reporting. Your task is to analyze sentences containing financial numerals and associate each numeral with its corresponding financial XBRL tag based on the context. Below is an example:
+
+**Example Input**:
+- Sentence: "The Operating Partnership incurred expenses pursuant to the Corporate Services Agreement for the years ended December 31, 2020, 2019 and 2018 of $3.5 million, $3.5 million and $1.9 million, respectively."
+- Numerals: [3.5, 3.5, 1.9]
+- Metadata:
+  - Company: MGM Growth Properties LLC
+  - Document Type: 10-K
+- Expected Output:
+  ```json
+  {{"3.5": "us-gaap:RelatedPartyTransactionSellingGeneralAndAdministrativeExpensesFromTransactionsWithRelatedParty", "1.9": "us-gaap:RelatedPartyTransactionSellingGeneralAndAdministrativeExpensesFromTransactionsWithRelatedParty"}}
+  
+  Input:
+  Sentence: {sentence}
+  Numerals: {numerals}
+  Company: {company}
+  Document Type: {doc_type}"""
+  
+    return prompt
+
 
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
