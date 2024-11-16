@@ -1,3 +1,4 @@
+
 def headlines_prompt(sentence: str):
     prompt = f"""Lorem ipsum: {sentence}"""
     return prompt
@@ -19,10 +20,10 @@ def fiqa_task2_prompt(sentence: str):
 
 
 def edtsum_prompt(document: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert at summarization tasks.
-        You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization on this text. 
-        Use your understanding of the content to express the main ideas and crucial details in a shorter, coherent, and natural sounding text. Do not output any code.
-        \n\n The document:\n{document}.\nOutput your concise summary below:"""
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert at summarization tasks.	
+        You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization 
+        on this text. Use your understanding of the content to express the main ideas and crucial details in a shorter, coherent, and natural sounding text.
+        \nThe text:\n{document}.\nOutput your concise summary below. Try to keep your summary to one sentence and a maximum of 50 words, preferably around 25 words."""
     return prompt
 
 
@@ -308,19 +309,18 @@ def causal_classification_prompt(text: str):
 
     return prompt
 
+possible_relationships = ['product or material produced', 'manufacturer', 'distributed by', 'industry', 'position held', 'original broadcaster', 'owned by', 'founded by', 'distribution format', 'headquarters location', 'stock exchange', 'currency', 'parent organization', 'chief executive officer', 'director/manager', 'owner of', 'operator', 'member of', 'employer', 'chairperson', 'platform', 'subsidiary', 'legal form', 'publisher', 'developer', 'brand', 'business division', 'location of formation', 'creator']
 
-def finred_prompt(sentence: str):
-    system_prompt = """Discard all the previous instructions. Behave like you are an expert in financial entity and relation extraction."""
+def finred_prompt(sentence: str, entity1: str, entity2: str):
+    prompt = f"""Classify what relationship {entity2} (the head) has to {entity1} (the tail) within the following sentence:
+    "{sentence}"
+    
+    The relationship should match one of the following categories, where the relationship is what the head entity is to the tail entity:
+    {', '.join(possible_relationships)}.
 
-    user_msg = f"""Identify all financial entities (such as companies, financial instruments, dates, or money) 
-                and extract the relations between these entities from the following sentence.
-                Provide the relations in the format of (Entity 1, Relation, Entity 2).
-                The sentence: {sentence}"""
-
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-
+    You must output one, and only one, relationship out of the previous list that connects the head entity {entity2} to the tail entity {entity1}. Find what relationship best fits {entity2} 'RELATIONSHIP' {entity1} for this sentence.
+    """
     return prompt
-
 
 def causal_detection_prompt(tokens: list):
     """
@@ -365,6 +365,7 @@ def subjectiveqa_prompt(feature, definition, question, answer):
 
     return prompt
 
+
 def fnxl_prompt(sentence, numerals, company, doc_type):
     """
     Generates a prompt for the LLM to associate numerals with the correct XBRL tags.
@@ -400,6 +401,10 @@ You are a financial assistant skilled in SEC reporting. Your task is to analyze 
   
     return prompt
 
+def refind_prompt(entities):
+    relations = "PERSON/TITLE - person subject, title object, relation title\nPERSON/GOV_AGY - person subject, government agency object, relation member_of\nPERSON/UNIV - person subject, university object, relation employee_of, member_of, attended\nPERSON/ORG - person subject, organization object, relation employee_of, member_of, founder_of\nORG/DATE - organization subject, date object, relation formed_on, acquired_on\nORG/MONEY - organization subject, money object, relation revenue_of, profit_of, loss_of, cost_of\nORG/GPE - organization subject, geopolitical entity object, relation headquartered_in, operations_in, formed_in\nORG/ORG - organization subject, organization object, relation shares_of, subsidiary_of, acquired_by, agreement_with"
+    prompt = f"Classify the following relationship between ENT1 (the subject) and ENT2 (the object). The entities are marked by being enclosed in [ENT1] and [/EN1] and [ENT2] and [/ENT2] respectively. The subject entity will either be a person (PER) or an organization (ORG). The possible relationships are as follows, with the subject listed first and object listed second:\n{relations}\nText about entities: {entities}"
+    return prompt
 
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
@@ -415,7 +420,8 @@ prompt_map = {
     "tatqa_prompt": tatqa_prompt,
     "finred_prompt": finred_prompt,
     "causal_detection_prompt": causal_detection_prompt,
-    'finbench_prompt': finbench_prompt
+    'finbench_prompt': finbench_prompt,
+    'refind_prompt': refind_prompt
 }
 
 
