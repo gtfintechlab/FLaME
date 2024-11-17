@@ -2,8 +2,6 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
-from together import Together
 from evaluate import load
 import numpy as np
 bertscore = load("bertscore")
@@ -59,12 +57,6 @@ def extract_and_evaluate_responses(args):
 
     logger.info(f"Evaluation completed. Results saved to {evaluation_results_path}")
     return df
-
-# Helper function for stop tokens
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
-
-def tokens(model_name):
-    return tokens_map.get(model_name, [])
 
 if __name__ == "__main__":
     extract_and_evaluate_responses(None)

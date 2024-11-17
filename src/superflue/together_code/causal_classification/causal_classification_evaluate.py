@@ -3,8 +3,6 @@ import pandas as pd
 from datetime import date
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 
-import together
-from together import Together
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, ROOT_DIR, LOG_DIR, LOG_LEVEL
 

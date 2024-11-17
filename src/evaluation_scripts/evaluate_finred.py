@@ -2,7 +2,7 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
+from litellm import completion 
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.together_code.tokens import tokens
@@ -25,8 +25,6 @@ def extraction_prompt(llm_response: str):
     return prompt
 
 def extract_and_evaluate_responses(args):
-    client = together.Together()
-    # together.api_key = args.api_key  # type: ignore
 
     results_file = (
         ROOT_DIR
@@ -43,8 +41,8 @@ def extract_and_evaluate_responses(args):
 
     for i, llm_response in tqdm(enumerate(df["llm_responses"])):
         try:
-            model_response = client.chat.completions.create(
-                model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",#args.model,
+            model_response = completion(
+                model="together_ai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",#args.model,
                 messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
                 max_tokens=10,#args.max_tokens,
                 temperature=0.0,#args.temperature,
