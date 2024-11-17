@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 RESULTS_DIR = ROOT_DIR / "evaluation_results"
 
+print(ROOT_DIR)
+
 # Label Mapping for Headlines task
 label_mapping = {
     "Price_or_Not": {"0": 0, "1": 1},
@@ -53,9 +55,10 @@ def extract_and_evaluate_responses(args):
     # Load the CSV file with the LLM responses
     results_file = (
         ROOT_DIR
-        / "results"
-        / 'headlines'
-        / f"headlines_meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo_{date.today().strftime('%d_%m_%Y')}.csv"
+        # / "results"
+        # / 'headlines'
+        # / f"headlines_meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo_{date.today().strftime('%d_%m_%Y')}.csv"
+        / "headlines_meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo_07_10_2024.csv"
     )
     df = pd.read_csv(results_file)
 

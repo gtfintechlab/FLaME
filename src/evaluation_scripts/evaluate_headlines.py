@@ -29,12 +29,13 @@ def save_progress(df, path):
     logger.info(f"Progress saved to {path}")
 
 def extract_and_evaluate_responses(args):
-    together.api_key = args.api_key  # type: ignore
+    client = together.Together()
     results_file = (
         ROOT_DIR
         / "results"
-        / args.task
-        / f"{args.task}_{args.model}_{args.date}.csv"
+        / "headlines"
+        / "headlines_meta-llama"
+        / "Meta-Llama-3.1-8B-Instruct-Turbo_17_11_2024.csv"
     )
 
     # Load the CSV file with the LLM responses
@@ -46,8 +47,8 @@ def extract_and_evaluate_responses(args):
     evaluation_results_path = (
         ROOT_DIR
         / "evaluation_results"
-        / args.task
-        / f"evaluation_{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        / "headlines"
+        / f"evaluation_{'headlines'}_{'meta-llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
 
     # Initialize the columns for storing results if they don't exist
@@ -60,17 +61,17 @@ def extract_and_evaluate_responses(args):
             continue
 
         try:
-            model_response = together.Complete.create(  # type: ignore
-                prompt=extraction_prompt(llm_response),
-                model=args.model,
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+            model_response = client.chat.completions.create(  # type: ignore
+                model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", 
+                messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
+                max_tokens=128,
+                temperature=0.7,
+                top_k=50,
+                top_p=0.7,
+                repetition_penalty=1.1,
+                stop=tokens("meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"),
             )
-            extracted_label = model_response["output"]["choices"][0]["text"].strip()  # type: ignore
+            extracted_label = model_response.choices[0].message.content.strip() # type: ignore
             df.at[i, 'extracted_labels'] = extracted_label
             extracted_labels.append(extracted_label)
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
@@ -93,4 +94,7 @@ def extract_and_evaluate_responses(args):
 tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
 def tokens(model_name):
     return tokens_map.get(model_name, [])
+
+if __name__ == "__main__":
+    extract_and_evaluate_responses(None)
 
