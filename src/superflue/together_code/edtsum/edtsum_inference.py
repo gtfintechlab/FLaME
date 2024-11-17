@@ -1,7 +1,7 @@
 import time
 import pandas as pd
 from datasets import load_dataset
-from together import Together
+from litellm import completion 
 from superflue.together_code.prompts import edtsum_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.together_code.tokens import tokens
@@ -22,7 +22,6 @@ def edtsum_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
-    client = Together()
 
     # start_t = time.time()
     for i in tqdm(range(len(dataset["test"])),  desc="Processing sentences"): # type: ignore
@@ -32,7 +31,7 @@ def edtsum_inference(args):
         actual_labels.append(actual_label)
 
         try:
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": edtsum_prompt(document)}],
                 max_tokens=args.max_tokens,

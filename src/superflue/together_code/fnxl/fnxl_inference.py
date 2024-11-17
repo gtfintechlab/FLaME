@@ -2,7 +2,7 @@ import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-import together
+from litellm import completion 
 import json
 
 # Custom imports for FNXL prompt and token handling
@@ -17,9 +17,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "fnxl_inference.log",
     level=LOG_LEVEL,
 )
-
-# Initialize the Together client
-client = together.Together()
 
 def fnxl_inference(args):
     today = date.today()
@@ -70,7 +67,7 @@ def fnxl_inference(args):
         try:
             logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
             # FNXL-specific prompt to classify numerals in financial sentences
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": fnxl_prompt(sentence, numeral_tag, company, doc_type)}], # type: ignore
                 tokens=args.max_tokens,

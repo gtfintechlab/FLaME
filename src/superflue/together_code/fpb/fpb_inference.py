@@ -36,9 +36,14 @@ def fpb_inference(args):
         try:
             logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
             model_response = completion(
-                model=args.model, messages=[{"role": "user", "content": fpb_prompt(sentence, prompt_format='superflue')}],
-                max_tokens=args.max_tokens, temperature=args.temperature, top_k=args.top_k, top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty, stop=tokens(args.model)
+                model=args.model, 
+                messages=[{"role": "user", "content": fpb_prompt(sentence, prompt_format='superflue')}],
+                max_tokens=args.max_tokens, 
+                temperature=args.temperature, 
+                top_k=args.top_k, 
+                top_p=args.top_p,
+                repetition_penalty=args.repetition_penalty, 
+                stop=tokens(args.model)
             )
             logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)

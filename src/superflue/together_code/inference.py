@@ -54,7 +54,8 @@ def main(args):
         "subjectiveqa": subjectiveqa_inference,
         "ectsum": ectsum_inference,
         "fnxl": fnxl_inference,
-        "refind": refind_inference
+        "refind": refind_inference,
+        "banking77": banking77_inference,
     }
 
     if task in task_inference_map:

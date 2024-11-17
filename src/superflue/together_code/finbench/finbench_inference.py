@@ -10,7 +10,7 @@ from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
-from together import Together
+from litellm import completion 
 
 logger = setup_logger(
     name="finbench_inference",
@@ -36,7 +36,6 @@ def finbench_inference(args):
 
     logger.info("Starting inference on dataset...")
     # start_t = time.time()
-    client = Together()
 
     # Iterating through the test split of the dataset
     for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"): # type: ignore
@@ -51,7 +50,7 @@ def finbench_inference(args):
         try:
             logger.info(f"Processing instance {i+1}/{len(dataset['test'])}") # type: ignore
 
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": finbench_prompt(instance['X_profile'])}],
                 max_tokens=args.max_tokens,
