@@ -3,10 +3,9 @@ import time
 import pandas as pd
 from datasets import load_dataset
 
-import together
 from superflue.together_code.prompts import convfinqa_prompt
 from superflue.together_code.tokens import tokens
-
+from litellm import completion 
 
 def convfinqa_inference(args):
     
@@ -40,7 +39,7 @@ def convfinqa_inference(args):
         actual_label = entry["answer_1"]  # type: ignore
         actual_labels.append(actual_label)
         try:
-            model_response = together.Complete.create(
+            model_response = completion(
                 prompt=convfinqa_prompt(combined_text),
                 model=args.model,
                 max_tokens=args.max_tokens,
@@ -51,7 +50,7 @@ def convfinqa_inference(args):
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]
+            response_label = model_response.choices[0].message.content
             llm_responses.append(response_label)
 
             df = pd.DataFrame(

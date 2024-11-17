@@ -2,8 +2,8 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
-from together import Together
+from litellm import completion 
+from superflue.together_code.tokens import tokens
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 # Configure logging
@@ -33,9 +33,7 @@ def map_label_to_number(label: str):
     return label_mapping.get(normalized_label, -1)  # Return -1 if the label is not found
 
 def extract_and_evaluate_responses(args):
-    client = Together()
-    together.api_key = args.api_key # type: ignore
-    
+
     results_file = (
         ROOT_DIR
         / "results"
@@ -51,8 +49,8 @@ def extract_and_evaluate_responses(args):
 
     for i, llm_response in enumerate(df["llm_responses"]):
         try:
-            model_response = client.chat.completions.create(
-                model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",#args.model,
+            model_response = completion(
+                model="together_ai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",#args.model,
                 messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
                 max_tokens=10,#args.max_tokens,
                 temperature=0.0,#args.temperature,
@@ -97,10 +95,6 @@ def extract_and_evaluate_responses(args):
     eval_df.to_csv(Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv"), index=False)
     
     return df, accuracy
-
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
-def tokens(model_name):
-    return tokens_map.get(model_name, [])
 
 if __name__ == "__main__":
     extract_and_evaluate_responses(None)

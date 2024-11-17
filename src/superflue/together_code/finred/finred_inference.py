@@ -4,8 +4,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-import together
-from together import Together
+from litellm import completion 
 from superflue.together_code.prompts import finred_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
@@ -16,9 +15,6 @@ from tqdm import tqdm
 logger = setup_logger(
     name="finred_inference", log_file=LOG_DIR / "finred_inference.log", level=LOG_LEVEL
 )
-
-# Initialize the Together client
-client = Together()
 
 def finred_inference(args):
     today = date.today()
@@ -61,7 +57,7 @@ def finred_inference(args):
                 logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}, entity pair {entity1}-{entity2}") # type: ignore
 
                 prompt = finred_prompt(sentence, entity1, entity2)
-                model_response = client.chat.completions.create(
+                model_response = completion(
                     model=args.model,
                     messages=[{"role": "user", "content": prompt}],
                     tokens=args.max_tokens,

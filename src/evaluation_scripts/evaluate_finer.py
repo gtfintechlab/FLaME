@@ -2,7 +2,8 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
+from litellm import completion 
+from superflue.together_code.tokens import tokens
 import json
 
 # Configure logging
@@ -45,7 +46,6 @@ def save_intermediate_results(df, extracted_labels, path):
     logger.info(f"Intermediate results saved to {path}")
 
 def extract_and_evaluate_responses(args, save_interval=10):
-    together.api_key = args.api_key  # type: ignore
     results_file = (
         ROOT_DIR
         / "results"
@@ -68,7 +68,7 @@ def extract_and_evaluate_responses(args, save_interval=10):
 
     for i, llm_response in enumerate(df["llm_responses"]):
         try:
-            model_response = together.Complete.create(  # type: ignore
+            model_response = completion(  # type: ignore
                 prompt=extraction_prompt_finer(llm_response),
                 model=args.model,
                 max_tokens=args.max_tokens,
@@ -80,7 +80,7 @@ def extract_and_evaluate_responses(args, save_interval=10):
             )
             
             
-            extracted_json = model_response["output"]["choices"][0]["text"].strip()  # type: ignore
+            extracted_json = model_response.choices[0].message.content.strip()  # type: ignore
             extracted_tokens = json.loads(extracted_json)
 
             for gold_token, correct_label in zip(gold_tokens, correct_labels):
@@ -115,7 +115,3 @@ def extract_and_evaluate_responses(args, save_interval=10):
 
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Final results saved to {evaluation_results_path}")
     return df, accuracy
-
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
-def tokens(model_name):
-    return tokens_map.get(model_name, [])

@@ -1,7 +1,7 @@
 import time
 import pandas as pd
 from datasets import load_dataset
-import together
+from litellm import completion 
 from superflue.together_code.prompts import fiqa_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
@@ -40,7 +40,7 @@ def fiqa_inference(args):
         actual_sentiments.append(sentiment_score)
 
         try:
-            model_response = together.Complete.create(
+            model_response = completion(
                 prompt=fiqa_prompt(combined_text),
                 model=args.model,
                 max_tokens=args.max_tokens,
@@ -52,7 +52,7 @@ def fiqa_inference(args):
             )
 
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]
+            response_label = model_response.choices[0].message.content # type: ignore
             llm_responses.append(response_label)
 
             print(response_label)

@@ -3,8 +3,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-import together
-from together import Together
+from litellm import completion 
 from superflue.together_code.prompts import ectsum_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
@@ -14,9 +13,6 @@ from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 logger = setup_logger(
     name="ectsum_inference", log_file=LOG_DIR / "ectsum_inference.log", level=LOG_LEVEL
 )
-
-# Initialize the Together client
-client = Together()
 
 def ectsum_inference(args):
 
@@ -52,7 +48,7 @@ def ectsum_inference(args):
         try:
             logger.info(f"Processing document {i+1}/{len(dataset['test'])}")  # type: ignore
             # Generate the model's response using Together API
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": ectsum_prompt(document)}],
                 tokens=args.max_tokens,

@@ -2,8 +2,8 @@ import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
+from litellm import completion 
 
-import together
 from superflue.together_code.prompts import headlines_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
@@ -15,9 +15,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "headlines_inference.log",
     level=LOG_LEVEL,
 )
-
-# Initialize the Together client
-client = together.Together()
 
 def headlines_inference(args):
     today = date.today()
@@ -71,8 +68,7 @@ def headlines_inference(args):
 
         try:
             logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
-            # Generate the model's response using Together API
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": headlines_prompt(sentence)}],
                 tokens=args.max_tokens,

@@ -66,6 +66,7 @@ To configure your API keys, follow these steps:
       API_KEY_NAME=your_api_key_value
       ```
     - Replace `API_KEY_NAME` with the actual name of the API key and `your_api_key_value` with your actual API key.
+    - Make sure to add all API keys relevant to the models you want to call.
 
 3. **Save the `.env` file**:
     - Ensure the file is saved in the project root directory.

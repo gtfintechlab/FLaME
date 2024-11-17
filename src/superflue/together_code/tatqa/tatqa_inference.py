@@ -3,7 +3,7 @@ import time
 from datetime import date
 
 # from pathlib import Path
-import together
+from litellm import completion 
 
 import nltk
 import pandas as pd
@@ -54,7 +54,7 @@ def tatqa_inference(args):
         try:
             logger.info(f"Processing question {i+1}/{len(dataset['test'])}") # type: ignore
             # TAT-QA-specific prompt logic, create the prompt for table and text-based QA
-            model_response = together.Complete.create(
+            model_response = completion(
                 prompt=tatqa_prompt(question, context),
                 model=args.model,
                 max_tokens=args.max_tokens,
@@ -64,7 +64,7 @@ def tatqa_inference(args):
                 repetition_penalty=args.repetition_penalty,
                 stop=tokens(args.model),
             )
-            model_responses.append(model_response["output"]["choices"][0]["text"])
+            model_responses.append(model_response.choices[0].message.content)
 
             df = pd.DataFrame(
                 {

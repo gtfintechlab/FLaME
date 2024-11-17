@@ -2,7 +2,8 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
+from litellm import completion 
+from superflue.together_code.tokens import tokens
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 # Configure logging
@@ -48,7 +49,6 @@ def save_progress(df, path):
     logger.info(f"Progress saved to {path}")
 
 def extract_and_evaluate_responses(args):
-    client = together.Together()
 
     # Load the CSV file with the LLM responses
     results_file = (
@@ -82,7 +82,7 @@ def extract_and_evaluate_responses(args):
 
         try:
             # Generate the prompt and get the LLM response
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
                 max_tokens=50,
@@ -126,11 +126,6 @@ def extract_and_evaluate_responses(args):
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}. Results saved to {evaluation_results_path}")
 
     return df, accuracy, precision, recall, f1
-
-# Token stop mappings based on model
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
-def tokens(model_name):
-    return tokens_map.get(model_name, [])
 
 if __name__ == "__main__":
     extract_and_evaluate_responses(None)

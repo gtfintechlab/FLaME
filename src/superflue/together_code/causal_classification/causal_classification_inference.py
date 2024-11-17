@@ -1,5 +1,4 @@
-import together
-from together import Together
+from litellm import completion 
 import pandas as pd
 import time
 import sys
@@ -19,8 +18,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "causal_classification_inference.log",
     level=LOG_LEVEL,
 )
-
-client = Together()
 
 def causal_classification_inference(args):
     today = date.today()
@@ -45,15 +42,15 @@ def causal_classification_inference(args):
         try:
             logger.info(f"Processing text {i+1}/{len(dataset['test'])}")  # type: ignore
     
-            model_response = client.chat.completions.create(
-            model=args.model,
-            messages=[{"role": "user", "content": causal_classification_prompt(text)}],
-            temperature=args.temperature,
-            tokens=args.max_tokens,
-            top_k=args.top_k,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            stop=tokens(args.model),
+            model_response = completion(
+                model=args.model,
+                messages=[{"role": "user", "content": causal_classification_prompt(text)}],
+                temperature=args.temperature,
+                tokens=args.max_tokens,
+                top_k=args.top_k,
+                top_p=args.top_p,
+                repetition_penalty=args.repetition_penalty,
+                stop=tokens(args.model),
             )
             logger.info(f"Model response: {model_response.choices[0].message.content}")  # type: ignore
             complete_responses.append(model_response.choices[0].message.content) # type: ignore

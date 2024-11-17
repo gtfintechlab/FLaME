@@ -2,8 +2,8 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
-
+from litellm import completion 
+from superflue.together_code.tokens import tokens
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
@@ -32,7 +32,7 @@ def extract_and_evaluate_responses(args):
 
     for i, input_text in enumerate(df["input"]):
         try:
-            model_response = together.Complete.create(  # type: ignore
+            model_response = completion(  # type: ignore
                 prompt=summarization_prompt(input_text),
                 model=args.model,
                 max_tokens=args.max_tokens,
@@ -42,7 +42,7 @@ def extract_and_evaluate_responses(args):
                 repetition_penalty=args.repetition_penalty,
                 stop=tokens(args.model),
             )
-            generated_summary = model_response["output"]["choices"][0]["text"].strip()  # type: ignore
+            generated_summary = model_response.choices[0].message.content.strip()  # type: ignore
             generated_summaries.append(generated_summary)
             logger.info(f"Processed {i + 1}/{len(df)} inputs.")
         except Exception as e:
@@ -68,9 +68,3 @@ def extract_and_evaluate_responses(args):
 
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
     return df, accuracy
-
-# Helper function for stop tokens
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
-
-def tokens(model_name):
-    return tokens_map.get(model_name, [])
