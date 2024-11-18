@@ -88,16 +88,17 @@ def extract_and_evaluate_responses(args):
 
         try:
             model_response = completion(  # type: ignore
-                prompt=extraction_prompt(llm_response),
-                model="together_ai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo" ,
+                messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
+                model="together_ai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
                 max_tokens=128,
                 temperature=0.7,
                 top_k=50,
                 top_p=0.7,
                 repetition_penalty=1.1,
+                stop=tokens("meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo")
             )
             raw_response = model_response.choices[0].message.content.strip()  # type: ignore
-            #print(raw_response)
+            # print(raw_response)
             cleaned_response = extract_json_from_response(raw_response)
             #print(cleaned_response)
             extracted_label = json.loads(cleaned_response)  # type: ignore
@@ -122,10 +123,6 @@ def extract_and_evaluate_responses(args):
     accuracy = sum(scores) / len(scores)
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}")
     return df, accuracy
-
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
-def tokens(model_name):
-    return tokens_map.get(model_name, [])
 
 if __name__ == "__main__":
     extract_and_evaluate_responses(None)
