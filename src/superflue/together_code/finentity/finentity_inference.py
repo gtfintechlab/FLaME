@@ -5,8 +5,7 @@ import nltk
 import pandas as pd
 from datasets import load_dataset
 
-import together
-from together import Together
+from litellm import completion 
 from superflue.together_code.prompts import finentity_prompt
 from superflue.together_code.tokens import tokens
 
@@ -20,8 +19,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "finentity_inference.log",
     level=LOG_LEVEL,
 )
-
-client = Together()
 
 def finentity_inference(args):
     
@@ -46,7 +43,7 @@ def finentity_inference(args):
         actual_labels.append(actual_label)
         try:
             logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
-            model_response = client.chat.completions.create(
+            model_response = completion(
             model=args.model,
             messages=[{"role": "user", "content": finentity_prompt(sentence)}],
             tokens=args.max_tokens,

@@ -4,8 +4,7 @@ import os
 import pandas as pd
 from datasets import load_dataset
 
-import together
-from together import Together
+from litellm import completion 
 from superflue.together_code.prompts import subjectiveqa_prompt
 from superflue.together_code.tokens import tokens
 
@@ -17,8 +16,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "subjectiveqa_inference.log",
     level=LOG_LEVEL,
 )
-
-client = Together()
 
 def subjectiveqa_inference(args):
     
@@ -62,7 +59,7 @@ def subjectiveqa_inference(args):
                 row_data[f"{feature}_actual_label"] = [actual_label]
                 
                 try:
-                    model_response = client.chat.completions.create(
+                    model_response = completion(
                         model=args.model,
                         messages=[
                             {"role": "system", "content": "You are an expert sentence classifier."},

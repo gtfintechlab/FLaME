@@ -2,7 +2,7 @@ import logging
 import time
 from datetime import date
 from pathlib import Path
-import together
+from litellm import completion 
 import pandas as pd
 from datasets import load_dataset
 import nltk
@@ -48,20 +48,18 @@ def causal_detection_inference(args):
         try:
             logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
             # Causal Detection-specific prompt logic to classify each token
-            model_response = together.Complete.create(
-                prompt=causal_detection_prompt(tokens),
+            model_response = completion(
                 model=args.model,
-                max_tokens=args.max_tokens,
+                messages=[{"role": "user", "content": causal_detection_prompt(tokens)}],
                 temperature=args.temperature,
+                tokens=args.max_tokens,
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
                 stop=tokens(args.model),
             )
             complete_responses.append(model_response)
-            predicted_tag = model_response["output"]["choices"][0][
-                "text"
-            ].split()  # Assumed token-wise classification
+            predicted_tag = model_response.choices[0].message.content.split()  # Assumed token-wise classification
             predicted_tags.append(predicted_tag)
 
             df = pd.DataFrame(

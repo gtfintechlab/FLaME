@@ -2,7 +2,8 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
+from litellm import completion 
+from superflue.together_code.tokens import tokens
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +27,6 @@ def save_progress(df, path):
     logger.info(f"Progress saved to {path}")
 
 def extract_and_evaluate_responses(args):
-    together.api_key = args.api_key  # type: ignore
     results_file = (
         ROOT_DIR
         / "results"
@@ -57,7 +57,7 @@ def extract_and_evaluate_responses(args):
             continue
 
         try:
-            model_response = together.Complete.create(  # type: ignore
+            model_response = completion(  # type: ignore
                 prompt=extraction_prompt(llm_response),
                 model=args.model,
                 max_tokens=args.max_tokens,
@@ -67,7 +67,7 @@ def extract_and_evaluate_responses(args):
                 repetition_penalty=args.repetition_penalty,
                 stop=tokens(args.model),
             )
-            extracted_label = model_response["output"]["choices"][0]["text"].strip()  # type: ignore
+            extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
             df.at[i, 'extracted_labels'] = extracted_label
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
             
@@ -85,7 +85,3 @@ def extract_and_evaluate_responses(args):
 
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
     return df, accuracy
-
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
-def tokens(model_name):
-    return tokens_map.get(model_name, [])

@@ -2,8 +2,6 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
-from together import Together
 from evaluate import load
 import numpy as np
 bertscore = load("bertscore")

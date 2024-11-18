@@ -1,9 +1,10 @@
 import time
 import pandas as pd
 from datasets import load_dataset
-import together
+from litellm import completion 
 from superflue.together_code.prompts import fiqa_task2_prompt
 from superflue.utils.logging_utils import setup_logger
+from superflue.together_code.tokens import tokens
 from superflue.config import LOG_DIR, LOG_LEVEL
 
 logger = setup_logger(
@@ -37,7 +38,7 @@ def fiqa_task2_inference(args):
         actual_answers.append(actual_answer)
 
         try:
-            model_response = together.Complete.create(
+            model_response = completion(
                 prompt=fiqa_task2_prompt(combined_text),
                 model=args.model,
                 max_tokens=args.max_tokens,
@@ -45,11 +46,11 @@ def fiqa_task2_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                # stop=tokens(args.model),
+                stop=tokens(args.model)
             )
 
             complete_responses.append(model_response)
-            response_label = model_response["output"]["choices"][0]["text"]
+            response_label = model_response.choices[0].message.content # type: ignore
             llm_responses.append(response_label)
             # print(llm_responses)
 

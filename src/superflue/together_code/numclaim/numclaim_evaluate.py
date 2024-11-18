@@ -2,13 +2,12 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
-from together import Together
+from litellm import completion 
+from superflue.together_code.tokens import tokens
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from superflue.config import RESULTS_DIR, ROOT_DIR
 from superflue.utils.logging_utils import setup_logger
 import os
-client = Together()
 logger = setup_logger(
     name="numclaim_evaluate",
     log_file=Path("logs/numclaim_evaluate.log"),
@@ -65,7 +64,7 @@ def extract_and_evaluate_responses(args):
 
         try:
             # Correct Together API call structure
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[
                     {"role": "system", "content": "You are an expert sentence classifier focused on identifying claims."},
@@ -116,12 +115,6 @@ def extract_and_evaluate_responses(args):
     logger.info(f"Evaluation completed. Results saved to {evaluation_results_path}")
 
     return df, eval_df
-
-# Helper function for stop tokens
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
-
-def tokens(model_name):
-    return tokens_map.get(model_name, [])
 
 if __name__ == "__main__":
     # Placeholder args; replace with actual argument values

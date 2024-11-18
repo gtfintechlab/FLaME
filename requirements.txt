@@ -20,3 +20,4 @@ huggingface_hub
 bert_score
 evaluate
 transformers
+litellm

@@ -2,17 +2,15 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
 import json
-from together import Together
+from litellm import completion 
+from superflue.together_code.tokens import tokens
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from superflue.config import RESULTS_DIR, ROOT_DIR
 from superflue.utils.logging_utils import setup_logger
 import os
 import re
 
-# Initialize Together client
-client = Together()
 logger = setup_logger(
     name="finer_evaluate",
     log_file=Path("logs/finer_evaluate.log"),
@@ -159,7 +157,7 @@ def extract_and_evaluate_responses(args):
             continue
 
         try:
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[
                     {"role": "system", "content": "You are an expert in named entity recognition and label extraction."},
@@ -212,11 +210,6 @@ def extract_and_evaluate_responses(args):
     logger.info(f"Evaluation completed. Results saved to {evaluation_results_path}")
 
     return df, evaluation_results_path
-
-# Helper function for stop tokens
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
-def tokens(model_name):
-    return tokens_map.get(model_name, [])
 
 if __name__ == "__main__":
     class Args:

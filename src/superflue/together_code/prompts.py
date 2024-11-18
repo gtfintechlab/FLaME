@@ -393,7 +393,9 @@ def fnxl_prompt(sentence, numerals, company, doc_type):
     """
     # Example prompt format
     prompt = f"""
-You are a financial assistant skilled in SEC reporting. Your task is to analyze sentences containing financial numerals and associate each numeral with its corresponding financial XBRL tag based on the context. Below is an example:
+You are a financial assistant skilled in SEC reporting. Your task is to analyze sentences containing financial numerals and associate each numeral with its corresponding financial XBRL tag based on the context. 
+Give the most accurate tag for that particular numeral.
+Below is an example:
 
 **Example Input**:
 - Sentence: "The Operating Partnership incurred expenses pursuant to the Corporate Services Agreement for the years ended December 31, 2020, 2019 and 2018 of $3.5 million, $3.5 million and $1.9 million, respectively."

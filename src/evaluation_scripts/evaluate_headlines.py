@@ -4,7 +4,8 @@ import json
 import logging
 from datetime import date
 from pathlib import Path
-import together
+from litellm import completion  # type: ignore
+from superflue.together_code.tokens import tokens # type: ignore
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -46,7 +47,7 @@ def extract_json_from_response(raw_response):
         return None 
 
 def extract_and_evaluate_responses(args):
-    client = together.Together()
+    together.api_key = args.api_key  # type: ignore
     results_file = (
         ROOT_DIR
         / "results"
@@ -86,40 +87,35 @@ def extract_and_evaluate_responses(args):
             continue  # Skip already processed rows
 
         try:
-            model_response = client.chat.completions.create(  
-                model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-                messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
-                max_tokens=128,
-                temperature=0.7,
-                top_k=50,
-                top_p=0.7,
-                repetition_penalty=1.1
+            model_response = together.Complete.create(  # type: ignore
+                prompt=extraction_prompt(llm_response),
+                model=args.model,
+                max_tokens=args.max_tokens,
+                temperature=args.temperature,
+                top_k=args.top_k,
+                top_p=args.top_p,
+                repetition_penalty=args.repetition_penalty,
+                stop=tokens(args.model),
             )
-            raw_response = model_response.choices[0].message.content.strip()  # type: ignore
-            cleaned_response = extract_json_from_response(raw_response)
-            #print(cleaned_response)
-            extracted_label = json.loads(cleaned_response)  # type: ignore
-
-            # Standardize key names
-            extracted_label = {k.lower(): v for k, v in extracted_label.items()}
-            correct_label = {k.lower(): v for k, v in correct_labels[i].items()}  # type: ignore
-
-            # Calculate score for the current sample
-            score = sum(1 for k in correct_label if extracted_label.get(k) == correct_label[k]) / 7
-            scores.append(score)
-            df.at[i, 'extracted_labels'] = json.dumps(extracted_label)
-
+            extracted_label = model_response["output"]["choices"][0]["text"].strip()  # type: ignore
+            df.at[i, 'extracted_labels'] = extracted_label
+            extracted_label.append(extracted_label)
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
             save_progress(df, evaluation_results_path)
 
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
-            scores.append(0) 
+            extracted_label.append(None)
 
-    # Evaluate overall performance
-    average_accuracy = sum(scores) / len(scores)
-    logger.info(f"Evaluation completed. Average Accuracy: {average_accuracy:.4f}")
-    return df, average_accuracy
+    # Evaluate the performance
+    correct_predictions = sum(1 for x, y in zip(correct_labels, extracted_label) if x == y)
+    total_predictions = len(correct_labels)
+    accuracy = correct_predictions / total_predictions
 
-if __name__ == "__main__":
-    extract_and_evaluate_responses(None)
+    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
+    return df, accuracy
+
+tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
+def tokens(model_name):
+    return tokens_map.get(model_name, [])
+

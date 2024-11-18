@@ -2,15 +2,14 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
-from together import Together
+from litellm import completion 
+from superflue.together_code.tokens import tokens
 from superflue.config import RESULTS_DIR, ROOT_DIR
 from superflue.utils.logging_utils import setup_logger
 import os
 import json
 import ast
 
-client = Together()
 logger = setup_logger(
     name="finentity_evaluate",
     log_file=Path("logs/finentity_evaluate.log"),
@@ -117,7 +116,7 @@ def extract_and_evaluate_entities(args):
             continue
 
         try:
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[
                     {"role": "system", "content": "You are a JSON formatter for entity extraction outputs."},
@@ -127,7 +126,7 @@ def extract_and_evaluate_entities(args):
                 temperature=args.temperature,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                stop=tokens(args.model) + ["["],
             )
             extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
             extracted_label = sanitize_json_string(extracted_label)
@@ -167,13 +166,6 @@ def extract_and_evaluate_entities(args):
     logger.info(f"Evaluation completed. Results saved to {evaluation_results_path}")
 
     return df, eval_df
-
-tokens_map = {
-    "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo": ["["],
-}
-
-def tokens(model_name):
-    return tokens_map.get(model_name, [])
 
 if __name__ == "__main__":
     class Args:
