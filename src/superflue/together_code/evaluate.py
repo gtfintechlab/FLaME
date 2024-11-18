@@ -8,8 +8,6 @@ from superflue.together_code.numclaim.numclaim_evaluate import numclaim_evaluate
 # from superflue.together_code.headlines.headlines_evaluate import headlines_evaluate
 # # from superflue.together_code.fiqa.fiqa_task1_evaluate import fiqa_evaluate
 # # from superflue.together_code.fiqa.fiqa_task2_evaluate import fiqa_task2_evaluate
-from time import time
-from datetime import date
 # from superflue.together_code.edtsum.edtsum_evaluate import edtsum_evaluate
 # from superflue.together_code.banking77.banking77_evaluate import banking77_evaluate
 # from superflue.together_code.finred.finred_evaluate import finred_evaluate
@@ -18,8 +16,10 @@ from datetime import date
 # from superflue.together_code.ectsum.ectsum_evaluate import ectsum_evaluate
 # from superflue.together_code.refind.refind_evaluate import refind_evaluate
 import pandas as pd
+from time import time
+from datetime import date
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL, EVALUATION_DIR
 
 logger = setup_logger(
     name="together_evaluate",
@@ -56,7 +56,7 @@ def main(args):
         df = evaluate_function(args.file_name, args)[0]  # Pass the file_name as an additional parameter
         metrics_df = evaluate_function(args.file_name, args)[1]
         results_path = (
-            RESULTS_DIR
+            EVALUATION_DIR
             / task
             / f"{task}_evaluation_{args.model}_{args.file_name}_{date.today().strftime('%d_%m_%Y')}.csv"
         )
@@ -65,7 +65,7 @@ def main(args):
         logger.info(f"Evaluation completed for {task}. Results saved to {results_path}")
         
         metrics_path = (
-            RESULTS_DIR
+            EVALUATION_DIR
             / task
             / f"{task}_evaluation_{args.model}_{args.file_name}_{date.today().strftime('%d_%m_%Y')}_metrics.csv"
         )
