@@ -82,7 +82,7 @@ def extract_and_evaluate_responses(args):
 
     scores = []
 
-    for i, llm_response in enumerate(df["llm_responses"][:1]):
+    for i, llm_response in enumerate(df["llm_responses"]):
         if pd.notna(df.at[i, 'extracted_labels']):
             continue  # Skip already processed rows
 
