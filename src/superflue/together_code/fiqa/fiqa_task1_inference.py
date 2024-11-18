@@ -41,7 +41,7 @@ def fiqa_inference(args):
 
         try:
             model_response = completion(
-                prompt=fiqa_prompt(combined_text),
+                messages=[{"role": "user", "content": fiqa_prompt(combined_text)}],
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,

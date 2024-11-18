@@ -55,7 +55,7 @@ def tatqa_inference(args):
             logger.info(f"Processing question {i+1}/{len(dataset['test'])}") # type: ignore
             # TAT-QA-specific prompt logic, create the prompt for table and text-based QA
             model_response = completion(
-                prompt=tatqa_prompt(question, context),
+                messages=[{"role": "user", "content": tatqa_prompt(question, context)}],
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,

@@ -69,7 +69,7 @@ def extract_and_evaluate_responses(args, save_interval=10):
     for i, llm_response in enumerate(df["llm_responses"]):
         try:
             model_response = completion(  # type: ignore
-                prompt=extraction_prompt_finer(llm_response),
+                messages=[{"role": "user", "content": extraction_prompt_finer(llm_response)}],
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
