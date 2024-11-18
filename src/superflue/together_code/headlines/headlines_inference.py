@@ -31,7 +31,7 @@ def headlines_inference(args):
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Initialize lists to store news, model responses, and labels
+    # Initialize lists to store news, model responses, labels, and actual labels
     news = []
     llm_responses = []
     complete_responses = []
@@ -42,6 +42,7 @@ def headlines_inference(args):
     past_price_list = []
     future_price_list = []
     past_news_list = []
+    actual_labels = []  # List to store actual labels
 
     logger.info(f"Starting inference on Headlines with model {args.model}...")
 
@@ -65,6 +66,17 @@ def headlines_inference(args):
         past_price_list.append(past_price)
         future_price_list.append(future_price)
         past_news_list.append(past_news)
+        
+        # Append actual label (for comparison)
+        actual_labels.append({
+            'price_or_not': price_or_not,
+            'direction_up': direction_up,
+            'direction_down': direction_down,
+            'direction_constant': direction_constant,
+            'past_price': past_price,
+            'future_price': future_price,
+            'past_news': past_news
+        })
 
         try:
             logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
@@ -107,6 +119,7 @@ def headlines_inference(args):
             "future_price": future_price_list,
             "past_news": past_news_list,
             "complete_responses": complete_responses,
+            "actual_labels": actual_labels  # Add actual_labels to the DataFrame
         }
     )
 
