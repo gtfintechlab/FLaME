@@ -33,7 +33,7 @@ def extract_and_evaluate_responses(args):
     for i, input_text in enumerate(df["input"]):
         try:
             model_response = completion(  # type: ignore
-                prompt=summarization_prompt(input_text),
+                messages=[{"role": "user", "content": summarization_prompt(input_text)}],
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,

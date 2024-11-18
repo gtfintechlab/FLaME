@@ -35,7 +35,7 @@ def finqa_inference(args):
         actual_labels.append(actual_label)
         try:
             model_response = completion(
-                prompt=finqa_prompt(combined_text),
+                messages=[{"role": "user", "content": finqa_prompt(combined_text)}],
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
