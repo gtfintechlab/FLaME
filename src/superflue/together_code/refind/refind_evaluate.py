@@ -36,7 +36,7 @@ def save_progress(df, path):
 
 def refind_evaluate(file_name, args):
     """Evaluate Refind dataset and return results and metrics DataFrames."""
-    task = "refind"
+    task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
     # Load the CSV file with the LLM responses

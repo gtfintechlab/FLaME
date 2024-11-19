@@ -63,7 +63,7 @@ def save_progress(df, path):
     logger.info(f"Progress saved to {path}")
 
 def headlines_evaluate(file_name, args):
-    task = "headlines"
+    task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV

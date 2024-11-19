@@ -94,7 +94,7 @@ def save_progress(df, path):
 
 def fnxl_evaluate(file_name, args):
     """Evaluate FNXL dataset and return results and metrics DataFrames."""
-    task = "fnxl"
+    task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV

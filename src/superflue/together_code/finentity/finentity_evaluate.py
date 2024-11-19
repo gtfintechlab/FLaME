@@ -88,7 +88,7 @@ def save_progress(df, path):
 
 def finentity_evaluate(file_name, args):
     """Evaluate FinEntity dataset and return results and metrics DataFrames."""
-    task = "finentity"
+    task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV

@@ -41,7 +41,7 @@ def save_progress(df, path):
 
 def fpb_evaluate(file_name, args):
     """Evaluate FPB dataset and return results and metrics DataFrames."""
-    task = "fpb"
+    task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load the CSV file with the LLM responses

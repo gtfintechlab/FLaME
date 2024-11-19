@@ -52,7 +52,7 @@ def save_progress(df, path):
 
 def finer_evaluate(file_name, args):
     """Evaluate Finer dataset and return results and metrics DataFrames."""
-    task = "finer"
+    task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV

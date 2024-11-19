@@ -40,7 +40,7 @@ def save_progress(df, path):
 
 def finbench_evaluate(file_name, args):
     """Evaluate the FinBench dataset and return results and metrics DataFrames."""
-    task = "finbench"
+    task = args.dataset.stri
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load the CSV file

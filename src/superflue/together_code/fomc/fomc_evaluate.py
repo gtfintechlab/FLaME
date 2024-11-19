@@ -42,7 +42,7 @@ def save_progress(df, path):
 
 def fomc_evaluate(file_name, args):
     """Evaluate FOMC dataset and return results and metrics DataFrames."""
-    task = "fomc"
+    task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load the CSV file with the LLM responses
