@@ -5,16 +5,17 @@ from superflue.together_code.numclaim.numclaim_evaluate import numclaim_evaluate
 # from superflue.together_code.finbench.finbench_evaluate import finbench_evaluate
 # from superflue.together_code.finer.finer_evaluate import finer_evaluate
 # from superflue.together_code.finentity.finentity_evaluate import finentity_evaluate
-# from superflue.together_code.headlines.headlines_evaluate import headlines_evaluate
+from superflue.together_code.headlines.headlines_evaluate import headlines_evaluate
 # # from superflue.together_code.fiqa.fiqa_task1_evaluate import fiqa_evaluate
 # # from superflue.together_code.fiqa.fiqa_task2_evaluate import fiqa_task2_evaluate
 # from superflue.together_code.edtsum.edtsum_evaluate import edtsum_evaluate
 # from superflue.together_code.banking77.banking77_evaluate import banking77_evaluate
 # from superflue.together_code.finred.finred_evaluate import finred_evaluate
 # from superflue.together_code.causal_classification.causal_classification_evaluate import causal_classification_evaluate
-# from superflue.together_code.subjectiveqa.subjectiveqa_evaluate import subjectiveqa_evaluate
+from superflue.together_code.subjectiveqa.subjectiveqa_evaluate import subjectiveqa_evaluate
 # from superflue.together_code.ectsum.ectsum_evaluate import ectsum_evaluate
-# from superflue.together_code.refind.refind_evaluate import refind_evaluate
+from superflue.together_code.refind.refind_evaluate import refind_evaluate
+
 import pandas as pd
 from time import time
 from datetime import date
@@ -38,16 +39,16 @@ def main(args):
         # "finbench": finbench_evaluate,
         # "finer": finer_evaluate,
         # "finentity": finentity_evaluate,
-        # "headlines": headlines_evaluate,
+        "headlines": headlines_evaluate,
         # # "fiqa_task1": fiqa_evaluate,
         # # "fiqa_task2": fiqa_task2_evaluate,
         # "edtsum": edtsum_evaluate,
         # "fnxl": fnxl_evaluate,
         # "finred": finred_evaluate,
         # "causal_classification": causal_classification_evaluate,
-        # "subjectiveqa": subjectiveqa_evaluate,
+        "subjectiveqa": subjectiveqa_evaluate,
         # "ectsum": ectsum_evaluate,
-        # "refind": refind_evaluate,
+        "refind": refind_evaluate,
         # "banking77": banking77_evaluate,
     }
 
@@ -58,7 +59,7 @@ def main(args):
         results_path = (
             EVALUATION_DIR
             / task
-            / f"{task}_evaluation_{args.model}_{args.file_name}_{date.today().strftime('%d_%m_%Y')}.csv"
+            / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
         )
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
@@ -67,7 +68,7 @@ def main(args):
         metrics_path = (
             EVALUATION_DIR
             / task
-            / f"{task}_evaluation_{args.model}_{args.file_name}_{date.today().strftime('%d_%m_%Y')}_metrics.csv"
+            / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}_metrics.csv"
         )
         metrics_path.parent.mkdir(parents=True, exist_ok=True)
         metrics_df.to_csv(metrics_path, index=False)
