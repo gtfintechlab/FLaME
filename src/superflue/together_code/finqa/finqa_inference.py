@@ -24,7 +24,6 @@ def finqa_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
-    client = Together()
     # start_t = time.time()
     for entry in dataset["test"]:  # type: ignore
         pre_text = " ".join(entry["pre_text"])  # type: ignore
@@ -52,27 +51,26 @@ def finqa_inference(args):
             response_label = model_response.choices[0].message.content  # type: ignore
             llm_responses.append(response_label)
 
-
-            df = pd.DataFrame(
-                {
-                    "context": context,
-                    "response": llm_responses,
-                    "actual_label": actual_labels,
-                    "complete_responses": complete_responses,
-                }
-            )
-            time.sleep(10)
-            results_path = (
-                RESULTS_DIR
-                / 'finqa/finqa_meta-llama/'
-                / f"{'finqa'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
-            )
-            results_path.parent.mkdir(parents=True, exist_ok=True)
-            df.to_csv(results_path, index=False)
-
         except Exception as e:
             logger.error(e)
             # i = i - 1
             time.sleep(20.0)
+
+    df = pd.DataFrame(
+        {
+            "context": context,
+            "response": llm_responses,
+            "actual_label": actual_labels,
+            "complete_responses": complete_responses,
+        }
+    )
+    time.sleep(10)
+    results_path = (
+        RESULTS_DIR
+        / 'finqa/finqa_meta-llama/'
+        / f"{'finqa'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(results_path, index=False)
 
     return df

@@ -48,30 +48,30 @@ def tatqa_inference(args):
             )
 
             complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content
+            response_label = model_response.choices[0].message.content # type: ignore
             llm_responses.append(response_label)
-            
-            df = pd.DataFrame(
-                {
-                    "context": context,
-                    "response": llm_responses,
-                    "actual_answer": actual_answers,
-                    "complete_responses": complete_responses,
-                }
-            )
-            
-            time.sleep(10)
-            results_path = (
-                RESULTS_DIR
-                / 'tatqa/tatqa_meta-llama/'
-                / f"{'tatqa'}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
-            )
-            results_path.parent.mkdir(parents=True, exist_ok=True)
-            df.to_csv(results_path, index=False)
 
         except Exception as e:
             logger.error(f"Error processing entry {len(context)}: {e}")
             time.sleep(20.0)
+    
+    df = pd.DataFrame(
+        {
+            "context": context,
+            "response": llm_responses,
+            "actual_answer": actual_answers,
+            "complete_responses": complete_responses,
+        }
+    )
+    
+    time.sleep(10)
+    results_path = (
+        RESULTS_DIR
+        / 'tatqa/tatqa_meta-llama/'
+        / f"{'tatqa'}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(results_path, index=False)
 
     logger.info(f"Inference completed. Results saved to {results_path}")
     return df

@@ -2,33 +2,21 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
-from together import Together
+from superflue.together_code.tokens import tokens
+from litellm import completion 
 import warnings
 import argparse
 import re
+from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import setup_logger
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
-warnings.filterwarnings("ignore")
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-
-RESULTS_DIR = ROOT_DIR / "results"
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Argument parser function
-def parse_args():
-    parser = argparse.ArgumentParser(description="Evaluate ConvFinQA Model")
-    parser.add_argument("--model", type=str, required=True, help="Model to use")
-    parser.add_argument("--task", type=str, required=True, help="Task name")
-    parser.add_argument("--api_key", type=str, required=True, help="API Key")
-    parser.add_argument("--hf_token", type=str, required=True, help="Hugging Face token")
-    parser.add_argument("--max_tokens", type=int, default=512, help="Maximum number of tokens")
-    parser.add_argument("--temperature", type=float, default=0.7, help="Temperature for sampling")
-    parser.add_argument("--top_p", type=float, default=0.7, help="Top-p sampling parameter")
-    parser.add_argument("--top_k", type=int, default=50, help="Top-k sampling parameter")
-    parser.add_argument("--repetition_penalty", type=float, default=1.1, help="Repetition penalty")
-    parser.add_argument("--date", type=str, help="Date for the results file")
-    return parser.parse_args()
+# Setup logger
+logger = setup_logger(
+    name="convfinqa_evaluation",
+    log_file=LOG_DIR / "convfinqa_evaluation.log",
+    level=LOG_LEVEL,
+)
 
 # Prompt template for extracting numerical answers
 def extraction_prompt(llm_response: str):
@@ -49,37 +37,29 @@ def extract_numerical_value(text):
     return match.group(0) if match else None
 
 # Main evaluation function
-def extract_and_save_responses(args):
-    together.api_key = args.api_key
-    results_file = (
-        "/Users/yangyang/Desktop/SuperFLUE/results/convfinqa/convfinqa_meta-llama/convfinqa_llama-3.1-8b_04_11_2024.csv"
-    )
+def convfinqa_evaluate(file_name, args):
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
-    try:
-        df = pd.read_csv(results_file)
-        logger.info("CSV file loaded successfully")
-    except Exception as e:
-        logger.error(f"Failed to load CSV file: {e}")
-        return
+    df = pd.read_csv(file_name)
+    logger.info(f"Loaded data from {file_name} for evaluation.")
 
     # Output path for evaluation results
     evaluation_results_path = (
-        RESULTS_DIR
-        / "evaluation_results"
-        / args.task
-        / f"evaluation_{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        EVALUATION_DIR
+        / task
+        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     extraction_response = []
-    client = Together()
     extraction_model_response = []
     regex_extraction = []
 
     # Iterating over responses
     for entry in df["response"]:
         try:
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": extraction_prompt(entry)}],
                 max_tokens=args.max_tokens,
@@ -93,7 +73,6 @@ def extract_and_save_responses(args):
             extraction_model_response.append(model_response)
             response_text = model_response.choices[0].message.content  # type: ignore
 
-            print(response_text)
             extraction_response.append(response_text)
          
             numerical_value = extract_numerical_value(response_text)
@@ -112,24 +91,32 @@ def extract_and_save_responses(args):
 
     # Accuracy calculation
     correct_labels = df['actual_label'].tolist()    
-    valid_predictions = [
-    (x, y) for x, y in zip(correct_labels, regex_extraction) if pd.notna(x)
-]
+    valid_predictions = [(x, y) if pd.notna(x) else (x, 'Error') for x, y in zip(correct_labels, regex_extraction)]
     
-    correct_predictions = sum(1 for x, y in valid_predictions if x == y)
-    total_predictions = len(correct_labels)
-    accuracy = correct_predictions / total_predictions if total_predictions > 0 else 0
+    # Calculate metrics
+    accuracy = accuracy_score(correct_labels, valid_predictions)
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        correct_labels, valid_predictions
+    )
+
+    # Log metrics
+    logger.info(f"Accuracy: {accuracy:.4f}")
+    logger.info(f"Precision: {precision:.4f}")
+    logger.info(f"Recall: {recall:.4f}")
+    logger.info(f"F1 Score: {f1:.4f}")
+
+    # Create metrics DataFrame
+    metrics_df = pd.DataFrame({
+        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+        "Value": [accuracy, precision, recall, f1],
+    })
 
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
     df.to_csv(evaluation_results_path, index=False)
-    return df, accuracy
 
-# Stop tokens based on model
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
-def tokens(model_name):
-    return tokens_map.get(model_name, [])
+    # Save metrics DataFrame
+    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_df.to_csv(metrics_path, index=False)
+    logger.info(f"Metrics saved to {metrics_path}")
 
-# Main execution
-if __name__ == "__main__":
-    args = parse_args()  
-    extract_and_save_responses(args)
+    return df, metrics_df

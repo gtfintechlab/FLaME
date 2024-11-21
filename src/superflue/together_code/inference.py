@@ -17,7 +17,6 @@ from superflue.together_code.causal_classification.causal_classification_inferen
 from superflue.together_code.subjectiveqa.subjectiveqa_inference import subjectiveqa_inference
 from superflue.together_code.ectsum.ectsum_inference import ectsum_inference
 from superflue.together_code.refind.refind_inference import refind_inference
-
 from superflue.utils.logging_utils import setup_logger
 from superflue.together_code.finqa.finqa_inference import finqa_inference
 from superflue.together_code.tatqa.tatqa_inference import tatqa_inference

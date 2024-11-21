@@ -4,10 +4,6 @@ from sklearn.metrics import f1_score
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-# Load data
-file_path = '/Users/yangyang/Desktop/SuperFLUE/results/fiqa2/fiqa2_meta-llama/fiqa_task2_llama-3.1-8b_12_11_2024.csv'
-df = pd.read_csv(file_path)
-
 def calculate_metrics(df, llm_col, actual_col, k=10):
     # Initialize TfidfVectorizer
     vectorizer = TfidfVectorizer()
@@ -58,8 +54,19 @@ def calculate_metrics(df, llm_col, actual_col, k=10):
 
     return avg_fscore, avg_ndcg, avg_mrr
 
-# Calculate and print metrics
-avg_fscore, avg_ndcg, avg_mrr = calculate_metrics(df, 'llm_responses', 'actual_answers')
-print(f"Average F-score: {avg_fscore:.4f}")
-print(f"Average NDCG: {avg_ndcg:.4f}")
-print(f"Average MRR: {avg_mrr:.4f}")
+def fiqa_task2_evaluate(file_name, args):
+    # Load data
+    df = pd.read_csv(file_name)
+    # Calculate and print metrics
+    avg_fscore, avg_ndcg, avg_mrr = calculate_metrics(df, 'llm_responses', 'actual_answers')
+    print(f"Average F-score: {avg_fscore:.4f}")
+    print(f"Average NDCG: {avg_ndcg:.4f}")
+    print(f"Average MRR: {avg_mrr:.4f}")
+    metrics_df = pd.DataFrame(
+        {
+            "Average F-score": [avg_fscore],
+            "Average NDCG": [avg_ndcg],
+            "Average MRR": [avg_mrr],
+        }
+    )
+    return df, metrics_df

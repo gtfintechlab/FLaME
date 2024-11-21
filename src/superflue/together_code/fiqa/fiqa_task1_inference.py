@@ -23,7 +23,6 @@ def fiqa_task1_inference(args):
     actual_targets = []
     actual_sentiments = []
     complete_responses = []
-    client = Together()
 
     for entry in dataset:
         # Extract relevant fields
@@ -55,34 +54,33 @@ def fiqa_task1_inference(args):
             complete_responses.append(model_response)
             response_label = model_response.choices[0].message.content # type: ignore
             llm_responses.append(response_label)
-            print(response_label)
-
-            # Create DataFrame with results
-            df = pd.DataFrame(
-                {
-                    "context": context,
-                    "llm_responses": llm_responses,
-                    "actual_target": actual_targets,
-                    "actual_sentiment": actual_sentiments,
-                    "complete_responses": complete_responses,
-                }
-            )
-
-            # Save results intermittently
-            time.sleep(10)
-            results_path = (
-                RESULTS_DIR
-                / 'fiqa1/fiqa1_meta-llama/'
-                / f"{'fiqa_task1'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
-            )
-            results_path.parent.mkdir(parents=True, exist_ok=True)
-            df.to_csv(results_path, index=False)
 
         except Exception as e:
             logger.error(f"Error encountered: {e}")
             complete_responses.append(None)
             llm_responses.append(None)
             time.sleep(10.0)
+    
+    # Create DataFrame with results
+    df = pd.DataFrame(
+        {
+            "context": context,
+            "llm_responses": llm_responses,
+            "actual_target": actual_targets,
+            "actual_sentiment": actual_sentiments,
+            "complete_responses": complete_responses,
+        }
+    )
+
+    # Save results intermittently
+    time.sleep(10)
+    results_path = (
+        RESULTS_DIR
+        / 'fiqa1/fiqa1_meta-llama/'
+        / f"{'fiqa_task1'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(results_path, index=False)
 
     logger.info(f"Inference completed. Results saved to {results_path}")
     return df

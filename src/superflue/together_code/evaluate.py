@@ -6,8 +6,8 @@ from superflue.together_code.finbench.finbench_evaluate import finbench_evaluate
 from superflue.together_code.finer.finer_evaluate import finer_evaluate
 from superflue.together_code.finentity.finentity_evaluate import finentity_evaluate
 from superflue.together_code.headlines.headlines_evaluate import headlines_evaluate
-# # from superflue.together_code.fiqa.fiqa_task1_evaluate import fiqa_evaluate
-# # from superflue.together_code.fiqa.fiqa_task2_evaluate import fiqa_task2_evaluate
+from superflue.together_code.fiqa.fiqa_task1_evaluate import fiqa_task1_evaluate
+from superflue.together_code.fiqa.fiqa_task2_evaluate import fiqa_task2_evaluate
 from superflue.together_code.edtsum.edtsum_evaluate import edtsum_evaluate
 from superflue.together_code.banking77.banking77_evaluate import banking77_evaluate
 from superflue.together_code.finred.finred_evaluate import finred_evaluate
@@ -15,6 +15,10 @@ from superflue.together_code.causal_classification.causal_classification_evaluat
 from superflue.together_code.subjectiveqa.subjectiveqa_evaluate import subjectiveqa_evaluate
 from superflue.together_code.ectsum.ectsum_evaluate import ectsum_evaluate
 from superflue.together_code.refind.refind_evaluate import refind_evaluate
+from superflue.together_code.convfinqa.convfinqa_evaluate import convfinqa_evaluate
+from superflue.together_code.finqa.finqa_evaluate import finqa_evaluate
+from superflue.together_code.tatqa.tatqa_evaluate import tatqa_evaluate
+# from superflue.together_code.causal_detection.cd_evaluate import cd_evaluate
 
 import pandas as pd
 from time import time
@@ -40,8 +44,8 @@ def main(args):
         "finer": finer_evaluate,
         "finentity": finentity_evaluate,
         "headlines": headlines_evaluate,
-        # # "fiqa_task1": fiqa_evaluate,
-        # # "fiqa_task2": fiqa_task2_evaluate,
+        "fiqa_task1": fiqa_task1_evaluate,
+        "fiqa_task2": fiqa_task2_evaluate,
         "edtsum": edtsum_evaluate,
         "fnxl": fnxl_evaluate,
         "finred": finred_evaluate,
@@ -50,6 +54,10 @@ def main(args):
         "ectsum": ectsum_evaluate,
         "refind": refind_evaluate,
         "banking77": banking77_evaluate,
+        "convfinqa": convfinqa_evaluate,
+        "finqa": finqa_evaluate,
+        "tatqa": tatqa_evaluate
+        # cd evaluate here
     }
 
     if task in task_evaluate_map:
