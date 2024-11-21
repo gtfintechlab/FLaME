@@ -7,7 +7,7 @@ from superflue.together_code.tokens import tokens
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from superflue.config import EVALUATION_DIR
 from superflue.utils.logging_utils import setup_logger
-
+import time
 
 # Setup logger
 logger = setup_logger(
@@ -89,6 +89,7 @@ def numclaim_evaluate(file_name, args):
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
             extracted_labels.append(None)
+            time.sleep(10.0)
 
     # Calculate evaluation metrics
     precision = precision_score(correct_labels, extracted_labels, average="binary")

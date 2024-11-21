@@ -53,8 +53,9 @@ def finqa_inference(args):
 
         except Exception as e:
             logger.error(e)
-            # i = i - 1
-            time.sleep(20.0)
+            complete_responses.append(None)
+            llm_responses.append(None)
+            time.sleep(10.0)
 
     df = pd.DataFrame(
         {

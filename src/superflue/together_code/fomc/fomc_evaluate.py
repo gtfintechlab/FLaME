@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+import time
 
 # Configure logging
 logger = setup_logger(
@@ -96,6 +97,7 @@ def fomc_evaluate(file_name, args):
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
             extracted_labels.append(-1)
+            time.sleep(10.0)
 
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, extracted_labels)

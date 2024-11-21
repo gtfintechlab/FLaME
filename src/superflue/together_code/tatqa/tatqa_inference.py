@@ -53,6 +53,8 @@ def tatqa_inference(args):
 
         except Exception as e:
             logger.error(f"Error processing entry {len(context)}: {e}")
+            llm_responses.append(None)
+            complete_responses.append(None)
             time.sleep(20.0)
     
     df = pd.DataFrame(

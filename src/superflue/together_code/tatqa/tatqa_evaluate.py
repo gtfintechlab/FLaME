@@ -9,6 +9,7 @@ import argparse
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.logging_utils import setup_logger
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+import time
 
 # Setup logger
 logger = setup_logger(
@@ -70,6 +71,8 @@ def tatqa_evaluate(file_name, args):
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
             extraction_model_response.append(str(e))
+            evaluation_results.append(None)
+            time.sleep(10.0)
 
         # Update DataFrame with extracted results after each iteration
         df['extracted_labels'] = evaluation_results

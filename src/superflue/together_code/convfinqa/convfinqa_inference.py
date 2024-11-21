@@ -55,6 +55,8 @@ def convfinqa_inference(args):
 
         except Exception as e:
             logger.error(e)
+            complete_responses.append(None)
+            llm_responses.append(None)
             time.sleep(20.0)
     
     df = pd.DataFrame(

@@ -8,6 +8,7 @@ from litellm import completion
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+import time
 
 # Configure logging
 logger = setup_logger(
@@ -145,6 +146,7 @@ def fnxl_evaluate(file_name, args):
                 "correct": 0, "total_actual": len(normalize_json(actual_label)),
                 "total_predicted": 0,
             })
+            time.sleep(10.0)
 
     # Aggregate metrics
     total_correct = sum(m["correct"] for m in metrics)

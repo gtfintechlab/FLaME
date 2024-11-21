@@ -53,6 +53,8 @@ def fpb_inference(args):
         except Exception as e:
             logger.error(f"Error: {e}. Retrying in 10 seconds.")
             time.sleep(10.0)
+            complete_responses.append(None)
+            llm_responses.append(None)
             continue
 
     df = pd.DataFrame(

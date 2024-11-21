@@ -50,7 +50,7 @@ def edtsum_inference(args):
             logger.error(f"Error at index {i}: {e}")
             complete_responses.append(None)
             llm_responses.append(None)
-            time.sleep(30.0)
+            time.sleep(10.0)
 
     assert (
         len(documents)

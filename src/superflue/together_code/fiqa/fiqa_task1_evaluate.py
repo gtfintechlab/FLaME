@@ -10,6 +10,7 @@ import re
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.logging_utils import setup_logger
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+import time
 
 # Setup logger
 logger = setup_logger(
@@ -74,7 +75,10 @@ def fiqa_task1_evaluate(file_name, args):
 
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
+            extraction_response.append(None)
+            regex_extraction.append(None)
             extraction_model_response.append(str(e))
+            time.sleep(10.0)
 
     df['extraction_model_response'] = extraction_model_response
     df['extraction_response'] = extraction_response

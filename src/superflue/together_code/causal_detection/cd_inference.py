@@ -45,32 +45,33 @@ def cd_inference(args):
                 stop=tokens(args.model)
             )
             complete_responses.append(model_response)
-            predicted_tag = model_response.choices[0].message.content.split()  # Assumed token-wise classification
+            response_label = model_response.choices[0].message.content # type: ignore
+            predicted_tag = response_label.split()  # Assumed token-wise classification # type: ignore
             predicted_tags.append(predicted_tag)
-
-            # Periodically save results
-            df = pd.DataFrame(
-                {
-                    "tokens": tokens_list,
-                    "actual_tags": actual_tags,
-                    "predicted_tags": predicted_tags,
-                    "complete_responses": complete_responses,
-                }
-            )
-
-            time.sleep(10)
-
-            results_path = (
-                RESULTS_DIR
-                / 'cd/cd_meta-llama/'
-                / f"{'cd'}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
-            )
-            results_path.parent.mkdir(parents=True, exist_ok=True)
-            df.to_csv(results_path, index=False)
 
         except Exception as e:
             logger.error(f"Error processing entry {len(tokens_list)}: {e}")
+            complete_responses.append(None)
+            predicted_tags.append(None)
             time.sleep(20.0)
+    
+    # Periodically save results
+    df = pd.DataFrame(
+        {
+            "tokens": tokens_list,
+            "actual_tags": actual_tags,
+            "predicted_tags": predicted_tags,
+            "complete_responses": complete_responses,
+        }
+    )
+
+    results_path = (
+        RESULTS_DIR
+        / 'cd/cd_meta-llama/'
+        / f"{'cd'}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(results_path, index=False)
 
     logger.info(f"Inference completed. Results saved to {results_path}")
     return df

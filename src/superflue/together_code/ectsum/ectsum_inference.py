@@ -69,6 +69,8 @@ def ectsum_inference(args):
         except Exception as e:
             # Log the error and retry the same document after a delay
             logger.error(f"Error processing document {i+1}: {e}")
+            complete_responses.append(None)
+            llm_responses.append(None)
             time.sleep(10.0)
             continue  # Proceed to the next document after sleeping
 

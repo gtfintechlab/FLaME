@@ -7,6 +7,7 @@ from pathlib import Path
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+import time
 
 # Configure logging
 logger = setup_logger(
@@ -136,6 +137,7 @@ def headlines_evaluate(file_name, args):
         except Exception as e:
             logger.error(f"Error at row {i}: {e}")
             extracted_labels.append([-1] * 7)
+            time.sleep(10.0)
 
     # Metrics
     correct_predictions = [list(map(int, labels)) for labels in correct_labels]

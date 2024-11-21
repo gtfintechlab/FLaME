@@ -7,6 +7,7 @@ from pathlib import Path
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+import time
 
 # Configure logging
 logger = setup_logger(
@@ -75,6 +76,7 @@ def refind_evaluate(file_name, args):
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
             extracted_labels.append('ERROR')
+            time.sleep(10.0)
 
         # Update DataFrame with extracted labels and save progress
         df.loc[i, 'extracted_labels'] = extracted_labels[-1]
