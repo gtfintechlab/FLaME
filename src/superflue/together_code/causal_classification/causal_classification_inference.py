@@ -52,32 +52,34 @@ def causal_classification_inference(args):
                 repetition_penalty=args.repetition_penalty,
                 stop=tokens(args.model),
             )
-            logger.info(f"Model response: {model_response.choices[0].message.content}")  # type: ignore
-            complete_responses.append(model_response.choices[0].message.content) # type: ignore
+            complete_responses.append(model_response) 
             response_label = model_response.choices[0].message.content # type: ignore
+            logger.info(f"Model response: {response_label}")  
             llm_responses.append(response_label)
-
-            df = pd.DataFrame(
-                {
-                    "texts": texts,
-                    "llm_responses": llm_responses,
-                    "actual_labels": actual_labels,
-                    "complete_responses": complete_responses,
-                }
-            )
 
         except Exception as e:
             logger.error(f"Error processing text {i+1}: {e}")
+            complete_responses.append(None)
+            llm_responses.append(None)
             time.sleep(10.0)
             continue
 
-        results_path = (
-            RESULTS_DIR
-            / "causal_classification"
-            / f"causal_classification_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-        )
-        results_path.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(results_path, index=False)
-        logger.info(f"Results saved to {results_path}")
+    df = pd.DataFrame(
+        {
+            "texts": texts,
+            "llm_responses": llm_responses,
+            "actual_labels": actual_labels,
+            "complete_responses": complete_responses,
+        }
+    )
+    
+    results_path = (
+        RESULTS_DIR
+        / "causal_classification"
+        / f"causal_classification_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(results_path, index=False)
+    logger.info(f"Results saved to {results_path}")
 
     return df

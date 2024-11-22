@@ -1,4 +1,4 @@
-dataset: fpb
+dataset: finqa
 sample_size: 10
 method: random
 seeds: [42, 123, 456]

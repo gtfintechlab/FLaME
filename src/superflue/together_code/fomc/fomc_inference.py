@@ -54,6 +54,8 @@ def fomc_inference(args):
         except Exception as e:
             logger.error(f"Error processing sentence {i+1}: {e}")
             time.sleep(10.0)
+            complete_responses.append(None)
+            llm_responses.append(None)
             continue
 
     df = pd.DataFrame(

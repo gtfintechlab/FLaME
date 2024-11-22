@@ -1,18 +1,21 @@
+import os
 import pandas as pd
-import logging
 from datetime import date
 from pathlib import Path
-from litellm import completion 
-from superflue.together_code.tokens import tokens
-
+from litellm import completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from superflue.utils.logging_utils import setup_logger
+from superflue.together_code.tokens import tokens
+from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+logger = setup_logger(
+    name="banking77_evaluate",
+    log_file=LOG_DIR / "banking77_evaluate.log",
+    level=LOG_LEVEL,
+)
 
-# Banking 77 categories list
+# Banking 77 categories list and mappings
 banking77_list = [
     "activate_my_card",
     "age_limit",
@@ -92,13 +95,9 @@ banking77_list = [
     "wrong_amount_of_cash_received",
     "wrong_exchange_rate_for_cash_withdrawal",
 ]
-
-# Mapping categories to numerical labels
 banking77_label_map = {category: index for index, category in enumerate(banking77_list)}
 
-# Reverse mapping for potential reverse lookups
-label_to_category = {index: category for category, index in banking77_label_map.items()}
-
+# Define the prompt for LLM response extraction
 def extraction_prompt(llm_response: str):
     prompt = f"""Based on the following list of banking intents: {banking77_list}, extract the most relevant category from the following response:
                 "{llm_response}"
@@ -106,6 +105,7 @@ def extraction_prompt(llm_response: str):
     return prompt
 
 def map_extracted_label_to_number(extracted_label: str):
+    """Map the extracted label to its corresponding numerical value."""
     return banking77_label_map.get(extracted_label, -1)  # Return -1 if the label is not found
 
 def save_progress(df, path):
@@ -113,33 +113,29 @@ def save_progress(df, path):
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
-def extract_and_evaluate_responses(args):
-    
-    results_file = (
-        ROOT_DIR
-        / "results"
-        / 'banking77'
-        / 'banking77_meta-llama'
-        / "Meta-Llama-3.1-8B-Instruct-Turbo_05_10_2024.csv"
-    )
+def banking77_evaluate(file_name, args):
+    """Evaluate Banking 77 results and return results and metrics DataFrames."""
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
-    # Load the CSV file with the LLM responses
-    df = pd.read_csv(results_file)
-    extracted_labels = []
-    correct_labels = df['actual_labels'].tolist()
+    # Load the CSV file
+    df = pd.read_csv(file_name)
+    logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
     # Continual save path
     evaluation_results_path = (
-        ROOT_DIR
-        / "evaluation_results"
-        / 'banking77'
-        / f"evaluation_{'banking77'}_{'meta-llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
+        EVALUATION_DIR
+        / task
+        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Initialize the columns for storing results if they don't exist
+    # Initialize extracted_labels column if it doesn't exist
     if 'extracted_labels' not in df.columns:
         df['extracted_labels'] = None
+
+    correct_labels = df['actual_labels'].tolist()
+    extracted_labels = []
 
     for i, llm_response in enumerate(df["llm_responses"]):
         if pd.notna(df.at[i, 'extracted_labels']):
@@ -148,25 +144,24 @@ def extract_and_evaluate_responses(args):
 
         try:
             model_response = completion(
-                model="together_ai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",#args.model,
+                model=args.model,
                 messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
-                max_tokens=10,#args.max_tokens,
-                temperature=0.0,#args.temperature,
-                # top_k=args.top_k,
-                top_p=0.9,#args.top_p,
-                repetition_penalty=1.0,#args.repetition_penalty,
-                stop=tokens("meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo")#args.model)
+                max_tokens=args.max_tokens,
+                temperature=args.temperature,
+                top_p=args.top_p,
+                repetition_penalty=args.repetition_penalty,
+                stop=tokens(args.model),
             )
-            extracted_label = model_response.choices[0].message.content.strip() # type: ignore
+            extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
             mapped_label = map_extracted_label_to_number(extracted_label)
-            if (mapped_label == -1):
-                print(extracted_label)
-                print(f"Error processing response {i}: {llm_response}")
+
+            if mapped_label == -1:
                 logger.error(f"Error processing response {i}: {llm_response}")
+
             df.at[i, 'extracted_labels'] = mapped_label
             extracted_labels.append(mapped_label)
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
-            
+
             # Save progress after each row
             save_progress(df, evaluation_results_path)
 
@@ -174,20 +169,26 @@ def extract_and_evaluate_responses(args):
             logger.error(f"Error processing response {i}: {e}")
             extracted_labels.append(-1)
 
-    # Evaluate the performance
-    correct_predictions = sum(1 for x, y in zip(correct_labels, extracted_labels) if x == y)
-    total_predictions = len(correct_labels)
-    accuracy = correct_predictions / total_predictions
-
-    df.to_csv(evaluation_results_path, index=False)
-
+    # Evaluate performance
     accuracy = accuracy_score(correct_labels, extracted_labels)
-    precision, recall, f1, _ = precision_recall_fscore_support(correct_labels, extracted_labels, average='weighted')
-    eval_df = pd.DataFrame({'accuracy': [accuracy], 'precision': [precision], 'recall': [recall], 'f1': [f1]})
-    eval_df.to_csv(Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv"), index=False)
+    precision, recall, f1, _ = precision_recall_fscore_support(correct_labels, extracted_labels, average="weighted")
 
-    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
-    return df, accuracy
+    logger.info(f"Accuracy: {accuracy:.4f}")
+    logger.info(f"Precision: {precision:.4f}")
+    logger.info(f"Recall: {recall:.4f}")
+    logger.info(f"F1 Score: {f1:.4f}")
 
-if __name__ == "__main__":
-    extract_and_evaluate_responses(None)
+    # Create metrics DataFrame
+    metrics_df = pd.DataFrame({
+        "Accuracy": [accuracy],
+        "Precision": [precision],
+        "Recall": [recall],
+        "F1 Score": [f1],
+    })
+
+    # Save metrics DataFrame
+    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_df.to_csv(metrics_path, index=False)
+    logger.info(f"Metrics saved to {metrics_path}")
+
+    return df, metrics_df

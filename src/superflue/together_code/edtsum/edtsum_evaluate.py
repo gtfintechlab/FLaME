@@ -12,15 +12,15 @@ bertscore = load("bertscore")
 
 # Configure logging
 logger = setup_logger(
-    name="ectsum_evaluation",
-    log_file=LOG_DIR / "ectsum_evaluation.log",
+    name="edtsum_evaluation",
+    log_file=LOG_DIR / "edtsum_evaluation.log",
     level=LOG_LEVEL,
 )
 
 def summarization_prompt(input_text: str):
-    """Generate a summarization prompt for ECT data."""
-    prompt = f'''Generate a financial summary in about 50 words in line-by-line format based on the following input. The summary should include key financial information such as earnings per share, revenue, and other significant figures.
-                It should contain only lower case letters and numbers (including decimals). Do not include any special characters other than \n, % or $.
+    """Generate a prompt for creating temporal summaries."""
+    prompt = f'''Generate a temporal summary in about 50 words in line-by-line bullet format based on the following input. The summary should include key events, time points, and any major changes in sequence.
+                
                 Here is the input to analyze:
                 "{input_text}"'''
     return prompt
@@ -30,8 +30,8 @@ def save_progress(df, path):
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
-def ectsum_evaluate(file_name, args):
-    """Evaluate ECTSum summaries and return results and metrics DataFrames."""
+def edtsum_evaluate(file_name, args):
+    """Evaluate EDTSum temporal summaries and return results and metrics DataFrames."""
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
@@ -87,4 +87,3 @@ def ectsum_evaluate(file_name, args):
     logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df
-

@@ -113,7 +113,7 @@ def fnxl_inference(args):
         except Exception as e:
             # Log the error and retry the same sentence after a delay
             logger.error(f"Error processing sentence {i+1}: {e}")
-            time.sleep(20.0)
+            time.sleep(10.0)
             sentences.append(sentence if 'sentence' in locals() else None)
             numerals_tags.append([])  # Default to empty list
             companies.append(company if 'company' in locals() else None)

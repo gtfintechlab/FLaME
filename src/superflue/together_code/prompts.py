@@ -1,3 +1,16 @@
+def fnxl_prompt(sentence: str):
+    system_prompt = """You are an expert in financial text processing focused on numeric data tagging for financial documents."""
+
+    user_msg = f"""Identify the numerical figures in the following financial text, and assign each a label according to the FNXL taxonomy. 
+                Use one of these categories based on the context:
+                - 0 (No special label needed for this numeral)
+                - 1 (Rarely used numeral label for financial extremes)
+                - Higher integers as appropriate based on the prominence or financial significance. 
+                Output as a list of integers with the length matching the number of numerical figures identified in the text.
+                
+                Sentence: {sentence}"""
+
+    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
 def headlines_prompt(sentence: str):
 
@@ -22,12 +35,30 @@ def fiqa_prompt(sentence: str):
 
 
 def fiqa_task1_prompt(sentence: str):
-    prompt = f"""Lorem ipsum: {sentence}"""
+    prompt = f"""You are a financial sentiment analysis expert. Analyze the provided sentence, identify relevant target aspects (such as companies, products, or strategies), and assign a sentiment score for each target. 
+                The sentiment score should be between -1 (highly negative) and 1 (highly positive), using up to three decimal places to capture nuances in sentiment.
+
+                Financial sentence:
+                {sentence}"""
     return prompt
 
 
-def fiqa_task2_prompt(sentence: str):
-    prompt = f"""Lorem ipsum: {sentence}"""
+
+def fiqa_task2_prompt(question: str):
+    prompt = f"""
+    You are a financial analysis expert tasked with answering opinion-based financial questions. Your answer should be drawn from a broad corpus of structured and unstructured financial data sources, such as microblogs, reports, and news articles. 
+
+    Carefully analyze the given question and identify:
+    - Relevant financial entities (e.g., companies, products, indexes)
+    - Key aspects (e.g., market trends, corporate strategies, economic indicators)
+    - Sentiment polarity (positive, neutral, or negative)
+    - Opinion holders (e.g., analysts, companies, general public sentiment)
+
+    Use this information to provide a precise and contextually relevant answer that reflects the financial opinions expressed in the data. Answer in a concise manner, focusing on the opinions and insights that directly address the question.
+
+    Financial Question:
+    {question}
+    """
     return prompt
 
 
@@ -279,45 +310,43 @@ def banking77_prompt(sentence: str):
 def finqa_prompt(document: str):
     prompt = f"""Discard all the previous instructions. Behave like you are a financial expert in question answering. 
                 Your task is to answer a financial question based on the  provided context.\n\n The context:
-                {document}"""
+                {document}. Repeat you final answer at the end of your response. """
 
     return prompt
 
 
 def convfinqa_prompt(document: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are a financial expert in question answering.
-                You are to answer a series of interconnected financial questions where later questions may depend on the answers to previous ones.
-                I'll provide the series of questions as the context and you will answer the last question.\n\n The context:
-                {document}"""
-
+    prompt = f"""
+    Discard all previous instructions. You are a financial expert specializing in answering questions.
+    The context provided includes a previous question and its answer, followed by a new question that you need to answer.
+    Focus on answering only the final question based on the entire provided context:
+    {document}.
+    Answer the final question based on the context above. Repeat your final answer at the end of your response. 
+    """
     return prompt
 
 
-def tatqa_prompt(question: str, context: str):
-    system_prompt = """Discard all the previous instructions. Behave like an expert in table-and-text-based question answering."""
-
-    user_msg = f"""Given the following context (which contains a mixture of tables and textual information), 
-                answer the question based on the information provided. If the context includes tables, ensure 
-                you extract relevant information from both the table and the text to form a comprehensive answer.
+def tatqa_prompt(document: str):
+    prompt = f"""Discard all previous instructions. Behave like an expert in table-and-text-based financial question answering.
+                Your task is to answer a question by extracting relevant information from both tables and text 
+                provided in the context. Ensure that you use both sources comprehensively to generate an accurate response. Repeat your final answer at the
+                end of your response. 
                 
-                The question: {question}
-                
-                The context: {context}"""
-
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-
+                The context: {document}"""
+    
     return prompt
+
 
 
 def causal_classification_prompt(text: str):
-    system_prompt = """Discard all the previous instructions. Behave like you are an expert causal classification model."""
-    user_msg = f"""Below is a sentence. Classify it into one of the following categories: 
+    
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert causal classification model.
+    Below is a sentence. Classify it into one of the following categories: 
                     0 - Non-causal
                     1 - Direct causal
                     2 - Indirect causal
                     Only return the label number without any additional text. \n\n {text}"""
 
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
     return prompt
 
@@ -335,32 +364,18 @@ def finred_prompt(sentence: str, entity1: str, entity2: str):
     return prompt
 
 def causal_detection_prompt(tokens: list):
-    """
-    Generates a prompt for Causal Detection to classify tokens in a sentence into cause, effect, or other categories,
-    with an explanation of the B- and I- labeling scheme.
+    prompt = f"""You are an expert in detecting cause and effect phrases in text.
+    You are given the following tokenized sentence. For each token, assign one of these labels:
+        - 'B-CAUSE': The first token of a cause phrase.
+        - 'I-CAUSE': A token inside a cause phrase, but not the first token.
+        - 'B-EFFECT': The first token of an effect phrase.
+        - 'I-EFFECT': A token inside an effect phrase, but not the first token.
+        - 'O': A token that is neither part of a cause nor an effect phrase.
+        
+    Return only the list of labels in the same order as the tokens, without additional commentary or repeating the tokens themselves. 
 
-    Args:
-        tokens (list): The list of tokens from a sentence to be classified.
-
-    Returns:
-        str: The formatted prompt for Causal Detection classification.
-    """
-
-    system_prompt = """Discard all previous instructions. Behave like an expert in cause and effect detection in text."""
-
-    user_msg = f"""You are given the following tokenized sentence. Classify each token using the following labels:
-                - 'B-CAUSE': The beginning of a cause phrase.
-                - 'I-CAUSE': A token inside a cause phrase, but not the first token.
-                - 'B-EFFECT': The beginning of an effect phrase.
-                - 'I-EFFECT': A token inside an effect phrase, but not the first token.
-                - 'O': A token that is neither part of a cause nor an effect.
-                
-                Provide the classification for each token in the format 'token:label'.
-                
-                The tokens: {', '.join(tokens)}"""
-
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-
+    Tokens: {', '.join(tokens)}"""
+    
     return prompt
 
 def subjectiveqa_prompt(feature, definition, question, answer):
@@ -422,6 +437,8 @@ def refind_prompt(entities):
 
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
+    "fiqa_task1_prompt":fiqa_task1_prompt,
+    "fiqa_task2_prompt":fiqa_task2_prompt,
     "fomc_prompt": fomc_prompt,
     "finer_prompt": finer_prompt,
     "fpb_prompt": fpb_prompt,

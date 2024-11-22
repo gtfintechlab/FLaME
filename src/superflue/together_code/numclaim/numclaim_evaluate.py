@@ -5,16 +5,16 @@ from pathlib import Path
 from litellm import completion 
 from superflue.together_code.tokens import tokens
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-from superflue.config import RESULTS_DIR, ROOT_DIR
+from superflue.config import EVALUATION_DIR
 from superflue.utils.logging_utils import setup_logger
-import os
+import time
+
+# Setup logger
 logger = setup_logger(
     name="numclaim_evaluate",
-    log_file=Path("logs/numclaim_evaluate.log"),
+    log_file=EVALUATION_DIR / "logs" / "numclaim_evaluate.log",
     level=logging.INFO,
 )
-
-INPUT_FILE_PATH = os.path.join(RESULTS_DIR, "numclaim", "numclaim_meta-llama", "Meta-Llama-3.1-8B-Instruct-Turbo_07_10_2024.csv")
 # Define prompt for extraction
 def extraction_prompt(llm_response: str):
     prompt = f"""Based on the provided response, extract the following information:
@@ -33,12 +33,14 @@ def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
+def numclaim_evaluate(file_name, args):
+    logger.info(f"Starting evaluation for Numclaim with model {args.model}...")
+    task = args.dataset.strip('“”"')
+    # Load data from the specified file
+    results_file = Path(file_name)
+    if not results_file.exists():
+        raise FileNotFoundError(f"Results file {results_file} not found.")
 
-# Evaluation function
-def extract_and_evaluate_responses(args):
-    results_file = INPUT_FILE_PATH
-
-    # Load data from CSV
     df = pd.read_csv(results_file)
     correct_labels = df['actual_labels'].apply(map_labels).tolist()
     llm_responses = df['llm_responses'].tolist()
@@ -46,10 +48,9 @@ def extract_and_evaluate_responses(args):
 
     # Continual save path
     evaluation_results_path = (
-        ROOT_DIR
-        / "evaluation_results"
-        / args.task
-        / f"evaluation_{args.task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        EVALUATION_DIR
+        / task
+        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -76,18 +77,19 @@ def extract_and_evaluate_responses(args):
                 repetition_penalty=args.repetition_penalty,
                 stop=tokens(args.model),
             )
-            extracted_label = model_response.choices[0].message.content.strip() # type: ignore
+            extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
             mapped_extracted_label = map_labels(extracted_label)  # Apply mapping here
             df.at[i, 'extracted_labels'] = mapped_extracted_label
             extracted_labels.append(mapped_extracted_label)
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
-            
+
             # Save progress after each row
             save_progress(df, evaluation_results_path)
 
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
             extracted_labels.append(None)
+            time.sleep(10.0)
 
     # Calculate evaluation metrics
     precision = precision_score(correct_labels, extracted_labels, average="binary")
@@ -115,17 +117,3 @@ def extract_and_evaluate_responses(args):
     logger.info(f"Evaluation completed. Results saved to {evaluation_results_path}")
 
     return df, eval_df
-
-if __name__ == "__main__":
-    # Placeholder args; replace with actual argument values
-    class Args:
-        task = "numclaim"
-        model = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
-        date = date.today().strftime('%d_%m_%Y')
-        max_tokens = 50
-        temperature = 0.0
-        top_p = 0.9
-        repetition_penalty = 1.0
-
-    args = Args()
-    extract_and_evaluate_responses(args)

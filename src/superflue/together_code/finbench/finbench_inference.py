@@ -67,7 +67,9 @@ def finbench_inference(args):
 
         except Exception as e:
             logger.error(f"Error processing instance {i+1}: {e}")
-            time.sleep(20.0)
+            complete_responses.append(None)
+            llm_responses.append(None)
+            time.sleep(10.0)
             continue
 
     df = pd.DataFrame(

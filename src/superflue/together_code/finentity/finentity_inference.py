@@ -55,23 +55,25 @@ def finentity_inference(args):
             )
             
             complete_responses.append(model_response)
-            logger.info(f"Model response: {model_response.choices[0].message.content}") # type: ignore
             response_label = model_response.choices[0].message.content # type: ignore
+            logger.info(f"Model response: {response_label}")
             llm_responses.append(response_label)
-
-            df = pd.DataFrame(
-                {
-                    "sentences": sentences,
-                    "llm_responses": llm_responses,
-                    "actual_labels": actual_labels,
-                    "complete_responses": complete_responses,
-                }
-            )
 
         except Exception as e:
             logger.error(f"Error processing sentence {i+1}: {e}")
-            time.sleep(20.0)
+            complete_responses.append(None)
+            llm_responses.append(None)
+            time.sleep(10.0)
             continue
+
+    df = pd.DataFrame(
+        {
+            "sentences": sentences,
+            "llm_responses": llm_responses,
+            "actual_labels": actual_labels,
+            "complete_responses": complete_responses,
+        }
+    )
 
     results_path = (
         RESULTS_DIR

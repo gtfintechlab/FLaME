@@ -2,12 +2,12 @@ import time
 
 import pandas as pd
 from datasets import load_dataset
-
 from litellm import completion 
+from datetime import date
 from superflue.together_code.prompts import finqa_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import LOG_DIR, LOG_LEVEL
+from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
 # TODO: (Glenn) Is FinQA saving results to a file properly?
 
@@ -42,25 +42,36 @@ def finqa_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                stop=tokens(args.model)
             )
+            
+            # Log and process the response
+            logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
             response_label = model_response.choices[0].message.content  # type: ignore
             llm_responses.append(response_label)
 
-            df = pd.DataFrame(
-                {
-                    "context": context,
-                    "response": llm_responses,
-                    "actual_label": actual_labels,
-                    "complete_responses": complete_responses,
-                }
-            )
-            time.sleep(10)
-
         except Exception as e:
             logger.error(e)
-            # i = i - 1
-            time.sleep(20.0)
+            complete_responses.append(None)
+            llm_responses.append(None)
+            time.sleep(10.0)
+
+    df = pd.DataFrame(
+        {
+            "context": context,
+            "response": llm_responses,
+            "actual_label": actual_labels,
+            "complete_responses": complete_responses,
+        }
+    )
+    time.sleep(10)
+    results_path = (
+        RESULTS_DIR
+        / 'finqa/finqa_meta-llama/'
+        / f"{'finqa'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(results_path, index=False)
 
     return df
