@@ -68,8 +68,8 @@ def finqa_inference(args):
     time.sleep(10)
     results_path = (
         RESULTS_DIR
-        / 'finqa/finqa_meta-llama/'
-        / f"{'finqa'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
+        / "finqa"
+        / f"{args.dataset}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
