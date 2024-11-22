@@ -21,7 +21,7 @@ from superflue.utils.logging_utils import setup_logger
 from superflue.together_code.finqa.finqa_inference import finqa_inference
 from superflue.together_code.tatqa.tatqa_inference import tatqa_inference
 from superflue.together_code.convfinqa.convfinqa_inference import convfinqa_inference
-from superflue.together_code.causal_detection.cd_inference import cd_inference
+from superflue.together_code.causal_detection.casual_detection_inference import casual_detection_inference
 
 from superflue.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL
 
@@ -55,7 +55,7 @@ def main(args):
         "edtsum": edtsum_inference,
         "fnxl": fnxl_inference,
         "tatqa":tatqa_inference,
-        "cd": cd_inference,
+        "causal_detection": casual_detection_inference,
         "finred": finred_inference,
         "causal_classification": causal_classification_inference,
         "subjectiveqa": subjectiveqa_inference,
