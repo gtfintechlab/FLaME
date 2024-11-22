@@ -1,3 +1,9 @@
+.ruff_cache
+
+# Secrets
+.env
+.secrets
+
 # Mac
 .DS_Store/
 
