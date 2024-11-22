@@ -1,4 +1,6 @@
 dataset: finqa
+mode: evaluate
+file_name: None
 sample_size: 10
 method: random
 seeds: [42, 123, 456]
