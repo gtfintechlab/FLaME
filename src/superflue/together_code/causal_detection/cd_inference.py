@@ -67,8 +67,8 @@ def cd_inference(args):
 
     results_path = (
         RESULTS_DIR
-        / 'cd/cd_meta-llama/'
-        / f"{'cd'}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
+        / "causal_detection"
+        / f"{args.dataset}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)

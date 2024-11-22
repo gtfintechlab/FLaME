@@ -69,8 +69,8 @@ def tatqa_inference(args):
     time.sleep(10)
     results_path = (
         RESULTS_DIR
-        / 'tatqa/tatqa_meta-llama/'
-        / f"{'tatqa'}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
+        / "tatqa"
+        / f"{args.dataset}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)

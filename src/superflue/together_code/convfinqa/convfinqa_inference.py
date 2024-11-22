@@ -69,8 +69,8 @@ def convfinqa_inference(args):
     )
     results_path = (
         RESULTS_DIR
-        / 'convfinqa/convfinqa_meta-llama/'
-        / f"{'convfinqa'}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
+        / "convfinqa"
+        / f"{args.dataset}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)

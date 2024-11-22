@@ -65,8 +65,8 @@ def fiqa_task2_inference(args):
     )
     results_path = (
         RESULTS_DIR
-        / 'fiqa2/fiqa2_meta-llama/'
-        / f"{'fiqa_task2'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
+        / "fiqa2"
+        / f"{args.dataset}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
