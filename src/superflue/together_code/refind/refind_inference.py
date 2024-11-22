@@ -3,7 +3,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-import together
+from litellm import completion 
 from superflue.together_code.prompts import refind_prompt
 from superflue.together_code.tokens import tokens
 
@@ -17,9 +17,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "refind_inference.log",
     level=LOG_LEVEL,
 )
-
-# Initialize the Together client
-client = together.Together()
 
 def refind_inference(args):
     
@@ -55,8 +52,7 @@ def refind_inference(args):
 
         try:
             logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
-            # Generate the model's response using Together API
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": refind_prompt(sentence)}],
                 tokens=args.max_tokens,

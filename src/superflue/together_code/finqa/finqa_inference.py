@@ -2,8 +2,8 @@ import time
 
 import pandas as pd
 from datasets import load_dataset
+from litellm import completion 
 from datetime import date
-from together import Together
 from superflue.together_code.prompts import finqa_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
@@ -24,7 +24,6 @@ def finqa_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
-    client = Together()
     # start_t = time.time()
     for entry in dataset["test"]:  # type: ignore
         pre_text = " ".join(entry["pre_text"])  # type: ignore
@@ -35,9 +34,9 @@ def finqa_inference(args):
         actual_label = entry["answer"]  # type: ignore
         actual_labels.append(actual_label)
         try:
-            model_response = client.chat.completions.create(
-                model=args.model,
+            model_response = completion(
                 messages=[{"role": "user", "content": finqa_prompt(combined_text)}],
+                model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
@@ -50,30 +49,29 @@ def finqa_inference(args):
             logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
             response_label = model_response.choices[0].message.content  # type: ignore
-            print(response_label)
             llm_responses.append(response_label)
-
-
-            df = pd.DataFrame(
-                {
-                    "context": context,
-                    "response": llm_responses,
-                    "actual_label": actual_labels,
-                    "complete_responses": complete_responses,
-                }
-            )
-            time.sleep(10)
-            results_path = (
-                RESULTS_DIR
-                / 'finqa/finqa_meta-llama/'
-                / f"{'finqa'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
-            )
-            results_path.parent.mkdir(parents=True, exist_ok=True)
-            df.to_csv(results_path, index=False)
 
         except Exception as e:
             logger.error(e)
-            # i = i - 1
-            time.sleep(20.0)
+            complete_responses.append(None)
+            llm_responses.append(None)
+            time.sleep(10.0)
+
+    df = pd.DataFrame(
+        {
+            "context": context,
+            "response": llm_responses,
+            "actual_label": actual_labels,
+            "complete_responses": complete_responses,
+        }
+    )
+    time.sleep(10)
+    results_path = (
+        RESULTS_DIR
+        / 'finqa/finqa_meta-llama/'
+        / f"{'finqa'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(results_path, index=False)
 
     return df

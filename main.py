@@ -4,11 +4,14 @@ from dotenv import load_dotenv
 import os
 from superflue.together_code.inference import main as inference
 from huggingface_hub import login
+from superflue.together_code.evaluate import main as evaluate
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="SuperFLUE")
     parser.add_argument("--config", type=str, help="Path to the YAML config file.")
     parser.add_argument("--dataset", type=str, help="Name of the dataset to use.")
+    parser.add_argument("--mode", type=str, choices=["inference", "evaluate"], required=True, help="Mode to run: inference or evaluate.")
+    parser.add_argument("--file_name", type=str, help="File name for evaluation (required for mode=evaluate).")
     parser.add_argument("--model", type=str, help="Model to use")
     parser.add_argument("--max_tokens", type=int, default=128, help="Max tokens to use")
     parser.add_argument(
@@ -47,12 +50,19 @@ if __name__ == "__main__":
         login(token=HUGGINGFACEHUB_API_TOKEN)
     else:
         print("Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in the environment.")
+    
 
     # Now import the inference function0
     args = parse_arguments()
+    if args.mode == "evaluate" and not args.file_name:
+        raise ValueError("File name is required for evaluation mode.")
+
     with open(args.config, "r") as file:
         config = yaml.safe_load(file)
     for key, value in config.items():
         setattr(args, key, value)
 
-    inference(args)
+    if args.mode == "inference":
+        inference(args)
+    elif args.mode == "evaluate":
+        evaluate(args)

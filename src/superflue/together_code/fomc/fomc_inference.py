@@ -9,7 +9,7 @@ from superflue.together_code.prompts import fomc_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-from together import Together
+from litellm import completion 
 
 logger = setup_logger(
     name="fomc_inference", log_file=LOG_DIR / "fomc_inference.log", level=LOG_LEVEL
@@ -27,7 +27,6 @@ def fomc_inference(args):
     complete_responses = []
     logger.info(f"Starting inference on dataset: fomc...")
     # start_t = time.time()
-    client = Together()
 
     for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"): # type: ignore
         sentence = dataset["test"][i]["sentence"] # type: ignore
@@ -37,7 +36,7 @@ def fomc_inference(args):
 
         try:
             logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": fomc_prompt(sentence)}],
                 max_tokens=args.max_tokens,
@@ -55,6 +54,8 @@ def fomc_inference(args):
         except Exception as e:
             logger.error(f"Error processing sentence {i+1}: {e}")
             time.sleep(10.0)
+            complete_responses.append(None)
+            llm_responses.append(None)
             continue
 
     df = pd.DataFrame(

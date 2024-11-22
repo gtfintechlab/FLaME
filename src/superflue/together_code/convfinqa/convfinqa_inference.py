@@ -2,9 +2,9 @@ import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from together import Together
 from superflue.together_code.prompts import convfinqa_prompt
 from superflue.together_code.tokens import tokens
+from litellm import completion 
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
@@ -20,7 +20,6 @@ def convfinqa_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
-    client = Together()
 
     for entry in dataset["train"]:  # type: ignore
         pre_text = " ".join(entry["pre_text"])  # type: ignore
@@ -37,9 +36,9 @@ def convfinqa_inference(args):
         actual_labels.append(actual_label)
 
         try:
-            model_response = client.chat.completions.create(
-                model=args.model,
+            model_response = completion(
                 messages=[{"role": "user", "content": convfinqa_prompt(combined_text)}],
+                model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
@@ -51,29 +50,29 @@ def convfinqa_inference(args):
             # Log and process the response
             logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content  # type: ignore
+            response_label = model_response.choices[0].message.content # type: ignore
             llm_responses.append(response_label)
-            print(response_label)
-
-            df = pd.DataFrame(
-                {
-                    "context": context,
-                    "response": llm_responses,
-                    "actual_label": actual_labels,
-                    "complete_responses": complete_responses,
-                }
-            )
-            time.sleep(10)
-            results_path = (
-                RESULTS_DIR
-                / 'convfinqa/convfinqa_meta-llama/'
-                / f"{'convfinqa'}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
-            )
-            results_path.parent.mkdir(parents=True, exist_ok=True)
-            df.to_csv(results_path, index=False)
 
         except Exception as e:
             logger.error(e)
+            complete_responses.append(None)
+            llm_responses.append(None)
             time.sleep(20.0)
+    
+    df = pd.DataFrame(
+        {
+            "context": context,
+            "response": llm_responses,
+            "actual_label": actual_labels,
+            "complete_responses": complete_responses,
+        }
+    )
+    results_path = (
+        RESULTS_DIR
+        / 'convfinqa/convfinqa_meta-llama/'
+        / f"{'convfinqa'}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(results_path, index=False)
 
     return df

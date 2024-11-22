@@ -4,8 +4,9 @@ method: random
 seeds: [42, 123, 456]
 splits: [5768, 78516, 944601]
 batch_size: 10
-model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
-max_tokens: 256
+# specify model host and model name, eg together_ai/<model_name>
+model: "together_ai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo" 
+max_tokens: 128
 temperature: 0.0
 top_p: 0.9
 repetition_penalty: 1.0

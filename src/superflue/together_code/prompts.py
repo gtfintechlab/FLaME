@@ -12,12 +12,21 @@ def fnxl_prompt(sentence: str):
 
     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
-    return prompt
-
-
 def headlines_prompt(sentence: str):
-    prompt = f"""Lorem ipsum: {sentence}"""
-    return prompt
+
+        prompt = f'''Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
+                    Give a score of 0 for each of the following attributes if the news headline does not contain the following information or 1 if it does.
+                    Price or Not: Does the news item talk about price or not.
+                    Direction Up: Does the news headline talk about price going up or not?
+                    Direction Down: Does the news headline talk about price going down or not?
+                    Direction Constant: Does the news headline talk about price remaining constant or not?
+                    Past Price: Does the news headline talk about an event in the past?
+                    Future Price: Does the news headline talk about an event in the future?
+                    Past News: Does the news headline talk about a general event (apart from prices) in the past?
+                    The news headline is:
+                    {sentence}'''
+
+        return prompt
 
 
 def fiqa_prompt(sentence: str):
@@ -156,18 +165,31 @@ def fpb_prompt(sentence: str, prompt_format: str):
 
     return prompt
 
-
 def finentity_prompt(sentence: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert entity level sentiment
-                classifier. Below is a sentence from a financial document. From the sentence, identify all the entities 
-                check the starting and ending indices of the entities and give it a tag out of the following three options: 
-                ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral.
-                Format it as such: "start": start value, "end": end value, "value": entity name, 
-                "tag":‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’. The sentence:
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert entity recognizer and sentiment classifier. Identify the entities which are companies or organizations from the following content and classify the sentiment of the corresponding entities into ‘Neutral’ ‘Positive’ or ‘Negative’ classes. Considering every paragraph as a String in Python, provide the entities with the start and end index to mark the boundaries of it including spaces and punctuation using zero-based indexing. In the output, 
+    Tag means sentiment; value means entity name. If no entity is found in the paragraph, 
+    the response should be empty. Only give the output, not python code. The output should be a list that looks like:
+    [{{'end': 210,
+   'label': 'Neutral',
+   'start': 207,
+   'tag': 'Neutral',
+   'value': 'FAA'}},
+  {{'end': 7, 'label': 'Neutral', 'start': 4, 'tag': 'Neutral', 'value': 'FAA'}},
+  {{'end': 298,
+   'label': 'Neutral',
+   'start': 295,
+   'tag': 'Neutral',
+   'value': 'FAA'}},
+  {{'end': 105,
+   'label': 'Neutral',
+   'start': 99,
+   'tag': 'Neutral',
+   'value': 'Boeing'}}]
+   Do not repeat any JSON object in the list. Evey JSON object should be unique.
+   The paragraph:
                 {sentence}"""
-
     return prompt
+
 
 
 def finbench_prompt(profile: str):
@@ -368,6 +390,44 @@ def subjectiveqa_prompt(feature, definition, question, answer):
               
     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
+    return prompt
+
+
+def fnxl_prompt(sentence, numerals, company, doc_type):
+    """
+    Generates a prompt for the LLM to associate numerals with the correct XBRL tags.
+    
+    Parameters:
+    - sentence (str): The sentence containing financial numerals.
+    - numerals (list): List of numerals to be tagged.
+    - company (str): The name of the company (for additional context).
+    - doc_type (str): The document type (e.g., "10-K").
+
+    Returns:
+    - str: The prompt to be passed to the LLM.
+    """
+    # Example prompt format
+    prompt = f"""
+You are a financial assistant skilled in SEC reporting. Your task is to analyze sentences containing financial numerals and associate each numeral with its corresponding financial XBRL tag based on the context. 
+Give the most accurate tag for that particular numeral.
+Below is an example:
+
+**Example Input**:
+- Sentence: "The Operating Partnership incurred expenses pursuant to the Corporate Services Agreement for the years ended December 31, 2020, 2019 and 2018 of $3.5 million, $3.5 million and $1.9 million, respectively."
+- Numerals: [3.5, 3.5, 1.9]
+- Metadata:
+  - Company: MGM Growth Properties LLC
+  - Document Type: 10-K
+- Expected Output:
+  ```json
+  {{"3.5": "us-gaap:RelatedPartyTransactionSellingGeneralAndAdministrativeExpensesFromTransactionsWithRelatedParty", "1.9": "us-gaap:RelatedPartyTransactionSellingGeneralAndAdministrativeExpensesFromTransactionsWithRelatedParty"}}
+  
+  Input:
+  Sentence: {sentence}
+  Numerals: {numerals}
+  Company: {company}
+  Document Type: {doc_type}"""
+  
     return prompt
 
 def refind_prompt(entities):

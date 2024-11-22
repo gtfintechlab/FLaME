@@ -3,7 +3,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-import together
+from litellm import completion 
 from superflue.together_code.prompts import numclaim_prompt
 from superflue.together_code.tokens import tokens
 
@@ -16,9 +16,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "numclaim_inference.log",
     level=LOG_LEVEL,
 )
-
-# Initialize the Together client
-client = together.Together()
 
 def numclaim_inference(args):
     
@@ -53,8 +50,7 @@ def numclaim_inference(args):
 
         try:
             logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
-            # Generate the model's response using Together API
-            model_response = client.chat.completions.create(
+            model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": numclaim_prompt(sentence)}],
                 tokens=args.max_tokens,

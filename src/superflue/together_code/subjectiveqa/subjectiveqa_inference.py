@@ -4,8 +4,7 @@ import os
 import pandas as pd
 from datasets import load_dataset
 
-import together
-from together import Together
+from litellm import completion 
 from superflue.together_code.prompts import subjectiveqa_prompt
 from superflue.together_code.tokens import tokens
 
@@ -17,8 +16,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "subjectiveqa_inference.log",
     level=LOG_LEVEL,
 )
-
-client = Together()
 
 def subjectiveqa_inference(args):
     
@@ -62,7 +59,7 @@ def subjectiveqa_inference(args):
                 row_data[f"{feature}_actual_label"] = [actual_label]
                 
                 try:
-                    model_response = client.chat.completions.create(
+                    model_response = completion(
                         model=args.model,
                         messages=[
                             {"role": "system", "content": "You are an expert sentence classifier."},
@@ -88,13 +85,12 @@ def subjectiveqa_inference(args):
                     feature_responses[feature].append("error")
                     row_data[feature] = ["error"]
 
-            # Delay between requests to avoid hitting rate limits
-            time.sleep(3.0)
-
         except Exception as e:
             logger.error(f"Error processing row {i+1}: {e}")
             for feature in definition_map.keys():
                 feature_responses[feature].append("error")
+            complete_responses.append(None)
+            time.sleep(10.0)
             continue
 
     # Create a DataFrame to store the results
@@ -103,8 +99,8 @@ def subjectiveqa_inference(args):
             "questions": questions,
             "answers": answers,
             **{f"{feature}_response": feature_responses[feature] for feature in definition_map.keys()},
-            **{f"{feature}_actual_label": feature_labels[feature] for feature in definition_map.keys()},
-            "complete_responses": complete_responses,  # Add complete responses for each question
+            **{f"{feature}_actual_label": feature_labels[feature] for feature in definition_map.keys()}
+            # "complete_responses": complete_responses,  # Add complete responses for each question
         }
     )
 

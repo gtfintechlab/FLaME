@@ -2,74 +2,89 @@ import pandas as pd
 import logging
 from datetime import date
 from pathlib import Path
-import together
-from together import Together
 from evaluate import load
 import numpy as np
-bertscore = load("bertscore")
-from superflue.config import ROOT_DIR
 from superflue.utils.logging_utils import setup_logger
+from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 
+# Load BERTScore evaluation metric
+bertscore = load("bertscore")
 
+# Configure logging
 logger = setup_logger(
-    name="ectsum_evaluate",
-    log_file=Path("logs/ectsum_evaluate.log"),
-    level=logging.INFO,
+    name="ectsum_evaluation",
+    log_file=LOG_DIR / "ectsum_evaluation.log",
+    level=LOG_LEVEL,
 )
 
 def summarization_prompt(input_text: str):
-    # Adjust the prompt to generate summaries for ECT data
+    """Generate a summarization prompt for ECT data."""
     prompt = f'''Generate a financial summary in about 50 words in line-by-line format based on the following input. The summary should include key financial information such as earnings per share, revenue, and other significant figures.
                 It should contain only lower case letters and numbers (including decimals). Do not include any special characters other than \n, % or $.
                 Here is the input to analyze:
                 "{input_text}"'''
     return prompt
 
-def extract_and_evaluate_responses(args):
-    results_file = (
-        ROOT_DIR
-        / "results"
-        / 'ectsum'
-        / 'ectsum_meta-llama'
-        / "Meta-Llama-3.1-8B-Instruct-Turbo_02_10_2024.csv"
-    )
+def save_progress(df, path):
+    """Save the current progress to a CSV file."""
+    df.to_csv(path, index=False)
+    logger.info(f"Progress saved to {path}")
 
-    df = pd.read_csv(results_file)
-    # Assuming the output column contains the expected summaries
-    correct_summaries = df['actual_labels'].tolist()
-    llm_responses = df['llm_responses'].tolist()
-    bert_scores = bertscore.compute(predictions=llm_responses, references=correct_summaries, model_type="distilbert-base-uncased")
-    print(bert_scores)
+def ectsum_evaluate(file_name, args):
+    """Evaluate ECTSum summaries and return results and metrics DataFrames."""
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
-    df['precision'] = bert_scores["precision"] # type: ignore
-    df['recall'] = bert_scores["recall"] # type: ignore
-    df['f1'] = bert_scores["f1"] # type: ignore
+    # Load the CSV file
+    df = pd.read_csv(file_name)
+    logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    logger.info(f"BERTScore Precision: {np.mean(bert_scores['precision'])}") # type: ignore
-    logger.info(f"BERTScore Recall: {np.mean(bert_scores['recall'])}") # type: ignore
-    logger.info(f"BERTScore F1: {np.mean(bert_scores['f1'])}") # type: ignore
-    
-    # Save the evaluation results
+    # Define paths for results and metrics
     evaluation_results_path = (
-        ROOT_DIR
-        / "evaluation_results"
-        / 'ectsum'
-        / f"evaluation_{'ectsum'}_{'meta-llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
+        EVALUATION_DIR
+        / task
+        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(evaluation_results_path, index=False)
 
-    eval_df = pd.DataFrame({'precision' : [np.mean(bert_scores['precision'])], 'recall' : [np.mean(bert_scores['recall'])], 'f1' : [np.mean(bert_scores['f1'])]}) # type: ignore
-    eval_df.to_csv(Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv"), index=False)
+    # Extract references and predictions
+    correct_summaries = df["actual_labels"].tolist()
+    llm_responses = df["llm_responses"].tolist()
 
-    logger.info(f"Evaluation completed. Results saved to {evaluation_results_path}")
-    return df
+    # Compute BERTScore
+    logger.info("Computing BERTScore metrics...")
+    bert_scores = bertscore.compute(
+        predictions=llm_responses, 
+        references=correct_summaries, 
+        model_type="distilbert-base-uncased"
+    )
 
-# Helper function for stop tokens
-tokens_map = {"meta-llama/Llama-2-7b-chat-hf": ["<human>", "\n\n"]}
+    # Add BERTScore metrics to DataFrame
+    df["precision"] = bert_scores["precision"]  # type: ignore
+    df["recall"] = bert_scores["recall"]  # type: ignore
+    df["f1"] = bert_scores["f1"]  # type: ignore
 
-def tokens(model_name):
-    return tokens_map.get(model_name, [])
+    # Log aggregated metrics
+    avg_precision = np.mean(bert_scores["precision"])  # type: ignore
+    avg_recall = np.mean(bert_scores["recall"])  # type: ignore
+    avg_f1 = np.mean(bert_scores["f1"])  # type: ignore
 
-if __name__ == "__main__":
-    extract_and_evaluate_responses(None)
+    logger.info(f"BERTScore Precision: {avg_precision:.4f}")
+    logger.info(f"BERTScore Recall: {avg_recall:.4f}")
+    logger.info(f"BERTScore F1: {avg_f1:.4f}")
+
+    # Create metrics DataFrame
+    metrics_df = pd.DataFrame({
+        "Precision": [avg_precision],
+        "Recall": [avg_recall],
+        "F1 Score": [avg_f1]
+    })
+
+    # Continual saving of progress and metrics
+    save_progress(df, evaluation_results_path)
+    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_df.to_csv(metrics_path, index=False)
+    logger.info(f"Metrics saved to {metrics_path}")
+
+    return df, metrics_df
+

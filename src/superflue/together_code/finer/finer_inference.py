@@ -4,8 +4,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-import together
-from together import Together
+from litellm import completion 
 from superflue.together_code.prompts import finer_prompt
 from superflue.together_code.tokens import tokens
 
@@ -15,8 +14,6 @@ from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 logger = setup_logger(
     name="finer_inference", log_file=LOG_DIR / "finer_inference.log", level=LOG_LEVEL
 )
-
-client = Together()
 
 def finer_inference(args):
     today = date.today()
@@ -39,7 +36,7 @@ def finer_inference(args):
         actual_labels.append(actual_label)
         try:
             logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
-            model_response = client.chat.completions.create(
+            model_response = completion(
             model=args.model,
             messages=[{"role": "user", "content": finer_prompt(sentence)}],
             tokens=args.max_tokens,
@@ -51,24 +48,26 @@ def finer_inference(args):
             )
             
             complete_responses.append(model_response)
-            logger.info(f"Model response: {model_response.choices[0].message.content}") # type: ignore
             response_label = model_response.choices[0].message.content # type: ignore
+            logger.info(f"Model response: {response_label}")
             llm_responses.append(response_label)
-
-            df = pd.DataFrame(
-                {
-                    "sentences": sentences,
-                    "llm_responses": llm_responses,
-                    "actual_labels": actual_labels,
-                    "complete_responses": complete_responses,
-                }
-            )
 
         except Exception as e:
             logger.error(f"Error processing sentence {i+1}: {e}")
-            time.sleep(20.0)
+            llm_responses.append(None)
+            complete_responses.append(None)
+            time.sleep(10.0)
             continue
-
+    
+    df = pd.DataFrame(
+        {
+            "sentences": sentences,
+            "llm_responses": llm_responses,
+            "actual_labels": actual_labels,
+            "complete_responses": complete_responses,
+        }
+    )
+    
     results_path = (
         RESULTS_DIR
         / "finer"

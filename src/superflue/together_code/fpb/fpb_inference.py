@@ -1,4 +1,3 @@
-import together
 import pandas as pd
 import time
 from tqdm import tqdm
@@ -8,7 +7,7 @@ from superflue.together_code.prompts import fpb_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-from together import Together
+from litellm import completion 
 
 logger = setup_logger(
     name="fpb_inference", log_file=LOG_DIR / "fpb_inference.log", level=LOG_LEVEL
@@ -28,7 +27,6 @@ def fpb_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
-    client = Together()
 
     for i in tqdm(range(len(dataset['test'])), desc="Processing sentences"):  # type: ignore
         sentence = dataset['test'][i]["sentence"] # type: ignore
@@ -37,14 +35,14 @@ def fpb_inference(args):
         actual_labels.append(actual_label)
         try:
             logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
-            model_response = client.chat.completions.create(
-                model=args.model,
+            model_response = completion(
+                model=args.model, 
                 messages=[{"role": "user", "content": fpb_prompt(sentence, prompt_format='superflue')}],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
+                max_tokens=args.max_tokens, 
+                temperature=args.temperature, 
+                top_k=args.top_k, 
                 top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
+                repetition_penalty=args.repetition_penalty, 
                 stop=tokens(args.model)
             )
             logger.debug(f"Model response: {model_response}")
@@ -55,6 +53,8 @@ def fpb_inference(args):
         except Exception as e:
             logger.error(f"Error: {e}. Retrying in 10 seconds.")
             time.sleep(10.0)
+            complete_responses.append(None)
+            llm_responses.append(None)
             continue
 
     df = pd.DataFrame(
