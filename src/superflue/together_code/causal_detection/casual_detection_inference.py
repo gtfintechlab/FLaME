@@ -14,7 +14,7 @@ logger = setup_logger(
     name="cd_inference", log_file=LOG_DIR / "cd_inference.log", level=LOG_LEVEL
 )
 
-def cd_inference(args):
+def casual_detection_inference(args):
     today = date.today()
     dataset = load_dataset("gtfintechlab/CausalDetection", trust_remote_code=True)
 
@@ -46,8 +46,8 @@ def cd_inference(args):
             )
             complete_responses.append(model_response)
             response_label = model_response.choices[0].message.content # type: ignore
-            predicted_tag = response_label.split()  # Assumed token-wise classification # type: ignore
-            predicted_tags.append(predicted_tag)
+            response_tags = response_label.split()  # Assumed token-wise classification # type: ignore
+            predicted_tags.append(response_tags)
 
         except Exception as e:
             logger.error(f"Error processing entry {len(tokens_list)}: {e}")
