@@ -25,6 +25,8 @@ def tokens(api_model_string: str) -> List[str]:
         'mistralai/Mixtral-8x22B-Instruct-v0.1': ["[/INST]", "</s>"],
         'NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO': ["[/INST]", "</s>"],
         'meta-llama/Llama-2-13b-chat-hf': ["[/INST]", "</s>"],
+        'together_ai/meta-llama/Llama-3-70b-chat-hf': ["[/INST]", "</s>"],
+        'together_ai/meta-llama/Llama-3-8b-chat-hf': ["[/INST]", "</s>"],
 
         # Llama3.1, Llama3.2
         'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo': ["<|eot_id|>", "<|eom_id|>"],
