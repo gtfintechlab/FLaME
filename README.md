@@ -1,8 +1,6 @@
 # FERRArI
 FERRArI - Financial Economics Reasoning Refinement for Artificial Intelligence
 
-Authors: Kaushik, Thaneesh, Neeraj, Glenn
-
 Corresponding Author: `glennmatlin[at]gatech[dot]edu`
 
 ## Project Setup
