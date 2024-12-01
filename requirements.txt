@@ -17,7 +17,3 @@ nltk
 scikit-learn
 python-dotenv
 huggingface_hub
-bert_score
-evaluate
-transformers
-litellm
