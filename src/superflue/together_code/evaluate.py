@@ -62,8 +62,7 @@ def main(args):
 
     if task in task_evaluate_map:
         evaluate_function = task_evaluate_map[task]
-        df = evaluate_function(args.file_name, args)[0]  # Pass the file_name as an additional parameter
-        metrics_df = evaluate_function(args.file_name, args)[1]
+        df, metrics_df = evaluate_function(args.file_name, args)
         results_path = (
             EVALUATION_DIR
             / task
