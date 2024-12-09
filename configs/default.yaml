@@ -1,14 +1,22 @@
-dataset: finqa
-mode: evaluate
-file_name: None
+# Core settings
+dataset: fomc
+mode: inference  # inference or evaluate
+file_name: null  # Required for evaluate mode
+
+# Model parameters
+model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+max_tokens: 128
+temperature: 0.0
+top_p: 0.9
+top_k: null
+repetition_penalty: 1.0
+batch_size: 10
+
+# Dataset parameters
 sample_size: 10
 method: random
 seeds: [42, 123, 456]
 splits: [5768, 78516, 944601]
-batch_size: 10
-# specify model host and model name, eg together_ai/<model_name>
-model: "together_ai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo" 
-max_tokens: 128
-temperature: 0.0
-top_p: 0.9
-repetition_penalty: 1.0
+
+# Other parameters
+prompt_format: "ferrari"
