@@ -1,3 +1,7 @@
-[tool.ruff]
-lint.ignore = ["E402"]
-exclude = ["*.ipynb"]
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning:pydantic.*:",
+    "ignore::UserWarning:pydantic.*:",
+    "ignore::DeprecationWarning:litellm.*:",
+    "ignore::UserWarning:litellm.*:"
+]
