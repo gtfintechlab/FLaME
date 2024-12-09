@@ -5,7 +5,7 @@ import nltk
 import pandas as pd
 from datasets import load_dataset
 
-from litellm import completion 
+from litellm import batch_completion
 from superflue.together_code.prompts import finentity_prompt
 from superflue.together_code.tokens import tokens
 
@@ -20,50 +20,71 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+def chunk_list(lst, chunk_size):
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with retry mechanism."""
+    try:
+        batch_responses = batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            top_k=args.top_k,
+            top_p=args.top_p,
+            num_retries=3,
+            repetition_penalty=args.repetition_penalty,
+            stop=tokens(args.model),
+        )
+        logger.info(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
+
 def finentity_inference(args):
-    
     today = date.today()
     logger.info(f"Starting FinEntity inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/finentity", "5768", trust_remote_code=True)
+    dataset = load_dataset("gtfintechlab/finentity", "5768", split="test", trust_remote_code=True)
 
-    # Initialize lists to store actual labels and model responses
-    sentences = []
+    sentences = [row["content"] for row in dataset]  # type: ignore
+    actual_labels = [row["annotations"] for row in dataset]  # type: ignore
     llm_responses = []
-    actual_labels = []
     complete_responses = []
 
-    logger.info(f"Starting inference on FinEntity...")
-    # start_t = time.time()
-    for i in range(len(dataset["test"])): # type: ignore
-        sentence = dataset["test"][i]["content"] # type: ignore
-        actual_label = dataset["test"][i]["annotations"] # type: ignore
-        sentences.append(sentence)
-        actual_labels.append(actual_label)
+    batch_size = 10
+    total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)
+    logger.info(f"Processing {len(sentences)} sentences in {total_batches} batches.")
+
+    sentence_batches = chunk_list(sentences, batch_size)
+    label_batches = chunk_list(actual_labels, batch_size)
+
+    for batch_idx, (sentence_batch, label_batch) in enumerate(zip(sentence_batches, label_batches)):
+        messages_batch = [
+            [{"role": "user", "content": finentity_prompt(sentence)}]
+            for sentence in sentence_batch
+        ]
+
         try:
-            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
-            model_response = completion(
-            model=args.model,
-            messages=[{"role": "user", "content": finentity_prompt(sentence)}],
-            tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            stop=tokens(args.model),
-            )
-            
-            complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content # type: ignore
-            logger.info(f"Model response: {response_label}")
-            llm_responses.append(response_label)
+            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+
+            for response, actual_label in zip(batch_responses, label_batch):
+                try:
+                    response_label = response.choices[0].message.content.strip()  # type: ignore
+                    llm_responses.append(response_label)
+                    complete_responses.append(response)
+                except (KeyError, IndexError, AttributeError) as e:
+                    logger.error(f"Error extracting response: {e}")
+                    llm_responses.append("error")
+                    complete_responses.append(None)
 
         except Exception as e:
-            logger.error(f"Error processing sentence {i+1}: {e}")
-            complete_responses.append(None)
-            llm_responses.append(None)
-            time.sleep(10.0)
+            logger.error(f"Batch {batch_idx + 1} failed: {e}")
+            llm_responses.extend(["error"] * len(sentence_batch))
+            complete_responses.extend([None] * len(sentence_batch))
             continue
 
     df = pd.DataFrame(
