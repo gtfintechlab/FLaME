@@ -4,11 +4,11 @@ from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
 import logging
-from ferrari.config import LOG_LEVEL
+from superflue.config import LOG_LEVEL
 
 DATA_DIR = Path().cwd().parent / "task2"
 HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-HF_ORGANIZATION = "glennmatlin"
+HF_ORGANIZATION = "gtfintechlab"
 DATASET = "FiQA_Task2"
 login(HUGGINGFACEHUB_API_TOKEN)
 

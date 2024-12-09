@@ -6,10 +6,10 @@ from pathlib import Path
 import pandas as pd
 from datasets import Dataset, DatasetDict
 from dotenv import dotenv_values
-from ferrari.config import DATA_DIR, LOG_LEVEL
+from superflue.config import DATA_DIR, LOG_LEVEL
 from huggingface_hub import login
 
-HF_ORGANIZATION = "glennmatlin"
+HF_ORGANIZATION = "gtfintechlab"
 DATASET = "Economics_TestBank"
 
 # Configure logging to show on console with timestamp and level
