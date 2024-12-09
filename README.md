@@ -1,7 +1,6 @@
-# FERRArI
-FERRArI - Financial Economics Reasoning Refinement for Artificial Intelligence
-
-Corresponding Author: `glennmatlin[at]gatech[dot]edu`
+# SuperFLUE (Financial Language Understanding Evaluation)
+Corresponding Authors: `glennmatlin[at]gatech[dot]edu` `huzaifa[at]gatech[dot]edu`
+***ASSUME ALL THE TESTS ARE OBSOLETE DONT WORRY ABOUT THEM RIGHT NOW***
 
 ## Project Setup
 
@@ -29,17 +28,17 @@ To create the virtual environment in the project root and install the required p
     pip install -r requirements.txt
     ```
 
-### Installing FERRArI
+### Installing SuperFLUE
 
-From the root directory you can run `pip install -e .` -- this uses `setup.py` to install FERRArI to your activate Python environment.
+From the root directory you can run `pip install -e .` -- this uses `setup.py` to install SuperFLUE to your activate Python environment.
 
-You can re-install FERRArI if something goes wrong:
+You can re-install superflue if something goes wrong:
 ```bash
-pip uninstall ferrari
+pip uninstall superflue
 pip install -e .
 ```
 
-(Optional) Clean-up files after install:
+(unsure if needed) Clean-up files after install:
 ```bash
 python setup.py clean --all
 rm -rf build/ dist/ *.egg-info
@@ -47,11 +46,11 @@ find . -name '*.pyc' -delete
 find . -name '__pycache__' -delete
 ```
 
-Test the installation of FERRArI worked:
+Test the installation of SuperFLUE worked:
 ```bash
 python
->>> import FERRArI
->>> print(FERRArI.__file__)
+>>> import superflue
+>>> print(superflue.__file__)
 ```
 
 ### API keys
@@ -67,6 +66,7 @@ To configure your API keys, follow these steps:
       API_KEY_NAME=your_api_key_value
       ```
     - Replace `API_KEY_NAME` with the actual name of the API key and `your_api_key_value` with your actual API key.
+    - Make sure to add all API keys relevant to the models you want to call.
 
 3. **Save the `.env` file**:
     - Ensure the file is saved in the project root directory.
@@ -78,8 +78,6 @@ TOGETHER_API_KEY=bar
 OPENAI_API_KEY=buzz
 ANTHROPIC_API_KEY=buzz
 ```
-
-
 
 ## Project Repository
 
@@ -104,9 +102,11 @@ data/
     │ └── huggify_DatasetB.py
 ```
 
+
 To upload a dataset, simply run the respective script:
 
-`python3 data/{dataset_name}/huggify_{dataset_name}.py`
+
+python3 data/{dataset_name}/huggify_{dataset_name}.py
 
 
 ### 2. Inference Pipeline
@@ -131,7 +131,7 @@ The file src/together/prompts.py holds various zero-shot prompts that are used f
 
 To run inference on any dataset using this repository, you can use the following command:
 
-`python3 src/together/inference.py --model "{model_name}" --dataset "{dataset_name}" --max_tokens {max_tokens} --temperature {temperature} --top_p {top_p} --top_k {top_k} --repetition_penalty {repetition_penalty} --prompt_format "{prompt_format}"`
+`python3 src/together/inference.py --model "{model_name}" --task "{dataset_name}" --max_tokens {max_tokens} --temperature {temperature} --top_p {top_p} --top_k {top_k} --repetition_penalty {repetition_penalty} --prompt_format "{prompt_format}"`
 
 
 #### Command Options:

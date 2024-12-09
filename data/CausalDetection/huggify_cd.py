@@ -2,8 +2,8 @@ import os
 from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
-from ferrari.config import DATA_DIR, LOG_DIR, LOG_LEVEL
-from ferrari.utils.logging_utils import setup_logger
+from superflue.config import DATA_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import setup_logger
 
 logger = setup_logger(
     name=__name__, log_file=LOG_DIR / "CausalDetectionhuggify.log", level=LOG_LEVEL

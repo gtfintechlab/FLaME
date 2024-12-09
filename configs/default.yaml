@@ -1,10 +1,13 @@
-dataset: fomc
+dataset: finqa
+mode: evaluate
+file_name: None
 sample_size: 10
 method: random
 seeds: [42, 123, 456]
 splits: [5768, 78516, 944601]
 batch_size: 10
-model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+# specify model host and model name, eg together_ai/<model_name>
+model: "together_ai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo" 
 max_tokens: 128
 temperature: 0.0
 top_p: 0.9

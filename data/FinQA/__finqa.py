@@ -5,7 +5,7 @@ import json
 from datasets import Dataset, DatasetDict
 from huggingface_hub import notebook_login
 
-from ferrari.utils.miscellaneous import download_zip_content
+from superflue.utils.miscellaneous import download_zip_content
 import traceback
 import logging
 
