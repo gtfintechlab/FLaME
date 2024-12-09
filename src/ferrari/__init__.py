@@ -12,7 +12,6 @@ logger = setup_logger(
     name=__name__, log_file=LOG_DIR / "ferrari.log", level=LOG_LEVEL
 )
 
-
 logger.debug(f"ROOT_DIR = {ROOT_DIR}")
 logger.debug(f"DATA_DIR = {DATA_DIR}")
 logger.debug(f"OUTPUT_DIR = {OUTPUT_DIR}")

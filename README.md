@@ -1,145 +1,157 @@
-# FERRArI
-FERRArI - Financial Economics Reasoning Refinement for Artificial Intelligence
+# FERRArI: Financial Economics Reasoning Refinement for Artificial Intelligence
 
-Corresponding Author: `glennmatlin[at]gatech[dot]edu`
+Glenn Matlin, Kaushik Arcot, Thaneesh B. Krishnasamy, Neeraj Menon Suresh Kumar
 
-## Project Setup
+Corresponding author: `glennmatlin [at] gatech.edu`
 
-### Creating and Activating the Virtual Environment
+## Tasks
 
-To create the virtual environment in the project root and install the required packages, follow these steps:
+1. **FOMC**: Federal Reserve statement classification (Hawkish/Dovish/Neutral)
+1. **EconLogicQA**: Ordering economic events based on logical sequences
+1. **FiQA**: Financial sentiment analysis and opinion-based QA
+   - Task 1: Target-specific sentiment analysis
+   - Task 2: Financial opinion question answering
+1. **MMLU**: Massive Multitask Language Understanding (Economics focus)
+1. **BizBench**: Numerical question answering on SEC filings
 
-1. **Create the virtual environment**:
-    ```sh
-    python -m venv .venv
-    ```
+## Setup
 
-2. **Activate the virtual environment**:
-    - On Windows:
-        ```sh
-        .\.venv\Scripts\activate
-        ```
-    - On macOS and Linux:
-        ```sh
-        source .venv/bin/activate
-        ```
-
-3. **Install the required packages**:
-    ```sh
-    pip install -r requirements.txt
-    ```
-
-### Installing FERRArI
-
-From the root directory you can run `pip install -e .` -- this uses `setup.py` to install FERRArI to your activate Python environment.
-
-You can re-install FERRArI if something goes wrong:
+1. Install dependencies:
 ```bash
-pip uninstall ferrari
-pip install -e .
+pip install -r requirements.txt
 ```
 
-(Optional) Clean-up files after install:
+2. Set up environment variables:
 ```bash
-python setup.py clean --all
-rm -rf build/ dist/ *.egg-info
-find . -name '*.pyc' -delete
-find . -name '__pycache__' -delete
+export HUGGINGFACEHUB_API_TOKEN=your_token_here
 ```
 
-Test the installation of FERRArI worked:
-```bash
-python
->>> import FERRArI
->>> print(FERRArI.__file__)
-```
+## Usage
 
-### API keys
-To configure your API keys, follow these steps:
+The pipeline is split into two stages: inference and evaluation.
 
-1. **Create a `.env` file**:
-    - You can create a new `.env` file in the project root directory **OR** copy the provided `.env.sample` file and rename it to `.env`.
+### 1. Inference Stage
 
-2. **Modify the `.env` file**:
-    - Open the `.env` file in a text editor.
-    - Add your API keys in the following format:
-      ```
-      API_KEY_NAME=your_api_key_value
-      ```
-    - Replace `API_KEY_NAME` with the actual name of the API key and `your_api_key_value` with your actual API key.
-
-3. **Save the `.env` file**:
-    - Ensure the file is saved in the project root directory.
-
-Example:
-```
-HUGGINGFACEHUB_API_TOKEN=foo
-TOGETHER_API_KEY=bar
-OPENAI_API_KEY=buzz
-ANTHROPIC_API_KEY=buzz
-```
-
-
-
-## Project Repository
-
-This repository is organized into three primary components: Data Management, Inference Pipeline, and Instructions for Running the Code.
-
----
-
-### 1. Data Management
-
-The `data` folder in this repository contains multiple subfolders, each representing a different dataset. For each dataset, there is a corresponding script named `huggify_{dataset}.py`. These scripts are designed to upload the raw data for each dataset to the [gtfintech lab's repository on Hugging Face](https://huggingface.co/gtfintechlab).
-
-#### How to Use the Data Upload Script
-
-For each dataset, you can find its respective script inside its corresponding folder. The script reads raw data files (in CSV/JSON/other formats), processes them, and uploads them to Hugging Face using the Hugging Face API.
-
-- Example directory structure:
-```bash
-data/ 
-    ├── DatasetA/ 
-    │ └── huggify_DatasetA.py 
-    ├── DatasetB/ 
-    │ └── huggify_DatasetB.py
-```
-
-To upload a dataset, simply run the respective script:
-
-`python3 data/{dataset_name}/huggify_{dataset_name}.py`
-
-
-### 2. Inference Pipeline
-
-The main entry point for the inference process is src/together/inference.py. This script serves as the core orchestrator for running inference tasks on different datasets. It manages the API calls, model loading, and task-specific configurations.
-
-Dataset-Specific Inference Scripts
-Each dataset has a dedicated inference script located under src/together/{dataset_name}_inference.py. These scripts contain task-specific inference logic and handle the input/output formats for that particular dataset.
+Generate model responses for any supported task:
 
 ```bash
-src/together/
-  ├── DatasetA_inference.py
-  ├── DatasetB_inference.py
-  ├── prompts.py
-  └── inference.py
+# Using config file
+python main.py --config configs/task_name.yaml --mode inference
+
+# Or with explicit arguments
+python main.py \
+    --mode inference \
+    --dataset [bizbench|econlogicqa|fiqa_task1|fiqa_task2|fomc|mmlu] \
+    --model together_ai/meta-llama/Llama-2-7b \
+    --batch_size 10 \
+    --temperature 0.0 \
+    --top_p 0.9
 ```
 
-Prompts
-The file src/together/prompts.py holds various zero-shot prompts that are used for each dataset during inference. These prompts guide the model during the prediction phase.
+Task-specific arguments:
+- For MMLU:
+  ```bash
+  --mmlu-subjects econometrics high_school_macroeconomics \
+  --mmlu-split test \
+  --mmlu-num-few-shot 5
+  ```
 
-### 3. Running the inference pipeline
+### 2. Evaluation Stage
 
-To run inference on any dataset using this repository, you can use the following command:
+Evaluate the model's responses:
 
-`python3 src/together/inference.py --model "{model_name}" --dataset "{dataset_name}" --max_tokens {max_tokens} --temperature {temperature} --top_p {top_p} --top_k {top_k} --repetition_penalty {repetition_penalty} --prompt_format "{prompt_format}"`
+```bash
+python main.py \
+    --mode evaluate \
+    --dataset [bizbench|econlogicqa|fiqa_task1|fiqa_task2|fomc|mmlu] \
+    --model together_ai/meta-llama/Llama-2-7b \
+    --file_name path/to/inference_results.csv
+```
 
+## Task Details
 
-#### Command Options:
-- `--model`: The name of the model you want to use for inference (e.g., GPT-3, T5, etc.).
-- `--task`: The name of the dataset task for which you are running inference.
-- `--max_tokens`: The maximum number of tokens to generate for each inference.
-- `--temperature`: The sampling temperature (controls randomness in predictions).
-- `--top_p`: Controls nucleus sampling.
-<!-- - `--top_k`: Controls top-k sampling. -->
-- `--repetition_penalty`: Penalty for repeated tokens during inference.
-- `--prompt_format`: Specify the format of the prompt you want to use (from `prompts.py`).
+### BizBench
+- Purpose: Extract numerical answers from SEC filings
+- Input: Question and SEC filing context
+- Output: Numerical answer without units
+
+### EconLogicQA
+- Purpose: Order economic events logically
+- Input: Question and 4 events
+- Output: Ordered sequence of events with explanation
+
+### FiQA
+#### Task 1: Sentiment Analysis
+- Purpose: Target-specific financial sentiment analysis
+- Input: Financial text
+- Output: Sentiment scores (-1 to 1) for identified targets
+
+#### Task 2: Opinion QA
+- Purpose: Answer opinion-based financial questions
+- Input: Financial question
+- Output: Answer based on financial opinions and analysis
+
+### FOMC
+- Purpose: Classify Federal Reserve statements
+- Input: FOMC statement
+- Output: HAWKISH/DOVISH/NEUTRAL classification
+
+### MMLU (Economics Focus)
+- Purpose: Test model's economics knowledge
+- Input: Multiple-choice questions
+- Output: Answer with explanation
+- Supported subjects: Economics, Finance, Accounting, etc.
+
+## Configuration
+
+Each task has a corresponding config file in `configs/`:
+- `bizbench.yaml`
+- `econlogicqa.yaml`
+- `fiqa.yaml`
+- `fomc.yaml`
+- `mmlu.yaml`
+
+Configure:
+- Model parameters (temperature, top_p, etc.)
+- Task-specific settings
+- Batch size and other inference settings
+
+## Output Structure
+
+### Inference Results
+```
+output/results/
+├── bizbench/
+├── econlogicqa/
+├── fiqa/
+│   ├── task1/
+│   └── task2/
+├── fomc/
+└── mmlu/
+```
+
+### Evaluation Results
+```
+output/evaluation/
+├── bizbench/
+├── econlogicqa/
+├── fiqa/
+│   ├── task1/
+│   └── task2/
+├── fomc/
+└── mmlu/
+```
+
+Each directory contains:
+- `inference_{model}_{date}.csv`: Raw model responses
+- `evaluation_{model}_{date}.csv`: Detailed results
+- `evaluation_{model}_{date}_metrics.csv`: Task-specific metrics
+
+## Logging
+
+Logs are saved to `logs/` with task-specific log files:
+- `bizbench_[inference|evaluation].log`
+- `econlogicqa_[inference|evaluation].log`
+- `fiqa_task[1|2]_[inference|evaluation].log`
+- `fomc_[inference|evaluation].log`
+- `mmlu_[inference|evaluation].log`

@@ -6,7 +6,7 @@ from dotenv import dotenv_values
 from ferrari.config import DATA_DIR, LOG_LEVEL
 from huggingface_hub import login
 
-HF_ORGANIZATION = "gtfintechlab"
+HF_ORGANIZATION = "glennmatlin"
 DATASET = "EconLogicQA"
 
 logging.basicConfig(level=LOG_LEVEL)

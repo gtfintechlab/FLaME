@@ -9,7 +9,7 @@ from ferrari.config import LOG_LEVEL
 
 DATA_DIR = Path().cwd().parent / "task1"
 HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-HF_ORGANIZATION = "gtfintechlab"
+HF_ORGANIZATION = "glennmatlin"
 DATASET = "FiQA_Task1"
 login(HUGGINGFACEHUB_API_TOKEN)
 

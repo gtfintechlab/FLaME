@@ -1,3 +1,10 @@
+# pytest
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# ruff
 .ruff_cache
 
 # Secrets
@@ -175,3 +182,5 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 .DS_Store
+
+results/

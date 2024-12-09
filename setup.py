@@ -1,4 +1,3 @@
-# setup.py
 from setuptools import setup, find_packages
 
 with open("requirements.txt") as f:
@@ -9,11 +8,11 @@ print("Found packages:", packages)
 
 setup(
     name="ferrari",
-    version="0.0.1",
+    version="0.3",
     description="FERRArI - Financial Economics Reasoning Refinement for Artificial Intelligence",
     author="Glenn Matlin",
     author_email="gmatlin3@gatech.edu",
-    url="https://github.com/gtfintechlab/ferrari",  # Replace with your project's URL
+    url="https://github.com/glennmatlin/ferrari",  # Replace with your project's URL
     packages=packages,
     package_dir={"": "src"},
     include_package_data=True,
