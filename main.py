@@ -2,9 +2,9 @@ import yaml
 import argparse
 from dotenv import load_dotenv
 import os
-from superflue.together_code.inference import main as inference
+from superflue.code.inference import main as inference
 from huggingface_hub import login
-from superflue.together_code.evaluate import main as evaluate
+from superflue.code.evaluate import main as evaluate
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="SuperFLUE")
