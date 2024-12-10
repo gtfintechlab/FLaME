@@ -45,7 +45,7 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
 
 def fiqa_task1_inference(args):
     # Load dataset and initialize storage for results
-    dataset = load_dataset("gtfintechlab/FiQA_Task1", split="test", trust_remote_code=True)
+    dataset = load_dataset("gtfintechlab/FiQA_Task1", trust_remote_code=True)
 
     test_data = dataset["test"] # type: ignore
     all_texts = [f"Sentence: {data['sentence']}. Snippets: {data['snippets']}. Target aspect: {data['target']}" for data in test_data] # type: ignore

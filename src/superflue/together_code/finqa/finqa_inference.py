@@ -58,7 +58,10 @@ def finqa_inference(args):
     
     pbar = tqdm(text_batches, desc="Processing batches")
     for batch_idx, text_batch in enumerate(pbar):
-        messages_batch = [{"role": "user", "content": finqa_prompt(text)} for text in text_batch]
+        messages_batch = [
+            [{"role": "user", "content": finqa_prompt(sentence)}]
+            for sentence in text_batch
+        ]
         try:
             batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
             for text, response in zip(text_batch, batch_responses):
