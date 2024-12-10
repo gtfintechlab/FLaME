@@ -1,42 +1,20 @@
+import pandas as pd
 import time
 from datetime import date
-import pandas as pd
 from datasets import load_dataset
 
 from litellm import batch_completion
 from superflue.together_code.prompts import ectsum_prompt
 from superflue.together_code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
+from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 
-# Setup logger for ectsum inference
 logger = setup_logger(
-    name="ectsum_inference", log_file=LOG_DIR / "ectsum_inference.log", level=LOG_LEVEL
+    name="ectsum_inference",
+    log_file=LOG_DIR / "ectsum_inference.log",
+    level=LOG_LEVEL,
 )
-
-def chunk_list(lst, chunk_size):
-    """Split a list into chunks of the specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with retry mechanism."""
-    try:
-        batch_responses = batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k,
-            top_p=args.top_p,
-            num_retries=3,
-            repetition_penalty=args.repetition_penalty,
-            stop=tokens(args.model),
-        )
-        logger.info(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {e}")
-        raise
 
 def ectsum_inference(args):
     today = date.today()

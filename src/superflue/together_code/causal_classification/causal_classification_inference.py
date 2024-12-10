@@ -3,47 +3,20 @@ import litellm
 litellm.set_verbose=True
 import pandas as pd
 import time
-import sys
-import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
-
-from datasets import load_dataset
 from datetime import date
+from datasets import load_dataset
+
 from superflue.together_code.prompts import causal_classification_prompt
 from superflue.together_code.tokens import tokens
 from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from superflue.utils.logging_utils import setup_logger
+from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 
 logger = setup_logger(
     name="causal_classification_inference",
     log_file=LOG_DIR / "causal_classification_inference.log",
     level=LOG_LEVEL,
 )
-def chunk_list(lst, chunk_size):
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with retry mechanism."""
-    logger.info(f"messages_batch: {messages_batch}")
-    try:
-        batch_responses = batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            temperature=args.temperature,
-            tokens=args.max_tokens,
-            top_k=args.top_k,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries = 3,
-            stop=tokens(args.model),
-        )
-        logger.info(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
-
 
 def causal_classification_inference(args):
     today = date.today()
