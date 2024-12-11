@@ -7,7 +7,8 @@ from tqdm import tqdm
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.path_utils import get_evaluation_save_path
+from superflue.config import LOG_DIR, LOG_LEVEL
 
 # Configure logging
 logger = setup_logger(
@@ -31,39 +32,30 @@ def extraction_prompt(llm_response: str):
     relationship_choices = ', '.join(possible_relationships)
     prompt = f'''Extract the classification label from the following LLM response. The label should be one of the following {relationship_choices}. 
     
-                Pick the label out of the list that is the closest to the LLM response, but list ‘NO-REL’ if the LLM did not output a clear answer.
+                Pick the label out of the list that is the closest to the LLM response, but list 'NO-REL' if the LLM did not output a clear answer.
                 
                 Here is the LLM response to analyze:
                 "{llm_response}"
                 Provide only the label that best matches the response, exactly as it is listed above. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation.'''
     return prompt
 
-def save_progress(df, path):
-    """Save the current progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
-
 def finred_evaluate(file_name, args):
     """Evaluate FinRED dataset and return results and metrics DataFrames."""
-    task = args.dataset.strip('“”"')
+    task = args.dataset.strip('"""')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    # Define paths
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
+    # Define paths using consistent utility
+    evaluation_results_path = get_evaluation_save_path(args.dataset, args.model)
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     if "extracted_labels" not in df.columns:
         df["extracted_labels"] = None
 
-    correct_labels = df["actual_labels"].tolist()
+    correct_labels = df["actual_label"].tolist()
     extracted_labels = []
 
     for i, llm_response in tqdm(enumerate(df["llm_responses"]), total=len(df["llm_responses"])):
@@ -89,9 +81,7 @@ def finred_evaluate(file_name, args):
 
             extracted_labels.append(extracted_label)
             df.at[i, "extracted_labels"] = extracted_label
-
-            # Save progress after each row
-            save_progress(df, evaluation_results_path)
+            df.to_csv(evaluation_results_path, index=False)
 
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
@@ -109,13 +99,13 @@ def finred_evaluate(file_name, args):
     logger.info(f"Recall: {recall:.4f}")
     logger.info(f"F1 Score: {f1:.4f}")
 
-    # Create metrics DataFrame
+    # Create metrics DataFrame with consistent format
     metrics_df = pd.DataFrame({
         "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
         "Value": [accuracy, precision, recall, f1],
     })
 
-    # Save metrics
+    # Save metrics using consistent naming
     metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")

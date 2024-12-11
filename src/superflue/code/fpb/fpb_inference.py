@@ -3,14 +3,18 @@ import time
 from tqdm import tqdm
 from datasets import load_dataset
 from datetime import date
+
 from superflue.code.prompts import fpb_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.path_utils import get_inference_save_path
+from superflue.config import LOG_DIR, LOG_LEVEL
 from litellm import completion 
 
 logger = setup_logger(
-    name="fpb_inference", log_file=LOG_DIR / "fpb_inference.log", level=LOG_LEVEL
+    name="fpb_inference", 
+    log_file=LOG_DIR / "fpb_inference.log", 
+    level=LOG_LEVEL
 )
 
 data_seed = '5768'
@@ -65,11 +69,8 @@ def fpb_inference(args):
             "complete_responses": complete_responses,
         }
     )
-    results_path = (
-        RESULTS_DIR
-        / 'fpb/fpb_meta-llama-3.1-8b/'
-        / f"{'fpb'}_{'llama-3.1'}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
+
+    results_path = get_inference_save_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
     time.sleep(10.0)

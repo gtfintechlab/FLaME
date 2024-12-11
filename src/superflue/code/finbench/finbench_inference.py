@@ -8,7 +8,8 @@ from tqdm import tqdm
 from superflue.code.prompts import finbench_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.path_utils import get_inference_save_path
+from superflue.config import LOG_DIR, LOG_LEVEL
 
 from litellm import completion 
 
@@ -17,7 +18,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "finbench_inference.log",
     level=LOG_LEVEL,
 )
-
 
 def finbench_inference(args):
     today = date.today()
@@ -35,7 +35,6 @@ def finbench_inference(args):
     complete_responses = []
 
     logger.info("Starting inference on dataset...")
-    # start_t = time.time()
 
     # Iterating through the test split of the dataset
     for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"): # type: ignore
@@ -76,17 +75,13 @@ def finbench_inference(args):
         {
             "X_ml": X_ml_data,
             "X_ml_unscale": X_ml_unscale_data,
-            "y": y_data,
+            "actual_label": y_data,
             "llm_responses": llm_responses,
             "complete_responses": complete_responses,
         }
     )
 
-    results_path = (
-        RESULTS_DIR
-        / 'finbench/finbench_meta-llama-3.1-8b/'
-        / f"{'finbench'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
+    results_path = get_inference_save_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
 

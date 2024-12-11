@@ -3,17 +3,20 @@ import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
+from tqdm import tqdm
 
-from litellm import completion 
+from litellm import completion
 from superflue.code.prompts import finred_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-from tqdm import tqdm
+from superflue.utils.path_utils import get_inference_save_path
+from superflue.config import LOG_DIR, LOG_LEVEL
 
 # Setup logger for FinRED inference
 logger = setup_logger(
-    name="finred_inference", log_file=LOG_DIR / "finred_inference.log", level=LOG_LEVEL
+    name="finred_inference",
+    log_file=LOG_DIR / "finred_inference.log",
+    level=LOG_LEVEL,
 )
 
 def finred_inference(args):
@@ -24,17 +27,10 @@ def finred_inference(args):
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/FinRed", trust_remote_code=True)
 
-    results_path = (
-        RESULTS_DIR
-        / "finred"
-        / f"finred_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-
     # Initialize lists to store sentences, actual labels, model responses, and complete responses
     sentences = []
     llm_responses = []
-    actual_labels = []
+    actual_label = []
     complete_responses = []
     entities_list = []  # To store entity pairs
 
@@ -44,13 +40,13 @@ def finred_inference(args):
     for i in tqdm(range(len(dataset["test"]))):  # type: ignore
         sentence = dataset["test"][i]["sentence"]  # Extract sentence # type: ignore
         entity_pairs = dataset["test"][i]["entities"]  # Extract entity pairs # type: ignore
-        actual_label = dataset["test"][i]["relations"]  # Extract the actual label (relations) # type: ignore
+        labels = dataset["test"][i]["relations"]  # Extract the actual label (relations) # type: ignore
 
         # Process each entity pair in the sentence
-        for entity_pair, true_relation in zip(entity_pairs, actual_label):
+        for entity_pair, label in zip(entity_pairs, labels):
             entity1, entity2 = entity_pair
             sentences.append(sentence)
-            actual_labels.append(true_relation)
+            actual_label.append(label)
             entities_list.append((entity1, entity2))
 
             try:
@@ -86,13 +82,15 @@ def finred_inference(args):
         {
             "sentence": sentences,
             "entity_pairs": entities_list,
-            "actual_labels": actual_labels,
+            "actual_label": actual_label,
             "llm_responses": llm_responses,
             "complete_responses": complete_responses,
         }
     )
 
-    # Save the results to a CSV file
+    # Save results using consistent path utility
+    results_path = get_inference_save_path(args.dataset, args.model)
+    results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")
 

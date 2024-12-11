@@ -9,7 +9,8 @@ import json
 from superflue.code.prompts import fnxl_prompt  # Custom prompt function for FNXL
 from superflue.code.tokens import tokens  # Custom token handling function for FNXL
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.path_utils import get_inference_save_path
+from superflue.config import LOG_DIR, LOG_LEVEL
 
 # Setup logger for FNXL inference
 logger = setup_logger(
@@ -32,10 +33,6 @@ def fnxl_inference(args):
                     continue  # Skip non-numeric items
         return flat_list
     
-    def save_progress(df, path):
-        """Save the current progress to a CSV file."""
-        df.to_csv(path, index=False)
-        logger.info(f"Progress saved to {path}")
     today = date.today()
     logger.info(f"Starting FNXL inference on {today}")
 
@@ -43,11 +40,8 @@ def fnxl_inference(args):
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/fnxl", trust_remote_code=True)
 
-    results_path = (
-        RESULTS_DIR
-        / "fnxl"
-        / f"fnxl_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
+    # Get results path using new utility
+    results_path = get_inference_save_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize lists to store sentence information and model responses
@@ -65,7 +59,6 @@ def fnxl_inference(args):
     for i in range(len(dataset["test"])):  # type: ignore
         try:
             sentence = dataset["test"][i]["sentence"]  # Extract sentence # type: ignore
-            # numeral_tag = json.loads(dataset["test"][i]["numerals-tags"]).values().tolist()  # Extract numeral tag # type: ignore
             try:
                 numerals_tags_str = dataset["test"][i]["numerals-tags"]  # type: ignore
                 numerals_tags_dict = json.loads(numerals_tags_str.replace("'", '"'))  # Replace single quotes for valid JSON
@@ -75,7 +68,6 @@ def fnxl_inference(args):
                 numerals_tag = [] # type: ignore
             
             company = dataset["test"][i]["company"]  # Extract company # type: ignore
-            # actual_label = dataset["test"][i]["ner_tags"]  # Extract actual label (NER tags) # type: ignore
             doc_type = dataset["test"][i]["docType"]  # Extract document type # type: ignore
             actual_label = numerals_tags_dict if numerals_tags_dict else {}
 
@@ -86,10 +78,9 @@ def fnxl_inference(args):
             doc_types.append(doc_type)
             actual_labels.append(actual_label)
 
- 
             logger.info(
-                        f"Iteration {i+1}: Lengths - sentences: {(sentences)}, numerals_tags: {(numerals_tags)}, companies: {len(companies)}, doc_types: {len(doc_types)}, llm_responses: {len(llm_responses)}, actual_labels: {(actual_labels)}, complete_responses: {len(complete_responses)}"
-                    )
+                f"Iteration {i+1}: Lengths - sentences: {len(sentences)}, numerals_tags: {len(numerals_tags)}, companies: {len(companies)}, doc_types: {len(doc_types)}, llm_responses: {len(llm_responses)}, actual_labels: {len(actual_labels)}, complete_responses: {len(complete_responses)}"
+            )
 
             # FNXL-specific prompt to classify numerals in financial sentences
             model_response = completion(
@@ -121,23 +112,23 @@ def fnxl_inference(args):
             actual_labels.append({})
             complete_responses.append(None)
             llm_responses.append(None)
-            llm_responses.append(None)
             continue  # Proceed to the next sentence after sleeping
-        if i % 10 == 0:
-                assert len(sentences) == len(numerals_tags) == len(companies) == len(doc_types), "List lengths are mismatched!"
 
-                df_progress = pd.DataFrame(
-                    {
-                        "sentences": sentences,
-                        "numerals_tags": numerals_tags,
-                        "companies": companies,
-                        "doc_types": doc_types,
-                        "llm_responses": llm_responses,
-                        "actual_labels": actual_labels,
-                        "complete_responses": complete_responses,
-                    }
-                )
-                save_progress(df_progress, results_path)
+        if i % 10 == 0:
+            assert len(sentences) == len(numerals_tags) == len(companies) == len(doc_types), "List lengths are mismatched!"
+
+            df_progress = pd.DataFrame(
+                {
+                    "sentences": sentences,
+                    "numerals_tags": numerals_tags,
+                    "companies": companies,
+                    "doc_types": doc_types,
+                    "llm_responses": llm_responses,
+                    "actual_labels": actual_labels,
+                    "complete_responses": complete_responses,
+                }
+            )
+            df_progress.to_csv(results_path, index=False)
 
     # Create the final DataFrame after the loop
     df = pd.DataFrame(
@@ -152,8 +143,8 @@ def fnxl_inference(args):
         }
     )
 
-    # Save the results to a CSV file
-    save_progress(df, results_path)
+    # Save the final results
+    df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

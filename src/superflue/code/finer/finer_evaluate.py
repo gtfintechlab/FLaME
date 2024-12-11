@@ -1,14 +1,12 @@
 import pandas as pd
 import logging
-from datetime import date
-from pathlib import Path
 import json
-import re
 from litellm import completion
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.path_utils import get_evaluation_save_path
+from superflue.config import LOG_DIR, LOG_LEVEL
 
 # Configure logging
 logger = setup_logger(
@@ -38,21 +36,17 @@ def extraction_prompt_finer(llm_response: str):
     return prompt
 
 def clean_extracted_list(response: str) -> str:
-    """Clean and format the extracted response into a valid JSON list."""
-    cleaned_response = re.sub(r"[^\d,]", "", response)
-    cleaned_response = re.sub(r"(\d)(\d)", r"\1,\2", cleaned_response)
-    if not (cleaned_response.startswith("[") and cleaned_response.endswith("]")):
-        cleaned_response = f"[{cleaned_response}]"
-    return cleaned_response
-
-def save_progress(df, path):
-    """Save the current progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
+    """Clean and format the extracted list response."""
+    # Remove any text before and after the list
+    start_idx = response.find("[")
+    end_idx = response.rfind("]") + 1
+    if start_idx == -1 or end_idx == 0:
+        return "[]"
+    return response[start_idx:end_idx]
 
 def finer_evaluate(file_name, args):
-    """Evaluate Finer dataset and return results and metrics DataFrames."""
-    task = args.dataset.strip('“”"')
+    """Evaluate FINER dataset and return results and metrics DataFrames."""
+    task = args.dataset.strip('"""')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV
@@ -60,11 +54,7 @@ def finer_evaluate(file_name, args):
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
     # Define paths
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
+    evaluation_results_path = get_evaluation_save_path(args.dataset, args.model)
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize columns
@@ -93,10 +83,10 @@ def finer_evaluate(file_name, args):
             cleaned_response = clean_extracted_list(extracted_list)
             extracted_tokens = json.loads(cleaned_response)
 
-            # Update DataFrame and save progress
+            # Update DataFrame
             df.at[i, "extracted_labels"] = extracted_tokens
             extracted_labels.append(extracted_tokens)
-            save_progress(df, evaluation_results_path)
+            df.to_csv(evaluation_results_path, index=False)
 
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
@@ -112,18 +102,19 @@ def finer_evaluate(file_name, args):
     f1 = f1_score(flat_correct_labels, flat_extracted_labels, average="macro", zero_division=0)
     accuracy = accuracy_score(flat_correct_labels, flat_extracted_labels)
 
+    # Log metrics
     logger.info(f"Precision: {precision:.4f}")
     logger.info(f"Recall: {recall:.4f}")
     logger.info(f"F1 Score: {f1:.4f}")
     logger.info(f"Accuracy: {accuracy:.4f}")
 
-    # Create metrics DataFrame
+    # Create metrics DataFrame with consistent format
     metrics_df = pd.DataFrame({
-        "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
-        "Value": [precision, recall, f1, accuracy]
+        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+        "Value": [accuracy, precision, recall, f1],
     })
 
-    # Save metrics
+    # Save metrics using consistent naming
     metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")

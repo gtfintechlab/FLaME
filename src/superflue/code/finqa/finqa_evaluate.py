@@ -1,25 +1,23 @@
 import pandas as pd
 import logging
-from datetime import date
-from pathlib import Path
-from superflue.code.tokens import tokens
-from litellm import completion 
-import warnings
-import argparse
 import re
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from litellm import completion 
+from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
+from superflue.utils.path_utils import get_evaluation_save_path
+from superflue.config import LOG_DIR, LOG_LEVEL
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-import time
+from tqdm import tqdm
 
 # Setup logger
 logger = setup_logger(
-    name="convfinqa_evaluation",
-    log_file=LOG_DIR / "convfinqa_evaluation.log",
+    name="finqa_evaluation",
+    log_file=LOG_DIR / "finqa_evaluation.log",
     level=LOG_LEVEL,
 )
 
-def extraction_prompt(llm_response: str):
+def extraction_prompt(llm_response: str) -> str:
+    """Generate a prompt to extract numerical values from model responses."""
     prompt = f"""
     You will receive a response from a language model that may include a numerical answer within its text. 
     Your task is to extract and return only the main numerical value (integer, decimal, or percentage) that 
@@ -31,32 +29,31 @@ def extraction_prompt(llm_response: str):
     """
     return prompt
 
-def extract_numerical_value(text):
+def extract_numerical_value(text: str) -> str | None:
+    """Extract numerical value from text using regex pattern matching."""
     match = re.search(r"(\d+(\.\d+)?%?)", text)
     return match.group(0) if match else None
 
-def finqa_evaluate(file_name, args):
-
-    task = args.dataset.strip('“”"')
+def finqa_evaluate(file_name: str, args) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Evaluate FinQA dataset and return results and metrics DataFrames."""
+    task = args.dataset.strip('"""')
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
+    # Load data
     df = pd.read_csv(file_name)
-    logger.info(f"Loaded data from {file_name} for evaluation.")
+    logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    # Output path for evaluation results
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
+    # Define paths using consistent utility
+    evaluation_results_path = get_evaluation_save_path(args.dataset, args.model)
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
     
     extraction_response = []
     extraction_model_response = []
     regex_extraction = []
 
-    for entry in df["response"]:
+    for entry in tqdm(df["llm_responses"], desc="Processing responses"):
         try:
+            # Generate prompt and get response
             model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": extraction_prompt(entry)}],
@@ -71,8 +68,7 @@ def finqa_evaluate(file_name, args):
             # Log and process the response
             logger.debug(f"Model response: {model_response}")
             extraction_model_response.append(model_response)
-            response_text = model_response.choices[0].message.content  # type: ignore
-
+            response_text = model_response.choices[0].message.content # type: ignore
             extraction_response.append(response_text)
          
             numerical_value = extract_numerical_value(response_text)
@@ -82,19 +78,20 @@ def finqa_evaluate(file_name, args):
             logger.error(f"Error processing response: {e}")
             extraction_response.append(None)
             regex_extraction.append(None)
-            extraction_model_response.append(str(e))  
+            extraction_model_response.append(str(e))
             time.sleep(10.0)
 
+    # Update DataFrame with results
     df['extraction_model_response'] = extraction_model_response
     df['extraction_response'] = extraction_response
-    df['regex_extraction']  = regex_extraction    
+    df['regex_extraction'] = regex_extraction    
     
     correct_labels = df['actual_label'].tolist()
 
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, regex_extraction)
     precision, recall, f1, _ = precision_recall_fscore_support(
-        correct_labels, regex_extraction
+        correct_labels, regex_extraction, average="weighted"
     )
 
     # Log metrics
@@ -103,16 +100,17 @@ def finqa_evaluate(file_name, args):
     logger.info(f"Recall: {recall:.4f}")
     logger.info(f"F1 Score: {f1:.4f}")
 
-    # Create metrics DataFrame
+    # Create metrics DataFrame with consistent format
     metrics_df = pd.DataFrame({
         "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
         "Value": [accuracy, precision, recall, f1],
     })
 
-    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
+    # Save results
     df.to_csv(evaluation_results_path, index=False)
+    logger.info(f"Results saved to {evaluation_results_path}")
 
-    # Save metrics DataFrame
+    # Save metrics using consistent naming
     metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")

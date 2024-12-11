@@ -3,11 +3,12 @@ import logging
 from datetime import date
 from pathlib import Path
 import json
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from litellm import completion
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.path_utils import get_evaluation_save_path
+from superflue.config import LOG_DIR, LOG_LEVEL
 import time
 
 # Configure logging
@@ -65,7 +66,7 @@ def compare_key_value_pairs(actual, predicted):
     """Compare key-value pairs in actual and predicted JSONs."""
     actual = normalize_json(actual)
     predicted = normalize_json(predicted)
-
+    
     correct = 0
     total_actual = len(actual)
     total_predicted = len(predicted)
@@ -73,11 +74,12 @@ def compare_key_value_pairs(actual, predicted):
     for key, value in predicted.items():
         if key in actual and actual[key] == value:
             correct += 1
+    
     accuracy = correct / (total_actual + total_predicted - correct) if (total_actual + total_predicted - correct) > 0 else 0
     precision = correct / total_predicted if total_predicted > 0 else 0
     recall = correct / total_actual if total_actual > 0 else 0
     f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0
-
+    
     return {
         "accuracy": accuracy,
         "precision": precision,
@@ -88,14 +90,9 @@ def compare_key_value_pairs(actual, predicted):
         "total_predicted": total_predicted,
     }
 
-def save_progress(df, path):
-    """Save the current progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
-
 def fnxl_evaluate(file_name, args):
     """Evaluate FNXL dataset and return results and metrics DataFrames."""
-    task = args.dataset.strip('“”"')
+    task = args.dataset.strip('"""')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV
@@ -103,11 +100,7 @@ def fnxl_evaluate(file_name, args):
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
     # Define paths
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
+    evaluation_results_path = get_evaluation_save_path(args.dataset, args.model)
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     if "extracted_labels" not in df.columns:
@@ -136,7 +129,7 @@ def fnxl_evaluate(file_name, args):
             logger.info(f"Processed response {i + 1}: {metric}")
 
             # Save progress after each row
-            save_progress(df, evaluation_results_path)
+            df.to_csv(evaluation_results_path, index=False)
 
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")

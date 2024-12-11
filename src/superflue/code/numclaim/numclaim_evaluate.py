@@ -5,21 +5,23 @@ from pathlib import Path
 from litellm import completion 
 from superflue.code.tokens import tokens
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-from superflue.config import EVALUATION_DIR
 from superflue.utils.logging_utils import setup_logger
+from superflue.utils.path_utils import get_evaluation_save_path
+from superflue.config import LOG_DIR, LOG_LEVEL
 import time
 
 # Setup logger
 logger = setup_logger(
     name="numclaim_evaluate",
-    log_file=EVALUATION_DIR / "logs" / "numclaim_evaluate.log",
-    level=logging.INFO,
+    log_file=LOG_DIR / "numclaim_evaluate.log",
+    level=LOG_LEVEL,
 )
+
 # Define prompt for extraction
 def extraction_prompt(llm_response: str):
     prompt = f"""Based on the provided response, extract the following information:
-                - Label the response as ‘INCLAIM’ if it contains a numeric value or quantitative assertion.
-                - Label the response as ‘OUTCLAIM’ if it does not contain any numeric value or quantitative assertion.
+                - Label the response as 'INCLAIM' if it contains a numeric value or quantitative assertion.
+                - Label the response as 'OUTCLAIM' if it does not contain any numeric value or quantitative assertion.
                 Provide only the label that best matches the response.
                 The response: "{llm_response}"."""
     return prompt
@@ -28,14 +30,10 @@ def extraction_prompt(llm_response: str):
 def map_labels(label):
     return 1 if label == "INCLAIM" else 0
 
-# Save progress function
-def save_progress(df, path):
-    """Save the current progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
 def numclaim_evaluate(file_name, args):
     logger.info(f"Starting evaluation for Numclaim with model {args.model}...")
-    task = args.dataset.strip('“”"')
+    task = args.dataset.strip('"""')
+    
     # Load data from the specified file
     results_file = Path(file_name)
     if not results_file.exists():
@@ -46,12 +44,8 @@ def numclaim_evaluate(file_name, args):
     llm_responses = df['llm_responses'].tolist()
     extracted_labels = []
 
-    # Continual save path
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
+    # Get evaluation path using new utility
+    evaluation_results_path = get_evaluation_save_path(args.dataset, args.model)
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize the column for storing extracted labels if it doesn't exist
@@ -84,7 +78,7 @@ def numclaim_evaluate(file_name, args):
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
 
             # Save progress after each row
-            save_progress(df, evaluation_results_path)
+            df.to_csv(evaluation_results_path, index=False)
 
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
@@ -103,17 +97,15 @@ def numclaim_evaluate(file_name, args):
     logger.info(f"F1 Score: {f1:.4f}")
     logger.info(f"Accuracy: {accuracy:.4f}")
 
-    # Save evaluation metrics to DataFrame and CSV
-    eval_df = pd.DataFrame({
-        "Precision": [precision],
-        "Recall": [recall],
-        "F1 Score": [f1],
-        "Accuracy": [accuracy]
+    # Create metrics DataFrame with consistent format
+    metrics_df = pd.DataFrame({
+        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+        "Value": [accuracy, precision, recall, f1],
     })
-    eval_df.to_csv(Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv"), index=False)
+    
+    # Save metrics using consistent naming
+    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_df.to_csv(metrics_path, index=False)
+    logger.info(f"Metrics saved to {metrics_path}")
 
-    # Save full results to CSV
-    df.to_csv(evaluation_results_path, index=False)
-    logger.info(f"Evaluation completed. Results saved to {evaluation_results_path}")
-
-    return df, eval_df
+    return df, metrics_df

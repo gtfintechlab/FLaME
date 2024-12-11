@@ -6,9 +6,9 @@ from datasets import load_dataset
 from litellm import completion 
 from superflue.code.prompts import numclaim_prompt
 from superflue.code.tokens import tokens
-
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.path_utils import get_inference_save_path
+from superflue.config import LOG_DIR, LOG_LEVEL
 
 # Setup logger for Numclaim inference
 logger = setup_logger(
@@ -18,20 +18,12 @@ logger = setup_logger(
 )
 
 def numclaim_inference(args):
-    
     today = date.today()
     logger.info(f"Starting Numclaim inference on {today}")
 
     # Load the Numclaim dataset (test split)
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/Numclaim", trust_remote_code=True)
-
-    results_path = (
-        RESULTS_DIR
-        / "numclaim"
-        / f"numclaim_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize lists to store sentences, actual labels, model responses, and complete responses
     sentences = []
@@ -86,7 +78,9 @@ def numclaim_inference(args):
         }
     )
 
-    # Save the results to a CSV file
+    # Save results using the new path utility
+    results_path = get_inference_save_path(args.dataset, args.model)
+    results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")
 
