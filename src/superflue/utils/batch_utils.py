@@ -1,5 +1,5 @@
 from litellm import batch_completion
-from superflue.together_code.tokens import tokens
+from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import LOG_LEVEL, LOG_DIR
 
