@@ -28,6 +28,7 @@ from time import time
 from datetime import date
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL, EVALUATION_DIR
+from pathlib import Path
 
 logger = setup_logger(
     name="together_evaluate",
@@ -94,21 +95,24 @@ def main(args):
             ], ignore_index=True)
         
         # Save evaluation results
-        results_path = (
-            EVALUATION_DIR
-            / task
-            / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-        )
+        results_path = f"evaluation_{args.file_name}"
+        results_path = Path(results_path)
+        # results_path = (
+        #     EVALUATION_DIR
+        #     / task
+        #     / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+        # )
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
         logger.info(f"Evaluation completed for {task}. Results saved to {results_path}")
         
         # Save metrics
-        metrics_path = (
-            EVALUATION_DIR
-            / task
-            / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}_metrics.csv"
-        )
+        metrics_path = Path(f"{str(results_path)[:-4]}_metrics.csv")
+        # metrics_path = (
+        #     EVALUATION_DIR
+        #     / task
+        #     / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}_metrics.csv"
+        # )
         metrics_path.parent.mkdir(parents=True, exist_ok=True)
         metrics_df.to_csv(metrics_path, index=False)
         logger.info(f"Metrics saved to {metrics_path}")
