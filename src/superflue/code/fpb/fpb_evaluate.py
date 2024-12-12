@@ -1,7 +1,4 @@
 import pandas as pd
-import logging
-from datetime import date
-from pathlib import Path
 from litellm import completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.code.tokens import tokens
@@ -24,6 +21,7 @@ label_mapping = {
     "POSITIVE": 2,
 }
 
+
 def extraction_prompt(llm_response: str):
     """Generate a prompt to extract the most relevant label from the LLM response."""
     prompt = f"""Based on the following list of labels: 'NEGATIVE', 'POSITIVE', or 'NEUTRAL', extract the most relevant label from the following response:
@@ -31,22 +29,42 @@ def extraction_prompt(llm_response: str):
                 Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
     return prompt
 
+
 def map_label_to_number(label: str):
     """Map the extracted label to its corresponding numerical value after normalizing."""
     normalized_label = label.strip().upper()  # Normalize label to uppercase
-    return label_mapping.get(normalized_label, -1)  # Return -1 if the label is not found
+    return label_mapping.get(
+        normalized_label, -1
+    )  # Return -1 if the label is not found
 
-def fpb_evaluate(file_name, args):
-    """Evaluate FPB dataset and return results and metrics DataFrames."""
+
+def fpb_evaluate(file_name: str, args) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Evaluate FPB inference results.
+
+    Args:
+        file_name: Path to the inference results file
+        args: Command line arguments containing:
+            - extraction_model: Model to use for extracting labels
+            - max_tokens: Maximum tokens to generate
+            - temperature: Temperature for sampling
+            - top_k: Top-k sampling parameter
+            - top_p: Top-p sampling parameter
+            - repetition_penalty: Repetition penalty parameter
+
+    Returns:
+        Tuple of (results DataFrame, metrics DataFrame)
+    """
     task = args.dataset.strip('"""')
-    logger.info(f"Starting evaluation for {task} using model {args.model}.")
+    logger.info(f"Starting evaluation for {task} using model {args.extraction_model}.")
 
     # Load the CSV file with the LLM responses
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
     # Define paths for saving results
-    evaluation_results_path = get_evaluation_save_path(args.dataset, args.model)
+    evaluation_results_path = get_evaluation_save_path(
+        args.dataset, args.extraction_model
+    )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize extracted labels if not present
@@ -63,15 +81,16 @@ def fpb_evaluate(file_name, args):
         try:
             # Generate prompt and get LLM response
             model_response = completion(
-                model=args.model,
+                model=args.extraction_model,
                 messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
+                top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                stop=tokens(args.extraction_model),
             )
-            extracted_label = model_response.choices[0].message.content.strip() # type: ignore
+            extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
             mapped_label = map_label_to_number(extracted_label)
 
             # Handle invalid labels
@@ -89,6 +108,7 @@ def fpb_evaluate(file_name, args):
             logger.error(f"Error processing response {i}: {e}")
             extracted_labels.append(-1)
             time.sleep(10.0)
+            continue
 
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, extracted_labels)
@@ -103,13 +123,17 @@ def fpb_evaluate(file_name, args):
     logger.info(f"F1 Score: {f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
     # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
 

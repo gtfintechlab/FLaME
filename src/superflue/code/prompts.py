@@ -153,31 +153,40 @@ def finer_prompt(sentence: str):
 
 
 def fpb_prompt(sentence: str, prompt_format: str):
+    """Generate prompt for Financial PhraseBank sentiment classification.
+
+    Args:
+        sentence: The sentence to classify
+        prompt_format: The format of the prompt (superflue, finben_icl, finben_noicl, superflue_icl, superflue_cot)
+
+    Returns:
+        Formatted prompt string
+    """
     if prompt_format == "superflue":
-        system_prompt = """ Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier"""
-        user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
-                    class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. 
+        system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier"""
+        user_msg = f"""Classify the following sentence into 'NEGATIVE', 'POSITIVE', or 'NEUTRAL'
+                    class. Label 'NEGATIVE' if it is corresponding to negative sentiment, 'POSITIVE' if it is
+                    corresponding to positive sentiment, or 'NEUTRAL' if the sentiment is neutral. 
                     Provide the label in the first line and provide a short explanation in the second line.
                     Explain how you came to your classification decision. This is the sentence: {sentence}."""
 
     elif prompt_format == "finben_icl":
         system_prompt = """"""
-        user_msg = f""" Analyze the sentiment of this statement extracted from a financial news article.
+        user_msg = f"""Analyze the sentiment of this statement extracted from a financial news article.
                         Provide your answer as either NEGATIVE, POSITIVE or NEUTRAL.
-                        For instance, ’The company’s stocks plummeted following the scandal.’ would be classified as negative. This is the sentence: {sentence}"""
+                        For instance, 'The company's stocks plummeted following the scandal.' would be classified as negative. This is the sentence: {sentence}"""
 
     elif prompt_format == "finben_noicl":
         system_prompt = """"""
-        user_msg = f""" Analyze the sentiment of this statement extracted from a financial news article.
+        user_msg = f"""Analyze the sentiment of this statement extracted from a financial news article.
                         Provide your answer as either NEGATIVE, POSITIVE or NEUTRAL.
                         This is the sentence: {sentence}"""
 
     elif prompt_format == "superflue_icl":
         system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier """
-        user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
-                        class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                        corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
+        user_msg = f"""Classify the following sentence into 'NEGATIVE', 'POSITIVE', or 'NEUTRAL'
+                        class. Label 'NEGATIVE' if it is corresponding to negative sentiment, 'POSITIVE' if it is
+                        corresponding to positive sentiment, or 'NEUTRAL' if the sentiment is neutral. Provide
                         the label in the first line and provide a short explanation in the second line.
                         For instance: 
                         "According to Gran , the company has no plans to move all production to Russia , although that is where the company is growing" would be classified as 'NEUTRAL.
@@ -190,15 +199,15 @@ def fpb_prompt(sentence: str, prompt_format: str):
 
     elif prompt_format == "superflue_cot":
         system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier """
-        user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
-                        class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                        corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Let's think about this sentiment classification task step by step.
+        user_msg = f"""Classify the following sentence into 'NEGATIVE', 'POSITIVE', or 'NEUTRAL'
+                        class. Label 'NEGATIVE' if it is corresponding to negative sentiment, 'POSITIVE' if it is
+                        corresponding to positive sentiment, or 'NEUTRAL' if the sentiment is neutral. Let's think about this sentiment classification task step by step.
                         First, generate your reasoning steps for the classification. After your reasoning, end the response with the label that fits your reasoning.
                         This is the sentence: {sentence}"""
+    else:
+        raise ValueError(f"Unknown prompt format: {prompt_format}")
 
-    prompt = f"""{system_prompt}\n{user_msg}"""
-    print(prompt)
-
+    prompt = f"{system_prompt}\n{user_msg}"
     return prompt
 
 
