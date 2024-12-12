@@ -186,14 +186,14 @@ def banking77_evaluate(file_name, args):
             # Process responses
             for response in batch_responses:
                 extracted_label = response.choices[0].message.content.strip()  # type: ignore
-                print(extracted_label)
+                # print(extracted_label)
                 mapped_label = map_extracted_label_to_number(extracted_label)
 
                 if mapped_label == -1:
-                    logger.error(f"Error processing response {batch_idx}: {response}")
+                    logger.debug(f"Error processing response {batch_idx}: {response}")
 
                 extracted_labels.append(mapped_label)
-                logger.info(f"Processed {len(extracted_labels)}/{len(df)} responses.")
+                logger.debug(f"Processed {len(extracted_labels)}/{len(df)} responses.")
             
             pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
