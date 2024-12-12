@@ -2,9 +2,10 @@
 dataset: fomc
 mode: inference  # inference or evaluate
 file_name: null  # Required for evaluate mode
+# eg: results/finbench/finbench_together_ai/meta-llama/Llama-3-8b-chat-hf_10_12_2024.csv
 
 # Model parameters
-model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+model: "together_ai/meta-llama/Llama-3-8b-chat-hf"
 max_tokens: 128
 temperature: 0.0
 top_p: 0.9
