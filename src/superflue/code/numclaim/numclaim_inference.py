@@ -8,7 +8,7 @@ from superflue.code.prompts import numclaim_prompt
 
 # from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.utils.path_utils import get_inference_save_path
+from superflue.utils.path_utils import get_inference_path
 from superflue.config import LOG_DIR, LOG_LEVEL
 
 # Setup logger for Numclaim inference
@@ -85,7 +85,7 @@ def numclaim_inference(args):
     )
 
     # Save results using the new path utility
-    results_path = get_inference_save_path(args.dataset, args.model)
+    results_path = get_inference_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")

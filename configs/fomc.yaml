@@ -4,8 +4,10 @@ mode: inference
 file_name: null
 
 # Model parameters
-model: "together_ai/meta-llama/Llama-3-8b-chat-hf"
-max_tokens: 32
+models:
+  inference: "together_ai/meta-llama/Llama-2-70b"  # Model for generating responses
+  extraction: "together_ai/meta-llama/Llama-2-7b"  # Model for extracting/evaluating responses
+max_tokens: 128
 temperature: 0.0
 top_p: 0.9
 top_k: null

@@ -4,7 +4,7 @@ from tqdm import tqdm
 from datasets import load_dataset
 from superflue.code.prompts import fpb_prompt
 from superflue.utils.logging_utils import setup_logger
-from superflue.utils.path_utils import get_inference_save_path
+from superflue.utils.path_utils import get_inference_path
 from superflue.config import LOG_DIR, LOG_LEVEL
 from litellm import completion
 
@@ -56,21 +56,15 @@ def fpb_inference(args):
             logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
             model_response = completion(
                 model=args.inference_model,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": fpb_prompt(
-                            sentence,
-                            prompt_format=getattr(args, "prompt_format", "superflue"),
-                        ),
-                    }
-                ],
+                prompt=fpb_prompt(
+                    sentence,
+                    prompt_format=getattr(args, "prompt_format", "superflue"),
+                ),
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                # stop=tokens(args.inference_model),
             )
             logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
@@ -93,7 +87,7 @@ def fpb_inference(args):
         }
     )
 
-    results_path = get_inference_save_path(args.dataset, args.inference_model)
+    results_path = get_inference_path(args.dataset, args.inference_model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
     time.sleep(10.0)

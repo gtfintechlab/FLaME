@@ -9,7 +9,7 @@ from superflue.code.prompts import finbench_prompt
 
 # from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.utils.path_utils import get_inference_save_path
+from superflue.utils.path_utils import get_inference_path
 from superflue.config import LOG_DIR, LOG_LEVEL
 
 from litellm import completion
@@ -85,7 +85,7 @@ def finbench_inference(args):
         }
     )
 
-    results_path = get_inference_save_path(args.dataset, args.model)
+    results_path = get_inference_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
 

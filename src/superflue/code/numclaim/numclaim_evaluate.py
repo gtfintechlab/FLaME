@@ -5,7 +5,7 @@ from litellm import completion
 # from superflue.code.tokens import tokens
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from superflue.utils.logging_utils import setup_logger
-from superflue.utils.path_utils import get_evaluation_save_path
+from superflue.utils.path_utils import get_evaluation_path
 from superflue.config import LOG_DIR, LOG_LEVEL
 import time
 
@@ -47,7 +47,7 @@ def numclaim_evaluate(file_name, args):
     extracted_labels = []
 
     # Get evaluation path using new utility
-    evaluation_results_path = get_evaluation_save_path(args.dataset, args.model)
+    evaluation_results_path = get_evaluation_path(args.dataset, args.model)
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize the column for storing extracted labels if it doesn't exist

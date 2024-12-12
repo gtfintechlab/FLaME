@@ -1,9 +1,8 @@
 import pandas as pd
 from litellm import completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.utils.path_utils import get_evaluation_save_path
+from superflue.utils.path_utils import get_evaluation_path
 from superflue.config import LOG_DIR, LOG_LEVEL
 import time
 
@@ -62,8 +61,8 @@ def fpb_evaluate(file_name: str, args) -> tuple[pd.DataFrame, pd.DataFrame]:
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
     # Define paths for saving results
-    evaluation_results_path = get_evaluation_save_path(
-        args.dataset, args.extraction_model
+    evaluation_results_path = get_evaluation_path(
+        args.dataset, args.inference_model, args.extraction_model
     )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -88,7 +87,6 @@ def fpb_evaluate(file_name: str, args) -> tuple[pd.DataFrame, pd.DataFrame]:
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.extraction_model),
             )
             extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
             mapped_label = map_label_to_number(extracted_label)

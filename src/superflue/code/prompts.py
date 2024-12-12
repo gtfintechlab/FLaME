@@ -481,6 +481,35 @@ def refind_prompt(entities):
     return prompt
 
 
+def econlogicqa_prompt(question: str, A: str, B: str, C: str, D: str) -> str:
+    """Generate prompt for EconLogicQA task.
+
+    Args:
+        question: The ordering question
+        A: First event
+        B: Second event
+        C: Third event
+        D: Fourth event
+
+    Returns:
+        Formatted prompt string
+    """
+    prompt = f"""Discard all previous instructions. You are a Financial Event Analyst.
+                You are given a question and 4 events, labeled A,B,C,D.
+                You need to return an order of events as requested by the question. It could be a chronological order, order of importance, or a logical sequence.
+
+Question: {question}
+
+                Events:
+                A: {A}
+                B: {B}
+                C: {C}
+                D: {D}
+
+                Please provide the order of events, followed by a short explanation of the reasoning for the ordering. Output only the four labels (e.g., "C, B, A, D") in the expected order on the first line, and then briefly explain your reasoning in the next lines"""
+    return prompt
+
+
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
     "fiqa_task1_prompt": fiqa_task1_prompt,
@@ -504,6 +533,7 @@ prompt_map = {
     "fnxl_prompt": fnxl_prompt,
     "subjectiveqa_prompt": subjectiveqa_prompt,
     "causal_classification_prompt": causal_classification_prompt,
+    "econlogicqa_prompt": econlogicqa_prompt,
 }
 
 

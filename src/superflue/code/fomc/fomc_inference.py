@@ -18,7 +18,6 @@ from superflue.utils.logging_utils import setup_logger
 from superflue.utils.save_utils import save_inference_results
 from superflue.config import LOG_DIR, LOG_LEVEL
 
-# Configure litellm to be less verbose
 litellm.set_verbose = False
 logging.getLogger("litellm").setLevel(logging.WARNING)
 logging.getLogger("openai").setLevel(logging.WARNING)

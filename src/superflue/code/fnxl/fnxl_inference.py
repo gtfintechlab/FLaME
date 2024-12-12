@@ -10,7 +10,7 @@ from superflue.code.prompts import fnxl_prompt  # Custom prompt function for FNX
 
 # from superflue.code.tokens import tokens  # Custom token handling function for FNXL
 from superflue.utils.logging_utils import setup_logger
-from superflue.utils.path_utils import get_inference_save_path
+from superflue.utils.path_utils import get_inference_path
 from superflue.config import LOG_DIR, LOG_LEVEL
 
 # Setup logger for FNXL inference
@@ -43,7 +43,7 @@ def fnxl_inference(args):
     dataset = load_dataset("gtfintechlab/fnxl", trust_remote_code=True)
 
     # Get results path using new utility
-    results_path = get_inference_save_path(args.dataset, args.model)
+    results_path = get_inference_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize lists to store sentence information and model responses

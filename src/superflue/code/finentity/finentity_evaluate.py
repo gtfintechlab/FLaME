@@ -5,7 +5,7 @@ from litellm import completion
 
 # from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.utils.path_utils import get_evaluation_save_path
+from superflue.utils.path_utils import get_evaluation_path
 from superflue.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
@@ -118,7 +118,7 @@ def finentity_evaluate(file_name: str, args) -> tuple[pd.DataFrame, pd.DataFrame
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
     # Define paths using consistent utility
-    evaluation_results_path = get_evaluation_save_path(args.dataset, args.model)
+    evaluation_results_path = get_evaluation_path(args.dataset, args.model)
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     if "extracted_labels" not in df.columns:
