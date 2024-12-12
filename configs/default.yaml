@@ -2,6 +2,7 @@
 dataset: fomc
 mode: inference  # inference or evaluate
 file_name: null  # Required for evaluate mode
+# eg: results/finbench/finbench_together_ai/meta-llama/Llama-3-8b-chat-hf_10_12_2024.csv
 
 # Model configuration
 models:
