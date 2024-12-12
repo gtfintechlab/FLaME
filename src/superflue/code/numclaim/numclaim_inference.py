@@ -3,9 +3,10 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-from litellm import completion 
+from litellm import completion
 from superflue.code.prompts import numclaim_prompt
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.path_utils import get_inference_save_path
 from superflue.config import LOG_DIR, LOG_LEVEL
@@ -16,6 +17,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "numclaim_inference.log",
     level=LOG_LEVEL,
 )
+
 
 def numclaim_inference(args):
     today = date.today()
@@ -35,8 +37,12 @@ def numclaim_inference(args):
 
     # Iterate through the test split of the dataset
     for i in range(len(dataset["test"])):  # type: ignore
-        sentence = dataset["test"][i]["context"]  # Extract context (sentence) # type: ignore
-        actual_label = dataset["test"][i]["response"]  # Extract the actual label (response) # type: ignore
+        sentence = dataset["test"][i][
+            "context"
+        ]  # Extract context (sentence) # type: ignore
+        actual_label = dataset["test"][i][
+            "response"
+        ]  # Extract the actual label (response) # type: ignore
         sentences.append(sentence)
         actual_labels.append(actual_label)
 
@@ -50,7 +56,7 @@ def numclaim_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                # stop=tokens(args.model),
             )
 
             # Append the model response and complete response for the sentence

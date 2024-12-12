@@ -3,9 +3,10 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-from litellm import completion 
+from litellm import completion
 from superflue.code.prompts import ectsum_prompt
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
@@ -14,20 +15,20 @@ logger = setup_logger(
     name="ectsum_inference", log_file=LOG_DIR / "ectsum_inference.log", level=LOG_LEVEL
 )
 
-def ectsum_inference(args):
 
+def ectsum_inference(args):
     today = date.today()
     logger.info(f"Starting ECTSum inference on {today}")
 
     # Load the ECTSum dataset (test split)
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/ECTSum", trust_remote_code=True)
-    
+
     results_path = (
-            RESULTS_DIR
-            / "ectsum"
-            / f"ectsum_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-        )
+        RESULTS_DIR
+        / "ectsum"
+        / f"ectsum_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+    )
     results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize lists to store documents, actual labels, model responses, and complete responses
@@ -40,11 +41,15 @@ def ectsum_inference(args):
 
     # Iterate through the test split of the dataset
     for i in range(len(dataset["test"])):  # type: ignore
-        document = dataset["test"][i]["context"]  # Extract document (context) # type: ignore
-        actual_label = dataset["test"][i]["response"]  # Extract the actual label (response) # type: ignore
+        document = dataset["test"][i][
+            "context"
+        ]  # Extract document (context) # type: ignore
+        actual_label = dataset["test"][i][
+            "response"
+        ]  # Extract the actual label (response) # type: ignore
         documents.append(document)
         actual_labels.append(actual_label)
-        
+
         try:
             logger.info(f"Processing document {i+1}/{len(dataset['test'])}")  # type: ignore
             # Generate the model's response using Together API
@@ -56,9 +61,9 @@ def ectsum_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                # stop=tokens(args.model),
             )
-            
+
             # Append the model response and complete response for the document
             complete_responses.append(model_response)
             response_text = model_response.choices[0].message.content.strip()  # type: ignore

@@ -2,12 +2,13 @@ import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from litellm import completion 
+from litellm import completion
 import json
 
 # Custom imports for FNXL prompt and token handling
 from superflue.code.prompts import fnxl_prompt  # Custom prompt function for FNXL
-from superflue.code.tokens import tokens  # Custom token handling function for FNXL
+
+# from superflue.code.tokens import tokens  # Custom token handling function for FNXL
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.path_utils import get_inference_save_path
 from superflue.config import LOG_DIR, LOG_LEVEL
@@ -18,6 +19,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "fnxl_inference.log",
     level=LOG_LEVEL,
 )
+
 
 def fnxl_inference(args):
     def flatten_nested_list(nested_list):
@@ -32,7 +34,7 @@ def fnxl_inference(args):
                 except ValueError:
                     continue  # Skip non-numeric items
         return flat_list
-    
+
     today = date.today()
     logger.info(f"Starting FNXL inference on {today}")
 
@@ -61,14 +63,18 @@ def fnxl_inference(args):
             sentence = dataset["test"][i]["sentence"]  # Extract sentence # type: ignore
             try:
                 numerals_tags_str = dataset["test"][i]["numerals-tags"]  # type: ignore
-                numerals_tags_dict = json.loads(numerals_tags_str.replace("'", '"'))  # Replace single quotes for valid JSON
+                numerals_tags_dict = json.loads(
+                    numerals_tags_str.replace("'", '"')
+                )  # Replace single quotes for valid JSON
                 numerals_tag = list(numerals_tags_dict.values())
                 numerals_tag = flatten_nested_list(numerals_tag)
             except json.decoder.JSONDecodeError:
-                numerals_tag = [] # type: ignore
-            
+                numerals_tag = []  # type: ignore
+
             company = dataset["test"][i]["company"]  # Extract company # type: ignore
-            doc_type = dataset["test"][i]["docType"]  # Extract document type # type: ignore
+            doc_type = dataset["test"][i][
+                "docType"
+            ]  # Extract document type # type: ignore
             actual_label = numerals_tags_dict if numerals_tags_dict else {}
 
             # Append to respective lists
@@ -85,13 +91,20 @@ def fnxl_inference(args):
             # FNXL-specific prompt to classify numerals in financial sentences
             model_response = completion(
                 model=args.model,
-                messages=[{"role": "user", "content": fnxl_prompt(sentence, numerals_tag, company, doc_type)}], # type: ignore
+                messages=[
+                    {
+                        "role": "user",
+                        "content": fnxl_prompt(
+                            sentence, numerals_tag, company, doc_type
+                        ),
+                    }
+                ],  # type: ignore
                 tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                # stop=tokens(args.model),
             )
 
             # Append the model response and predicted label for the sentence
@@ -105,17 +118,19 @@ def fnxl_inference(args):
             # Log the error and retry the same sentence after a delay
             logger.error(f"Error processing sentence {i+1}: {e}")
             time.sleep(10.0)
-            sentences.append(sentence if 'sentence' in locals() else None)
+            sentences.append(sentence if "sentence" in locals() else None)
             numerals_tags.append([])  # Default to empty list
-            companies.append(company if 'company' in locals() else None)
-            doc_types.append(doc_type if 'doc_type' in locals() else None)
+            companies.append(company if "company" in locals() else None)
+            doc_types.append(doc_type if "doc_type" in locals() else None)
             actual_labels.append({})
             complete_responses.append(None)
             llm_responses.append(None)
             continue  # Proceed to the next sentence after sleeping
 
         if i % 10 == 0:
-            assert len(sentences) == len(numerals_tags) == len(companies) == len(doc_types), "List lengths are mismatched!"
+            assert (
+                len(sentences) == len(numerals_tags) == len(companies) == len(doc_types)
+            ), "List lengths are mismatched!"
 
             df_progress = pd.DataFrame(
                 {

@@ -2,9 +2,10 @@ import time
 import pandas as pd
 from datetime import date
 from datasets import load_dataset
-from litellm import completion 
+from litellm import completion
 from superflue.code.prompts import fiqa_task1_prompt
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
@@ -15,9 +16,12 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+
 def fiqa_task1_inference(args):
     # Load dataset and initialize storage for results
-    dataset = load_dataset("gtfintechlab/FiQA_Task1", split="test", trust_remote_code=True)
+    dataset = load_dataset(
+        "gtfintechlab/FiQA_Task1", split="test", trust_remote_code=True
+    )
     context = []
     llm_responses = []
     actual_targets = []
@@ -32,27 +36,31 @@ def fiqa_task1_inference(args):
         sentiment_score = entry["sentiment_score"]  # type: ignore
 
         # Combine context and target information
-        combined_text = f"Sentence: {sentence}. Snippets: {snippets}. Target aspect: {target}"
+        combined_text = (
+            f"Sentence: {sentence}. Snippets: {snippets}. Target aspect: {target}"
+        )
         context.append(combined_text)
         actual_targets.append(target)
         actual_sentiments.append(sentiment_score)
 
         try:
             model_response = completion(
-                messages=[{"role": "user", "content": fiqa_task1_prompt(combined_text)}],
+                messages=[
+                    {"role": "user", "content": fiqa_task1_prompt(combined_text)}
+                ],
                 model=args.model,
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                # stop=tokens(args.model),
             )
 
             # Process and log response
             logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content # type: ignore
+            response_label = model_response.choices[0].message.content  # type: ignore
             llm_responses.append(response_label)
 
         except Exception as e:
@@ -60,7 +68,7 @@ def fiqa_task1_inference(args):
             complete_responses.append(None)
             llm_responses.append(None)
             time.sleep(10.0)
-    
+
     # Create DataFrame with results
     df = pd.DataFrame(
         {

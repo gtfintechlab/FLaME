@@ -1,18 +1,18 @@
 import time
 from datetime import date
-from pathlib import Path
-from litellm import completion 
+from litellm import completion
 import pandas as pd
 from datasets import load_dataset
-import together
 from superflue.code.prompts import causal_detection_prompt
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
 logger = setup_logger(
     name="cd_inference", log_file=LOG_DIR / "cd_inference.log", level=LOG_LEVEL
 )
+
 
 def casual_detection_inference(args):
     today = date.today()
@@ -27,7 +27,7 @@ def casual_detection_inference(args):
     for entry in dataset["test"]:  # type: ignore
         tokens1 = entry["tokens"]  # type: ignore
         actual_tag = entry["tags"]  # type: ignore
-        
+
         tokens_list.append(tokens1)
         actual_tags.append(actual_tag)
 
@@ -36,17 +36,21 @@ def casual_detection_inference(args):
             # Causal Detection-specific prompt logic to classify each token
             model_response = completion(
                 model=args.model,
-                messages=[{"role": "user", "content": causal_detection_prompt(tokens1)}],
+                messages=[
+                    {"role": "user", "content": causal_detection_prompt(tokens1)}
+                ],
                 temperature=args.temperature,
                 tokens=args.max_tokens,
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model)
+                # stop=tokens(args.model)
             )
             complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content # type: ignore
-            response_tags = response_label.split()  # Assumed token-wise classification # type: ignore
+            response_label = model_response.choices[0].message.content  # type: ignore
+            response_tags = (
+                response_label.split()
+            )  # Assumed token-wise classification # type: ignore
             predicted_tags.append(response_tags)
 
         except Exception as e:
@@ -54,7 +58,7 @@ def casual_detection_inference(args):
             complete_responses.append(None)
             predicted_tags.append(None)
             time.sleep(20.0)
-    
+
     # Periodically save results
     df = pd.DataFrame(
         {

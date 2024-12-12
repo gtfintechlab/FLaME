@@ -1,10 +1,11 @@
 import time
 import pandas as pd
 from datasets import load_dataset
-from litellm import completion 
+from litellm import completion
 from superflue.code.prompts import edtsum_prompt
 from superflue.utils.logging_utils import setup_logger
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
@@ -24,9 +25,9 @@ def edtsum_inference(args):
     complete_responses = []
 
     # start_t = time.time()
-    for i in tqdm(range(len(dataset["test"])),  desc="Processing sentences"): # type: ignore
-        document = dataset["test"][i]["text"] # type: ignore
-        actual_label = dataset["test"][i]["answer"] # type: ignore
+    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"):  # type: ignore
+        document = dataset["test"][i]["text"]  # type: ignore
+        actual_label = dataset["test"][i]["answer"]  # type: ignore
         documents.append(document)
         actual_labels.append(actual_label)
 
@@ -39,11 +40,11 @@ def edtsum_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model)
+                # stop=tokens(args.model)
             )
             logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content # type: ignore
+            response_label = model_response.choices[0].message.content  # type: ignore
             llm_responses.append(response_label)
 
         except Exception as e:

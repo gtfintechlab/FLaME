@@ -1,9 +1,9 @@
 import pandas as pd
-import logging
 import json
 from litellm import completion
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.path_utils import get_evaluation_save_path
 from superflue.config import LOG_DIR, LOG_LEVEL
@@ -14,6 +14,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "finer_evaluation.log",
     level=LOG_LEVEL,
 )
+
 
 def extraction_prompt_finer(llm_response: str):
     """Generate a prompt to extract numeric labels for named entity recognition."""
@@ -35,6 +36,7 @@ def extraction_prompt_finer(llm_response: str):
                 "{llm_response}"."""
     return prompt
 
+
 def clean_extracted_list(response: str) -> str:
     """Clean and format the extracted list response."""
     # Remove any text before and after the list
@@ -43,6 +45,7 @@ def clean_extracted_list(response: str) -> str:
     if start_idx == -1 or end_idx == 0:
         return "[]"
     return response[start_idx:end_idx]
+
 
 def finer_evaluate(file_name, args):
     """Evaluate FINER dataset and return results and metrics DataFrames."""
@@ -61,7 +64,11 @@ def finer_evaluate(file_name, args):
     if "extracted_labels" not in df.columns:
         df["extracted_labels"] = None
 
-    correct_labels = df["actual_labels"].apply(lambda x: json.loads(x) if pd.notna(x) else []).tolist()
+    correct_labels = (
+        df["actual_labels"]
+        .apply(lambda x: json.loads(x) if pd.notna(x) else [])
+        .tolist()
+    )
     extracted_labels = []
 
     for i, llm_response in enumerate(df["llm_responses"]):
@@ -72,14 +79,16 @@ def finer_evaluate(file_name, args):
             # Generate prompt and get response
             response = completion(
                 model=args.model,
-                messages=[{"role": "user", "content": extraction_prompt_finer(llm_response)}],
+                messages=[
+                    {"role": "user", "content": extraction_prompt_finer(llm_response)}
+                ],
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                # stop=tokens(args.model),
             )
-            extracted_list = response.choices[0].message.content.strip() # type: ignore
+            extracted_list = response.choices[0].message.content.strip()  # type: ignore
             cleaned_response = clean_extracted_list(extracted_list)
             extracted_tokens = json.loads(cleaned_response)
 
@@ -97,9 +106,15 @@ def finer_evaluate(file_name, args):
     flat_extracted_labels = [label for sublist in extracted_labels for label in sublist]
 
     # Calculate metrics
-    precision = precision_score(flat_correct_labels, flat_extracted_labels, average="macro", zero_division=0)
-    recall = recall_score(flat_correct_labels, flat_extracted_labels, average="macro", zero_division=0)
-    f1 = f1_score(flat_correct_labels, flat_extracted_labels, average="macro", zero_division=0)
+    precision = precision_score(
+        flat_correct_labels, flat_extracted_labels, average="macro", zero_division=0
+    )
+    recall = recall_score(
+        flat_correct_labels, flat_extracted_labels, average="macro", zero_division=0
+    )
+    f1 = f1_score(
+        flat_correct_labels, flat_extracted_labels, average="macro", zero_division=0
+    )
     accuracy = accuracy_score(flat_correct_labels, flat_extracted_labels)
 
     # Log metrics
@@ -109,13 +124,17 @@ def finer_evaluate(file_name, args):
     logger.info(f"Accuracy: {accuracy:.4f}")
 
     # Create metrics DataFrame with consistent format
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
     # Save metrics using consistent naming
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
 

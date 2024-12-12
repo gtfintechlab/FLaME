@@ -1,10 +1,8 @@
 import pandas as pd
-import logging
-from datetime import date
-from pathlib import Path
 from litellm import completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.path_utils import get_evaluation_save_path
 from superflue.config import LOG_DIR, LOG_LEVEL
@@ -22,6 +20,7 @@ label_mapping = {
     "HIGH RISK": 1,
 }
 
+
 def extraction_prompt(llm_response: str):
     """Generate a prompt for extracting risk labels."""
     prompt = f"""Based on the following list of labels: 'HIGH RISK', 'LOW RISK', extract the most relevant label from the following response:
@@ -29,10 +28,14 @@ def extraction_prompt(llm_response: str):
                 Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
     return prompt
 
+
 def map_label_to_number(label: str):
     """Map the extracted label to its corresponding numerical value."""
     normalized_label = label.strip().upper()  # Normalize label to uppercase
-    return label_mapping.get(normalized_label, -1)  # Return -1 if the label is not found
+    return label_mapping.get(
+        normalized_label, -1
+    )  # Return -1 if the label is not found
+
 
 def finbench_evaluate(file_name, args):
     """Evaluate the FinBench dataset and return results and metrics DataFrames."""
@@ -68,7 +71,7 @@ def finbench_evaluate(file_name, args):
                 temperature=args.temperature,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                # stop=tokens(args.model),
             )
             extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
             mapped_label = map_label_to_number(extracted_label)
@@ -88,18 +91,26 @@ def finbench_evaluate(file_name, args):
 
     # Evaluate metrics
     accuracy = accuracy_score(correct_labels, extracted_labels)
-    precision, recall, f1, _ = precision_recall_fscore_support(correct_labels, extracted_labels, average="weighted")
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        correct_labels, extracted_labels, average="weighted"
+    )
 
-    logger.info(f"Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}")
+    logger.info(
+        f"Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}"
+    )
 
     # Create metrics DataFrame with consistent format
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
     # Save metrics using consistent naming
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
 

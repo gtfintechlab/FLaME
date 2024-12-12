@@ -1,25 +1,23 @@
 # Core settings
 dataset: fomc
-mode: inference  # inference or evaluate
-file_name: null  # Required for evaluate mode
+mode: inference
+file_name: null
 
 # Model parameters
 model: "together_ai/meta-llama/Llama-3-8b-chat-hf"
-# model: "together_ai/meta-llama/Llama-3-70b-chat-hf"
-# model: "together_ai/glennmatlin/Meta-Llama-3-8B-Instruct-389ae07b-7acba601"
-max_tokens: 32  # Smaller for classification
-temperature: 0.0  # Zero for deterministic outputs
+max_tokens: 32
+temperature: 0.0
 top_p: 0.9
 top_k: null
 repetition_penalty: 1.0
 batch_size: 250
 
 # Dataset parameters
-dataset_org: "glennmatlin"  # Organization holding the datasets
-sample_size: 1  # Process a smaller sample for testing
+dataset_org: "gtfintechlab"
+sample_size: 1
 method: null
 seeds: null
 splits: null
 
 # Other parameters
-prompt_format: "ferrari"
+prompt_format: "superflue"

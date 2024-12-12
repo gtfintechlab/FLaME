@@ -4,7 +4,8 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
 from litellm import completion
 from pathlib import Path
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 import time
@@ -17,9 +18,16 @@ logger = setup_logger(
 )
 
 possible_relationships = [
-    'PERSON-TITLE', 'PERSON-GOV_AGY', 'PERSON-ORG', 'PERSON-UNIV',
-    'ORG-ORG', 'ORG-MONEY', 'ORG-GPE', 'ORG-DATE'
+    "PERSON-TITLE",
+    "PERSON-GOV_AGY",
+    "PERSON-ORG",
+    "PERSON-UNIV",
+    "ORG-ORG",
+    "ORG-MONEY",
+    "ORG-GPE",
+    "ORG-DATE",
 ]
+
 
 def extraction_prompt(llm_response: str):
     """Construct the extraction prompt."""
@@ -30,10 +38,12 @@ def extraction_prompt(llm_response: str):
                 Provide only the label that best matches the response, exactly as it is listed above. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation."""
     return prompt
 
+
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
+
 
 def refind_evaluate(file_name, args):
     """Evaluate Refind dataset and return results and metrics DataFrames."""
@@ -46,7 +56,7 @@ def refind_evaluate(file_name, args):
 
     # Prepare extracted labels
     extracted_labels = []
-    correct_labels = df['actual_labels'].tolist()
+    correct_labels = df["actual_labels"].tolist()
 
     # Define paths
     evaluation_results_path = (
@@ -66,25 +76,27 @@ def refind_evaluate(file_name, args):
                 temperature=args.temperature,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                # stop=tokens(args.model),
             )
             extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
-            extracted_label = extracted_label.replace(' ', '').upper()
+            extracted_label = extracted_label.replace(" ", "").upper()
             if extracted_label not in possible_relationships:
-                extracted_label = 'NO-REL'
+                extracted_label = "NO-REL"
             extracted_labels.append(extracted_label)
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
-            extracted_labels.append('ERROR')
+            extracted_labels.append("ERROR")
             time.sleep(10.0)
 
         # Update DataFrame with extracted labels and save progress
-        df.loc[i, 'extracted_labels'] = extracted_labels[-1]
+        df.loc[i, "extracted_labels"] = extracted_labels[-1]
         save_progress(df, evaluation_results_path)
 
     # Evaluate the performance
     accuracy = accuracy_score(correct_labels, extracted_labels)
-    precision, recall, f1, _ = precision_recall_fscore_support(correct_labels, extracted_labels, average='weighted')
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        correct_labels, extracted_labels, average="weighted"
+    )
 
     # Log metrics
     logger.info(f"Accuracy: {accuracy:.4f}")
@@ -93,10 +105,12 @@ def refind_evaluate(file_name, args):
     logger.info(f"F1 Score: {f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1]
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
     # Save metrics DataFrame
     metrics_results_path = Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv")

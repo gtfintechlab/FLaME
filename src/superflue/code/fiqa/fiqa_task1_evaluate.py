@@ -1,11 +1,8 @@
 import pandas as pd
-import logging
 from datetime import date
-from pathlib import Path
-from superflue.code.tokens import tokens
-from litellm import completion 
-import warnings
-import argparse
+
+# from superflue.code.tokens import tokens
+from litellm import completion
 import re
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.logging_utils import setup_logger
@@ -19,6 +16,7 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+
 # Function to create the extraction prompt
 def extraction_prompt(llm_response: str):
     prompt = f"""
@@ -31,12 +29,13 @@ def extraction_prompt(llm_response: str):
     """
     return prompt
 
+
 def extract_numerical_value(text):
     match = re.search(r"(-?\d+\.\d+)", text)  # Adjusted to capture decimal values
     return float(match.group(0)) if match else None
 
-def fiqa_task1_evaluate(file_name, args):
 
+def fiqa_task1_evaluate(file_name, args):
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
@@ -54,7 +53,7 @@ def fiqa_task1_evaluate(file_name, args):
     extraction_response = []
     extraction_model_response = []
     regex_extraction = []
-    
+
     for i, entry in enumerate(df["llm_responses"]):
         try:
             model_response = completion(
@@ -65,10 +64,10 @@ def fiqa_task1_evaluate(file_name, args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model)
+                # stop=tokens(args.model)
             )
             extraction_model_response.append(model_response)
-            response_text = model_response.choices[0].message.content # type: ignore
+            response_text = model_response.choices[0].message.content  # type: ignore
             extraction_response.append(response_text)
             numerical_value = extract_numerical_value(response_text)
             regex_extraction.append(numerical_value)
@@ -80,14 +79,14 @@ def fiqa_task1_evaluate(file_name, args):
             extraction_model_response.append(str(e))
             time.sleep(10.0)
 
-    df['extraction_model_response'] = extraction_model_response
-    df['extraction_response'] = extraction_response
-    df['regex_extraction'] = regex_extraction    
+    df["extraction_model_response"] = extraction_model_response
+    df["extraction_response"] = extraction_response
+    df["regex_extraction"] = regex_extraction
 
-    correct_labels = df['actual_sentiment'].tolist()    
+    correct_labels = df["actual_sentiment"].tolist()
 
     # Calculate metrics
-    accuracy = accuracy_score(correct_labels, regex_extraction) 
+    accuracy = accuracy_score(correct_labels, regex_extraction)
     precision, recall, f1, _ = precision_recall_fscore_support(
         correct_labels, regex_extraction
     )
@@ -99,16 +98,22 @@ def fiqa_task1_evaluate(file_name, args):
     logger.info(f"F1 Score: {f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
-    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
+    logger.info(
+        f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}"
+    )
     df.to_csv(evaluation_results_path, index=False)
 
     # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
 

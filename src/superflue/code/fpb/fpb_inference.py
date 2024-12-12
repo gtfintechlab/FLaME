@@ -2,9 +2,7 @@ import pandas as pd
 import time
 from tqdm import tqdm
 from datasets import load_dataset
-
 from superflue.code.prompts import fpb_prompt
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.path_utils import get_inference_save_path
 from superflue.config import LOG_DIR, LOG_LEVEL
@@ -72,7 +70,7 @@ def fpb_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.inference_model),
+                # stop=tokens(args.inference_model),
             )
             logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)

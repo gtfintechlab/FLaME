@@ -2,10 +2,11 @@ import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from litellm import completion 
+from litellm import completion
 
 from superflue.code.prompts import headlines_prompt
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
@@ -16,13 +17,14 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+
 def headlines_inference(args):
     today = date.today()
     logger.info(f"Starting Headlines inference on {today}")
 
     # Load the Headlines dataset (test split with specific config)
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/Headlines", '5768', trust_remote_code=True)
+    dataset = load_dataset("gtfintechlab/Headlines", "5768", trust_remote_code=True)
 
     results_path = (
         RESULTS_DIR
@@ -49,12 +51,24 @@ def headlines_inference(args):
     # Iterate through the test split of the dataset
     for i in range(len(dataset["test"])):  # type: ignore
         sentence = dataset["test"][i]["News"]  # Extract news (sentence) # type: ignore
-        price_or_not = dataset["test"][i]["PriceOrNot"]  # Extract price or not # type: ignore
-        direction_up = dataset["test"][i]["DirectionUp"]  # Extract direction up # type: ignore
-        direction_down = dataset["test"][i]["DirectionDown"]  # Extract direction down # type: ignore
-        direction_constant = dataset["test"][i]["DirectionConstant"]  # Extract direction constant # type: ignore
-        past_price = dataset["test"][i]["PastPrice"]  # Extract past price # type: ignore
-        future_price = dataset["test"][i]["FuturePrice"]  # Extract future price # type: ignore
+        price_or_not = dataset["test"][i][
+            "PriceOrNot"
+        ]  # Extract price or not # type: ignore
+        direction_up = dataset["test"][i][
+            "DirectionUp"
+        ]  # Extract direction up # type: ignore
+        direction_down = dataset["test"][i][
+            "DirectionDown"
+        ]  # Extract direction down # type: ignore
+        direction_constant = dataset["test"][i][
+            "DirectionConstant"
+        ]  # Extract direction constant # type: ignore
+        past_price = dataset["test"][i][
+            "PastPrice"
+        ]  # Extract past price # type: ignore
+        future_price = dataset["test"][i][
+            "FuturePrice"
+        ]  # Extract future price # type: ignore
         past_news = dataset["test"][i]["PastNews"]  # Extract past news # type: ignore
 
         # Append to respective lists
@@ -66,17 +80,19 @@ def headlines_inference(args):
         past_price_list.append(past_price)
         future_price_list.append(future_price)
         past_news_list.append(past_news)
-        
+
         # Append actual label (for comparison)
-        actual_labels.append({
-            'price_or_not': price_or_not,
-            'direction_up': direction_up,
-            'direction_down': direction_down,
-            'direction_constant': direction_constant,
-            'past_price': past_price,
-            'future_price': future_price,
-            'past_news': past_news
-        })
+        actual_labels.append(
+            {
+                "price_or_not": price_or_not,
+                "direction_up": direction_up,
+                "direction_down": direction_down,
+                "direction_constant": direction_constant,
+                "past_price": past_price,
+                "future_price": future_price,
+                "past_news": past_news,
+            }
+        )
 
         try:
             logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
@@ -88,7 +104,7 @@ def headlines_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                # stop=tokens(args.model),
             )
 
             # Append the model response and complete response for the sentence
@@ -119,7 +135,7 @@ def headlines_inference(args):
             "future_price": future_price_list,
             "past_news": past_news_list,
             "complete_responses": complete_responses,
-            "actual_labels": actual_labels  # Add actual_labels to the DataFrame
+            "actual_labels": actual_labels,  # Add actual_labels to the DataFrame
         }
     )
 

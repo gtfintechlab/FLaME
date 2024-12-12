@@ -1,11 +1,8 @@
 import pandas as pd
-import logging
 from datetime import date
-from pathlib import Path
-from superflue.code.tokens import tokens
-from litellm import completion 
-import warnings
-import argparse
+
+# from superflue.code.tokens import tokens
+from litellm import completion
 import re
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.logging_utils import setup_logger
@@ -17,6 +14,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "convfinqa_evaluation.log",
     level=LOG_LEVEL,
 )
+
 
 # Prompt template for extracting numerical answers
 def extraction_prompt(llm_response: str):
@@ -31,10 +29,12 @@ def extraction_prompt(llm_response: str):
     """
     return prompt
 
+
 # Function to extract numerical values using regex
 def extract_numerical_value(text):
     match = re.search(r"(\d+(\.\d+)?%?)", text)
     return match.group(0) if match else None
+
 
 # Main evaluation function
 def convfinqa_evaluate(file_name, args):
@@ -67,14 +67,14 @@ def convfinqa_evaluate(file_name, args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model)
+                # stop=tokens(args.model)
             )
-            
+
             extraction_model_response.append(model_response)
             response_text = model_response.choices[0].message.content  # type: ignore
 
             extraction_response.append(response_text)
-         
+
             numerical_value = extract_numerical_value(response_text)
             regex_extraction.append(numerical_value)
 
@@ -85,14 +85,17 @@ def convfinqa_evaluate(file_name, args):
             regex_extraction.append(None)
 
     # Adding results to DataFrame
-    df['extraction_model_response'] = extraction_model_response
-    df['extraction_response'] = extraction_response
-    df['regex_extraction'] = regex_extraction    
+    df["extraction_model_response"] = extraction_model_response
+    df["extraction_response"] = extraction_response
+    df["regex_extraction"] = regex_extraction
 
     # Accuracy calculation
-    correct_labels = df['actual_label'].tolist()    
-    valid_predictions = [(x, y) if pd.notna(x) else (x, 'Error') for x, y in zip(correct_labels, regex_extraction)]
-    
+    correct_labels = df["actual_label"].tolist()
+    valid_predictions = [
+        (x, y) if pd.notna(x) else (x, "Error")
+        for x, y in zip(correct_labels, regex_extraction)
+    ]
+
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, valid_predictions)
     precision, recall, f1, _ = precision_recall_fscore_support(
@@ -106,16 +109,22 @@ def convfinqa_evaluate(file_name, args):
     logger.info(f"F1 Score: {f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
-    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
+    logger.info(
+        f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}"
+    )
     df.to_csv(evaluation_results_path, index=False)
 
     # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
 

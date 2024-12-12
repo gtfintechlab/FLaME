@@ -1,4 +1,3 @@
-from pathlib import Path
 import time
 from datetime import date
 import pandas as pd
@@ -7,7 +6,8 @@ from tqdm import tqdm
 
 from litellm import completion
 from superflue.code.prompts import finred_prompt
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.path_utils import get_inference_save_path
 from superflue.config import LOG_DIR, LOG_LEVEL
@@ -18,6 +18,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "finred_inference.log",
     level=LOG_LEVEL,
 )
+
 
 def finred_inference(args):
     today = date.today()
@@ -39,8 +40,12 @@ def finred_inference(args):
     # Iterate through the test split of the dataset
     for i in tqdm(range(len(dataset["test"]))):  # type: ignore
         sentence = dataset["test"][i]["sentence"]  # Extract sentence # type: ignore
-        entity_pairs = dataset["test"][i]["entities"]  # Extract entity pairs # type: ignore
-        labels = dataset["test"][i]["relations"]  # Extract the actual label (relations) # type: ignore
+        entity_pairs = dataset["test"][i][
+            "entities"
+        ]  # Extract entity pairs # type: ignore
+        labels = dataset["test"][i][
+            "relations"
+        ]  # Extract the actual label (relations) # type: ignore
 
         # Process each entity pair in the sentence
         for entity_pair, label in zip(entity_pairs, labels):
@@ -50,7 +55,9 @@ def finred_inference(args):
             entities_list.append((entity1, entity2))
 
             try:
-                logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}, entity pair {entity1}-{entity2}") # type: ignore
+                logger.debug(
+                    f"Processing sentence {i+1}/{len(dataset['test'])}, entity pair {entity1}-{entity2}"
+                )  # type: ignore
 
                 prompt = finred_prompt(sentence, entity1, entity2)
                 model_response = completion(
@@ -61,17 +68,21 @@ def finred_inference(args):
                     top_k=args.top_k,
                     top_p=args.top_p,
                     repetition_penalty=args.repetition_penalty,
-                    stop=tokens(args.model),
+                    # stop=tokens(args.model),
                 )
                 complete_responses.append(model_response)
                 response_text = model_response.choices[0].message.content.strip()  # type: ignore
                 llm_responses.append(response_text)
 
-                logger.debug(f"Model response for sentence {i+1}, entity pair {entity1}-{entity2}: {response_text}")
+                logger.debug(
+                    f"Model response for sentence {i+1}, entity pair {entity1}-{entity2}: {response_text}"
+                )
 
             except Exception as e:
                 # Log the error and retry the same sentence after a delay
-                logger.error(f"Error processing sentence {i+1}, entity pair {entity1}-{entity2}: {e}")
+                logger.error(
+                    f"Error processing sentence {i+1}, entity pair {entity1}-{entity2}: {e}"
+                )
                 time.sleep(10.0)
                 complete_responses.append(None)
                 llm_responses.append(None)

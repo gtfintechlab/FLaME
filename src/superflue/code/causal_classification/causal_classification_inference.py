@@ -1,4 +1,4 @@
-from litellm import completion 
+from litellm import completion
 import pandas as pd
 import time
 import sys
@@ -9,7 +9,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.
 from datasets import load_dataset
 from datetime import date
 from superflue.code.prompts import causal_classification_prompt
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from superflue.utils.logging_utils import setup_logger
 
@@ -18,6 +19,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "causal_classification_inference.log",
     level=LOG_LEVEL,
 )
+
 
 def causal_classification_inference(args):
     today = date.today()
@@ -32,7 +34,9 @@ def causal_classification_inference(args):
     actual_labels = []
     complete_responses = []
 
-    logger.info(f"Starting inference on causal classification task with model {args.model}")
+    logger.info(
+        f"Starting inference on causal classification task with model {args.model}"
+    )
     # start_t = time.time()
     for i in range(len(dataset["test"])):  # type: ignore
         text = dataset["test"][i]["text"]  # type: ignore
@@ -41,20 +45,22 @@ def causal_classification_inference(args):
         actual_labels.append(actual_label)
         try:
             logger.info(f"Processing text {i+1}/{len(dataset['test'])}")  # type: ignore
-    
+
             model_response = completion(
                 model=args.model,
-                messages=[{"role": "user", "content": causal_classification_prompt(text)}],
+                messages=[
+                    {"role": "user", "content": causal_classification_prompt(text)}
+                ],
                 temperature=args.temperature,
                 tokens=args.max_tokens,
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                # stop=tokens(args.model),
             )
-            complete_responses.append(model_response) 
-            response_label = model_response.choices[0].message.content # type: ignore
-            logger.info(f"Model response: {response_label}")  
+            complete_responses.append(model_response)
+            response_label = model_response.choices[0].message.content  # type: ignore
+            logger.info(f"Model response: {response_label}")
             llm_responses.append(response_label)
 
         except Exception as e:
@@ -72,7 +78,7 @@ def causal_classification_inference(args):
             "complete_responses": complete_responses,
         }
     )
-    
+
     results_path = (
         RESULTS_DIR
         / "causal_classification"

@@ -1,11 +1,8 @@
 import pandas as pd
-import logging
-from datetime import date
-from pathlib import Path
 import json
 from litellm import completion
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from superflue.code.tokens import tokens
+
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.path_utils import get_evaluation_save_path
 from superflue.config import LOG_DIR, LOG_LEVEL
@@ -17,6 +14,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "fnxl_evaluation.log",
     level=LOG_LEVEL,
 )
+
 
 def extraction_prompt(llm_response: str):
     """Generate a prompt to extract structured information from the LLM response."""
@@ -38,6 +36,7 @@ def extraction_prompt(llm_response: str):
                 The response: "{llm_response}"."""
     return prompt
 
+
 def normalize_json(input_json):
     """Normalize and clean up the extracted JSON."""
     try:
@@ -52,9 +51,14 @@ def normalize_json(input_json):
 
         normalized_data = {
             str(key).strip().lower(): [
-                float(val.replace(',', '')) if isinstance(val, str) and val.replace(',', '').replace('.', '').isdigit() else val
+                float(val.replace(",", ""))
+                if isinstance(val, str)
+                and val.replace(",", "").replace(".", "").isdigit()
+                else val
                 for val in value
-            ] if isinstance(value, list) else []
+            ]
+            if isinstance(value, list)
+            else []
             for key, value in data.items()
         }
         return normalized_data
@@ -62,11 +66,12 @@ def normalize_json(input_json):
         logger.error(f"Error normalizing JSON: {e}")
         return {}
 
+
 def compare_key_value_pairs(actual, predicted):
     """Compare key-value pairs in actual and predicted JSONs."""
     actual = normalize_json(actual)
     predicted = normalize_json(predicted)
-    
+
     correct = 0
     total_actual = len(actual)
     total_predicted = len(predicted)
@@ -74,12 +79,20 @@ def compare_key_value_pairs(actual, predicted):
     for key, value in predicted.items():
         if key in actual and actual[key] == value:
             correct += 1
-    
-    accuracy = correct / (total_actual + total_predicted - correct) if (total_actual + total_predicted - correct) > 0 else 0
+
+    accuracy = (
+        correct / (total_actual + total_predicted - correct)
+        if (total_actual + total_predicted - correct) > 0
+        else 0
+    )
     precision = correct / total_predicted if total_predicted > 0 else 0
     recall = correct / total_actual if total_actual > 0 else 0
-    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0
-    
+    f1 = (
+        (2 * precision * recall / (precision + recall))
+        if (precision + recall) > 0
+        else 0
+    )
+
     return {
         "accuracy": accuracy,
         "precision": precision,
@@ -89,6 +102,7 @@ def compare_key_value_pairs(actual, predicted):
         "total_actual": total_actual,
         "total_predicted": total_predicted,
     }
+
 
 def fnxl_evaluate(file_name, args):
     """Evaluate FNXL dataset and return results and metrics DataFrames."""
@@ -107,7 +121,9 @@ def fnxl_evaluate(file_name, args):
         df["extracted_labels"] = None
 
     metrics = []
-    for i, (llm_response, actual_label) in enumerate(zip(df["llm_responses"], df["actual_labels"])):
+    for i, (llm_response, actual_label) in enumerate(
+        zip(df["llm_responses"], df["actual_labels"])
+    ):
         if pd.notna(df.at[i, "extracted_labels"]):
             continue
 
@@ -119,9 +135,9 @@ def fnxl_evaluate(file_name, args):
                 temperature=args.temperature,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                # stop=tokens(args.model),
             )
-            extracted_label = response.choices[0].message.content.strip() # type: ignore
+            extracted_label = response.choices[0].message.content.strip()  # type: ignore
             df.at[i, "extracted_labels"] = extracted_label
 
             metric = compare_key_value_pairs(actual_label, extracted_label)
@@ -134,11 +150,17 @@ def fnxl_evaluate(file_name, args):
         except Exception as e:
             logger.error(f"Error processing response {i}: {e}")
             df.at[i, "extracted_labels"] = None
-            metrics.append({
-                "accuracy": 0, "precision": 0, "recall": 0, "f1_score": 0,
-                "correct": 0, "total_actual": len(normalize_json(actual_label)),
-                "total_predicted": 0,
-            })
+            metrics.append(
+                {
+                    "accuracy": 0,
+                    "precision": 0,
+                    "recall": 0,
+                    "f1_score": 0,
+                    "correct": 0,
+                    "total_actual": len(normalize_json(actual_label)),
+                    "total_predicted": 0,
+                }
+            )
             time.sleep(10.0)
 
     # Aggregate metrics
@@ -148,17 +170,29 @@ def fnxl_evaluate(file_name, args):
 
     precision = total_correct / total_predicted if total_predicted > 0 else 0
     recall = total_correct / total_actual if total_actual > 0 else 0
-    accuracy = total_correct / (total_actual + total_predicted - total_correct) if (total_actual + total_predicted - total_correct) > 0 else 0
-    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0
+    accuracy = (
+        total_correct / (total_actual + total_predicted - total_correct)
+        if (total_actual + total_predicted - total_correct) > 0
+        else 0
+    )
+    f1 = (
+        (2 * precision * recall / (precision + recall))
+        if (precision + recall) > 0
+        else 0
+    )
 
     # Metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
     # Save metrics
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
 

@@ -1,35 +1,36 @@
 import time
-from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
 from superflue.code.prompts import banking77_prompt
-from superflue.code.tokens import tokens
-from superflue.config import RESULTS_DIR
+
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-from litellm import completion 
+from superflue.config import LOG_DIR, LOG_LEVEL
+from litellm import completion
 from tqdm import tqdm
 
 logger = setup_logger(
-    name="banking77_inference", log_file=LOG_DIR / "banking77_inference.log", level=LOG_LEVEL
+    name="banking77_inference",
+    log_file=LOG_DIR / "banking77_inference.log",
+    level=LOG_LEVEL,
 )
 
 
 def banking77_inference(args):
     dataset = load_dataset("gtfintechlab/banking77", trust_remote_code=True)
-    today = date.today()
+    # today = date.today()  # Unused variable
     documents = []
     llm_responses = []
     actual_labels = []
     complete_responses = []
-    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"): # type: ignore
-        document = dataset["test"][i]["text"] # type: ignore
-        actual_label = dataset["test"][i]["label"] # type: ignore
+    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"):  # type: ignore
+        document = dataset["test"][i]["text"]  # type: ignore
+        actual_label = dataset["test"][i]["label"]  # type: ignore
         documents.append(document)
         actual_labels.append(actual_label)
         try:
-            logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
+            logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
             model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": banking77_prompt(document)}],
@@ -38,11 +39,11 @@ def banking77_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model)
+                # stop=tokens(args.model)
             )
             logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content # type: ignore
+            response_label = model_response.choices[0].message.content  # type: ignore
             llm_responses.append(response_label)
 
         except Exception as e:

@@ -1,11 +1,8 @@
 import pandas as pd
-import logging
 from datetime import date
-from pathlib import Path
-from superflue.code.tokens import tokens
-from litellm import completion 
-import warnings
-import argparse
+
+# from superflue.code.tokens import tokens
+from litellm import completion
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.logging_utils import setup_logger
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
@@ -18,6 +15,7 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+
 # Function to generate the evaluation prompt
 def evaluation_prompt(llm_response: str, actual_answer: str):
     prompt = f"""
@@ -29,10 +27,11 @@ def evaluation_prompt(llm_response: str, actual_answer: str):
     """
     return prompt
 
+
 # Function for extracting and evaluating responses
 
-def tatqa_evaluate(file_name, args):
 
+def tatqa_evaluate(file_name, args):
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
@@ -52,20 +51,27 @@ def tatqa_evaluate(file_name, args):
     extraction_model_response = []
 
     # Iterate over each response and evaluate
-    for i, (llm_response, actual_answer) in enumerate(zip(df["response"], df["actual_answer"])):
+    for i, (llm_response, actual_answer) in enumerate(
+        zip(df["response"], df["actual_answer"])
+    ):
         try:
             model_response = completion(
                 model=args.model,
-                messages=[{"role": "user", "content": evaluation_prompt(llm_response, actual_answer)}],
+                messages=[
+                    {
+                        "role": "user",
+                        "content": evaluation_prompt(llm_response, actual_answer),
+                    }
+                ],
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model)
+                # stop=tokens(args.model)
             )
             extraction_model_response.append(model_response)
-            response_text = model_response.choices[0].message.content # type: ignore
+            response_text = model_response.choices[0].message.content  # type: ignore
             evaluation_results.append(response_text)
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
         except Exception as e:
@@ -75,13 +81,13 @@ def tatqa_evaluate(file_name, args):
             time.sleep(10.0)
 
         # Update DataFrame with extracted results after each iteration
-        df['extracted_labels'] = evaluation_results
+        df["extracted_labels"] = evaluation_results
 
         # Save the updated DataFrame to CSV after each iteration
         df.to_csv(evaluation_results_path, index=False)
         logger.info(f"CSV updated at iteration {i + 1}/{len(df)}")
 
-    correct_labels = df['actual_answer'].tolist()
+    correct_labels = df["actual_answer"].tolist()
 
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, evaluation_results)
@@ -96,18 +102,23 @@ def tatqa_evaluate(file_name, args):
     logger.info(f"F1 Score: {f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
-    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
+    logger.info(
+        f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}"
+    )
     df.to_csv(evaluation_results_path, index=False)
 
     # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df
-
