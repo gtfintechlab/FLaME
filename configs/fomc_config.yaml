@@ -1,18 +1,19 @@
 # Core settings
+models:
+  inference: "together_ai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
 dataset: fomc
 mode: inference
+log_level: "ERROR"
+litellm_log_level: "ERROR"
 file_name: null
 
 # Model parameters
-models:
-  inference: "together_ai/meta-llama/Llama-2-70b"  # Model for generating responses
-  extraction: "together_ai/meta-llama/Llama-2-7b"  # Model for extracting/evaluating responses
-max_tokens: 128
+max_tokens: 10
 temperature: 0.0
 top_p: 0.9
-top_k: null
+top_k: 50
 repetition_penalty: 1.0
-batch_size: 250
+batch_size: 100
 
 # Dataset parameters
 dataset_org: "gtfintechlab"

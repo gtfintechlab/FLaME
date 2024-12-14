@@ -1,9 +1,17 @@
+"""Batch processing utilities for LLM inference."""
+
+import time
+import logging
+import json
+import os
+from typing import List, Any, Callable, Dict, Optional, Tuple
 from litellm import batch_completion
+import litellm  # Import litellm directly to configure it globally
 
-# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import LOG_LEVEL, LOG_DIR
+from superflue.config import LOG_DIR, LOG_LEVEL
 
+# Configure logging respecting the configured log level
 logger = setup_logger(
     name="batch_utils",
     log_file=LOG_DIR / "batch_utils.log",
@@ -11,49 +19,198 @@ logger = setup_logger(
 )
 
 
-def chunk_list(lst, chunk_size):
-    """Split a list into smaller chunks of specified size.
+def litellm_logger_fn(model_call_dict: Dict) -> None:
+    """Custom logger function for LiteLLM to redirect its logs to our logger.
 
-    Args:
-        lst: The input list to be chunked
-        chunk_size: The size of each chunk
-
-    Returns:
-        List of chunks
+    This function aggressively filters out warnings and only logs errors by default.
+    Debug logs are only shown if LITELLM_LOG=DEBUG is set.
     """
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    # Skip all warning-level messages
+    if model_call_dict.get("level") == "warning":
+        return
+
+    # Only log errors by default
+    litellm_level = os.getenv("LITELLM_LOG", "ERROR")
+    if litellm_level != "DEBUG" and model_call_dict.get("level") != "error":
+        return
+
+    # For errors and debug (when enabled), log the message
+    log_level = (
+        logging.ERROR if model_call_dict.get("level") == "error" else logging.DEBUG
+    )
+
+    # Format the message more concisely for cleaner output
+    if isinstance(model_call_dict.get("message"), str):
+        logger.log(log_level, f"LiteLLM: {model_call_dict['message']}")
+    else:
+        logger.log(log_level, f"LiteLLM: {json.dumps(model_call_dict, default=str)}")
 
 
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch of messages with retry mechanism for LLM completions.
+# Configure LiteLLM to use our logger globally
+litellm.set_verbose = False  # Disable built-in printing
+litellm.logger_fn = litellm_logger_fn
 
-    Args:
-        args: Arguments containing model configuration
-        messages_batch: List of message batches to process
-        batch_idx: Current batch index
-        total_batches: Total number of batches
 
-    Returns:
-        Batch responses from the LLM
+def log_debug_info(prefix: str, obj: Any) -> None:
+    """Helper to log detailed debug information."""
+    if logger.getEffectiveLevel() > logging.DEBUG:
+        return  # Skip if we're not in debug mode
 
-    Raises:
-        Exception: If batch processing fails after retries
-    """
-    logger.info(f"Processing batch {batch_idx + 1}/{total_batches}")
     try:
-        batch_responses = batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            temperature=args.temperature,
-            max_tokens=args.max_tokens,
-            top_k=args.top_k,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3,
-            # stop=tokens(args.model),
-        )
-        logger.info(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
+        if hasattr(obj, "__dict__"):
+            obj_dict = obj.__dict__
+        elif isinstance(obj, (list, dict)):
+            obj_dict = obj
+        else:
+            obj_dict = {"value": str(obj)}
+
+        logger.debug(f"{prefix}:\n{json.dumps(obj_dict, indent=2, default=str)}")
     except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
+        logger.debug(f"Error logging debug info: {str(e)}")
+        logger.debug(f"{prefix}: {str(obj)}")
+
+
+def process_batch_with_retry(
+    args,
+    messages_batch: List[Dict],
+    batch_idx: int,
+    total_batches: int,
+    max_retries: int = 3,
+    base_wait: float = 10.0,
+) -> List[Any]:
+    """Process a batch of messages with retry mechanism for LLM completions."""
+    logger.info(f"Processing batch {batch_idx + 1}/{total_batches}")
+
+    model_name = getattr(args, "inference_model", None)
+    if not model_name:
+        raise ValueError("No inference_model found in args")
+
+    # Only log configuration in debug mode
+    if logger.getEffectiveLevel() <= logging.DEBUG:
+        log_debug_info("Args", args)
+        logger.debug(
+            f"First message in batch: {json.dumps(messages_batch[0], indent=2)}"
+        )
+        logger.debug(f"Total messages in batch: {len(messages_batch)}")
+
+    retry_count = 0
+    last_error = None
+
+    while retry_count < max_retries:
+        try:
+            if logger.getEffectiveLevel() <= logging.DEBUG:
+                logger.debug(
+                    f"Attempt {retry_count + 1}/{max_retries} for batch {batch_idx + 1}"
+                )
+
+            batch_responses = batch_completion(
+                model=model_name,
+                messages=messages_batch,
+                temperature=args.temperature,
+                max_tokens=args.max_tokens,
+                top_k=args.top_k,
+                top_p=args.top_p,
+                repetition_penalty=args.repetition_penalty,
+            )
+
+            # Only log responses in debug mode
+            if logger.getEffectiveLevel() <= logging.DEBUG:
+                for i, resp in enumerate(batch_responses):
+                    log_debug_info(f"Response {i}", resp)
+
+            # Validate responses
+            if not batch_responses:
+                raise ValueError("Empty response from LLM")
+
+            # Check each response
+            for i, resp in enumerate(batch_responses):
+                if not hasattr(resp, "choices") or not resp.choices:
+                    logger.warning(
+                        f"Invalid response format for message {i} in batch {batch_idx + 1}"
+                    )
+                    if logger.getEffectiveLevel() <= logging.DEBUG:
+                        log_debug_info("Invalid response structure", resp)
+
+            logger.info(f"Successfully processed batch {batch_idx + 1}/{total_batches}")
+            return batch_responses
+
+        except Exception as e:
+            retry_count += 1
+            wait_time = base_wait * (2 ** (retry_count - 1))
+
+            logger.error(
+                f"Error processing batch {batch_idx + 1} (attempt {retry_count}): {type(e).__name__} - {str(e)}"
+            )
+
+            if retry_count == max_retries:
+                last_error = e
+                break
+
+            logger.info(f"Waiting {wait_time} seconds before retry...")
+            time.sleep(wait_time)
+
+    error_msg = f"All {max_retries} attempts failed for batch {batch_idx + 1}"
+    if last_error:
+        error_msg += f": {str(last_error)}"
+    raise Exception(error_msg)
+
+
+def process_batch_responses(
+    batch_responses: List[Any],
+    validator_fn: Callable[[str], bool],
+    logger: logging.Logger,
+    batch_idx: int,
+    labels: Optional[List[Any]] = None,
+    sentences: Optional[List[str]] = None,
+) -> Tuple[List[Any], List[Any], List[Any], List[Any]]:
+    """Process batch responses with validation and error handling."""
+    llm_responses = []
+    complete_responses = []
+    actual_labels = []
+    processed_sentences = []
+
+    logger.debug(
+        f"Processing {len(batch_responses)} responses from batch {batch_idx + 1}"
+    )
+
+    for i, response in enumerate(batch_responses):
+        log_debug_info(f"Processing response {i} in batch {batch_idx + 1}", response)
+
+        if hasattr(response, "choices") and response.choices:
+            response_text = response.choices[0].message.content
+            logger.debug(f"Response {i} text: {response_text}")
+
+            if validator_fn(response_text):
+                logger.debug(f"Response {i} passed validation")
+                llm_responses.append(response_text)
+                complete_responses.append(response)
+                if labels:
+                    actual_labels.append(labels[i])
+                if sentences:
+                    processed_sentences.append(sentences[i])
+            else:
+                logger.warning(f"Response {i} failed validation: {response_text}")
+                llm_responses.append(None)
+                complete_responses.append(None)
+                if labels:
+                    actual_labels.append(None)
+                if sentences:
+                    processed_sentences.append(None)
+        else:
+            logger.warning(
+                f"Invalid response structure in batch {batch_idx + 1} for item {i}"
+            )
+            log_debug_info("Invalid response", response)
+            llm_responses.append(None)
+            complete_responses.append(None)
+            if labels:
+                actual_labels.append(None)
+            if sentences:
+                processed_sentences.append(None)
+
+    return llm_responses, complete_responses, actual_labels, processed_sentences
+
+
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into smaller chunks of specified size."""
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]

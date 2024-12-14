@@ -1,0 +1,16 @@
+{
+  "task": "fomc",
+  "model": "together_ai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+  "dataset_org": "gtfintechlab",
+  "runtime_seconds": 175.99074292182922,
+  "timestamp": "20241213_185517",
+  "parameters": {
+    "temperature": 0.0,
+    "max_tokens": 10,
+    "top_p": 0.9,
+    "top_k": 50,
+    "repetition_penalty": 1.0,
+    "batch_size": 100
+  },
+  "file_path": "/home/gmatlin/Codespace/SuperFLUE/results/fomc/inference_fomc_together_ai_meta-llama_Meta-Llama-3.1-8B-Instruct-Turbo_20241213_185517.csv"
+}

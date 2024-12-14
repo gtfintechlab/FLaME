@@ -74,7 +74,7 @@ To configure your API keys, follow these steps:
 Example:
 ```
 HUGGINGFACEHUB_API_TOKEN=foo
-TOGETHER_API_KEY=bar
+TOGETHERAI_API_KEY=bar
 OPENAI_API_KEY=buzz
 ANTHROPIC_API_KEY=buzz
 ```

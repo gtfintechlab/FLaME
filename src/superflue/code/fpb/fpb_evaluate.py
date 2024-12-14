@@ -1,10 +1,16 @@
+from typing import Dict, Tuple
 import pandas as pd
-from litellm import completion
+from datetime import datetime
+import time
+from pathlib import Path
+import litellm
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.utils.logging_utils import setup_logger
-from superflue.utils.path_utils import get_evaluation_path
+from superflue.utils.save_utils import save_evaluation_results
+from superflue.utils.batch_utils import chunk_list
+from superflue.utils.path_utils import extract_model_from_inference_path
 from superflue.config import LOG_DIR, LOG_LEVEL
-import time
+from tqdm import tqdm
 
 # Configure logging
 logger = setup_logger(
@@ -14,14 +20,14 @@ logger = setup_logger(
 )
 
 # Define label mapping
-label_mapping = {
+label_mapping: Dict[str, int] = {
     "NEUTRAL": 1,
     "NEGATIVE": 0,
     "POSITIVE": 2,
 }
 
 
-def extraction_prompt(llm_response: str):
+def extraction_prompt(llm_response: str) -> str:
     """Generate a prompt to extract the most relevant label from the LLM response."""
     prompt = f"""Based on the following list of labels: 'NEGATIVE', 'POSITIVE', or 'NEUTRAL', extract the most relevant label from the following response:
                 "{llm_response}"
@@ -29,89 +35,146 @@ def extraction_prompt(llm_response: str):
     return prompt
 
 
-def map_label_to_number(label: str):
-    """Map the extracted label to its corresponding numerical value after normalizing."""
-    normalized_label = label.strip().upper()  # Normalize label to uppercase
-    return label_mapping.get(
-        normalized_label, -1
-    )  # Return -1 if the label is not found
+def map_label_to_number(label: str) -> int:
+    """Map text label to numerical value."""
+    return label_mapping.get(label.strip().upper(), -1)
 
 
-def fpb_evaluate(file_name: str, args) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Evaluate FPB inference results.
+def validate_input_data(df: pd.DataFrame) -> None:
+    """Validate the structure of input data.
+
+    Args:
+        df: DataFrame to validate
+
+    Raises:
+        ValueError: If required columns are missing
+    """
+    required_columns = {"llm_responses", "actual_labels"}
+    if not required_columns.issubset(df.columns):
+        missing = required_columns - set(df.columns)
+        raise ValueError(f"Missing required columns: {missing}")
+
+
+def fpb_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Evaluate FPB dataset using batching.
 
     Args:
         file_name: Path to the inference results file
-        args: Command line arguments containing:
-            - extraction_model: Model to use for extracting labels
-            - max_tokens: Maximum tokens to generate
-            - temperature: Temperature for sampling
-            - top_k: Top-k sampling parameter
-            - top_p: Top-p sampling parameter
-            - repetition_penalty: Repetition penalty parameter
+        args: Arguments containing model configuration
 
     Returns:
-        Tuple of (results DataFrame, metrics DataFrame)
+        Tuple containing (results DataFrame, metrics DataFrame)
+
+    Raises:
+        ValueError: If input data validation fails
     """
     task = args.dataset.strip('"""')
-    logger.info(f"Starting evaluation for {task} using model {args.extraction_model}.")
 
-    # Load the CSV file with the LLM responses
-    df = pd.read_csv(file_name)
-    logger.info(f"Loaded {len(df)} rows from {file_name}.")
+    # Get inference model from input file
+    inference_model = extract_model_from_inference_path(Path(file_name))
+    if not inference_model:
+        raise ValueError(
+            f"Could not extract inference model from filename: {file_name}"
+        )
 
-    # Define paths for saving results
-    evaluation_results_path = get_evaluation_path(
-        args.dataset, args.inference_model, args.extraction_model
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
+    # Log startup information
+    logger.info(f"Starting {task} evaluation")
+    logger.info(f"Inference model: {inference_model}")
+    logger.info(f"Extraction model: {args.extraction_model}")
+    logger.info(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+    # Load and validate the CSV file
+    try:
+        df = pd.read_csv(file_name)
+        logger.info(f"Loaded {len(df)} rows from {file_name}.")
+        validate_input_data(df)
+    except Exception as e:
+        logger.error(f"Error loading or validating input file: {e}")
+        raise
 
     # Initialize extracted labels if not present
     if "extracted_labels" not in df.columns:
         df["extracted_labels"] = None
 
     correct_labels = df["actual_labels"].tolist()
-    extracted_labels = []
 
-    for i, llm_response in enumerate(df["llm_responses"]):
-        if pd.notna(df.at[i, "extracted_labels"]):
-            continue
+    # Get indices of responses that need processing
+    pending_indices = [
+        i for i, label in enumerate(df["extracted_labels"]) if pd.isna(label)
+    ]
 
-        try:
-            # Generate prompt and get LLM response
-            model_response = completion(
-                model=args.extraction_model,
-                messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-            )
-            extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
-            mapped_label = map_label_to_number(extracted_label)
+    if pending_indices:
+        # Create batches of pending responses
+        pending_responses = [df["llm_responses"].iloc[i] for i in pending_indices]
+        response_batches = chunk_list(pending_responses, args.batch_size)
+        batch_indices = chunk_list(pending_indices, args.batch_size)
+        total_batches = len(response_batches)
 
-            # Handle invalid labels
-            if mapped_label == -1:
-                logger.error(f"Invalid label for response {i}: {llm_response}")
-                extracted_labels.append(-1)
-            else:
-                extracted_labels.append(mapped_label)
+        logger.info(
+            f"Processing {len(pending_indices)} responses in {total_batches} batches"
+        )
 
-            # Update the DataFrame and save progress
-            df.at[i, "extracted_labels"] = mapped_label
-            df.to_csv(evaluation_results_path, index=False)
+        # Process batches with progress bar
+        pbar = tqdm(
+            zip(response_batches, batch_indices),
+            total=total_batches,
+            desc="Processing batches",
+        )
 
-        except Exception as e:
-            logger.error(f"Error processing response {i}: {e}")
-            extracted_labels.append(-1)
-            time.sleep(10.0)
-            continue
+        for batch_idx, (response_batch, indices_batch) in enumerate(pbar):
+            # Prepare messages for batch
+            messages_batch = [
+                [{"role": "user", "content": extraction_prompt(response)}]
+                for response in response_batch
+            ]
+
+            try:
+                # Process batch with retry logic
+                batch_responses = litellm.batch_completion(
+                    model=args.extraction_model,
+                    messages=messages_batch,
+                    max_tokens=args.max_tokens,
+                    temperature=args.temperature,
+                    top_k=args.top_k if args.top_k else None,
+                    top_p=args.top_p,
+                    repetition_penalty=args.repetition_penalty,
+                    num_retries=3,
+                )
+                logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+
+                # Process responses
+                for idx, response in zip(indices_batch, batch_responses):
+                    extracted_label = response.choices[0].message.content.strip()
+                    mapped_label = map_label_to_number(extracted_label)
+                    df.at[idx, "extracted_labels"] = mapped_label
+
+                pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+
+            except Exception as e:
+                logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+                # Mark failed extractions with -1
+                for idx in indices_batch:
+                    df.at[idx, "extracted_labels"] = -1
+                time.sleep(10.0)
+                continue
 
     # Calculate metrics
-    accuracy = accuracy_score(correct_labels, extracted_labels)
+    valid_indices = [
+        i
+        for i, label in enumerate(df["extracted_labels"])
+        if label != -1 and not pd.isna(label)
+    ]
+
+    if not valid_indices:
+        logger.error("No valid labels extracted for evaluation")
+        raise ValueError("No valid labels for evaluation")
+
+    valid_extracted = [df["extracted_labels"].iloc[i] for i in valid_indices]
+    valid_correct = [correct_labels[i] for i in valid_indices]
+
+    accuracy = accuracy_score(valid_correct, valid_extracted)
     precision, recall, f1, _ = precision_recall_fscore_support(
-        correct_labels, extracted_labels, average="weighted"
+        valid_correct, valid_extracted, average="weighted"
     )
 
     # Log metrics
@@ -120,19 +183,46 @@ def fpb_evaluate(file_name: str, args) -> tuple[pd.DataFrame, pd.DataFrame]:
     logger.info(f"Recall: {recall:.4f}")
     logger.info(f"F1 Score: {f1:.4f}")
 
-    # Create metrics DataFrame
+    # Create metrics
+    metrics = {
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "total_samples": len(df),
+        "valid_samples": len(valid_indices),
+        "failed_samples": len(df) - len(valid_indices),
+    }
+
+    # Save results with metadata
+    metadata = {
+        "inference_model": inference_model,
+        "extraction_model": args.extraction_model,
+        "metrics": metrics,
+        "parameters": {
+            "temperature": args.temperature,
+            "top_p": args.top_p,
+            "top_k": args.top_k,
+            "max_tokens": args.max_tokens,
+            "batch_size": args.batch_size,
+            "repetition_penalty": args.repetition_penalty,
+        },
+    }
+
+    save_evaluation_results(
+        df=df,
+        task="fpb",
+        inference_model=inference_model,
+        extraction_model=args.extraction_model,
+        metadata=metadata,
+    )
+
+    # Create metrics DataFrame for return
     metrics_df = pd.DataFrame(
         {
             "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
             "Value": [accuracy, precision, recall, f1],
         }
     )
-
-    # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(
-        f"{evaluation_results_path.stem}_metrics.csv"
-    )
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df
