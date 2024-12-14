@@ -1,25 +1,7 @@
-"""MMLU dataset loader and processor."""
-
-import logging
-import sys
-from pathlib import Path
 from typing import List, Dict, Optional, Tuple
-
 import pandas as pd
 from datasets import load_dataset
 from superflue.code.mmlu.mmlu_constants import ECONOMICS_SUBJECTS, SPLITS
-from superflue.config import LOG_DIR, LOG_LEVEL
-
-# Configure logging to show on console with timestamp and level
-logging.basicConfig(
-    level=LOG_LEVEL,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler(Path(LOG_DIR) / "mmlu_loader.log"),
-    ],
-)
-
 from superflue.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)

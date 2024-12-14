@@ -7,10 +7,9 @@ from litellm import completion
 from superflue.utils.logging_utils import get_logger
 from superflue.utils.save_utils import save_evaluation_results
 from superflue.utils.path_utils import extract_model_from_inference_path
-from superflue.config import EVALUATION_DIR
 from pathlib import Path
+from superflue import EVALUATION_DIR
 
-# Initialize logger for this module
 logger = get_logger(__name__)
 
 label_mapping = {

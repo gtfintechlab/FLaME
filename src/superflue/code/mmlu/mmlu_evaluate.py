@@ -4,13 +4,11 @@ from datetime import datetime
 from pathlib import Path
 import uuid
 from typing import Optional, Tuple
-
 import pandas as pd
 from sklearn.metrics import accuracy_score
-from superflue.config import EVALUATION_DIR
 from superflue.utils.logging_utils import get_logger
+from superflue import EVALUATION_DIR
 
-# Get logger for this module
 logger = get_logger(__name__)
 
 

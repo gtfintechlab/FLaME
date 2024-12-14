@@ -3,17 +3,16 @@ from huggingface_hub import login
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from datasets import Dataset, DatasetDict
-import logging
-from superflue.config import DATA_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
 
+logger = get_logger(__name__)
+
+from superflue import DATA_DIR
 
 HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "Headlines"
 login(HUGGINGFACEHUB_API_TOKEN)
-
-logging.basicConfig(level=LOG_LEVEL)
-logger = logging.getLogger(__name__)
 
 
 def huggify_data_headlines(

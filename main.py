@@ -3,7 +3,6 @@
 import os
 import warnings
 import logging
-from pathlib import Path
 
 # Configure warnings before any imports
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -12,13 +11,13 @@ warnings.filterwarnings("ignore", message=".*together.*", category=Warning)
 warnings.filterwarnings("ignore", message=".*function.*calling.*", category=Warning)
 warnings.filterwarnings("ignore", message=".*response format.*", category=Warning)
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-PACKAGE_DIR = ROOT_DIR / "src" / "superflue"
-DATA_DIR = ROOT_DIR / "data"
-OUTPUT_DIR = ROOT_DIR / "output"
-RESULTS_DIR = ROOT_DIR / "results"
-EVALUATION_DIR = ROOT_DIR / "evaluation"
-LOG_DIR = ROOT_DIR / "logs"
+from superflue import (
+    DATA_DIR,
+    OUTPUT_DIR,
+    RESULTS_DIR,
+    EVALUATION_DIR,
+    LOG_DIR,
+)  # ROOT_DIR, PACKAGE_DIR
 
 for directory in [DATA_DIR, OUTPUT_DIR, RESULTS_DIR, EVALUATION_DIR, LOG_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
@@ -29,7 +28,6 @@ import argparse
 from dotenv import load_dotenv
 from huggingface_hub import login
 from superflue.utils.logging_utils import configure_root_logger
-from superflue.config import LOG_DIR
 
 
 def configure_env_from_args(args):

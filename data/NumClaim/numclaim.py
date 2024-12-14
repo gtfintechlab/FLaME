@@ -1,23 +1,20 @@
 import os
-import logging
 from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
 from superflue.utils.LabelMapper import LabelMapper
-from superflue.config import DATA_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
+
+logger = get_logger(__name__)
+
+from superflue import DATA_DIR
 
 HUGGINGFACEHUB_API_TOKEN = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "Numclaim"
 
 login(HUGGINGFACEHUB_API_TOKEN)
-
-# Include the LabelMapper instantiation for 'numclaim_detection' task
 label_mapper = LabelMapper(task="numclaim_detection")
-
-# Configure logging
-logging.basicConfig(level=LOG_LEVEL)
-logger = logging.getLogger(__name__)
 
 
 def huggify_numclaim(push_to_hub=False):

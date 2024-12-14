@@ -1,22 +1,15 @@
-"""MMLU inference module."""
-
 import json
 import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
-
 import pandas as pd
 from tqdm import tqdm
 import litellm
-
 from superflue.code.mmlu.mmlu_loader import MMLULoader
-
-# from superflue.code.tokens import tokens
-from superflue.config import RESULTS_DIR
 from superflue.utils.logging_utils import get_logger
+from superflue import RESULTS_DIR
 
-# Get logger for this module
 logger = get_logger(__name__)
 
 

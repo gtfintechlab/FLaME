@@ -6,7 +6,7 @@ from superflue.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 from litellm import completion
 import re
-from superflue.config import EVALUATION_DIR
+from superflue import EVALUATION_DIR
 
 
 # Prompt template for extracting numerical answers

@@ -4,9 +4,8 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
 from litellm import completion
 from pathlib import Path
-from superflue.config import EVALUATION_DIR
 import time
-
+from superflue import EVALUATION_DIR
 from superflue.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)

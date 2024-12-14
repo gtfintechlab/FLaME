@@ -1,8 +1,8 @@
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Mapping
-from superflue.config import RESULTS_DIR, EVALUATION_DIR
 import re
+from superflue import RESULTS_DIR, EVALUATION_DIR
 
 
 def create_standardized_filename(
