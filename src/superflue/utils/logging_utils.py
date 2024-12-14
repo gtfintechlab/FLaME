@@ -5,16 +5,6 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional, Union
 from argparse import Namespace
-from superflue.config import LOG_LEVEL
-
-
-def get_log_level(
-    args: Optional[Namespace] = None, default_level: int = LOG_LEVEL
-) -> int:
-    """Get logging level from args or default."""
-    if args is not None and hasattr(args, "numeric_log_level"):
-        return args.numeric_log_level
-    return default_level
 
 
 def configure_root_logger(
@@ -45,7 +35,7 @@ def configure_root_logger(
         root_logger.removeHandler(handler)
 
     # Determine logging level
-    log_level = get_log_level(args, level or LOG_LEVEL)
+    log_level = level if level is not None else logging.INFO
     root_logger.setLevel(log_level)
 
     # Create formatter

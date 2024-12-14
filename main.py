@@ -131,8 +131,11 @@ def main():
     configure_env_from_config(config)  # Config file provides defaults
     configure_env_from_args(args)  # Command line args override config
 
+    # Determine logging level
+    log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+
     # Configure logging ONCE for the entire application
-    configure_root_logger(LOG_DIR, args=args)
+    configure_root_logger(LOG_DIR, level=log_level, args=args)
     logger = logging.getLogger(__name__)
 
     # Handle model configuration from config
