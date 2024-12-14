@@ -69,6 +69,12 @@ def configure_root_logger(
     console_handler.setLevel(log_level)
     root_logger.addHandler(console_handler)
 
+    # Set the LiteLLM logger to ERROR to suppress WARNING messages
+    lite_llm_logger = logging.getLogger("LiteLLM")
+    lite_llm_logger.setLevel(logging.ERROR)
+    # Optionally, disable propagation if needed
+    # lite_llm_logger.propagate = False
+
 
 def get_logger(name: str) -> logging.Logger:
     """Get a logger with the specified name.

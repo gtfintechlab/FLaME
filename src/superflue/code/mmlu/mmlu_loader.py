@@ -7,6 +7,7 @@ from superflue.utils.logging_utils import get_logger
 logger = get_logger(__name__)
 
 
+# TODO: remove the class stuff from mmlu, and re-ennable logging
 class MMLULoader:
     """Loader for the MMLU dataset."""
 
@@ -42,7 +43,6 @@ class MMLULoader:
         Returns:
             List of dictionaries containing few-shot examples
         """
-        logger.info(f"Loading {self.num_few_shot} few-shot examples from dev set")
         examples = []
 
         for subject in self.subjects:
@@ -61,10 +61,10 @@ class MMLULoader:
                         }
                     )
 
-                logger.info(f"Loaded {num_examples} examples from {subject}")
+                # logger.info(f"Loaded {num_examples} examples from {subject}")
 
-            except Exception as e:
-                logger.error(f"Error loading dev examples for {subject}: {str(e)}")
+            except Exception:
+                # logger.error(f"Error loading dev examples for {subject}: {str(e)}")
                 continue
 
         if not examples:
@@ -87,7 +87,7 @@ class MMLULoader:
         Raises:
             ValueError: If no data could be loaded
         """
-        logger.info(f"Loading MMLU dataset for subjects: {self.subjects}")
+        # logger.info(f"Loading MMLU dataset for subjects: {self.subjects}")
 
         # Load few-shot examples first
         few_shot_examples = self.load_few_shot_examples()
@@ -108,17 +108,17 @@ class MMLULoader:
                     }
                 )
                 all_data.append(df)
-                logger.info(f"Successfully loaded {subject} ({len(df)} questions)")
+                # logger.info(f"Successfully loaded {subject} ({len(df)} questions)")
 
-            except Exception as e:
-                logger.error(f"Error loading subject {subject}: {str(e)}")
+            except Exception:
+                # logger.error(f"Error loading subject {subject}: {str(e)}")
                 continue
 
         if not all_data:
             raise ValueError("No data was successfully loaded")
 
         self.dataset = pd.concat(all_data, ignore_index=True)
-        logger.info(f"Total loaded questions: {len(self.dataset)}")
+        # logger.info(f"Total loaded questions: {len(self.dataset)}")
         return self.dataset, few_shot_examples
 
     def get_subjects_summary(self) -> Dict[str, int]:

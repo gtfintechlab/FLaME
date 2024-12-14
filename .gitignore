@@ -1,3 +1,4 @@
+logs/*.log*
 src/superflue.bak
 
 .ruff_cache
