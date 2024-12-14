@@ -82,9 +82,22 @@ def process_batch_with_retry(
     """Process a batch of messages with retry mechanism for LLM completions."""
     logger.info(f"Processing batch {batch_idx + 1}/{total_batches}")
 
-    model_name = getattr(args, "inference_model", None)
-    if not model_name:
-        raise ValueError("No inference_model found in args")
+    # TODO: This function does not currently have a hard guarantee it will use the right model for extraction/inference. If an extraction model is passed, it will use the inference model for the extraction. This is a major problem!!!
+    extraction_model = getattr(args, "extraction_model", None)
+    inference_model = getattr(args, "inference_model", None)
+
+    if extraction_model and inference_model:
+        model_name = extraction_model
+    elif inference_model and not extraction_model:
+        model_name = inference_model
+    elif extraction_model and not inference_model:
+        raise ValueError(
+            "Extraction model found in args, but no inference model found."
+        )
+    else:
+        raise ValueError(
+            "Neither extraction nor inference model names were found in args"
+        )
 
     # Only log configuration in debug mode
     if logger.getEffectiveLevel() <= logging.DEBUG:
@@ -108,9 +121,9 @@ def process_batch_with_retry(
                 model=model_name,
                 messages=messages_batch,
                 temperature=args.temperature,
+                top_p=args.top_p,
                 max_tokens=args.max_tokens,
                 top_k=args.top_k,
-                top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
             )
 

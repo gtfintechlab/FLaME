@@ -1,23 +1,55 @@
-# TODO: (Glenn) One function for one file again. Can be refactored into another file
-from datasets import Dataset, DatasetDict, IterableDatasetDict
+"""Utilities for dataset sampling."""
+
+from datasets import Dataset, DatasetDict, IterableDatasetDict, load_dataset
+from superflue.utils.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
-def sample_dataset(dataset, sample_size: int, method: str, split: str = "train"):
-    # Handle different dataset types
-    if isinstance(dataset, DatasetDict):
-        dataset = dataset[split]  # Adjust if you need a different split
-    elif isinstance(dataset, IterableDatasetDict):
-        dataset = dataset[split]  # Adjust if needed
+# TODO: (Glenn) Adapt this function to be the standard dataset loader for all SuperFLUE tasks.
+# Each task should migrate to using this function for dataset loading to ensure consistent
+# sampling behavior across the entire codebase.
+def load_and_sample_dataset(
+    dataset_path: str,
+    sample_size: int | None = None,
+    method: str = "head",
+    split: str = "test",
+    **kwargs,
+) -> Dataset:
+    """Load a dataset and optionally sample from it.
 
-    # Ensure dataset is a Dataset type
-    if not isinstance(dataset, Dataset):
-        raise TypeError("Expected dataset to be of type 'Dataset'.")
+    Args:
+        dataset_path: HuggingFace dataset path (e.g. 'org/dataset_name')
+        sample_size: Number of samples to return. If None, returns full dataset
+        method: Sampling method - 'random', 'head', or 'tail'
+        split: Dataset split to use
+        **kwargs: Additional arguments passed to load_dataset
 
+    Returns:
+        Dataset: The loaded (and optionally sampled) dataset
+    """
+    logger.debug(f"Loading dataset: {dataset_path}")
+    dataset = load_dataset(dataset_path, **kwargs)
+
+    # Get the requested split
+    if isinstance(dataset, (DatasetDict, IterableDatasetDict)):
+        dataset = dataset[split]
+
+    # Return full dataset if no sampling requested
+    if not sample_size:
+        logger.debug(f"Using full dataset: {len(dataset)} samples")
+        return dataset
+
+    # Apply sampling
     if method == "random":
-        return dataset.shuffle(seed=42).select(range(sample_size))
+        sampled = dataset.shuffle(seed=42).select(range(min(sample_size, len(dataset))))
     elif method == "head":
-        return dataset.select(range(sample_size))
+        sampled = dataset.select(range(min(sample_size, len(dataset))))
     elif method == "tail":
-        return dataset.select(range(len(dataset) - sample_size, len(dataset)))
+        start_idx = max(0, len(dataset) - sample_size)
+        sampled = dataset.select(range(start_idx, len(dataset)))
     else:
-        raise ValueError("Method must be 'random', 'head', or 'tail'.")
+        raise ValueError("Method must be 'random', 'head', or 'tail'")
+
+    logger.info(f"Sampled {len(sampled)} examples using method: {method}")
+    return sampled

@@ -30,9 +30,60 @@ from superflue.code.bizbench.bizbench_inference import bizbench_inference
 from superflue.code.econlogicqa.econlogicqa_inference import econlogicqa_inference
 from superflue.utils.save_utils import save_inference_results
 from superflue.utils.logging_utils import get_logger
+from superflue.utils.sampling_utils import sample_dataset
 
 # Get logger for this module
 logger = get_logger(__name__)
+
+
+def wrap_inference_with_sampling(inference_fn):
+    """Wrapper to handle dataset sampling before task-specific inference.
+
+    This decorator-like function wraps task inference functions to handle dataset sampling
+    based on the provided arguments before passing the data to the task-specific inference.
+    """
+
+    def wrapped(args):
+        # Store original sample_size and method
+        original_sample_size = getattr(args, "sample_size", None)
+        original_method = getattr(
+            args, "method", "head"
+        )  # Default to 'head' if not specified
+
+        # If sampling is requested, modify the dataset loading behavior
+        if original_sample_size is not None:
+
+            def dataset_wrapper(dataset, split="test"):
+                if original_sample_size > 0:
+                    logger.info(
+                        f"Sampling {original_sample_size} examples using method: {original_method}"
+                    )
+                    return sample_dataset(
+                        dataset=dataset,
+                        sample_size=original_sample_size,
+                        method=original_method,
+                        split=split,
+                    )
+                return dataset[split]
+
+            # Temporarily modify the dataset loading behavior
+            # This assumes each task's inference function uses load_dataset internally
+            from datasets import load_dataset
+
+            original_getitem = load_dataset.__getitem__
+            load_dataset.__getitem__ = dataset_wrapper
+
+            try:
+                result = inference_fn(args)
+            finally:
+                # Restore original behavior
+                load_dataset.__getitem__ = original_getitem
+        else:
+            result = inference_fn(args)
+
+        return result
+
+    return wrapped
 
 
 def main(args):
@@ -43,6 +94,8 @@ def main(args):
             - dataset: Name of the task/dataset
             - dataset_org: Organization holding the dataset
             - inference_model: Model to use
+            - sample_size: Optional number of samples to use
+            - method: Sampling method ('random', 'head', or 'tail')
             - Other task-specific parameters
     """
     task = args.dataset.strip('"""')
@@ -79,7 +132,8 @@ def main(args):
 
     if task in task_inference_map:
         start_t = time()
-        inference_function = task_inference_map[task]
+        # Wrap the inference function with sampling support
+        inference_function = wrap_inference_with_sampling(task_inference_map[task])
         df = inference_function(args)
         time_taken = time() - start_t
         logger.info(f"Time taken for inference: {time_taken}")
@@ -99,6 +153,8 @@ def main(args):
                 "top_k": getattr(args, "top_k", None),
                 "repetition_penalty": args.repetition_penalty,
                 "batch_size": args.batch_size,
+                "sample_size": getattr(args, "sample_size", None),
+                "sampling_method": getattr(args, "method", None),
             },
         }
 

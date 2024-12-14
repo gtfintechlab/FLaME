@@ -4,7 +4,8 @@ models:
 dataset: fomc
 mode: inference
 log_level: "ERROR"
-litellm_log_level: "ERROR"
+litellm_log_level: "DEBUG"
+litellm_set_verbose: true
 file_name: null
 
 # Model parameters
@@ -13,13 +14,12 @@ temperature: 0.0
 top_p: 0.9
 top_k: 50
 repetition_penalty: 1.0
-batch_size: 100
+batch_size: 2
 
 # Dataset parameters
 dataset_org: "gtfintechlab"
-sample_size: 1
-method: null
-seeds: null
+sample_size: 10
+method: "head"
 splits: null
 
 # Other parameters

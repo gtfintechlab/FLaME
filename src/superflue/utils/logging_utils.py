@@ -7,6 +7,17 @@ from typing import Optional, Union
 from argparse import Namespace
 
 
+class IgnoreSpecificWarningFilter(logging.Filter):
+    def filter(self, record):
+        # Check if the specific unwanted message is in the log record
+        if (
+            "Only some together models support function calling/response_format."
+            in record.getMessage()
+        ):
+            return False
+        return True
+
+
 def configure_root_logger(
     log_dir: Union[str, Path],
     level: Optional[int] = None,
@@ -22,13 +33,7 @@ def configure_root_logger(
     # assume logger is already configured
     if root_logger.handlers and hasattr(root_logger.handlers[0], "formatter"):
         if "%(name)s" in root_logger.handlers[0].formatter._fmt:
-            # Logger appears to be already configured with our format
             return
-
-    # Ensure warnings are properly handled
-    warnings.filterwarnings("ignore", message=".*together.*", category=Warning)
-    warnings.filterwarnings("ignore", message=".*function.*calling.*", category=Warning)
-    warnings.filterwarnings("ignore", message=".*response format.*", category=Warning)
 
     # Remove any existing handlers
     for handler in root_logger.handlers[:]:
@@ -68,11 +73,15 @@ def configure_root_logger(
     console_handler.setFormatter(formatter)
     console_handler.setLevel(log_level)
     root_logger.addHandler(console_handler)
+    # Ensure a few silly useless annoying warnings are properly handled
+    ignore_filter = IgnoreSpecificWarningFilter()
+    root_logger.addFilter(ignore_filter)
 
     # Set the LiteLLM logger to ERROR to suppress WARNING messages
     lite_llm_logger = logging.getLogger("LiteLLM")
     lite_llm_logger.setLevel(logging.ERROR)
-    # Optionally, disable propagation if needed
+
+    # Optionally, disable propagation if needed -- this could/should supress all LiteLLM warnings
     # lite_llm_logger.propagate = False
 
 

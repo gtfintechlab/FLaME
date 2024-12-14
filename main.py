@@ -1,15 +1,7 @@
 """Main entry point for SuperFLUE."""
 
 import os
-import warnings
 import logging
-
-# Configure warnings before any imports
-warnings.filterwarnings("ignore", category=UserWarning)
-warnings.filterwarnings("ignore", message=".*together.*function.*calling.*")
-warnings.filterwarnings("ignore", message=".*together.*", category=Warning)
-warnings.filterwarnings("ignore", message=".*function.*calling.*", category=Warning)
-warnings.filterwarnings("ignore", message=".*response format.*", category=Warning)
 
 from superflue import (
     DATA_DIR,
@@ -17,7 +9,7 @@ from superflue import (
     RESULTS_DIR,
     EVALUATION_DIR,
     LOG_DIR,
-)  # ROOT_DIR, PACKAGE_DIR
+)
 
 for directory in [DATA_DIR, OUTPUT_DIR, RESULTS_DIR, EVALUATION_DIR, LOG_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
@@ -28,6 +20,7 @@ import argparse
 from dotenv import load_dotenv
 from huggingface_hub import login
 from superflue.utils.logging_utils import configure_root_logger
+import litellm
 
 
 def configure_env_from_args(args):
@@ -36,6 +29,10 @@ def configure_env_from_args(args):
         os.environ["LOG_LEVEL"] = args.log_level.upper()
     if hasattr(args, "litellm_log_level"):
         os.environ["LITELLM_LOG"] = args.litellm_log_level.upper()
+    if hasattr(args, "litellm_set_verbose") and args.litellm_set_verbose:
+        litellm.set_verbose = True
+    else:
+        litellm.set_verbose = False
 
 
 def configure_env_from_config(config):
@@ -98,6 +95,14 @@ def parse_arguments():
         type=str,
         default="superflue",
         help="Version of the prompt to use",
+    )
+
+    # Add sample size argument
+    parser.add_argument(
+        "--sample_size",
+        type=int,
+        default=10,
+        help="Number of samples to use for inference",
     )
 
     # Logging configuration
