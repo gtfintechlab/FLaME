@@ -6,7 +6,7 @@ from datasets import load_dataset
 from litellm import completion
 from superflue.code.prompts import refind_prompt
 
-from superflue.config import RESULTS_DIR
+from superflue import RESULTS_DIR
 from tqdm import tqdm
 
 from superflue.utils.logging_utils import get_logger
