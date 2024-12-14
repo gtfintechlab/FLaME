@@ -3,7 +3,7 @@ from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
 import logging
-from superflue.config import DATA_DIR, LOG_LEVEL
+from superflue import DATA_DIR, LOG_LEVEL
 
 # Set environment variables
 HUGGINGFACEHUB_API_TOKEN = os.environ["HUGGINGFACEHUB_API_TOKEN"]

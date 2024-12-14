@@ -5,7 +5,7 @@ import yaml
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
-from superflue.config import SEEDS
+from superflue import SEEDS
 from superflue.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)

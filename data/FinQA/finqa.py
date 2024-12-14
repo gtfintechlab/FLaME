@@ -4,7 +4,7 @@ from datasets import Dataset
 import logging
 from superflue.utils.process_qa import process_qa_pairs
 from superflue.utils.zip_to_csv import zip_to_csv
-from superflue.config import DATA_DIR, LOG_LEVEL
+from superflue import DATA_DIR, LOG_LEVEL
 
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "finqa"

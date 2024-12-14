@@ -2,7 +2,7 @@ import os
 from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
-from superflue.config import DATA_DIR
+from superflue import DATA_DIR
 from superflue.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)

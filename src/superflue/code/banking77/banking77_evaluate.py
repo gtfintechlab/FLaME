@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import date
 from litellm import completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from superflue.config import EVALUATION_DIR
+from superflue import EVALUATION_DIR
 from superflue.code.prompts import banking77_list, banking77_label_map
 from superflue.utils.logging_utils import get_logger
 

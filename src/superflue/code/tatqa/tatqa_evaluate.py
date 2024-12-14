@@ -5,7 +5,7 @@ from superflue.utils.logging_utils import get_logger
 from superflue.utils.save_utils import save_evaluation_results
 from litellm import completion
 import time
-from superflue.config import EVALUATION_DIR
+from superflue import EVALUATION_DIR
 
 logger = get_logger(__name__)
 

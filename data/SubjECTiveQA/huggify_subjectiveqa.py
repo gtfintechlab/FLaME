@@ -3,7 +3,7 @@ from huggingface_hub import login
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from datasets import Dataset, DatasetDict
-from superflue.config import DATA_DIR
+from superflue import DATA_DIR
 
 HUGGINGFACEHUB_API_TOKEN = os.environ["HUGGINGFACEHUB_API_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"

@@ -4,7 +4,7 @@ from datasets import Dataset, DatasetDict
 from superflue.utils.process_qa import process_qa_pairs
 from superflue.utils.zip_to_csv import zip_to_csv
 
-from superflue.config import DATA_DIR
+from superflue import DATA_DIR
 from superflue.utils.logging_utils import get_logger
 
 logger = get_logger(__name__)

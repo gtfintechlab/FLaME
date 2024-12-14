@@ -3,7 +3,7 @@ from huggingface_hub import login
 from datasets import Dataset, DatasetDict
 import logging
 import json
-from superflue.config import DATA_DIR, LOG_LEVEL
+from superflue import DATA_DIR, LOG_LEVEL
 
 HUGGINGFACEHUB_API_TOKEN = os.environ["HUGGINGFACEHUB_API_TOKEN"]
 HF_ORGANIZATION = "gtfintechlab"

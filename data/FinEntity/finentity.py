@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from datasets import Dataset, DatasetDict, load_dataset
 import logging
-from superflue.config import DATA_DIR, LOG_LEVEL
+from superflue import DATA_DIR, LOG_LEVEL
 
 
 HUGGINGFACEHUB_API_TOKEN = os.environ["HUGGINGFACEHUB_API_TOKEN"]

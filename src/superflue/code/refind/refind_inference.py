@@ -17,8 +17,6 @@ logger = get_logger(__name__)
 def refind_inference(args):
     today = date.today()
     logger.info(f"Starting ReFinD inference on {today}")
-
-    # Load the ReFinD dataset (test split)
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/ReFinD", trust_remote_code=True)
 
@@ -26,8 +24,6 @@ def refind_inference(args):
         RESULTS_DIR / "refind" / f"refind_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Initialize lists to store entities, actual labels, model responses, and complete responses
     sentences = []
     llm_responses = []
     actual_labels = []
