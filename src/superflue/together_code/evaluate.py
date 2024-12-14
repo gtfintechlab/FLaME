@@ -18,7 +18,7 @@ from superflue.together_code.refind.refind_evaluate import refind_evaluate
 from superflue.together_code.convfinqa.convfinqa_evaluate import convfinqa_evaluate
 from superflue.together_code.finqa.finqa_evaluate import finqa_evaluate
 from superflue.together_code.tatqa.tatqa_evaluate import tatqa_evaluate
-# from superflue.together_code.causal_detection.cd_evaluate import cd_evaluate
+from superflue.together_code.causal_detection.casual_detection_evaluate import casual_detection_evaluate
 from pathlib import Path
 
 import pandas as pd
@@ -57,8 +57,8 @@ def main(args):
         "banking77": banking77_evaluate,
         "convfinqa": convfinqa_evaluate,
         "finqa": finqa_evaluate,
-        "tatqa": tatqa_evaluate
-        # cd evaluate here
+        "tatqa": tatqa_evaluate,
+        "causal_detection": casual_detection_evaluate
     }
 
     if task in task_evaluate_map:

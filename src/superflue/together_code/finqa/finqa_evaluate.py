@@ -119,24 +119,23 @@ def finqa_evaluate(file_name, args):
     
     correct_labels = df['actual_label'].tolist()
 
+    correct_labels = [str(label) if label is not None else "Error" for label in correct_labels]
+    regex_extraction = [str(label) if label is not None else "Error" for label in regex_extraction]
+
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, regex_extraction)
-    precision, recall, f1, _ = precision_recall_fscore_support(
-        correct_labels, regex_extraction
-    )
 
     # Log metrics
     logger.info(f"Accuracy: {accuracy:.4f}")
-    logger.info(f"Precision: {precision:.4f}")
-    logger.info(f"Recall: {recall:.4f}")
-    logger.info(f"F1 Score: {f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1],
-    })
-
+    metrics_df = pd.DataFrame(
+        {
+            "metric": ["accuracy"],
+            "value": [accuracy],
+        }
+    )
+    
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
     df.to_csv(evaluation_results_path, index=False)
 
