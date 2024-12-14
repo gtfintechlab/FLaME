@@ -104,6 +104,13 @@ def parse_arguments():
         default=10,
         help="Number of samples to use for inference",
     )
+    parser.add_argument(
+        "--sample_method",
+        type=str,
+        choices=["random", "head", "tail"],
+        default="head",
+        help="Sampling method to use",
+    )
 
     # Logging configuration
     parser.add_argument(

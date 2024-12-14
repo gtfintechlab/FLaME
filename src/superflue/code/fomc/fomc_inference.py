@@ -28,7 +28,7 @@ def fomc_inference(args):
     test_data = load_and_sample_dataset(
         dataset_path=f"{args.dataset_org}/fomc_communication",
         sample_size=args.sample_size,
-        method=args.method,
+        sample_method=args.sample_method,
         trust_remote_code=True,
     )
 

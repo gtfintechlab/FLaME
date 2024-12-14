@@ -102,7 +102,7 @@ def main(args):
                 "repetition_penalty": args.repetition_penalty,
                 "batch_size": args.batch_size,
                 "sample_size": getattr(args, "sample_size", None),
-                "sampling_method": getattr(args, "method", None),
+                "sample_method": getattr(args, "sample_method", None),
             },
         }
 

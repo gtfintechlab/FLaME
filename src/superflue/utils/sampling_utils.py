@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 def load_and_sample_dataset(
     dataset_path: str,
     sample_size: int | None = None,
-    method: str = "head",
+    sample_method: str = "head",
     split: str = "test",
     **kwargs,
 ) -> Dataset:
@@ -21,7 +21,7 @@ def load_and_sample_dataset(
     Args:
         dataset_path: HuggingFace dataset path (e.g. 'org/dataset_name')
         sample_size: Number of samples to return. If None, returns full dataset
-        method: Sampling method - 'random', 'head', or 'tail'
+        sample_method: Sampling method - 'random', 'head', or 'tail'
         split: Dataset split to use
         **kwargs: Additional arguments passed to load_dataset
 
@@ -41,15 +41,15 @@ def load_and_sample_dataset(
         return dataset
 
     # Apply sampling
-    if method == "random":
+    if sample_method == "random":
         sampled = dataset.shuffle(seed=42).select(range(min(sample_size, len(dataset))))
-    elif method == "head":
+    elif sample_method == "head":
         sampled = dataset.select(range(min(sample_size, len(dataset))))
-    elif method == "tail":
+    elif sample_method == "tail":
         start_idx = max(0, len(dataset) - sample_size)
         sampled = dataset.select(range(start_idx, len(dataset)))
     else:
-        raise ValueError("Method must be 'random', 'head', or 'tail'")
+        raise ValueError("sample_method must be 'random', 'head', or 'tail'")
 
-    logger.info(f"Sampled {len(sampled)} examples using method: {method}")
+    logger.info(f"Sampled {len(sampled)} examples using method: {sample_method}")
     return sampled

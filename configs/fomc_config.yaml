@@ -3,7 +3,7 @@ models:
   inference: "together_ai/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
 dataset: fomc
 mode: inference
-log_level: "ERROR"
+log_level: "INFO"
 litellm_log_level: "DEBUG"
 litellm_set_verbose: true
 file_name: null
@@ -19,7 +19,7 @@ batch_size: 2
 # Dataset parameters
 dataset_org: "gtfintechlab"
 sample_size: 10
-method: "head"
+sample_method: "head"
 splits: null
 
 # Other parameters
