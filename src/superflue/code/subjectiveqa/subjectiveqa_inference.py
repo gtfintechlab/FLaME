@@ -1,19 +1,12 @@
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-
 from superflue.code.prompts import subjectiveqa_prompt
-
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
+from superflue.utils.logging_utils import get_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
+from superflue.utils.save_utils import save_inference_results
 
-logger = setup_logger(
-    name="subjectiveqa_inference",
-    log_file=LOG_DIR / "subjectiveqa_inference.log",
-    level=LOG_LEVEL,
-)
+logger = get_logger(__name__)
 
 
 def subjectiveqa_inference(args):
@@ -50,10 +43,6 @@ def subjectiveqa_inference(args):
     # Create batches
     question_batches = chunk_list(questions, batch_size)
     answer_batches = chunk_list(answers, batch_size)
-    # label_batches = {  # Unused variable
-    #     feature: chunk_list(labels, batch_size)
-    #     for feature, labels in feature_labels.items()
-    # }
 
     for batch_idx, (question_batch, answer_batch) in enumerate(
         zip(question_batches, answer_batches)
@@ -118,14 +107,34 @@ def subjectiveqa_inference(args):
         }
     )
 
-    # Save results to a CSV file
-    results_path = (
-        RESULTS_DIR
-        / "subjectiveqa"
-        / f"subjectiveqa_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+    # Extract provider and model info for metadata
+    model_parts = args.model.split("/")
+    provider = model_parts[0] if len(model_parts) > 1 else "unknown"
+    model_name = model_parts[-1]
+
+    # Save results with metadata
+    metadata = {
+        "model": args.model,
+        "provider": provider,
+        "model_name": model_name,
+        "temperature": args.temperature,
+        "top_p": args.top_p,
+        "top_k": args.top_k,
+        "max_tokens": args.max_tokens,
+        "repetition_penalty": args.repetition_penalty,
+        "success_rate": (
+            df[[f"{feature}_response" for feature in definition_map.keys()]]
+            .notna()
+            .sum()
+            .sum()
+            / (len(df) * len(definition_map))
+        )
+        * 100,
+    }
+
+    # Use our save utility
+    save_inference_results(
+        df=df, task="subjectiveqa", model=args.model, metadata=metadata
     )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

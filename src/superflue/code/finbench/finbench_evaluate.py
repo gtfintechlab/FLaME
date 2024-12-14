@@ -1,18 +1,10 @@
 import pandas as pd
 from litellm import completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
 from superflue.utils.path_utils import get_evaluation_path
-from superflue.config import LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
 
-# Configure logging
-logger = setup_logger(
-    name="finbench_evaluation",
-    log_file=LOG_DIR / "finbench_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_logger(__name__)
 
 # Define label mapping
 label_mapping = {

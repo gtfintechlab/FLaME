@@ -4,14 +4,11 @@ from superflue.config import (
     ROOT_DIR,
     OUTPUT_DIR,
     PACKAGE_DIR,
-    LOG_LEVEL,
-)
-from superflue.utils.logging_utils import setup_logger
-
-logger = setup_logger(
-    name=__name__, log_file=LOG_DIR / "superflue.log", level=LOG_LEVEL
 )
 
+from superflue.utils.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 logger.debug(f"ROOT_DIR = {ROOT_DIR}")
 logger.debug(f"DATA_DIR = {DATA_DIR}")

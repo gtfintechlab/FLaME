@@ -1,25 +1,57 @@
+"""Main entry point for SuperFLUE."""
+
 import os
-# Set LiteLLM logging level before any imports
-# os.environ["LITELLM_LOG"] = "ERROR"
-
 import warnings
+import logging
+from pathlib import Path
 
-# Suppress specific Together.ai warning about function calling
-warnings.filterwarnings(
-    "ignore", message=".*together models support function calling.*"
-)
+# Configure warnings before any imports
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", message=".*together.*function.*calling.*")
+warnings.filterwarnings("ignore", message=".*together.*", category=Warning)
+warnings.filterwarnings("ignore", message=".*function.*calling.*", category=Warning)
+warnings.filterwarnings("ignore", message=".*response format.*", category=Warning)
 
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+PACKAGE_DIR = ROOT_DIR / "src" / "superflue"
+DATA_DIR = ROOT_DIR / "data"
+OUTPUT_DIR = ROOT_DIR / "output"
+RESULTS_DIR = ROOT_DIR / "results"
+EVALUATION_DIR = ROOT_DIR / "evaluation"
+LOG_DIR = ROOT_DIR / "logs"
+
+for directory in [DATA_DIR, OUTPUT_DIR, RESULTS_DIR, EVALUATION_DIR, LOG_DIR]:
+    directory.mkdir(parents=True, exist_ok=True)
+
+# Load other imports after warning configuration
 import yaml
 import argparse
 from dotenv import load_dotenv
-from superflue.code.inference import main as inference
 from huggingface_hub import login
-from superflue.code.evaluate import main as evaluate
-import logging
+from superflue.utils.logging_utils import configure_root_logger
+from superflue.config import LOG_DIR
+
+
+def configure_env_from_args(args):
+    """Configure environment variables from command line args."""
+    if hasattr(args, "log_level"):
+        os.environ["LOG_LEVEL"] = args.log_level.upper()
+    if hasattr(args, "litellm_log_level"):
+        os.environ["LITELLM_LOG"] = args.litellm_log_level.upper()
+
+
+def configure_env_from_config(config):
+    """Configure environment variables from config file."""
+    if "log_level" in config:
+        os.environ.setdefault("LOG_LEVEL", config["log_level"].upper())
+    if "litellm_log_level" in config:
+        os.environ.setdefault("LITELLM_LOG", config["litellm_log_level"].upper())
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="SuperFLUE")
+
+    # Core arguments
     parser.add_argument("--config", type=str, help="Path to the YAML config file.")
     parser.add_argument("--dataset", type=str, help="Name of the dataset to use.")
     parser.add_argument(
@@ -34,7 +66,7 @@ def parse_arguments():
         help="File name for evaluation (required for mode=evaluate).",
     )
 
-    # Update model arguments
+    # Model arguments
     parser.add_argument(
         "--inference-model", type=str, help="Model to use for inference"
     )
@@ -47,15 +79,7 @@ def parse_arguments():
         help="[DEPRECATED] Use --inference-model or --extraction-model instead",
     )
 
-    # Add logging level argument
-    parser.add_argument(
-        "--log_level",
-        type=str,
-        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        default="INFO",
-        help="Set the logging level",
-    )
-
+    # Inference parameters
     parser.add_argument("--max_tokens", type=int, default=128, help="Max tokens to use")
     parser.add_argument(
         "--temperature", type=float, default=0.0, help="Temperature to use"
@@ -77,45 +101,41 @@ def parse_arguments():
         default="superflue",
         help="Version of the prompt to use",
     )
+
+    # Logging configuration
+    parser.add_argument(
+        "--log_level",
+        type=str,
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        default="INFO",
+        help="Set the logging level",
+    )
+
     return parser.parse_args()
 
 
-if __name__ == "__main__":
+def main():
     # Load environment variables first
     load_dotenv()
 
-    # Optional: Verify that environment variables are loaded
-    print(f"TOGETHERAI_API_KEY: {os.getenv('TOGETHERAI_API_KEY')}")
-    print(f"HUGGINGFACEHUB_API_TOKEN: {os.getenv('HUGGINGFACEHUB_API_TOKEN')}")
-    HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-    # Log in to Hugging Face if the token is set
-    if HUGGINGFACEHUB_API_TOKEN:
-        login(token=HUGGINGFACEHUB_API_TOKEN)
-    else:
-        print(
-            "Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in the environment."
-        )
-
-    # Parse arguments
+    # Parse command line arguments
     args = parse_arguments()
 
-    # Load config
-    with open(args.config, "r") as file:
-        config = yaml.safe_load(file)
+    # Load config file if specified
+    config = {}
+    if args.config:
+        with open(args.config, "r") as f:
+            config = yaml.safe_load(f)
 
-    # Set log level from config if present, can be overridden by command line
-    if "log_level" in config:
-        args.log_level = config.get("log_level", "INFO")
+    # Configure environment before any other imports
+    configure_env_from_config(config)  # Config file provides defaults
+    configure_env_from_args(args)  # Command line args override config
 
-    # Convert log level string to logging constant
-    numeric_level = getattr(logging, args.log_level.upper(), None)
-    if not isinstance(numeric_level, int):
-        raise ValueError(f"Invalid log level: {args.log_level}")
+    # Configure logging ONCE for the entire application
+    configure_root_logger(LOG_DIR, args=args)
+    logger = logging.getLogger(__name__)
 
-    # Set the log level in args for use in other modules
-    args.numeric_log_level = numeric_level
-
-    # Handle model configuration
+    # Handle model configuration from config
     if "models" in config:
         if not args.inference_model:
             args.inference_model = config["models"].get("inference")
@@ -124,9 +144,8 @@ if __name__ == "__main__":
 
     # Handle deprecated --model argument
     if args.model:
-        warnings.warn(
-            "--model argument is deprecated. Use --inference-model or --extraction-model instead",
-            DeprecationWarning,
+        logger.warning(
+            "--model argument is deprecated. Use --inference-model or --extraction-model instead"
         )
         if not args.inference_model and not args.extraction_model:
             args.inference_model = args.model
@@ -134,41 +153,49 @@ if __name__ == "__main__":
 
     # Set other config values
     for key, value in config.items():
-        if key != "models":  # Skip models as we handled them separately
-            setattr(args, key, value)
-
-    # Override with command line arguments
-    defaults = {
-        "temperature": 0.0,
-        "top_p": 0.9,
-        "repetition_penalty": 1.0,
-        "max_tokens": 128,
-        "batch_size": 10,
-        "prompt_format": "superflue",
-    }
-
-    args2 = parse_arguments()
-    for key, value in vars(args2).items():
-        if value and (key not in defaults or defaults.get(key) != value):
+        if key not in {
+            "models",
+            "log_level",
+            "litellm_log_level",
+        }:  # Skip already handled keys
             setattr(args, key, value)
 
     # Validate arguments
     if not args.mode or args.mode not in ["inference", "evaluate"]:
+        logger.error("Mode is required and must be either 'inference' or 'evaluate'.")
         raise ValueError(
             "Mode is required and must be either 'inference' or 'evaluate'."
         )
 
     if args.mode == "evaluate":
         if not args.file_name:
+            logger.error("File name is required for evaluation mode.")
             raise ValueError("File name is required for evaluation mode.")
         if not args.extraction_model:
+            logger.error("Extraction model is required for evaluation mode.")
             raise ValueError("Extraction model is required for evaluation mode.")
 
     if args.mode == "inference" and not args.inference_model:
+        logger.error("Inference model is required for inference mode.")
         raise ValueError("Inference model is required for inference mode.")
+
+    # Now it's safe to import modules that depend on logging configuration
+    from superflue.code.inference import main as inference
+    from superflue.code.evaluate import main as evaluate
+
+    # Login to Hugging Face if token is available
+    if os.getenv("HUGGINGFACE_TOKEN"):
+        login(token=os.getenv("HUGGINGFACE_TOKEN"))
 
     # Run the appropriate mode
     if args.mode == "inference":
         inference(args)
     elif args.mode == "evaluate":
         evaluate(args)
+    else:
+        logger.error(f"Invalid mode: {args.mode}")
+        raise ValueError(f"Invalid mode: {args.mode}")
+
+
+if __name__ == "__main__":
+    main()

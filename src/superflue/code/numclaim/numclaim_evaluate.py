@@ -1,20 +1,13 @@
 import pandas as pd
 from pathlib import Path
 from litellm import completion
-
-# from superflue.code.tokens import tokens
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-from superflue.utils.logging_utils import setup_logger
 from superflue.utils.path_utils import get_evaluation_path
-from superflue.config import LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
 import time
 
-# Setup logger
-logger = setup_logger(
-    name="numclaim_evaluate",
-    log_file=LOG_DIR / "numclaim_evaluate.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 # Define prompt for extraction

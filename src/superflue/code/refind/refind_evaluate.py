@@ -4,18 +4,12 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
 from litellm import completion
 from pathlib import Path
-
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import EVALUATION_DIR
 import time
 
-# Configure logging
-logger = setup_logger(
-    name="refind_evaluation",
-    log_file=LOG_DIR / "refind_evaluation.log",
-    level=LOG_LEVEL,
-)
+from superflue.utils.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 possible_relationships = [
     "PERSON-TITLE",

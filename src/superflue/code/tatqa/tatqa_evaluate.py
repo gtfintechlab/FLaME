@@ -1,19 +1,13 @@
 import pandas as pd
 from datetime import date
-
-# from superflue.code.tokens import tokens
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.save_utils import save_evaluation_results
 from litellm import completion
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-from superflue.utils.logging_utils import setup_logger
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 import time
+from superflue.config import EVALUATION_DIR
 
-# Setup logger
-logger = setup_logger(
-    name="convfinqa_evaluation",
-    log_file=LOG_DIR / "convfinqa_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_logger(__name__)
 
 
 # Function to generate the evaluation prompt
@@ -28,9 +22,14 @@ def evaluation_prompt(llm_response: str, actual_answer: str):
     return prompt
 
 
+# Function to save progress
+def save_progress(df, path):
+    """Save progress to a CSV file."""
+    df.to_csv(path, index=False)
+    logger.info(f"Progress saved to {path}")
+
+
 # Function for extracting and evaluating responses
-
-
 def tatqa_evaluate(file_name, args):
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
@@ -71,7 +70,7 @@ def tatqa_evaluate(file_name, args):
                 # stop=tokens(args.model)
             )
             extraction_model_response.append(model_response)
-            response_text = model_response.choices[0].message.content  # type: ignore
+            response_text = model_response.choices[0].message.content.strip()  # type: ignore
             evaluation_results.append(response_text)
             logger.info(f"Processed {i + 1}/{len(df)} responses.")
         except Exception as e:
@@ -84,15 +83,13 @@ def tatqa_evaluate(file_name, args):
         df["extracted_labels"] = evaluation_results
 
         # Save the updated DataFrame to CSV after each iteration
-        df.to_csv(evaluation_results_path, index=False)
-        logger.info(f"CSV updated at iteration {i + 1}/{len(df)}")
-
-    correct_labels = df["actual_answer"].tolist()
+        save_progress(df, evaluation_results_path)
 
     # Calculate metrics
+    correct_labels = df["actual_answer"].tolist()
     accuracy = accuracy_score(correct_labels, evaluation_results)
     precision, recall, f1, _ = precision_recall_fscore_support(
-        correct_labels, evaluation_results
+        correct_labels, evaluation_results, average="weighted"
     )
 
     # Log metrics
@@ -109,10 +106,31 @@ def tatqa_evaluate(file_name, args):
         }
     )
 
-    logger.info(
-        f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}"
+    # Save evaluation results and metrics
+    metadata = {
+        "model": args.model,
+        "metrics": {
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+        },
+        "parameters": {
+            "temperature": args.temperature,
+            "top_p": args.top_p,
+            "top_k": args.top_k,
+            "max_tokens": args.max_tokens,
+            "repetition_penalty": args.repetition_penalty,
+        },
+    }
+
+    save_evaluation_results(
+        df=df,
+        task=task,
+        inference_model=args.model,
+        extraction_model=args.model,
+        metadata=metadata,
     )
-    df.to_csv(evaluation_results_path, index=False)
 
     # Save metrics DataFrame
     metrics_path = evaluation_results_path.with_name(

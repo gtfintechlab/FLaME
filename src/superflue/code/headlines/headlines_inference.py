@@ -3,19 +3,12 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 from litellm import completion
-
 from superflue.code.prompts import headlines_prompt
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.save_utils import save_inference_results
 
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-
-# Setup logger for Headlines inference
-logger = setup_logger(
-    name="headlines_inference",
-    log_file=LOG_DIR / "headlines_inference.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def headlines_inference(args):
@@ -25,13 +18,6 @@ def headlines_inference(args):
     # Load the Headlines dataset (test split with specific config)
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/Headlines", "5768", trust_remote_code=True)
-
-    results_path = (
-        RESULTS_DIR
-        / "headlines"
-        / f"headlines_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize lists to store news, model responses, labels, and actual labels
     news = []
@@ -139,8 +125,25 @@ def headlines_inference(args):
         }
     )
 
-    # Save the results to a CSV file
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
+    # Extract provider and model info for metadata
+    model_parts = args.model.split("/")
+    provider = model_parts[0] if len(model_parts) > 1 else "unknown"
+    model_name = model_parts[-1]
+
+    # Save results with metadata
+    metadata = {
+        "model": args.model,
+        "provider": provider,
+        "model_name": model_name,
+        "temperature": args.temperature,
+        "top_p": args.top_p,
+        "top_k": args.top_k,
+        "max_tokens": args.max_tokens,
+        "repetition_penalty": args.repetition_penalty,
+        "success_rate": (df["llm_responses"].notna().sum() / len(df)) * 100,
+    }
+
+    # Use our save utility
+    save_inference_results(df=df, task="headlines", model=args.model, metadata=metadata)
 
     return df

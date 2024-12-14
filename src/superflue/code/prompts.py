@@ -333,6 +333,8 @@ banking77_list = [
     "wrong_exchange_rate_for_cash_withdrawal",
 ]
 
+banking77_label_map = {category: index for index, category in enumerate(banking77_list)}
+
 
 def banking77_prompt(sentence: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert at

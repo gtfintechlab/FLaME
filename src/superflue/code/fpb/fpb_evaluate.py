@@ -5,19 +5,14 @@ import time
 from pathlib import Path
 import litellm
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from superflue.utils.logging_utils import setup_logger
 from superflue.utils.save_utils import save_evaluation_results
 from superflue.utils.batch_utils import chunk_list
 from superflue.utils.path_utils import extract_model_from_inference_path
-from superflue.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
+from superflue.utils.logging_utils import get_logger
 
-# Configure logging
-logger = setup_logger(
-    name="fpb_evaluation",
-    log_file=LOG_DIR / "fpb_evaluation.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 # Define label mapping
 label_mapping: Dict[str, int] = {

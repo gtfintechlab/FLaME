@@ -1,21 +1,12 @@
 from datetime import date
-
 import pandas as pd
 from datasets import load_dataset
-from together import Together
-from tqdm import tqdm
-
-from superflue.config import LOG_DIR, LOG_LEVEL
 from superflue.code.prompts import econlogicqa_prompt
+from superflue.utils.logging_utils import get_logger
+from together import Together
+import tqdm
 
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-
-logger = setup_logger(
-    name="econlogicqa_inference",
-    log_file=LOG_DIR / "econlogicqa_inference.log",
-    level=LOG_LEVEL,
-)
+logger = get_logger(__name__)
 
 
 def econlogicqa_inference(args):

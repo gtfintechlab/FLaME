@@ -1,19 +1,13 @@
 import pandas as pd
-import time
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.path_utils import get_evaluation_path
 import re
 from litellm import completion
-from superflue.utils.logging_utils import setup_logger
-from superflue.utils.path_utils import get_evaluation_path
-from superflue.config import LOG_DIR, LOG_LEVEL
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from tqdm import tqdm
+import tqdm
+import time
 
-# Setup logger
-logger = setup_logger(
-    name="finqa_evaluation",
-    log_file=LOG_DIR / "finqa_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_logger(__name__)
 
 
 def extraction_prompt(llm_response: str) -> str:

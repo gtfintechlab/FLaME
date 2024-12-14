@@ -3,18 +3,12 @@ import pandas as pd
 from datasets import load_dataset
 
 from superflue.code.prompts import banking77_prompt
-
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import LOG_DIR, LOG_LEVEL
 from litellm import completion
 from tqdm import tqdm
+from superflue.utils.logging_utils import get_logger
 
-logger = setup_logger(
-    name="banking77_inference",
-    log_file=LOG_DIR / "banking77_inference.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def banking77_inference(args):

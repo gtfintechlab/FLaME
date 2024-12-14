@@ -1,27 +1,20 @@
 """FOMC inference module."""
 
 from datetime import datetime
-import logging
-
 import pandas as pd
 from datasets import load_dataset
 
 from superflue.code.prompts import fomc_prompt
-from superflue.utils.logging_utils import setup_logger
 from superflue.utils.save_utils import save_inference_results
 from superflue.utils.batch_utils import (
     chunk_list,
     process_batch_with_retry,
     process_batch_responses,
 )
-from superflue.config import LOG_DIR
+from superflue.utils.logging_utils import get_logger
 
-# Configure logging
-logger = setup_logger(
-    name="fomc_inference",
-    log_file=LOG_DIR / "fomc_inference.log",
-    level=logging.INFO,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def validate_sample(response: str) -> bool:
@@ -30,7 +23,7 @@ def validate_sample(response: str) -> bool:
     return any(label in response.strip().upper() for label in valid_labels)
 
 
-def load_fomc_dataset(dataset_org: str, logger):
+def load_fomc_dataset(dataset_org: str) -> pd.DataFrame:
     """Load FOMC dataset with progress tracking."""
     logger.debug(f"Loading FOMC dataset from {dataset_org}...")
     dataset = load_dataset(f"{dataset_org}/fomc_communication", trust_remote_code=True)
@@ -42,7 +35,7 @@ def load_fomc_dataset(dataset_org: str, logger):
 def fomc_inference(args):
     """Run inference on FOMC test dataset."""
     # Load test data
-    test_data = load_fomc_dataset(args.dataset_org, logger)
+    test_data = load_fomc_dataset(args.dataset_org)
 
     # Extract sentences and labels
     all_sentences = test_data["sentence"]

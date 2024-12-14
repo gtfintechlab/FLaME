@@ -1,19 +1,12 @@
 import pandas as pd
 from datetime import date
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+from superflue.utils.logging_utils import get_logger
 
-# from superflue.code.tokens import tokens
+logger = get_logger(__name__)
 from litellm import completion
 import re
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-from superflue.utils.logging_utils import setup_logger
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-
-# Setup logger
-logger = setup_logger(
-    name="convfinqa_evaluation",
-    log_file=LOG_DIR / "convfinqa_evaluation.log",
-    level=LOG_LEVEL,
-)
+from superflue.config import EVALUATION_DIR
 
 
 # Prompt template for extracting numerical answers

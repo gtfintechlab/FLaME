@@ -1,19 +1,11 @@
 import pandas as pd
-import json
-from litellm import completion
-
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
+from superflue.utils.logging_utils import get_logger
 from superflue.utils.path_utils import get_evaluation_path
-from superflue.config import LOG_DIR, LOG_LEVEL
+from litellm import completion
+import json
 import time
 
-# Configure logging
-logger = setup_logger(
-    name="fnxl_evaluation",
-    log_file=LOG_DIR / "fnxl_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_logger(__name__)
 
 
 def extraction_prompt(llm_response: str):

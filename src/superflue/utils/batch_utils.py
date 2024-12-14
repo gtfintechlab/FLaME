@@ -4,19 +4,20 @@ import time
 import logging
 import json
 import os
+import warnings
 from typing import List, Any, Callable, Dict, Optional, Tuple
 from litellm import batch_completion
 import litellm  # Import litellm directly to configure it globally
 
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
 
-# Configure logging respecting the configured log level
-logger = setup_logger(
-    name="batch_utils",
-    log_file=LOG_DIR / "batch_utils.log",
-    level=LOG_LEVEL,
-)
+# Suppress warnings at this level too for redundancy
+warnings.filterwarnings("ignore", message=".*together.*", category=Warning)
+warnings.filterwarnings("ignore", message=".*function.*calling.*", category=Warning)
+warnings.filterwarnings("ignore", message=".*response format.*", category=Warning)
+
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def litellm_logger_fn(model_call_dict: Dict) -> None:

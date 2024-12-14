@@ -1,20 +1,17 @@
-import json
-from datetime import date
 import pandas as pd
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from litellm import completion
-
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from datetime import date
+import json
 import time
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+from litellm import completion
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.save_utils import save_evaluation_results
+from superflue.utils.path_utils import extract_model_from_inference_path
+from superflue.config import EVALUATION_DIR
+from pathlib import Path
 
-# Configure logging
-logger = setup_logger(
-    name="headlines_evaluation",
-    log_file=LOG_DIR / "headlines_evaluation.log",
-    level=LOG_LEVEL,
-)
+# Initialize logger for this module
+logger = get_logger(__name__)
 
 label_mapping = {
     "Price_or_Not": {"0": 0, "1": 1},
@@ -76,7 +73,13 @@ def headlines_evaluate(file_name, args):
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    # Paths
+    # Extract inference model from file name
+    inference_model = extract_model_from_inference_path(Path(file_name))
+    if not inference_model:
+        raise ValueError(
+            f"Could not extract inference model from filename: {file_name}"
+        )
+
     evaluation_results_path = (
         EVALUATION_DIR
         / task
@@ -189,4 +192,31 @@ def headlines_evaluate(file_name, args):
     metrics_df.to_csv(metrics_path, index=False)
 
     logger.info(f"Metrics saved to {metrics_path}")
+
+    # Save evaluation results
+    metadata = {
+        "inference_model": inference_model,
+        "extraction_model": args.model,
+        "metrics": {
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+        },
+        "parameters": {
+            "temperature": args.temperature,
+            "top_p": args.top_p,
+            "max_tokens": args.max_tokens,
+            "repetition_penalty": args.repetition_penalty,
+        },
+    }
+
+    save_evaluation_results(
+        df=df,
+        task=task,
+        inference_model=inference_model,
+        extraction_model=args.model,
+        metadata=metadata,
+    )
+
     return df, metrics_df

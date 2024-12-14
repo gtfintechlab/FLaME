@@ -1,5 +1,6 @@
 import logging
 import os
+import warnings
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional, Union
@@ -10,18 +11,82 @@ from superflue.config import LOG_LEVEL
 def get_log_level(
     args: Optional[Namespace] = None, default_level: int = LOG_LEVEL
 ) -> int:
-    """Get logging level from args or default.
-
-    Args:
-        args: Argument namespace that may contain numeric_log_level
-        default_level: Default logging level to use if args doesn't specify one
-
-    Returns:
-        Logging level as an integer
-    """
+    """Get logging level from args or default."""
     if args is not None and hasattr(args, "numeric_log_level"):
         return args.numeric_log_level
     return default_level
+
+
+def configure_root_logger(
+    log_dir: Union[str, Path],
+    level: Optional[int] = None,
+    args: Optional[Namespace] = None,
+) -> None:
+    """Configure the root logger with console and file handlers.
+
+    This should be called ONCE at the application entry point.
+    """
+    root_logger = logging.getLogger()
+
+    # Safety check - if handlers exist and first handler has our formatter,
+    # assume logger is already configured
+    if root_logger.handlers and hasattr(root_logger.handlers[0], "formatter"):
+        if "%(name)s" in root_logger.handlers[0].formatter._fmt:
+            # Logger appears to be already configured with our format
+            return
+
+    # Ensure warnings are properly handled
+    warnings.filterwarnings("ignore", message=".*together.*", category=Warning)
+    warnings.filterwarnings("ignore", message=".*function.*calling.*", category=Warning)
+    warnings.filterwarnings("ignore", message=".*response format.*", category=Warning)
+
+    # Remove any existing handlers
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+
+    # Determine logging level
+    log_level = get_log_level(args, level or LOG_LEVEL)
+    root_logger.setLevel(log_level)
+
+    # Create formatter
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+
+    # Ensure log directory exists
+    try:
+        log_dir = Path(log_dir)
+        os.makedirs(log_dir, exist_ok=True)
+
+        # Set up file handler with rotation
+        file_handler = RotatingFileHandler(
+            log_dir / "superflue.log",
+            maxBytes=10 * 1024 * 1024,  # 10MB
+            backupCount=5,
+        )
+        file_handler.setFormatter(formatter)
+        file_handler.setLevel(log_level)
+        root_logger.addHandler(file_handler)
+    except Exception as e:
+        # If file handler fails, log to console only
+        root_logger = logging.getLogger()  # Get root logger again to be safe
+        root_logger.error(f"Failed to create log file: {e}")
+        root_logger.warning("Continuing with console logging only")
+
+    # Set up console handler (always do this, even if file handler fails)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    console_handler.setLevel(log_level)
+    root_logger.addHandler(console_handler)
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Get a logger with the specified name.
+
+    This should be used by all modules to get their logger instance.
+    The logger will inherit the configuration from the root logger.
+    """
+    return logging.getLogger(name)
 
 
 def setup_logger(
@@ -30,52 +95,13 @@ def setup_logger(
     level: Optional[int] = None,
     args: Optional[Namespace] = None,
 ) -> logging.Logger:
-    """Set up a logger with both file and console handlers.
+    """Deprecated: Use get_logger() instead.
 
-    Args:
-        name: Name of the logger
-        log_file: Path to the log file
-        level: Explicit logging level (deprecated, use args instead)
-        args: Arguments namespace that may contain numeric_log_level
-
-    Returns:
-        Configured logger instance
+    This function is kept for backward compatibility but will be removed in the future.
     """
-    # Get or create logger
-    logger = logging.getLogger(name)
-
-    # Only configure the logger if it hasn't been configured before
-    if not logger.handlers:
-        # Determine logging level (args takes precedence over level parameter)
-        log_level = get_log_level(args, level or LOG_LEVEL)
-
-        # Set logging level
-        logger.setLevel(log_level)
-
-        # Create formatter
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
-
-        # Ensure log directory exists
-        log_dir = Path(log_file).parent
-        os.makedirs(log_dir, exist_ok=True)
-
-        # Set up file handler
-        file_handler = RotatingFileHandler(
-            log_file,
-            maxBytes=10 * 1024 * 1024,  # 10MB
-            backupCount=5,
-        )
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-
-        # Set up console handler
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
-        logger.addHandler(console_handler)
-
-        # Prevent propagation to root logger to avoid duplicate logs
-        logger.propagate = False
-
-    return logger
+    warnings.warn(
+        "setup_logger is deprecated. Use get_logger() instead. The reason is that the logger is now configured in the __init__.py file.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return get_logger(name)

@@ -4,12 +4,10 @@ from datasets import Dataset, DatasetDict
 from superflue.utils.process_qa import process_qa_pairs
 from superflue.utils.zip_to_csv import zip_to_csv
 
-from superflue.config import DATA_DIR, LOG_DIR, LOG_LEVEL
-from superflue.utils.logging_utils import setup_logger
+from superflue.config import DATA_DIR
+from superflue.utils.logging_utils import get_logger
 
-logger = setup_logger(
-    name=__name__, log_file=LOG_DIR / "convfinqahuggify.log", level=LOG_LEVEL
-)
+logger = get_logger(__name__)
 
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "convfinqa"

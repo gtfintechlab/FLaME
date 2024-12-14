@@ -1,24 +1,15 @@
 import time
-from datetime import date
 import pandas as pd
 from datasets import load_dataset
 from superflue.code.prompts import convfinqa_prompt
-
-# from superflue.code.tokens import tokens
 from litellm import completion
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.path_utils import get_inference_path
 
-# Set up logger
-logger = setup_logger(
-    name="convfinqa_inference",
-    log_file=LOG_DIR / "convfinqa_inference.log",
-    level=LOG_LEVEL,
-)
+logger = get_logger(__name__)
 
 
 def convfinqa_inference(args):
-    today = date.today()
     dataset = load_dataset("gtfintechlab/convfinqa", trust_remote_code=True)
     context = []
     llm_responses = []
@@ -48,10 +39,8 @@ def convfinqa_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                # stop=tokens(args.model)
             )
 
-            # Log and process the response
             logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
             response_label = model_response.choices[0].message.content  # type: ignore
@@ -71,11 +60,7 @@ def convfinqa_inference(args):
             "complete_responses": complete_responses,
         }
     )
-    results_path = (
-        RESULTS_DIR
-        / "convfinqa"
-        / f"{args.dataset}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
+    results_path = get_inference_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
 

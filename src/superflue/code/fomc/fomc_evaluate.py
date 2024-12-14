@@ -5,20 +5,12 @@ import time
 from pathlib import Path
 from litellm import completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
 from superflue.utils.save_utils import save_evaluation_results
 from superflue.utils.path_utils import extract_model_from_inference_path
-from superflue.config import LOG_DIR, LOG_LEVEL
-from tqdm import tqdm
+from superflue.utils.logging_utils import get_logger
 
-# Configure logging
-logger = setup_logger(
-    name="fomc_evaluation",
-    log_file=LOG_DIR / "fomc_evaluation.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 # Mapping of FOMC sentiment labels to numerical values
 label_mapping: Dict[str, int] = {
@@ -162,6 +154,8 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
         )
 
         # Process batches with progress bar
+        from tqdm import tqdm
+
         pbar = tqdm(
             zip(response_batches, batch_indices),
             total=total_batches,
@@ -226,7 +220,6 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
     logger.info(f"Recall: {recall:.4f}")
     logger.info(f"F1 Score: {f1:.4f}")
 
-    # Create metrics DataFrame
     metrics = {
         "accuracy": accuracy,
         "precision": precision,
@@ -237,7 +230,6 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
         "failed_samples": len(df) - len(valid_indices),
     }
 
-    # Save results with metadata
     metadata = {
         "inference_model": inference_model,
         "extraction_model": args.extraction_model,
@@ -252,7 +244,6 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
         },
     }
 
-    # Use our new save utility
     save_evaluation_results(
         df=df,
         task=task,

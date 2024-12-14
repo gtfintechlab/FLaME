@@ -1,25 +1,22 @@
-from datetime import date
 import pandas as pd
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.path_utils import get_evaluation_path
 
-# Setup logger
-logger = setup_logger(
-    name="subjectiveqa_evaluation",
-    log_file=LOG_DIR / "subjectiveqa_evaluation.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
+
 
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
-    
+
+
 def subjectiveqa_evaluate(file_name, args):
     """Evaluate SubjectiveQA results and return evaluation and statistics DataFrames."""
     task = args.dataset.strip('“”"')
-    
+
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
     # Load the input CSV file
@@ -41,11 +38,7 @@ def subjectiveqa_evaluate(file_name, args):
 
     # Compute metrics for each label pair
     results_data = []
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
+    evaluation_results_path = get_evaluation_path(args.dataset, args.model, args.model)
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     for actual, predicted in label_pairs:
@@ -59,15 +52,19 @@ def subjectiveqa_evaluate(file_name, args):
         f1_scores.append(f1)
         accuracy_scores.append(accuracy)
 
-        results_data.append({
-            "Label": predicted,
-            "Precision": precision,
-            "Recall": recall,
-            "F1 Score": f1,
-            "Accuracy": accuracy
-        })
+        results_data.append(
+            {
+                "Label": predicted,
+                "Precision": precision,
+                "Recall": recall,
+                "F1 Score": f1,
+                "Accuracy": accuracy,
+            }
+        )
 
-        logger.info(f"Metrics for {predicted}: Precision={precision:.4f}, Recall={recall:.4f}, F1={f1:.4f}, Accuracy={accuracy:.4f}")
+        logger.info(
+            f"Metrics for {predicted}: Precision={precision:.4f}, Recall={recall:.4f}, F1={f1:.4f}, Accuracy={accuracy:.4f}"
+        )
         results_df = pd.DataFrame(results_data)
         # Save progress after DataFrame creation
         save_progress(results_df, evaluation_results_path)
@@ -84,9 +81,16 @@ def subjectiveqa_evaluate(file_name, args):
     logger.info(f"Average Accuracy: {average_accuracy:.4f}")
 
     # Create DataFrame for aggregated statistics
-    statistics_df = pd.DataFrame({
-        "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
-        "Average": [average_precision, average_recall, average_f1, average_accuracy]
-    })
+    statistics_df = pd.DataFrame(
+        {
+            "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
+            "Average": [
+                average_precision,
+                average_recall,
+                average_f1,
+                average_accuracy,
+            ],
+        }
+    )
 
     return results_df, statistics_df

@@ -3,22 +3,12 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 from litellm import completion
-import json
-
-# Custom imports for FNXL prompt and token handling
-from superflue.code.prompts import fnxl_prompt  # Custom prompt function for FNXL
-
-# from superflue.code.tokens import tokens  # Custom token handling function for FNXL
-from superflue.utils.logging_utils import setup_logger
+from superflue.code.prompts import fnxl_prompt
 from superflue.utils.path_utils import get_inference_path
-from superflue.config import LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
 
-# Setup logger for FNXL inference
-logger = setup_logger(
-    name="fnxl_inference",
-    log_file=LOG_DIR / "fnxl_inference.log",
-    level=LOG_LEVEL,
-)
+logger = get_logger(__name__)
+import json
 
 
 def fnxl_inference(args):
@@ -160,6 +150,5 @@ def fnxl_inference(args):
 
     # Save the final results
     df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

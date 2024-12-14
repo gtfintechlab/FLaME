@@ -1,20 +1,13 @@
-import pandas as pd
-import json
 import ast
+import json
+import tqdm
+import pandas as pd
 from litellm import completion
-
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
+from superflue.utils.logging_utils import get_logger
 from superflue.utils.path_utils import get_evaluation_path
-from superflue.config import LOG_DIR, LOG_LEVEL
-from tqdm import tqdm
 
-# Configure logging
-logger = setup_logger(
-    name="finentity_evaluation",
-    log_file=LOG_DIR / "finentity_evaluation.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def finentity_prompt(model_response: str) -> str:

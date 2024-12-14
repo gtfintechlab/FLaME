@@ -3,18 +3,16 @@ import argparse
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score
-from superflue.config import LOG_LEVEL, RESULTS_DIR, LOG_DIR
-from superflue.utils.logging_utils import setup_logger
+from superflue.config import RESULTS_DIR
 
 import nltk
 
 from superflue.utils.results.decode import sentiment_analysis_decode
+from superflue.utils.logging_utils import get_logger
 
 nltk.download("punkt")
 
-logger = setup_logger(
-    name=__name__, log_file=LOG_DIR / "sentiment_analysis_results.log", level=LOG_LEVEL
-)
+logger = get_logger(__name__)
 
 
 def compute_metrics(files, outputs_directory):

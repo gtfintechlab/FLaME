@@ -1,26 +1,16 @@
 import time
-
-# from pathlib import Path
 from litellm import completion
 import pandas as pd
 from datasets import load_dataset
-from datetime import date
 from superflue.code.prompts import tatqa_prompt
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.path_utils import get_inference_path
 
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-
-logger = setup_logger(
-    name="tatqa_inference", log_file=LOG_DIR / "tatqa_inference.log", level=LOG_LEVEL
-)
+logger = get_logger(__name__)
 
 
 def tatqa_inference(args):
-    today = date.today()
     dataset = load_dataset("gtfintechlab/TATQA", trust_remote_code=True)
-
-    # Initialize lists to store context, model responses, actual answers, and complete responses
     context = []
     llm_responses = []
     actual_answers = []
@@ -69,13 +59,8 @@ def tatqa_inference(args):
     )
 
     time.sleep(10)
-    results_path = (
-        RESULTS_DIR
-        / "tatqa"
-        / f"{args.dataset}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
-    )
+    results_path = get_inference_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
 
-    logger.info(f"Inference completed. Results saved to {results_path}")
     return df

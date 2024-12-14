@@ -19,7 +19,6 @@ from superflue.code.causal_classification.causal_classification_inference import
 from superflue.code.subjectiveqa.subjectiveqa_inference import subjectiveqa_inference
 from superflue.code.ectsum.ectsum_inference import ectsum_inference
 from superflue.code.refind.refind_inference import refind_inference
-from superflue.utils.logging_utils import setup_logger
 from superflue.code.finqa.finqa_inference import finqa_inference
 from superflue.code.tatqa.tatqa_inference import tatqa_inference
 from superflue.code.convfinqa.convfinqa_inference import convfinqa_inference
@@ -30,14 +29,10 @@ from superflue.code.mmlu.mmlu_inference import mmlu_inference
 from superflue.code.bizbench.bizbench_inference import bizbench_inference
 from superflue.code.econlogicqa.econlogicqa_inference import econlogicqa_inference
 from superflue.utils.save_utils import save_inference_results
+from superflue.utils.logging_utils import get_logger
 
-from superflue.config import LOG_DIR, LOG_LEVEL
-
-logger = setup_logger(
-    name="together_inference",
-    log_file=LOG_DIR / "together_inference.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def main(args):

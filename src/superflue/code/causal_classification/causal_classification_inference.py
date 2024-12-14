@@ -1,24 +1,14 @@
 from litellm import completion
 import pandas as pd
 import time
-import sys
-import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
-
 from datasets import load_dataset
 from datetime import date
 from superflue.code.prompts import causal_classification_prompt
+from superflue.utils.path_utils import get_inference_path
+from superflue.utils.logging_utils import get_logger
 
-# from superflue.code.tokens import tokens
-from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
-from superflue.utils.logging_utils import setup_logger
-
-logger = setup_logger(
-    name="causal_classification_inference",
-    log_file=LOG_DIR / "causal_classification_inference.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def causal_classification_inference(args):
@@ -79,11 +69,7 @@ def causal_classification_inference(args):
         }
     )
 
-    results_path = (
-        RESULTS_DIR
-        / "causal_classification"
-        / f"causal_classification_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
+    results_path = get_inference_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
     logger.info(f"Results saved to {results_path}")

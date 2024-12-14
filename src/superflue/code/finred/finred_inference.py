@@ -3,21 +3,13 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
-
 from litellm import completion
 from superflue.code.prompts import finred_prompt
-
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
 from superflue.utils.path_utils import get_inference_path
-from superflue.config import LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
 
-# Setup logger for FinRED inference
-logger = setup_logger(
-    name="finred_inference",
-    log_file=LOG_DIR / "finred_inference.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def finred_inference(args):
@@ -103,6 +95,5 @@ def finred_inference(args):
     results_path = get_inference_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

@@ -1,20 +1,13 @@
 import time
 import pandas as pd
-from datetime import date
 from datasets import load_dataset
 from litellm import completion
 from superflue.code.prompts import fiqa_task2_prompt
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.path_utils import get_inference_path
 
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-
-# Set up logger
-logger = setup_logger(
-    name="fiqa_task2_inference",
-    log_file=LOG_DIR / "fiqa_task2_inference.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def fiqa_task2_inference(args):
@@ -61,18 +54,15 @@ def fiqa_task2_inference(args):
     # Save results intermittently
     df = pd.DataFrame(
         {
-            "question": context,
+            "context": context,
             "llm_responses": llm_responses,
-            "actual_answers": actual_answers,
+            "actual_answer": actual_answers,
             "complete_responses": complete_responses,
         }
     )
-    results_path = (
-        RESULTS_DIR
-        / "fiqa2"
-        / f"{args.dataset}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
+
+    results_path = get_inference_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
+
     return df

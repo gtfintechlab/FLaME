@@ -1,19 +1,11 @@
 import pandas as pd
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.path_utils import get_evaluation_path
 import json
 from litellm import completion
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.utils.path_utils import get_evaluation_path
-from superflue.config import LOG_DIR, LOG_LEVEL
-
-# Configure logging
-logger = setup_logger(
-    name="finer_evaluation",
-    log_file=LOG_DIR / "finer_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_logger(__name__)
 
 
 def extraction_prompt_finer(llm_response: str):

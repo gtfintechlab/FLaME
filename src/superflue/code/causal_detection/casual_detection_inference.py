@@ -1,21 +1,15 @@
 import time
-from datetime import date
 from litellm import completion
 import pandas as pd
 from datasets import load_dataset
 from superflue.code.prompts import causal_detection_prompt
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.save_utils import save_inference_results
 
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-
-logger = setup_logger(
-    name="cd_inference", log_file=LOG_DIR / "cd_inference.log", level=LOG_LEVEL
-)
+logger = get_logger(__name__)
 
 
 def casual_detection_inference(args):
-    today = date.today()
     dataset = load_dataset("gtfintechlab/CausalDetection", trust_remote_code=True)
 
     # Initialize lists to store tokens, actual tags, predicted tags, and complete responses
@@ -69,13 +63,26 @@ def casual_detection_inference(args):
         }
     )
 
-    results_path = (
-        RESULTS_DIR
-        / "causal_detection"
-        / f"{args.dataset}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(results_path, index=False)
+    model_parts = args.inference_model.split("/")
+    provider = model_parts[0] if len(model_parts) > 1 else "unknown"
+    model_name = model_parts[-1]
 
-    logger.info(f"Inference completed. Results saved to {results_path}")
+    metadata = {
+        "model": args.inference_model,
+        "provider": provider,
+        "model_name": model_name,
+        "temperature": args.temperature,
+        "top_p": args.top_p,
+        "top_k": args.top_k,
+        "max_tokens": args.max_tokens,
+        "batch_size": args.batch_size,
+        "repetition_penalty": args.repetition_penalty,
+        "dataset_org": args.dataset_org,
+        # "success_rate": success_rate,
+    }
+
+    save_inference_results(
+        df=df, task="causal_detection", model=args.inference_model, metadata=metadata
+    )
+
     return df

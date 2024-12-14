@@ -8,16 +8,13 @@ from tqdm import tqdm
 from superflue.code.prompts import bizbench_prompt
 
 # from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.path_utils import get_inference_path
 
 from together import Together
 
-logger = setup_logger(
-    name="bizbench_inference",
-    log_file=LOG_DIR / "bizbench_inference.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def bizbench_inference(args):
@@ -99,13 +96,8 @@ def bizbench_inference(args):
         }
     )
 
-    results_path = (
-        RESULTS_DIR
-        / "bizbench/bizbench_meta-llama-3.1-8b/"
-        / f"{'bizbench'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
+    results_path = get_inference_path(args.dataset, args.model)
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
 
-    logger.info(f"Inference completed. Results saved to {results_path}")
     return df

@@ -13,14 +13,11 @@ import litellm
 from superflue.code.mmlu.mmlu_loader import MMLULoader
 
 # from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import RESULTS_DIR
+from superflue.utils.logging_utils import get_logger
 
-logger = setup_logger(
-    name="mmlu_inference",
-    log_file=LOG_DIR / "mmlu_inference.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def format_mmlu_prompt(

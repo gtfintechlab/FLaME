@@ -4,15 +4,12 @@ from datetime import datetime
 from tqdm import tqdm
 from datasets import load_dataset
 from superflue.code.prompts import fpb_prompt
-from superflue.utils.logging_utils import setup_logger
 from superflue.utils.save_utils import save_inference_results
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
-from superflue.config import LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
 
-# Configure logging
-logger = setup_logger(
-    name="fpb_inference", log_file=LOG_DIR / "fpb_inference.log", level=LOG_LEVEL
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 data_seed = "5768"
 

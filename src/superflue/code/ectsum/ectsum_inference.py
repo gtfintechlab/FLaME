@@ -2,18 +2,12 @@ import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-
 from litellm import completion
 from superflue.code.prompts import ectsum_prompt
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.path_utils import get_inference_path
 
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-
-# Setup logger for ectsum inference
-logger = setup_logger(
-    name="ectsum_inference", log_file=LOG_DIR / "ectsum_inference.log", level=LOG_LEVEL
-)
+logger = get_logger(__name__)
 
 
 def ectsum_inference(args):
@@ -23,15 +17,6 @@ def ectsum_inference(args):
     # Load the ECTSum dataset (test split)
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/ECTSum", trust_remote_code=True)
-
-    results_path = (
-        RESULTS_DIR
-        / "ectsum"
-        / f"ectsum_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Initialize lists to store documents, actual labels, model responses, and complete responses
     documents = []
     llm_responses = []
     actual_labels = []
@@ -61,10 +46,8 @@ def ectsum_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                # stop=tokens(args.model),
             )
 
-            # Append the model response and complete response for the document
             complete_responses.append(model_response)
             response_text = model_response.choices[0].message.content.strip()  # type: ignore
             llm_responses.append(response_text)
@@ -72,14 +55,12 @@ def ectsum_inference(args):
             logger.info(f"Model response for document {i+1}: {response_text}")
 
         except Exception as e:
-            # Log the error and retry the same document after a delay
             logger.error(f"Error processing document {i+1}: {e}")
             complete_responses.append(None)
             llm_responses.append(None)
             time.sleep(10.0)
-            continue  # Proceed to the next document after sleeping
+            continue
 
-    # Create the final DataFrame after the loop
     df = pd.DataFrame(
         {
             "documents": documents,
@@ -88,7 +69,8 @@ def ectsum_inference(args):
             "complete_responses": complete_responses,
         }
     )
-
-    logger.info(f"Inference completed. Returning DataFrame with {len(df)} rows.")
+    results_path = get_inference_path(args.dataset, args.model)
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(results_path, index=False)
 
     return df

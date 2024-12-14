@@ -39,6 +39,10 @@ def get_inference_path(task: str, model: str, timestamp: Optional[str] = None) -
     """Generate standardized inference results path."""
     if not model:
         raise ValueError("Model name cannot be None or empty")
+    if not task:
+        raise ValueError("Task name cannot be None or empty")
+    if not timestamp:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     filename = create_standardized_filename(task, model, "inference", timestamp)
     path = RESULTS_DIR / task / filename
@@ -59,6 +63,10 @@ def get_evaluation_path(
     """
     if not inference_model:
         raise ValueError("Inference model name cannot be None or empty")
+    if not extraction_model:
+        raise ValueError("Extraction model name cannot be None or empty")
+    if not timestamp:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     clean_model = inference_model.replace("/", "_")
     filename = create_standardized_filename(task, clean_model, "evaluation", timestamp)

@@ -1,24 +1,15 @@
 import time
 from datetime import date
-
 import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
-
 from superflue.code.prompts import finbench_prompt
-
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
 from superflue.utils.path_utils import get_inference_path
-from superflue.config import LOG_DIR, LOG_LEVEL
-
+from superflue.utils.logging_utils import get_logger
 from litellm import completion
 
-logger = setup_logger(
-    name="finbench_inference",
-    log_file=LOG_DIR / "finbench_inference.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def finbench_inference(args):
@@ -89,5 +80,4 @@ def finbench_inference(args):
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
 
-    logger.info(f"Inference completed. Results saved to {results_path}")
     return df

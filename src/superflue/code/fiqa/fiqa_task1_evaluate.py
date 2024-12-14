@@ -1,20 +1,14 @@
 import pandas as pd
-from datetime import date
 
-# from superflue.code.tokens import tokens
 from litellm import completion
 import re
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-from superflue.utils.logging_utils import setup_logger
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 import time
+from superflue.utils.logging_utils import get_logger
+from superflue.utils.path_utils import get_evaluation_path
 
-# Setup logger
-logger = setup_logger(
-    name="convfinqa_evaluation",
-    log_file=LOG_DIR / "convfinqa_evaluation.log",
-    level=LOG_LEVEL,
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 # Function to create the extraction prompt
@@ -36,18 +30,14 @@ def extract_numerical_value(text):
 
 
 def fiqa_task1_evaluate(file_name, args):
-    task = args.dataset.strip('“”"')
+    task = args.dataset.strip('"""')
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
     df = pd.read_csv(file_name)
     logger.info(f"Loaded data from {file_name} for evaluation.")
 
-    # Output path for evaluation results
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
+    # Get evaluation path using path utility
+    evaluation_results_path = get_evaluation_path(args.dataset, args.model)
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     extraction_response = []

@@ -1,19 +1,11 @@
 import pandas as pd
-from litellm import completion
-from tqdm import tqdm
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-
-# from superflue.code.tokens import tokens
-from superflue.utils.logging_utils import setup_logger
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+from superflue.utils.logging_utils import get_logger
 from superflue.utils.path_utils import get_evaluation_path
-from superflue.config import LOG_DIR, LOG_LEVEL
+from litellm import completion
+import tqdm
 
-# Configure logging
-logger = setup_logger(
-    name="finred_evaluation",
-    log_file=LOG_DIR / "finred_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_logger(__name__)
 
 # Define possible relationships
 possible_relationships = [

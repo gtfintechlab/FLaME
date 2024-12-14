@@ -5,18 +5,13 @@ from datasets import load_dataset
 
 from litellm import completion
 from superflue.code.prompts import refind_prompt
-# from superflue.code.tokens import tokens
 
-from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import RESULTS_DIR
 from tqdm import tqdm
 
-# Setup logger for ReFinD inference
-logger = setup_logger(
-    name="refind_inference",
-    log_file=LOG_DIR / "refind_inference.log",
-    level=LOG_LEVEL,
-)
+from superflue.utils.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def refind_inference(args):
@@ -100,6 +95,5 @@ def refind_inference(args):
 
     # Save the results to a CSV file
     df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

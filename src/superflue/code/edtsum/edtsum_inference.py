@@ -3,15 +3,11 @@ import pandas as pd
 from datasets import load_dataset
 from litellm import completion
 from superflue.code.prompts import edtsum_prompt
-from superflue.utils.logging_utils import setup_logger
-
-# from superflue.code.tokens import tokens
-from superflue.config import LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import get_logger
 from tqdm import tqdm
 
-logger = setup_logger(
-    name="edtsum_inference", log_file=LOG_DIR / "edtsum_inference.log", level=LOG_LEVEL
-)
+# Get logger for this module
+logger = get_logger(__name__)
 
 
 def edtsum_inference(args):
