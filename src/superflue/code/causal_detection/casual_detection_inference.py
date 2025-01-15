@@ -73,16 +73,6 @@ def casual_detection_inference(args):
                 args, messages_batch, batch_idx, total_batches
             )
 
-            for token, response in zip(token_batch, batch_responses):
-                complete_responses.append(response)
-                response_label = response.choices[0].message.content
-                response_tags = response_label.split()
-                llm_responses.append(response_tags)
-                tokens_list.append(token)
-                actual_tags.append(all_actual_tags[len(llm_responses) - 1])
-
-            pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             # Add None values for failed batch
@@ -91,6 +81,20 @@ def casual_detection_inference(args):
                 actual_tags.append(None)
                 complete_responses.append(None)
                 llm_responses.append(None)
+        
+        for token, response in zip(token_batch, batch_responses):
+            complete_responses.append(response)
+            try: 
+                response_label = response.choices[0].message.content
+                response_tags = response_label.split()
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_tags = None
+            llm_responses.append(response_tags)
+            tokens_list.append(token)
+            actual_tags.append(all_actual_tags[len(llm_responses) - 1])
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     df = pd.DataFrame(
         {

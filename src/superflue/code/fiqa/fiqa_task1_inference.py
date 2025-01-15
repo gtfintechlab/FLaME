@@ -70,14 +70,6 @@ def fiqa_task1_inference(args):
         try:
             # Process batch with retry mechanism
             batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
-            for sentence, response in zip(sentence_batch, batch_responses):
-                response_label = response.choices[0].message.content
-                llm_responses.append(response_label)
-                complete_responses.append(response)
-                context.append(sentence)
-                actual_targets.append(all_targets[len(llm_responses) - 1])
-                actual_sentiments.append(all_sentiments[len(llm_responses) - 1])
-            pbar.set_description(f"Completed batch {batch_idx + 1}/{total_batches}")
 
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
@@ -87,6 +79,19 @@ def fiqa_task1_inference(args):
                 context.append(None)
                 actual_targets.append(None)
                 actual_sentiments.append(None)
+        
+        for sentence, response in zip(sentence_batch, batch_responses):
+            try:
+                response_label = response.choices[0].message.content
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_label = None
+            llm_responses.append(response_label)
+            complete_responses.append(response)
+            context.append(sentence)
+            actual_targets.append(all_targets[len(llm_responses) - 1])
+            actual_sentiments.append(all_sentiments[len(llm_responses) - 1])
+        pbar.set_description(f"Completed batch {batch_idx + 1}/{total_batches}")
     
     # Create DataFrame with results
     df = pd.DataFrame(

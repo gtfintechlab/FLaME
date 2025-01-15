@@ -62,23 +62,23 @@ def subjectiveqa_inference(args):
             # Process batch with retry logic
             batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
 
-            # Process responses for each feature in the batch
-            response_idx = 0
-            for q, a in zip(question_batch, answer_batch):
-                for feature in definition_map.keys():
-                    try:
-                        response_label = batch_responses[response_idx].choices[0].message.content.strip()  # type: ignore
-                        feature_responses[feature].append(response_label)
-                        response_idx += 1
-                    except (KeyError, IndexError, AttributeError) as e:
-                        logger.error(f"Error extracting label for feature '{feature}': {e}")
-                        feature_responses[feature].append("error")
-
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {e}")
             for feature in definition_map.keys():
                 feature_responses[feature].extend(["error"] * len(question_batch))
             continue
+
+        # Process responses for each feature in the batch
+        response_idx = 0
+        for q, a in zip(question_batch, answer_batch):
+            for feature in definition_map.keys():
+                try:
+                    response_label = batch_responses[response_idx].choices[0].message.content.strip()  # type: ignore
+                    feature_responses[feature].append(response_label)
+                    response_idx += 1
+                except (KeyError, IndexError, AttributeError) as e:
+                    logger.error(f"Error extracting label for feature '{feature}': {e}")
+                    feature_responses[feature].append("error")
 
     # Create a DataFrame to store the results
     df = pd.DataFrame(

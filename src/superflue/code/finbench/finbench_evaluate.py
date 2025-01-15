@@ -108,22 +108,26 @@ def finbench_evaluate(file_name, args):
                 args, messages_batch, batch_idx, total_batches
             )
 
-            # Process responses
-            for response in batch_responses:
-                extracted_label = response.choices[0].message.content.strip()  # type: ignore
-                mapped_label = map_label_to_number(extracted_label)
-
-                if mapped_label == -1:
-                    logger.error(f"Invalid label for response {batch_idx}: {response}")
-                else:
-                    logger.info(f"Extracted label for row {batch_idx}: {mapped_label}")
-
-                extracted_labels.append(mapped_label)
-
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in batch:
                 extracted_labels.append(-1)
+        
+        # Process responses
+        for response in batch_responses:
+            try:
+                extracted_label = response.choices[0].message.content.strip()  # type: ignore
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                extracted_label = "Error"
+            mapped_label = map_label_to_number(extracted_label)
+
+            if mapped_label == -1:
+                logger.error(f"Invalid label for response {batch_idx}: {response}")
+            else:
+                logger.info(f"Extracted label for row {batch_idx}: {mapped_label}")
+
+            extracted_labels.append(mapped_label)
 
     df["extracted_labels"] = extracted_labels
 

@@ -70,16 +70,6 @@ def banking77_inference(args):
                 args, messages_batch, batch_idx, total_batches
             )
             
-            # Process responses
-            for sentence, response in zip(sentence_batch, batch_responses):
-                documents.append(sentence)
-                complete_responses.append(response)
-                response_label = response.choices[0].message.content
-                llm_responses.append(response_label)
-                actual_labels.append(all_actual_labels[len(llm_responses) - 1])
-                
-            pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-            
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             # Add None values for failed batch
@@ -89,6 +79,20 @@ def banking77_inference(args):
                 llm_responses.append(None)
                 actual_labels.append(None)
             continue
+    
+        # Process responses
+        for sentence, response in zip(sentence_batch, batch_responses):
+            documents.append(sentence)
+            try: 
+                response_label = response.choices[0].message.content
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_label = None
+            complete_responses.append(response)
+            llm_responses.append(response_label)
+            actual_labels.append(all_actual_labels[len(llm_responses) - 1])
+            
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     df = pd.DataFrame(
         {
@@ -98,12 +102,5 @@ def banking77_inference(args):
             "complete_responses": complete_responses,
         }
     )
-    # results_path = (
-    #     RESULTS_DIR
-    #     / args.task
-    #     / f"{args.task}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    # )
-    # results_path.parent.mkdir(parents=True, exist_ok=True)
-    # df.to_csv(results_path, index=False)
-    # logger.info(f"Inference completed for {i}. Results saved to {results_path}")
+    
     return df

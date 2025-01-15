@@ -100,19 +100,23 @@ def fiqa_task1_evaluate(file_name, args):
                 args, messages_batch, batch_idx, total_batches
             )
 
-            for response in batch_responses:
-                extraction_model_response.append(response)
-                response_text = response.choices[0].message.content  # type: ignore
-                extraction_response.append(response_text)
-                numerical_value = extract_numerical_value(response_text)
-                regex_extraction.append(numerical_value)
-
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in range(len(batch)):
                 extraction_response.append(None)
                 regex_extraction.append(None)
                 extraction_model_response.append(str(e))
+
+        for response in batch_responses:
+            extraction_model_response.append(response)
+            try:
+                response_text = response.choices[0].message.content  # type: ignore
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_text = None
+            extraction_response.append(response_text)
+            numerical_value = extract_numerical_value(response_text)
+            regex_extraction.append(numerical_value)
 
     df['extraction_model_response'] = extraction_model_response
     df['extraction_response'] = extraction_response

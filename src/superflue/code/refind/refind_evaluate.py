@@ -101,17 +101,22 @@ def refind_evaluate(file_name, args):
                 args, messages_batch, batch_idx, total_batches
             )
 
-            # Process responses
-            for llm_response, response in zip(batch, batch_responses):
-                extracted_label = response.choices[0].message.content.strip()  # type: ignore
-                extracted_label = extracted_label.replace(' ', '').upper()
-                if extracted_label not in possible_relationships:
-                    extracted_label = 'NO-REL'
-                extracted_labels.append(extracted_label)
         except Exception as e:
             logger.error(f"Error processing batch {batch_idx + 1}: {e}")
             for _ in batch:
                 extracted_labels.append('NO-REL')
+
+        # Process responses
+        for response in batch_responses:
+            try:
+                extracted_label = response.choices[0].message.content.strip()  # type: ignore
+            except Exception as e:
+                logger.error(f"Error processing response: {e}")
+                extracted_labels.append('NO-REL')
+            extracted_label = extracted_label.replace(' ', '').upper()
+            if extracted_label not in possible_relationships:
+                extracted_label = 'NO-REL'
+            extracted_labels.append(extracted_label)
 
     df['extracted_labels'] = extracted_labels
 

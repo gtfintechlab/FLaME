@@ -58,34 +58,39 @@ def edtsum_inference(args):
     complete_responses = []
 
     pbar = tqdm(sentence_batches, desc="Processing batches")
-    for batch_idx, sentence_batch in enumerate(pbar):
+    for batch_idx, batch_content in enumerate(pbar):
         # Prepare messages for batch
         messages_batch = [
-            trim_messages([{"role": "user", "content": edtsum_prompt(document)}], max_tokens=get_max_tokens(args.model) - args.max_tokens - 1)
-            for document in sentence_batch
+            [{"role": "user", "content": edtsum_prompt(document)}]
+            # trim_messages([{"role": "user", "content": edtsum_prompt(document)}], max_tokens=get_max_tokens(args.model) - args.max_tokens - 1)
+            for document in batch_content
         ]
         try:
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches
             )
-
-            for document, response in zip(sentence_batch, batch_responses):
-                documents.append(document)
-                response_label = response.choices[0].message.content # type: ignore
-                llm_responses.append(response_label)
-                complete_responses.append(response)
-                actual_labels.append(all_actual_labels[len(llm_responses) - 1])
-
-            pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-
+        
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-            for _ in range(len(sentence_batch)):
+            for _ in range(len(batch_content)):
                 documents.append(None)
                 llm_responses.append(None)
                 complete_responses.append(None)
                 actual_labels.append(None)
             continue
+
+        for document, response in zip(batch_content, batch_responses):
+            documents.append(document)
+            try:
+                response_label = response.choices[0].message.content # type: ignore
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_label = None
+            llm_responses.append(response_label)
+            complete_responses.append(response)
+            actual_labels.append(all_actual_labels[len(llm_responses) - 1])
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     df = pd.DataFrame(
         {

@@ -174,23 +174,6 @@ def fomc_inference(args):
                 args, messages_batch, batch_idx, total_batches
             )
             
-            # Process responses
-            for sentence, response in zip(sentence_batch, batch_responses):
-                sentences.append(sentence)
-                complete_responses.append(response)
-                response_label = response.choices[0].message.content
-                
-                # Validate response
-                if validate_sample(response_label):
-                    llm_responses.append(response_label)
-                else:
-                    logger.warning(f"Invalid response format: {response_label}")
-                    llm_responses.append(None)
-                    
-                actual_labels.append(all_labels[len(llm_responses) - 1])
-                
-            pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-            
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             # Add None values for failed batch
@@ -200,6 +183,28 @@ def fomc_inference(args):
                 llm_responses.append(None)
                 actual_labels.append(None)
             continue
+    
+        # Process responses
+        for sentence, response in zip(sentence_batch, batch_responses):
+            sentences.append(sentence)
+            complete_responses.append(response)
+            try:
+                response_label = response.choices[0].message.content
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_label = "Error"
+            
+            # Validate response
+            if validate_sample(response_label):
+                llm_responses.append(response_label)
+            else:
+                logger.warning(f"Invalid response format: {response_label}")
+                llm_responses.append(None)
+                
+            actual_labels.append(all_labels[len(llm_responses) - 1])
+            
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        
 
     # Create results DataFrame
     df = pd.DataFrame({

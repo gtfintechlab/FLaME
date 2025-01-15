@@ -109,21 +109,25 @@ def finred_evaluate(file_name, args):
                 args, messages_batch, batch_idx, total_batches
             )
 
-            # Process responses
-            for response in batch_responses:
-                extracted_label = response.choices[0].message.content.strip() # type: ignore
-
-                # Normalize and validate extracted label
-                extracted_label = extracted_label.replace(' ', '')
-                if extracted_label not in possible_relationships:
-                    extracted_label = 'NO-REL'
-
-                extracted_labels.append(extracted_label)
-
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in sentence_batch:
                 extracted_labels.append('NO-REL')
+
+        # Process responses
+        for response in batch_responses:
+            try:
+                extracted_label = response.choices[0].message.content.strip() # type: ignore
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                extracted_label = 'NO-REL'
+                
+            # Normalize and validate extracted label
+            extracted_label = extracted_label.replace(' ', '')
+            if extracted_label not in possible_relationships:
+                extracted_label = 'NO-REL'
+
+            extracted_labels.append(extracted_label)
 
     df['extracted_labels'] = extracted_labels
     

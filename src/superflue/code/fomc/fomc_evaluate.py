@@ -208,19 +208,6 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
                     args.model, messages_batch, args, batch_idx, total_batches
                 )
                 
-                # Process responses
-                for idx, response in zip(indices_batch, batch_responses):
-                    extracted_label = response.choices[0].message.content.strip()
-                    mapped_label = map_label_to_number(extracted_label)
-                    
-                    # Update DataFrame with the result
-                    df.at[idx, "extracted_labels"] = mapped_label
-                
-                # Save progress after each batch
-                save_progress(df, evaluation_results_path)
-                
-                pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-                
             except Exception as e:
                 logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
                 # Mark failed extractions with -1
@@ -228,6 +215,23 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
                     df.at[idx, "extracted_labels"] = -1
                 time.sleep(10.0)
                 continue
+        
+            # Process responses
+            for idx, response in zip(indices_batch, batch_responses):
+                try:
+                    extracted_label = response.choices[0].message.content.strip()
+                except Exception as e:
+                    logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                    extracted_label = "Error"
+                mapped_label = map_label_to_number(extracted_label)
+                
+                # Update DataFrame with the result
+                df.at[idx, "extracted_labels"] = mapped_label
+            
+            # Save progress after each batch
+            save_progress(df, evaluation_results_path)
+            
+            pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     # Convert all extracted labels to list for metrics calculation
     extracted_labels = df["extracted_labels"].tolist()

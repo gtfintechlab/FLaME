@@ -64,13 +64,6 @@ def finqa_inference(args):
         ]
         try:
             batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
-            for text, response in zip(text_batch, batch_responses):
-                context.append(text)
-                response_label = response.choices[0].message.content  # type: ignore
-                llm_responses.append(response_label)
-                complete_responses.append(response)
-                actual_labels.append(all_actual_labels[len(llm_responses) - 1])
-            pbar.set_description(f"Completed batch {batch_idx + 1}/{total_batches}")
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in text_batch:
@@ -78,6 +71,19 @@ def finqa_inference(args):
                 llm_responses.append(None)
                 complete_responses.append(None)
                 actual_labels.append(None)
+        
+        for text, response in zip(text_batch, batch_responses):
+            context.append(text)
+            try:
+                response_label = response.choices[0].message.content  # type: ignore
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_label = None
+            llm_responses.append(response_label)
+            complete_responses.append(response)
+            actual_labels.append(all_actual_labels[len(llm_responses) - 1])
+            
+        pbar.set_description(f"Completed batch {batch_idx + 1}/{total_batches}")
 
     df = pd.DataFrame(
         {

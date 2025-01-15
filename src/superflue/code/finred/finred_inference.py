@@ -83,19 +83,6 @@ def finred_inference(args):
                 args, messages_batch, batch_idx, total_batches
             )
 
-            # Process responses
-            for (sentence, entity_pair), response in zip(batch, batch_responses):
-                sentences.append(sentence)
-                entities_list.append(entity_pair)
-                complete_responses.append(response)
-                response_label = response.choices[0].message.content
-                llm_responses.append(response_label)
-                actual_labels.append(all_actual_labels[len(llm_responses) - 1])
-
-            logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-
-            pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             # Add None values for failed batch
@@ -106,6 +93,21 @@ def finred_inference(args):
                 llm_responses.append(None)
                 actual_labels.append(None)
             continue
+
+        # Process responses
+        for (sentence, entity_pair), response in zip(batch, batch_responses):
+            sentences.append(sentence)
+            entities_list.append(entity_pair)
+            complete_responses.append(response)
+            try:
+                response_label = response.choices[0].message.content
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_label = None
+            llm_responses.append(response_label)
+            actual_labels.append(all_actual_labels[len(llm_responses) - 1])
+            
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     # Create the final DataFrame after the loop
     df = pd.DataFrame(

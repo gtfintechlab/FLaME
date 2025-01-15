@@ -70,13 +70,6 @@ def fiqa_task2_inference(args):
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches
             )
-            for question, response in zip(question_batch, batch_responses):
-                context.append(question)
-                complete_responses.append(response)
-                response_label = response.choices[0].message.content
-                llm_responses.append(response_label)
-                actual_answers.append(all_answers[len(llm_responses) - 1])
-            pbar.set_description(f"Completed batch {batch_idx + 1}/{total_batches}")
 
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
@@ -85,6 +78,18 @@ def fiqa_task2_inference(args):
                 complete_responses.append(None)
                 llm_responses.append(None)
                 actual_answers.append(None)
+        
+        for question, response in zip(question_batch, batch_responses):
+            context.append(question)
+            complete_responses.append(response)
+            try:
+                response_label = response.choices[0].message.content
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_label = None
+            llm_responses.append(response_label)
+            actual_answers.append(all_answers[len(llm_responses) - 1])
+        pbar.set_description(f"Completed batch {batch_idx + 1}/{total_batches}")
 
     # Save results intermittently
     df = pd.DataFrame(

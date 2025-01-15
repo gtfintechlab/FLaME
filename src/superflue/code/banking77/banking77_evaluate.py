@@ -183,25 +183,29 @@ def banking77_evaluate(file_name, args):
                 args, messages_batch, batch_idx, total_batches
             )
 
-            # Process responses
-            for response in batch_responses:
-                extracted_label = response.choices[0].message.content.strip()  # type: ignore
-                # print(extracted_label)
-                mapped_label = map_extracted_label_to_number(extracted_label)
-
-                if mapped_label == -1:
-                    logger.debug(f"Error processing response {batch_idx}: {response}")
-
-                extracted_labels.append(mapped_label)
-                logger.debug(f"Processed {len(extracted_labels)}/{len(df)} responses.")
-            
-            pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             # Add None values for failed batch
             for _ in batch:
                 extracted_labels.append(-1)
+        
+        # Process responses
+        for response in batch_responses:
+            try:
+                extracted_label = response.choices[0].message.content.strip()  # type: ignore
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                extracted_label = "Error"
+            # print(extracted_label)
+            mapped_label = map_extracted_label_to_number(extracted_label)
+
+            if mapped_label == -1:
+                logger.debug(f"Error processing response {batch_idx}: {response}")
+
+            extracted_labels.append(mapped_label)
+            logger.debug(f"Processed {len(extracted_labels)}/{len(df)} responses.")
+        
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     df["extracted_labels"] = extracted_labels
     # Evaluate performance
