@@ -41,14 +41,10 @@ def main(args):
     Args:
         args: Command line arguments containing:
             - dataset: Name of the task/dataset
-            - dataset_org: Organization holding the dataset
             - model: Model to use
             - Other task-specific parameters
     """
     task = args.dataset.strip('"""')
-    
-    # Log dataset organization info
-    logger.info(f"Using dataset organization: {args.dataset_org}")
     
     task_inference_map = {
         "numclaim": numclaim_inference,

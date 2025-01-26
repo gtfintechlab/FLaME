@@ -5,7 +5,7 @@ from datetime import date
 from datasets import load_dataset
 from tqdm import tqdm
 from litellm import completion
-from superflue.code.prompts import fiqa_task1_prompt
+from superflue.code.prompts_oldsuperflue import fiqa_task1_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL

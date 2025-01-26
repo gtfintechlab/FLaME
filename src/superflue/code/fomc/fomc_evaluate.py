@@ -156,7 +156,6 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
     
     # Log detailed startup information
     logger.info(f"Starting {task} evaluation on model '{model_name}' from provider '{provider}'")
-    logger.info(f"Dataset organization: {args.dataset_org}")
     logger.info(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     relative_path = evaluation_results_path.relative_to(EVALUATION_DIR.parent)
     logger.info(f"Output directory: ./{relative_path.parent}")
@@ -258,13 +257,13 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     # Create metrics DataFrame with additional metadata
     metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score", "Dataset Organization"],
-        "Value": [accuracy, precision, recall, f1, args.dataset_org],
+        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+        "Value": [accuracy, precision, recall, f1],
     })
 
     # Save metrics DataFrame with consistent naming
-    metrics_path = evaluation_results_path.with_name(f"evaluation_{base_filename}_metrics.csv")
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    # metrics_path = evaluation_results_path.with_name(f"evaluation_{base_filename}_metrics.csv")
+    # metrics_df.to_csv(metrics_path, index=False)
+    # logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df

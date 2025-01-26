@@ -3,7 +3,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-from superflue.code.prompts import banking77_prompt
+from superflue.code.prompts_oldsuperflue import banking77_prompt
 from superflue.code.tokens import tokens
 from superflue.config import RESULTS_DIR
 from superflue.utils.logging_utils import setup_logger

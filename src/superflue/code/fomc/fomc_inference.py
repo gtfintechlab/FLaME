@@ -15,13 +15,11 @@ from datasets import load_dataset
 import litellm
 from pathlib import Path
 
-from superflue.code.prompts import fomc_prompt
-from superflue.code.tokens import tokens
+from superflue.code.prompts_oldsuperflue import fomc_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
 # Configure litellm to be less verbose
-litellm.set_verbose = False
 logging.getLogger("litellm").setLevel(logging.WARNING)
 logging.getLogger("openai").setLevel(logging.WARNING)
 
@@ -80,11 +78,10 @@ def validate_sample(response: str) -> bool:
     valid_labels = {"DOVISH", "HAWKISH", "NEUTRAL"}
     return response.strip().upper() in valid_labels
 
-def load_fomc_dataset(dataset_org: str):
+def load_fomc_dataset():
     """Load FOMC dataset with progress tracking."""
-    logger.debug(f"Loading FOMC dataset from {dataset_org}...")
-    dataset = load_dataset(f"{dataset_org}/fomc_communication", trust_remote_code=True)
-    test_data = dataset["test"]
+    dataset = load_dataset(f"gtfintechlab/fomc_communication", trust_remote_code=True)
+    test_data = dataset["test"] # type: ignore
     logger.debug(f"Loaded {len(test_data)} test samples")
     return test_data
 
@@ -136,13 +133,12 @@ def fomc_inference(args):
     # Detailed startup logging - keep critical info at INFO level
     logger.info(f"Starting FOMC inference with {model_name}")
     logger.debug(f"Provider: {provider}")
-    logger.debug(f"Dataset organization: {args.dataset_org}")
     logger.debug(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.debug(f"Output directory: ./{results_path.relative_to(RESULTS_DIR.parent).parent}")
     logger.debug(f"Output filename: {results_path.name}")
 
     # Load dataset
-    test_data = load_fomc_dataset(args.dataset_org)
+    test_data = load_fomc_dataset()
     
     # Initialize result containers
     sentences = []
@@ -151,8 +147,8 @@ def fomc_inference(args):
     complete_responses = []
     
     # Get all sentences and labels
-    all_sentences = [item["sentence"] for item in test_data]
-    all_labels = [item["label"] for item in test_data]
+    all_sentences = [item["sentence"] for item in test_data] # type: ignore
+    all_labels = [item["label"] for item in test_data] # type: ignore
     
     # Create batches
     sentence_batches = chunk_list(all_sentences, args.batch_size)
@@ -194,13 +190,8 @@ def fomc_inference(args):
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 response_label = "Error"
             
-            # Validate response
-            if validate_sample(response_label):
-                llm_responses.append(response_label)
-            else:
-                logger.warning(f"Invalid response format: {response_label}")
-                llm_responses.append(None)
-                
+            llm_responses.append(response_label)
+
             actual_labels.append(all_labels[len(llm_responses) - 1])
             
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
@@ -218,18 +209,18 @@ def fomc_inference(args):
     success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
     
-    # Save results with metadata
-    metadata = {
-        "model": args.model,
-        "provider": provider,
-        "model_name": model_name,
-        "temperature": args.temperature,
-        "top_p": args.top_p,
-        "top_k": args.top_k,
-        "max_tokens": args.max_tokens,
-        "batch_size": args.batch_size,
-        "repetition_penalty": args.repetition_penalty
-    }
-    save_inference_results(df, results_path, metadata)
+    # # Save results with metadata
+    # metadata = {
+    #     "model": args.model,
+    #     "provider": provider,
+    #     "model_name": model_name,
+    #     "temperature": args.temperature,
+    #     "top_p": args.top_p,
+    #     "top_k": args.top_k,
+    #     "max_tokens": args.max_tokens,
+    #     "batch_size": args.batch_size,
+    #     "repetition_penalty": args.repetition_penalty
+    # }
+    # save_inference_results(df, results_path, metadata)
     
     return df
