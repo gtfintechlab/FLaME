@@ -1,0 +1,1974 @@
+context,llm_responses,actual_target,actual_sentiment,complete_responses
+"Sentence: Britain's FTSE steadies, supported by Dixons Carphone. Snippets: Britain's FTSE steadies, supported by Dixons Carphone. Target aspect: Dixons Carphone",,Dixons Carphone,0.329,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Glaxo's ViiV Healthcare Signs China Manufacturing Deal With Desano. Snippets: Glaxo's ViiV Healthcare Signs China Manufacturing Deal With Desano. Target aspect: Glaxo,,Glaxo,0.284,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: AstraZeneca sells Caprelsa rights to Sanofi unit. Snippets: AstraZeneca sells Caprelsa rights to Sanofi unit. Target aspect: Sanofi,,Sanofi,0.233,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: UPDATE 5-Barclays Chairman McFarlane axes CEO to speed up strategic change. Snippets: UPDATE 5-Barclays Chairman McFarlane axes CEO to speed up strategic change. Target aspect: Barclays,,Barclays,-0.229,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Miners Meltdown as BHP to Rio Tinto Sink in Commodities Rout. Snippets: Miners Meltdown as BHP to Rio Tinto Sink in Commodities Rout. Target aspect: Rio Tinto,,Rio Tinto,-0.665,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: FTSE led lower by M&S, GlaxoSmithKline. Snippets: FTSE led lower by M&S, GlaxoSmithKline. Target aspect: M&S",,M&S,-0.448,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Morrisons faces festive sales test. Snippets: Morrisons faces festive sales test. Target aspect: Morrisons,,Morrisons,-0.113,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: GKN to buy Fokker Technologies for 706 mln euros. Snippets: GKN to buy Fokker Technologies for 706 mln euros. Target aspect: GKN,,GKN,0.276,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Diageo Sells Ryder Cup Venue Gleneagles Hotel to Ennismore Group. Snippets: Diageo Sells Ryder Cup Venue Gleneagles Hotel to Ennismore Group. Target aspect: Ennismore Group,,Ennismore Group,0.198,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: UPDATE: CIB, Legal & General Sell Egyptian Life Joint Venture To AXA. Snippets: UPDATE: CIB, Legal & General Sell Egyptian Life Joint Venture To AXA. Target aspect: CIB",,CIB,0.148,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Chime Communications Set To Be Acquired By WPP And Providence. Snippets: Chime Communications Set To Be Acquired By WPP And Providence. Target aspect: WPP,,WPP,0.202,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: CompaniesNew Aggreko CEO to reshape business, strip costs. Snippets: CompaniesNew Aggreko CEO to reshape business, strip costs. Target aspect: Aggreko",,Aggreko,0.177,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: AstraZeneca to Pay Inovio Up to $700 Million for Cancer Drug. Snippets: AstraZeneca to Pay Inovio Up to $700 Million for Cancer Drug. Target aspect: Inovio,,Inovio,0.33,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Rio Tinto CEO says iron ore market at equilibrium. Snippets: Rio Tinto CEO says iron ore market at equilibrium. Target aspect: Rio Tinto,,Rio Tinto,0.0,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: US sanctions put Gazprom-Shell alliance plans in jeopardy. Snippets: US sanctions put Gazprom-Shell alliance plans in jeopardy. Target aspect: Shell,,Shell,-0.314,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Standard Chartered Not Raising Capital Yet As Dividend Cut. Snippets: Standard Chartered Not Raising Capital Yet As Dividend Cut. Target aspect: Standard Chartered,,Standard Chartered,-0.158,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Tesco share price dips as Blinkbox Books closes ending supermarket's digital .... Snippets: Tesco share price dips as Blinkbox Books closes ending supermarket's digital .... Target aspect: Blinkbox,,Blinkbox,-0.357,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: UPDATE 1-BHP Billiton's credit ratings fragile in FY16, agencies warn. Snippets: UPDATE 1-BHP Billiton's credit ratings fragile in FY16, agencies warn. Target aspect: BHP",,BHP,-0.338,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: CRH adds CR Laurence to acquisitions tally for $1.3bn. Snippets: CRH adds CR Laurence to acquisitions tally for $1.3bn. Target aspect: CRH,,CRH,0.231,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Stakes High for AstraZeneca Heart Drug Facing Tough Competition. Snippets: Stakes High for AstraZeneca Heart Drug Facing Tough Competition. Target aspect: AstraZeneca,,AstraZeneca,-0.24,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Shire to buy NPS for $5.2 billion to boost rare disease drugs. Snippets: Shire to buy NPS for $5.2 billion to boost rare disease drugs. Target aspect: Shire,,Shire,0.235,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Novartis buys remaining rights to GSK treatment in deal up to $1 billion. Snippets: Novartis buys remaining rights to GSK treatment in deal up to $1 billion. Target aspect: Novartis,,Novartis,0.217,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: AstraZeneca bags another cancer drug deal, this time with Inovio. Snippets: AstraZeneca bags another cancer drug deal, this time with Inovio. Target aspect: Inovio",,Inovio,0.316,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: REFILE-Aviva Investors to move 34 bln euros in assets from AXA fund arm. Snippets: REFILE-Aviva Investors to move 34 bln euros in assets from AXA fund arm. Target aspect: AXA,,AXA,-0.398,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: L&G still paying price for dividend cut during crisis, chief says. Snippets: L&G still paying price for dividend cut during crisis, chief says. Target aspect: L&G",,L&G,-0.338,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Buffett's Company Reports 37 Percent Drop in 2Q Earnings. Snippets: Buffett's Company Reports 37 Percent Drop in 2Q Earnings. Target aspect: Berkshire Hathaway Inc.,,Berkshire Hathaway Inc.,-0.566,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Travis Perkins Hikes Dividend 20% As Profit And Revenue Rise. Snippets: Travis Perkins Hikes Dividend 20% As Profit And Revenue Rise. Target aspect: Travis Perkins,,Travis Perkins,0.769,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Tesco, Asda sales fall as march of the discounters continues: Kantar. Snippets: Tesco, Asda sales fall as march of the discounters continues: Kantar. Target aspect: Tesco",,Tesco,-0.398,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Shire proposes $30 bln all-share tie-up with Baxalta. Snippets: Shire proposes $30 bln all-share tie-up with Baxalta. Target aspect: Shire,,Shire,0.22,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Shire CEO steps up drive to get Baxalta board talking. Snippets: Shire CEO steps up drive to get Baxalta board talking. Target aspect: Shire,,Shire,0.124,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Tesco, Asda sales fall as march of the discounters continues-Kantar. Snippets: Tesco, Asda sales fall as march of the discounters continues-Kantar. Target aspect: Asda",,Asda,-0.356,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Verizon and AT&T accused of hurting rivals. Snippets: Verizon and AT&T accused of hurting rivals. Target aspect: Verizon,,Verizon,-0.446,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: FTSE 100 falls as China devaluation hits Burberry, mining stocks. Snippets: FTSE 100 falls as China devaluation hits Burberry, mining stocks. Target aspect: Burberry",,Burberry,-0.479,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: AstraZeneca's MedImmune Inks Licensing Deal With Omnis Pharmaceuticals. Snippets: AstraZeneca's MedImmune Inks Licensing Deal With Omnis Pharmaceuticals. Target aspect: Omnis Pharmaceuticals,,Omnis Pharmaceuticals,0.295,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Nine banks including Barclays, Citi, agree to pay $2 billion to settle forex .... Snippets: Nine banks including Barclays, Citi, agree to pay $2 billion to settle forex .... Target aspect: Citi",,Citi,-0.647,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: FDA approves Shire's Vyvanse for binge-eating disorder. Snippets: FDA approves Shire's Vyvanse for binge-eating disorder. Target aspect: Shire,,Shire,0.291,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: CompaniesCar insurer Hastings Group driving Â£180m IPO. Snippets: CompaniesCar insurer Hastings Group driving Â£180m IPO. Target aspect: Hastings Group,,Hastings Group,0.302,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: UPDATE 1-Dairy Crest loses a third of Morrisons milk contract. Snippets: UPDATE 1-Dairy Crest loses a third of Morrisons milk contract. Target aspect: Morrisons,,Morrisons,-0.161,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Glencore slumps 25 pct as debt fears grow. Snippets: Glencore slumps 25 pct as debt fears grow. Target aspect: Glencore,"Okay, I can do that.
+
+**Analysis:**
+
+*   **Sentence:** Glencore slumps 25 pct as debt fears grow.
+*   **Target Aspect:** Glencore
+
+**Sentiment Analysis:**
+
+The sentence clearly indicates a negative sentiment towards Glencore. The word ""slumps"" and the phrase ""debt fears grow"" are strong indicators of negative performance and potential financial distress. The magnitude of the slump (25%) further reinforces the negative sentiment.
+
+**Sentiment Score:**
+
+*   **Glencore:** -0.850
+",Glencore,-0.718,"ModelResponse(id='chatcmpl-24b1e503-08b8-4f36-b99d-d92adde6a818', created=1739174430, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Okay, I can do that.\n\n**Analysis:**\n\n*   **Sentence:** Glencore slumps 25 pct as debt fears grow.\n*   **Target Aspect:** Glencore\n\n**Sentiment Analysis:**\n\nThe sentence clearly indicates a negative sentiment towards Glencore. The word ""slumps"" and the phrase ""debt fears grow"" are strong indicators of negative performance and potential financial distress. The magnitude of the slump (25%) further reinforces the negative sentiment.\n\n**Sentiment Score:**\n\n*   **Glencore:** -0.850\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=115, prompt_tokens=113, total_tokens=228, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: Horizonte acquires neighbouring Glencore nickel property in Brazil. Snippets: Horizonte acquires neighbouring Glencore nickel property in Brazil. Target aspect: Horizonte,"Target aspect: Horizonte
+Sentiment score: 0.350
+",Horizonte,0.182,"ModelResponse(id='chatcmpl-4c2955bd-5f3c-4644-8518-b677edd25553', created=1739174431, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Target aspect: Horizonte\nSentiment score: 0.350\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=15, prompt_tokens=106, total_tokens=121, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: Companies Thetrainline.com announces arrival of London IPO. Snippets: Companies Thetrainline.com announces arrival of London IPO. Target aspect: Thetrainline.com,"Okay, I can analyze the sentiment of the provided sentence regarding the target aspect ""Thetrainline.com"".
+
+**Sentence:** Companies Thetrainline.com announces arrival of London IPO.
+
+**Target Aspect:** Thetrainline.com
+
+**Analysis:**
+
+The sentence states that Thetrainline.com is announcing the arrival of its London IPO (Initial Public Offering).  An IPO is generally viewed as a positive step for a company, indicating growth and access to capital. The announcement itself is a positive event.
+
+**Sentiment Score:**
+
+0.750
+",Thetrainline.com,0.245,"ModelResponse(id='chatcmpl-3da1a7f5-9c61-4665-90e0-f7cbe0c717f2', created=1739174432, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Okay, I can analyze the sentiment of the provided sentence regarding the target aspect ""Thetrainline.com"".\n\n**Sentence:** Companies Thetrainline.com announces arrival of London IPO.\n\n**Target Aspect:** Thetrainline.com\n\n**Analysis:**\n\nThe sentence states that Thetrainline.com is announcing the arrival of its London IPO (Initial Public Offering).  An IPO is generally viewed as a positive step for a company, indicating growth and access to capital. The announcement itself is a positive event.\n\n**Sentiment Score:**\n\n0.750\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=116, prompt_tokens=114, total_tokens=230, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: UPDATE 1-Engineering firm Smiths Group confirms CEO appointment. Snippets: UPDATE 1-Engineering firm Smiths Group confirms CEO appointment. Target aspect: Morrissons,"Okay, I can analyze the provided sentence and assign a sentiment score for the specified target aspect.
+
+**Sentence:** UPDATE 1-Engineering firm Smiths Group confirms CEO appointment.
+
+**Target Aspect:** Morrissons
+
+**Analysis:**
+
+The sentence focuses on Smiths Group, an engineering firm, and the confirmation of their CEO appointment. There is no mention of ""Morrissons"" in the sentence. Therefore, any sentiment assigned to Morrissons based solely on this sentence would be arbitrary.
+
+**Sentiment Score:**
+
+*   **Morrissons:** 0.000 (Neutral)
+
+**Explanation:**
+
+Since Morrissons is",Morrissons,0.078,"ModelResponse(id='chatcmpl-e80d0b95-1b0d-4a20-beab-636ab89185bb', created=1739174433, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can analyze the provided sentence and assign a sentiment score for the specified target aspect.\n\n**Sentence:** UPDATE 1-Engineering firm Smiths Group confirms CEO appointment.\n\n**Target Aspect:** Morrissons\n\n**Analysis:**\n\nThe sentence focuses on Smiths Group, an engineering firm, and the confirmation of their CEO appointment. There is no mention of ""Morrissons"" in the sentence. Therefore, any sentiment assigned to Morrissons based solely on this sentence would be arbitrary.\n\n**Sentiment Score:**\n\n*   **Morrissons:** 0.000 (Neutral)\n\n**Explanation:**\n\nSince Morrissons is', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=131, prompt_tokens=112, total_tokens=243, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: Industry NewsMorrisons unveils which stores will close as 900 jobs face the axe. Snippets: Industry NewsMorrisons unveils which stores will close as 900 jobs face the axe. Target aspect: Morrissons,"Okay, I can analyze the sentiment towards Morrisons in the provided sentence.
+
+**Sentence:** Industry NewsMorrisons unveils which stores will close as 900 jobs face the axe.
+
+**Target Aspect:** Morrisons
+
+**Sentiment Analysis:**
+
+The sentence describes Morrisons closing stores and potentially laying off 900 employees. This is generally negative news. While the sentence doesn't explicitly state that Morrisons is performing poorly, the actions described (store closures, job losses) are typically associated with financial difficulties or restructuring.
+
+**Sentiment Score:**
+
+-0.750
+",Morrissons,-0.731,"ModelResponse(id='chatcmpl-78d108f5-88aa-43a7-9137-a7d28e6f8605', created=1739174434, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content=""Okay, I can analyze the sentiment towards Morrisons in the provided sentence.\n\n**Sentence:** Industry NewsMorrisons unveils which stores will close as 900 jobs face the axe.\n\n**Target Aspect:** Morrisons\n\n**Sentiment Analysis:**\n\nThe sentence describes Morrisons closing stores and potentially laying off 900 employees. This is generally negative news. While the sentence doesn't explicitly state that Morrisons is performing poorly, the actions described (store closures, job losses) are typically associated with financial difficulties or restructuring.\n\n**Sentiment Score:**\n\n-0.750\n"", role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=121, prompt_tokens=126, total_tokens=247, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: Glencore slumps 30 percent as debt fears grow. Snippets: Glencore slumps 30 percent as debt fears grow. Target aspect: Glencore,"Okay, I can do that.
+
+**Analysis:**
+
+*   **Sentence:** Glencore slumps 30 percent as debt fears grow.
+*   **Target Aspect:** Glencore
+
+**Sentiment Analysis:**
+
+The sentence clearly indicates a negative sentiment towards Glencore. The phrase ""slumps 30 percent"" is a strong indicator of negative performance, and ""debt fears grow"" further reinforces this negative outlook.
+
+**Sentiment Score:**
+
+*   **Glencore:** -0.850
+",Glencore,-0.781,"ModelResponse(id='chatcmpl-50396e79-18a6-4762-b0c7-d33a2a1c1770', created=1739174436, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Okay, I can do that.\n\n**Analysis:**\n\n*   **Sentence:** Glencore slumps 30 percent as debt fears grow.\n*   **Target Aspect:** Glencore\n\n**Sentiment Analysis:**\n\nThe sentence clearly indicates a negative sentiment towards Glencore. The phrase ""slumps 30 percent"" is a strong indicator of negative performance, and ""debt fears grow"" further reinforces this negative outlook.\n\n**Sentiment Score:**\n\n*   **Glencore:** -0.850\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=105, prompt_tokens=113, total_tokens=218, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: Aberdeen Asset Management Gains Foothold In China. Snippets: Aberdeen Asset Management Gains Foothold In China. Target aspect: Aberdeen Asset Managment,"Here's my analysis:
+
+*   **Target Aspect:** Aberdeen Asset Management
+*   **Sentiment Score:** 0.650
+
+**Explanation:**
+
+The sentence ""Aberdeen Asset Management Gains Foothold In China"" expresses a positive development for the company. ""Gains Foothold"" suggests progress and opportunity in a significant market (China). Therefore, a positive sentiment score is appropriate. I've assigned 0.650 to reflect a moderately positive sentiment, as ""gaining a foothold"" is a good start but doesn't necessarily imply complete success or dominance.
+",Aberdeen Asset Managment,0.357,"ModelResponse(id='chatcmpl-10a4dec4-6f3f-430d-ba3b-2b0b9fbe1f16', created=1739174437, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Here\'s my analysis:\n\n*   **Target Aspect:** Aberdeen Asset Management\n*   **Sentiment Score:** 0.650\n\n**Explanation:**\n\nThe sentence ""Aberdeen Asset Management Gains Foothold In China"" expresses a positive development for the company. ""Gains Foothold"" suggests progress and opportunity in a significant market (China). Therefore, a positive sentiment score is appropriate. I\'ve assigned 0.650 to reflect a moderately positive sentiment, as ""gaining a foothold"" is a good start but doesn\'t necessarily imply complete success or dominance.\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=120, prompt_tokens=107, total_tokens=227, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: ARM Holdings plc Partners With International Business Machines Corp. To Drive .... Snippets: ARM Holdings plc Partners With International Business Machines Corp. To Drive .... Target aspect: IBM,"Okay, I can do that.
+
+**Analysis:**
+
+*   **Sentence:** ARM Holdings plc Partners With International Business Machines Corp. To Drive ....
+*   **Target Aspect:** IBM (International Business Machines Corp.)
+
+**Sentiment Score:**
+
+*   **IBM:** 0.450
+
+**Explanation:**
+
+The sentence describes a partnership between ARM Holdings and IBM. Partnerships are generally viewed positively in the business world, suggesting collaboration and potential for growth or innovation. Therefore, a positive sentiment score is appropriate. A score of 0.450 reflects a moderately positive sentiment, as the sentence only mentions the partnership and",IBM,0.345,"ModelResponse(id='chatcmpl-8975bca9-17bc-4f2c-99e0-72e21b4764a2', created=1739174438, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can do that.\n\n**Analysis:**\n\n*   **Sentence:** ARM Holdings plc Partners With International Business Machines Corp. To Drive ....\n*   **Target Aspect:** IBM (International Business Machines Corp.)\n\n**Sentiment Score:**\n\n*   **IBM:** 0.450\n\n**Explanation:**\n\nThe sentence describes a partnership between ARM Holdings and IBM. Partnerships are generally viewed positively in the business world, suggesting collaboration and potential for growth or innovation. Therefore, a positive sentiment score is appropriate. A score of 0.450 reflects a moderately positive sentiment, as the sentence only mentions the partnership and', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=128, prompt_tokens=112, total_tokens=240, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+"Sentence: FTSE 100 drops 2.5 pct on Glencore, metals price fears. Snippets: FTSE 100 drops 2.5 pct on Glencore, metals price fears. Target aspect: Glencore","Okay, I can analyze the sentiment towards Glencore in the provided sentence.
+
+**Sentence:** FTSE 100 drops 2.5 pct on Glencore, metals price fears.
+
+**Target Aspect:** Glencore
+
+**Sentiment Analysis:**
+
+The sentence directly links the FTSE 100's 2.5% drop to Glencore and fears surrounding metals prices. This implies that Glencore is a contributing factor to the negative market movement. The word ""drops"" and the association with ""fears"" clearly indicate a negative sentiment.
+
+**Sentiment Score:**
+
+-0.750
+",Glencore,-0.597,"ModelResponse(id='chatcmpl-ae2f9f81-7efd-4749-8169-9ab88c1874ed', created=1739174440, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Okay, I can analyze the sentiment towards Glencore in the provided sentence.\n\n**Sentence:** FTSE 100 drops 2.5 pct on Glencore, metals price fears.\n\n**Target Aspect:** Glencore\n\n**Sentiment Analysis:**\n\nThe sentence directly links the FTSE 100\'s 2.5% drop to Glencore and fears surrounding metals prices. This implies that Glencore is a contributing factor to the negative market movement. The word ""drops"" and the association with ""fears"" clearly indicate a negative sentiment.\n\n**Sentiment Score:**\n\n-0.750\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=125, prompt_tokens=125, total_tokens=250, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+"Sentence: After Barclays and Bank of America, Citigroup has blockchain in sight. Snippets: After Barclays and Bank of America, Citigroup has blockchain in sight. Target aspect: Citigroup","Okay, I can analyze the provided sentence and assign a sentiment score for the target aspect.
+
+**Sentence:** After Barclays and Bank of America, Citigroup has blockchain in sight.
+
+**Target Aspect:** Citigroup
+
+**Analysis:**
+
+The sentence indicates that Citigroup is exploring or considering blockchain technology, following in the footsteps of Barclays and Bank of America. The phrase ""has blockchain in sight"" suggests an intention to adopt or investigate blockchain, which is generally viewed positively in the current financial technology landscape. It implies innovation and a forward-thinking approach. There isn't any explicit negativity expressed.
+
+**Sentiment Score:**
+
+0.",Citigroup,0.224,"ModelResponse(id='chatcmpl-cda62e66-a7fc-448f-8339-4e01ee69d59e', created=1739174441, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can analyze the provided sentence and assign a sentiment score for the target aspect.\n\n**Sentence:** After Barclays and Bank of America, Citigroup has blockchain in sight.\n\n**Target Aspect:** Citigroup\n\n**Analysis:**\n\nThe sentence indicates that Citigroup is exploring or considering blockchain technology, following in the footsteps of Barclays and Bank of America. The phrase ""has blockchain in sight"" suggests an intention to adopt or investigate blockchain, which is generally viewed positively in the current financial technology landscape. It implies innovation and a forward-thinking approach. There isn\'t any explicit negativity expressed.\n\n**Sentiment Score:**\n\n0.', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=128, prompt_tokens=115, total_tokens=243, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: AB InBev approaches SABMiller to explore $250bn tie-up. Snippets: AB InBev approaches SABMiller to explore $250bn tie-up. Target aspect: SAB Miller,"Okay, I can do that.
+
+**Analysis:**
+
+*   **Sentence:** AB InBev approaches SABMiller to explore $250bn tie-up.
+*   **Target Aspect:** SAB Miller
+
+**Sentiment Score:**
+
+*   **SAB Miller:** 0.350
+
+**Explanation:**
+
+The sentiment towards SAB Miller is slightly positive. The phrase ""approaches...to explore $250bn tie-up"" suggests a potential acquisition or merger, which is generally viewed favorably for the target company (SAB Miller) as it often leads to increased valuation or strategic advantages. The sentiment isn",SAB Miller,0.237,"ModelResponse(id='chatcmpl-0395fe03-216d-4a27-8769-3da56e452991', created=1739174442, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can do that.\n\n**Analysis:**\n\n*   **Sentence:** AB InBev approaches SABMiller to explore $250bn tie-up.\n*   **Target Aspect:** SAB Miller\n\n**Sentiment Score:**\n\n*   **SAB Miller:** 0.350\n\n**Explanation:**\n\nThe sentiment towards SAB Miller is slightly positive. The phrase ""approaches...to explore $250bn tie-up"" suggests a potential acquisition or merger, which is generally viewed favorably for the target company (SAB Miller) as it often leads to increased valuation or strategic advantages. The sentiment isn', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=126, prompt_tokens=121, total_tokens=247, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: EU regulator backs approval for GSK injectable asthma drug. Snippets: EU regulator backs approval for GSK injectable asthma drug. Target aspect: GSK,"Okay, I can do that.
+
+**Analysis:**
+
+*   **Sentence:** EU regulator backs approval for GSK injectable asthma drug.
+*   **Target Aspect:** GSK
+
+**Sentiment Analysis:**
+
+The phrase ""backs approval"" clearly indicates a positive sentiment towards the target aspect, GSK. The EU regulator's support for the drug suggests a higher likelihood of market access and revenue generation for GSK.
+
+**Sentiment Score:**
+
+*   **GSK:** 0.750
+",GSK,0.379,"ModelResponse(id='chatcmpl-8c30f929-0651-44d0-bff7-b62f9f557236', created=1739174444, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Okay, I can do that.\n\n**Analysis:**\n\n*   **Sentence:** EU regulator backs approval for GSK injectable asthma drug.\n*   **Target Aspect:** GSK\n\n**Sentiment Analysis:**\n\nThe phrase ""backs approval"" clearly indicates a positive sentiment towards the target aspect, GSK. The EU regulator\'s support for the drug suggests a higher likelihood of market access and revenue generation for GSK.\n\n**Sentiment Score:**\n\n*   **GSK:** 0.750\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=105, prompt_tokens=111, total_tokens=216, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: Glencore fight back over debt fears lifts shares. Snippets: Glencore fight back over debt fears lifts shares. Target aspect: Glencore,"Okay, I can do that.
+
+**Analysis:**
+
+*   **Sentence:** Glencore fight back over debt fears lifts shares.
+*   **Target Aspect:** Glencore
+
+**Sentiment Analysis:**
+
+The sentence indicates that Glencore is ""fighting back"" against ""debt fears,"" and this action is causing their ""shares"" to rise. This suggests a positive reaction to Glencore's actions. The phrase ""lifts shares"" is a strong indicator of positive sentiment.
+
+**Sentiment Score:**
+
+*   **Glencore:** 0.750
+",Glencore,0.278,"ModelResponse(id='chatcmpl-a2dcfe01-7daa-486f-9099-ea6413ee46fe', created=1739174445, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Okay, I can do that.\n\n**Analysis:**\n\n*   **Sentence:** Glencore fight back over debt fears lifts shares.\n*   **Target Aspect:** Glencore\n\n**Sentiment Analysis:**\n\nThe sentence indicates that Glencore is ""fighting back"" against ""debt fears,"" and this action is causing their ""shares"" to rise. This suggests a positive reaction to Glencore\'s actions. The phrase ""lifts shares"" is a strong indicator of positive sentiment.\n\n**Sentiment Score:**\n\n*   **Glencore:** 0.750\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=115, prompt_tokens=107, total_tokens=222, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+"Sentence: News FeedFTSE 100 movers: Ashtead jumps on strong interims; Glencore, BP in .... Snippets: News FeedFTSE 100 movers: Ashtead jumps on strong interims; Glencore, BP in .... Target aspect: Ashtead",,Ashtead,0.461,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Brewer AB InBev seeks $275 bln tie-up with SABMiller. Snippets: Brewer AB InBev seeks $275 bln tie-up with SABMiller. Target aspect: SABMiller,,SABMiller,0.295,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: AB InBev looks to win over SABMiller investors. Snippets: AB InBev looks to win over SABMiller investors. Target aspect: SABMiller,,SABMiller,0.276,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: UPDATE 1-EU regulator backs approval for GSK injectable asthma drug. Snippets: UPDATE 1-EU regulator backs approval for GSK injectable asthma drug. Target aspect: GSK,,GSK,0.418,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Copper market may get a 2003-style supply shock from Glencore closures. Snippets: Copper market may get a 2003-style supply shock from Glencore closures. Target aspect: Glencore,,Glencore,-0.571,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Breakingviews: IAG can pay more for Aer Lingus. Snippets: Breakingviews: IAG can pay more for Aer Lingus. Target aspect: IAG,,IAG,0.12,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: TalkTalk hires BAE Systems to investigate cyber attack. Snippets: TalkTalk hires BAE Systems to investigate cyber attack. Target aspect: TalkTalk,,TalkTalk,-0.113,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Renewed AB InBev Bid for SABMiller Ups Stake in Beer Battle. Snippets: Renewed AB InBev Bid for SABMiller Ups Stake in Beer Battle. Target aspect: SAB Miller,,SAB Miller,0.236,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: CompaniesAB InBev signals it won't go hostile for SABMiller. Snippets: CompaniesAB InBev signals it won't go hostile for SABMiller. Target aspect: SAB Miller,,SAB Miller,0.107,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Tesco share price jumps as Q3 sales top estimates. Snippets: Tesco share price jumps as Q3 sales top estimates. Target aspect: Tesco,,Tesco,0.719,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: AstraZeneca diabetes drug combination faces delay after FDA rebuff. Snippets: AstraZeneca diabetes drug combination faces delay after FDA rebuff. Target aspect: AstraZeneca,,AstraZeneca,-0.391,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Mylan Appoints Ranjan Ray Chaudhuri as Global Commercial Lead for Mylan's Over .... Snippets: Mylan Appoints Ranjan Ray Chaudhuri as Global Commercial Lead for Mylan's Over .... Target aspect: Mylan,,Mylan,0.0,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: SABMiller revenue hit by weaker EM currencies. Snippets: SABMiller revenue hit by weaker EM currencies. Target aspect: SAB Miller,,SAB Miller,-0.439,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: UPDATE 5-SABMiller rejects AB InBev's $104 bln takeover approach. Snippets: UPDATE 5-SABMiller rejects AB InBev's $104 bln takeover approach. Target aspect: SAB Miller,,SAB Miller,0.172,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: CRH's concrete bid for Holcim Lafarge assets. Snippets: CRH's concrete bid for Holcim Lafarge assets. Target aspect: Holcim Lafarge,,Holcim Lafarge,0.282,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Market Report: Eight-day rally ends for FTSE 100 and Standard Chartered. Snippets: Market Report: Eight-day rally ends for FTSE 100 and Standard Chartered. Target aspect: Standard Chartered,,Standard Chartered,0.008,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: AB InBev offers SABMiller $3 billion breakup fee. Snippets: AB InBev offers SABMiller $3 billion breakup fee. Target aspect: SAB Miller,,SAB Miller,0.197,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: GSK joins China trade push as UK trumpets healthcare deals. Snippets: GSK joins China trade push as UK trumpets healthcare deals. Target aspect: GSK,,GSK,0.294,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: AB InBev ups offer for SABMiller as deadline looms. Snippets: AB InBev ups offer for SABMiller as deadline looms. Target aspect: SAB Miller,,SAB Miller,0.257,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Tesco PLC's Recovery Continues With A Â£250m Cash Infusion. Snippets: Tesco PLC's Recovery Continues With A Â£250m Cash Infusion. Target aspect: Tesco,,Tesco,0.337,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: METALS-Zinc surges 12 pct after Glencore cuts output, fuelling metals rally. Snippets: METALS-Zinc surges 12 pct after Glencore cuts output, fuelling metals rally. Target aspect: Glencore",,Glencore,0.162,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: CompaniesUnilever sales lifted by ice cream in soft economy. Snippets: CompaniesUnilever sales lifted by ice cream in soft economy. Target aspect: Unilever,,Unilever,0.383,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: AB InBev's Latest Bid Said Unlikely to Win SABMiller's Approval. Snippets: AB InBev's Latest Bid Said Unlikely to Win SABMiller's Approval. Target aspect: SABMiller,,SABMiller,0.127,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Persimmon share price climbs on 23% rise in full-year revenue. Snippets: Persimmon share price climbs on 23% rise in full-year revenue. Target aspect: Persimmon,,Persimmon,0.975,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Britain's FTSE forges ahead as Shire surges. Snippets: Britain's FTSE forges ahead as Shire surges. Target aspect: Shire,,Shire,0.512,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: AB InBev attacks SABMiller bid rebuffal. Snippets: AB InBev attacks SABMiller bid rebuffal. Target aspect: SABMiller,,SABMiller,-0.158,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Anheuser-Busch InBev Increases Offer for Rival SABMiller. Snippets: Anheuser-Busch InBev Increases Offer for Rival SABMiller. Target aspect: SABMiller,,SABMiller,0.24,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Why I'd Buy ARM Holdings plc And BHP Billiton plc Today. Snippets: Why I'd Buy ARM Holdings plc And BHP Billiton plc Today. Target aspect: BHP Billiton,,BHP Billiton,0.424,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Barclays PLC & Lloyds Banking Group PLC Are The 2 Banks I'd Buy Today. Snippets: Barclays PLC & Lloyds Banking Group PLC Are The 2 Banks I'd Buy Today. Target aspect: Lloyds,,Lloyds,0.434,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: EasyJet Dismisses Lufthansa Low-Cost Plan in Contest for Germany. Snippets: EasyJet Dismisses Lufthansa Low-Cost Plan in Contest for Germany. Target aspect: Lufthansa,,Lufthansa,-0.227,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Ruling sets lower limit on potential fine for BP. Snippets: Ruling sets lower limit on potential fine for BP. Target aspect: BP,,BP,-0.261,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: EXCLUSIVE-BP, China's CNPC to unveil oil alliance - sources. Snippets: EXCLUSIVE-BP, China's CNPC to unveil oil alliance - sources. Target aspect: CNPC",,CNPC,0.318,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: SAB's Chairman Digs In With Board Divided on InBev Offer. Snippets: SAB's Chairman Digs In With Board Divided on InBev Offer. Target aspect: SABMiller,,SABMiller,0.016,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Kinder Morgan and BP Form Joint Venture Limited Liability Company to Purchase .... Snippets: Kinder Morgan and BP Form Joint Venture Limited Liability Company to Purchase .... Target aspect: Kinder Morgan,,Kinder Morgan,0.225,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Supreme Court Upholds $236 Million Jury Award Against ExxonMobil. Snippets: Supreme Court Upholds $236 Million Jury Award Against ExxonMobil. Target aspect: ExxonMobil,,ExxonMobil,-0.459,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Standard Chartered's Shares Plunge 7% After Fitch Downgrade. Snippets: Standard Chartered's Shares Plunge 7% After Fitch Downgrade. Target aspect: Standard Chartered,,Standard Chartered,-0.812,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Reed Elsevier share price slides on underwhelming full-year results. Snippets: Reed Elsevier share price slides on underwhelming full-year results. Target aspect: Reed Elsevier,,Reed Elsevier,-0.526,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: WPP wins race for 'programmatic buying' agency Essence Digital. Snippets: WPP wins race for 'programmatic buying' agency Essence Digital. Target aspect: WPP,,WPP,0.238,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: BHP Billiton share price: Brazil to sue Samarco for Â£3.5bn. Snippets: BHP Billiton share price: Brazil to sue Samarco for Â£3.5bn. Target aspect: Samarco,,Samarco,-0.637,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: G4S slides on balance sheet worries. Snippets: G4S slides on balance sheet worries. Target aspect: G4S,,G4S,-0.593,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: FDA approves AstraZeneca drug for advanced lung cancer. Snippets: FDA approves AstraZeneca drug for advanced lung cancer. Target aspect: AstraZeneca,,AstraZeneca,0.507,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: UPDATE 1-Meggitt reiterates annual outlook after tough 2014. Snippets: UPDATE 1-Meggitt reiterates annual outlook after tough 2014. Target aspect: Meggitt,,Meggitt,0.021,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: HSBC appoints business leaders to board. Snippets: HSBC appoints business leaders to board. Target aspect: HSBC,,HSBC,0.154,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: HSBC shakes up board with two new business chiefs, three departures. Snippets: HSBC shakes up board with two new business chiefs, three departures. Target aspect: HSBC",,HSBC,-0.074,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Last month we added to our $GILD position and started a new one in $BWLD We see slow, steady, unspectacular growth going forward near term. Snippets: Last month we added to our $GILD position and started a new one in $BWLD We see slow, steady, unspectacular growth going forward near term. Target aspect: GILD",,GILD,0.422,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $TSLA lots of green on the 5 min, watch the hourly $259.33 possible resistance currently @ $257.00. Snippets: $TSLA lots of green on the 5 min, watch the hourly $259.33 possible resistance currently @ $257.00. Target aspect: TSLA",,TSLA,0.318,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $AMGN And #UCB Announce Positive Top-Line Results From Ph3 Study Evaluating Romosozumab In Men... https://t.co/4hBoUDR8B8 via @YahooFinance. Snippets: $AMGN And #UCB Announce Positive Top-Line Results From Ph3 Study Evaluating Romosozumab In Men... https://t.co/4hBoUDR8B8 via @YahooFinance. Target aspect: AMGN,,AMGN,0.47,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Sold some $TSLA Puts this morning Closed them at the close. Helps pay for monthly expenses. Snippets: Sold some $TSLA Puts this morning Closed them at the close. Helps pay for monthly expenses. Target aspect: TSLA,,TSLA,-0.043,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Windows 10 is awful why did it force an upgrade on my pc without my consent? #windows #Microsoft $msft. Snippets: Windows 10 is awful why did it force an upgrade on my pc without my consent? #windows #Microsoft $msft. Target aspect: MSFT,,MSFT,-0.49,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $EXPE working on the second leg of its reversal run as it breaks another down trend and continues higher. https://t.co/76DSJysyR0. Snippets: $EXPE working on the second leg of its reversal run as it breaks another down trend and continues higher. https://t.co/76DSJysyR0. Target aspect: EXPE,,EXPE,0.536,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $ENDP exit reversal .11 X 3K shares = $330 - now Long - not getting follow through, either side of price action. Snippets: $ENDP exit reversal .11 X 3K shares = $330 - now Long - not getting follow through, either side of price action. Target aspect: ENDP",,ENDP,0.469,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $CTRP not a bad long chart now that it's through sma100 resistance.. Snippets: $CTRP not a bad long chart now that it's through sma100 resistance.. Target aspect: CTRP,,CTRP,0.498,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $ENDP Was looking for a long entry but today's price action wasn't appealing. Snippets: $ENDP Was looking for a long entry but today's price action wasn't appealing. Target aspect: ENDP,,ENDP,0.034,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $INTC & $AAPL strong, tech leads DOW higher. Snippets: $INTC & $AAPL strong, tech leads DOW higher. Target aspect: INTC",,INTC,0.588,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $CTRP breaking out https://t.co/Z2je3rTKch. Snippets: $CTRP breaking out https://t.co/Z2je3rTKch. Target aspect: CTRP,,CTRP,0.364,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $CSX another strong rail today after breaking intraday resistance at 1$9.80 https://t.co/eA4FBVuqGP. Snippets: $CSX another strong rail today after breaking intraday resistance at 1$9.80 https://t.co/eA4FBVuqGP. Target aspect: CSX,,CSX,0.468,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: loading $SPY and $AAPL puts. think were toppy IMHO.. Snippets: loading $SPY and $AAPL puts. think were toppy IMHO.. Target aspect: SPY,,SPY,-0.537,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: bot $AMZN 600 weekly calls here @ 5.93. Snippets: bot $AMZN 600 weekly calls here @ 5.93. Target aspect: AMZN,,AMZN,0.659,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $FB watching for bounce tomorrow. Snippets: $FB watching for bounce tomorrow. Target aspect: FB,,FB,0.366,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: #Fintech provider $CAFN Cachet Financial Solutions Surging Forward today post earnings Up +13.26% https://t.co/9BJ3csk2i9 $JKHY $FISV #Momo. Snippets: #Fintech provider $CAFN Cachet Financial Solutions Surging Forward today post earnings Up +13.26% https://t.co/9BJ3csk2i9 $JKHY $FISV #Momo. Target aspect: CAFN,,CAFN,0.418,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Really surprised by how much $FB has now fallen. Thought there'd be some support around the 50d, but I guess not.. Snippets: Really surprised by how much $FB has now fallen. Thought there'd be some support around the 50d, but I guess not.. Target aspect: FB",,FB,-0.334,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $tsla bad day to short. Snippets: $tsla bad day to short. Target aspect: TSLA,,TSLA,0.45,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $TSLA TO RECALL 2,700 MODEL X SUVS FOR SEAT-BELT FIX. Snippets: $TSLA TO RECALL 2,700 MODEL X SUVS FOR SEAT-BELT FIX. Target aspect: TSLA",,TSLA,-0.235,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: 5 Best Analyst Rated Stocks in Last 72hrs: $ORCL $AAPL $CBS $INO $CPXX View all ratings here: https://t.co/IRID6zd5gc. Snippets: 5 Best Analyst Rated Stocks in Last 72hrs: $ORCL $AAPL $CBS $INO $CPXX View all ratings here: https://t.co/IRID6zd5gc. Target aspect: ORCL,,ORCL,0.509,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Bought some more $CELG as it is ready for a bounce.. Snippets: Bought some more $CELG as it is ready for a bounce.. Target aspect: CELG,,CELG,0.628,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Analysts impressed with progress at Tesla's flagship factory; co spent $1.6B on upgrades in '15 https://t.co/SABxCSn8cd by @tsrandall $TSLA. Snippets: Analysts impressed with progress at Tesla's flagship factory; co spent $1.6B on upgrades in '15 https://t.co/SABxCSn8cd by @tsrandall $TSLA. Target aspect: TSLA,,TSLA,0.474,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $CELG back near 104, where it opened and rallied higher last wk. A good place to take a shot https://t.co/zwHThSvFSF. Snippets: $CELG back near 104, where it opened and rallied higher last wk. A good place to take a shot https://t.co/zwHThSvFSF. Target aspect: CELG",,CELG,0.465,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $AMZN new HOD with conviction keeping $570 on watch for Resistance.. Snippets: $AMZN new HOD with conviction keeping $570 on watch for Resistance.. Target aspect: AMZN,,AMZN,0.529,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $FB  rejecting HIGHS shortable...at 109. Snippets: $FB  rejecting HIGHS shortable...at 109. Target aspect: FB,,FB,-0.387,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $CSX is up today to report.  Wall Street is expecting EPS to be at $0.37, and revenues at $2,732B.. Snippets: $CSX is up today to report.  Wall Street is expecting EPS to be at $0.37, and revenues at $2,732B.. Target aspect: CSX",,CSX,0.461,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $FB turns back down in early trading.... https://t.co/reuf5PzhBm. Snippets: $FB turns back down in early trading.... https://t.co/reuf5PzhBm. Target aspect: FB,,FB,-0.393,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Followed the levels I shared with you on $NFLX $GOOGL $TSLA calls for nice gains. Still holding $FB 110 calls. Week made in a morning.. Snippets: Followed the levels I shared with you on $NFLX $GOOGL $TSLA calls for nice gains. Still holding $FB 110 calls. Week made in a morning.. Target aspect: FB,,FB,0.471,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $FAST $GWW - daily sales slowing again, pretty timely coincident indicator https://t.co/m6BKHBkzK5. Snippets: $FAST $GWW - daily sales slowing again, pretty timely coincident indicator https://t.co/m6BKHBkzK5. Target aspect: GWW",,GWW,-0.105,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Tesla Motors recalls 2,700 Model X SUVs $TSLA https://t.co/xDGrAExkKz. Snippets: Tesla Motors recalls 2,700 Model X SUVs $TSLA https://t.co/xDGrAExkKz. Target aspect: TSLA",,TSLA,-0.367,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: SiriusXM added 465,000 net new subscribers in the first quarter of 2016 $SIRI #CEO #sales #marketresearch #tech #entrepreneur #Speaker. Snippets: SiriusXM added 465,000 net new subscribers in the first quarter of 2016 $SIRI #CEO #sales #marketresearch #tech #entrepreneur #Speaker. Target aspect: SIRI",,SIRI,0.466,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: 5-star analyst @brianwieser from Pivotal Research upgraded rating on $GOOGL to BUY. Brian has a 79% success rate https://t.co/t0dn02EOH5. Snippets: 5-star analyst @brianwieser from Pivotal Research upgraded rating on $GOOGL to BUY. Brian has a 79% success rate https://t.co/t0dn02EOH5. Target aspect: GOOGL,,GOOGL,0.561,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Long $ENDP @ $26.23 on $AGN b/o rumor. Snippets: Long $ENDP @ $26.23 on $AGN b/o rumor. Target aspect: ENDP,,ENDP,0.57,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: You know that back seat? Don't sit in it. - $TSLA -> Tesla recalls 2,700 Model X cars https://t.co/7J0Gwz89ZC. Snippets: You know that back seat? Don't sit in it. - $TSLA -> Tesla recalls 2,700 Model X cars https://t.co/7J0Gwz89ZC. Target aspect: TSLA",,TSLA,-0.319,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: This $BBBY stock options trade would have more than doubled your money https://t.co/Oa0loiRIJL via @TheStreet. Snippets: This $BBBY stock options trade would have more than doubled your money https://t.co/Oa0loiRIJL via @TheStreet. Target aspect: BBBY,,BBBY,0.294,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: X marks the recall: Tesla recalls #ModelX for faulty 3rd row seat. https://t.co/HSqdoVry07 $TSLA https://t.co/4Cs3CNZEBB. Snippets: X marks the recall: Tesla recalls #ModelX for faulty 3rd row seat. https://t.co/HSqdoVry07 $TSLA https://t.co/4Cs3CNZEBB. Target aspect: TSLA,,TSLA,-0.26,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $STX move off the bottom but still in bear market #datasecurity $EMC $SNDK $WDC https://t.co/VkYdWPxeSN. Snippets: $STX move off the bottom but still in bear market #datasecurity $EMC $SNDK $WDC https://t.co/VkYdWPxeSN. Target aspect: WDC,,WDC,-0.421,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $VRTX early technical BUY signal... for confirmation > 86 it needs some fundam. incentive https://t.co/QuYSrqFo2x. Snippets: $VRTX early technical BUY signal... for confirmation > 86 it needs some fundam. incentive https://t.co/QuYSrqFo2x. Target aspect: VRTX,,VRTX,0.464,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $FB (110.20) is starting to show some relative strength and signs of potential B/O on the daily.. Snippets: $FB (110.20) is starting to show some relative strength and signs of potential B/O on the daily.. Target aspect: FB,,FB,0.334,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: @CGrantWSJ I think this $TSLA bubble might go on for some time. So long as ppl love the cars, they might keep getting funding.. Snippets: @CGrantWSJ I think this $TSLA bubble might go on for some time. So long as ppl love the cars, they might keep getting funding.. Target aspect: TSLA",,TSLA,0.424,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $SBUX heading for the 200DMA and certain doom if it can not hold there.. Snippets: $SBUX heading for the 200DMA and certain doom if it can not hold there.. Target aspect: SBUX,,SBUX,-0.437,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $AMZN long into earnings. looks good over 600. Snippets: $AMZN long into earnings. looks good over 600. Target aspect: AMZN,,AMZN,0.613,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $GOOGL is a short below 740 into the upper BB and is overbought. Snippets: $GOOGL is a short below 740 into the upper BB and is overbought. Target aspect: GOOGL,,GOOGL,-0.48,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Timberrrr $TSLA https://t.co/MRBgfDHHVa. Snippets: Timberrrr $TSLA https://t.co/MRBgfDHHVa. Target aspect: TSLA,,TSLA,-0.562,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Interest Heats Up for @Yahoo $YHOO - The Wall Street Journal  https://t.co/j5jVjI9bia. Snippets: Interest Heats Up for @Yahoo $YHOO - The Wall Street Journal  https://t.co/j5jVjI9bia. Target aspect: YHOO,,YHOO,0.413,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Tesla Recalling 2,700 Model X Units, Related to Faulty Latch for Third-Row Seats; Fall To $252.50 Level on Recall, Shares Up 1%  $TSLA. Snippets: Tesla Recalling 2,700 Model X Units, Related to Faulty Latch for Third-Row Seats; Fall To $252.50 Level on Recall, Shares Up 1%  $TSLA. Target aspect: TSLA",,TSLA,-0.385,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Commented on It's Time To Embrace Dividend Growth https://t.co/wc2qfP79TN $ABBV $CSCO $WYN. Snippets: Commented on It's Time To Embrace Dividend Growth https://t.co/wc2qfP79TN $ABBV $CSCO $WYN. Target aspect: WYN,,WYN,0.284,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Word on the street is that Allergen is looking at Endo International after the failed Pfizer merger. May-20 $35 calls active. $ENDP. Snippets: Word on the street is that Allergen is looking at Endo International after the failed Pfizer merger. May-20 $35 calls active. $ENDP. Target aspect: ENDP,,ENDP,0.472,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $SBUX inverted head & shoulders pattern in the works. bullish.. Snippets: $SBUX inverted head & shoulders pattern in the works. bullish.. Target aspect: SBUX,"Okay, I can analyze the provided sentence and assign a sentiment score to the target aspect.
+
+**Sentence:** $SBUX inverted head & shoulders pattern in the works. bullish..
+
+**Target Aspect:** SBUX
+
+**Analysis:**
+
+The sentence mentions an ""inverted head & shoulders pattern,"" which is a bullish technical analysis pattern. The sentence explicitly states ""bullish,"" further reinforcing a positive outlook. Therefore, the sentiment towards SBUX is positive.
+
+**Sentiment Score:**
+
+**SBUX: 0.850**
+
+**Explanation of Score:**
+
+*   **0.850:**",SBUX,0.572,"ModelResponse(id='chatcmpl-29928264-1361-4e4b-8cba-340fe1a2769a', created=1739174487, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can analyze the provided sentence and assign a sentiment score to the target aspect.\n\n**Sentence:** $SBUX inverted head & shoulders pattern in the works. bullish..\n\n**Target Aspect:** SBUX\n\n**Analysis:**\n\nThe sentence mentions an ""inverted head & shoulders pattern,"" which is a bullish technical analysis pattern. The sentence explicitly states ""bullish,"" further reinforcing a positive outlook. Therefore, the sentiment towards SBUX is positive.\n\n**Sentiment Score:**\n\n**SBUX: 0.850**\n\n**Explanation of Score:**\n\n*   **0.850:**', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=128, prompt_tokens=118, total_tokens=246, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: I see a 20 percent upside in $FB shares from here. Snippets: I see a 20 percent upside in $FB shares from here. Target aspect: FB,"Okay, I can do that.
+
+**Analysis:**
+
+*   **Sentence:** I see a 20 percent upside in $FB shares from here.
+*   **Target Aspect:** FB (Facebook/Meta)
+*   **Sentiment:** The sentence expresses a positive outlook on Facebook shares, specifically mentioning a ""20 percent upside."" This indicates an expectation of future gains.
+
+**Sentiment Score:**
+
+*   **FB:** 0.750
+",FB,0.589,"ModelResponse(id='chatcmpl-c1b3897d-4be7-488e-85ff-1dd49c0bfce2', created=1739174488, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Okay, I can do that.\n\n**Analysis:**\n\n*   **Sentence:** I see a 20 percent upside in $FB shares from here.\n*   **Target Aspect:** FB (Facebook/Meta)\n*   **Sentiment:** The sentence expresses a positive outlook on Facebook shares, specifically mentioning a ""20 percent upside."" This indicates an expectation of future gains.\n\n**Sentiment Score:**\n\n*   **FB:** 0.750\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=96, prompt_tokens=116, total_tokens=212, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: long $AAPL. Snippets: long $AAPL. Target aspect: AAPL,"Okay, I'm ready to analyze the sentiment.
+
+**Sentence:** long $AAPL.
+
+**Snippets:** long $AAPL.
+
+**Target aspect:** AAPL (Apple Inc.)
+
+**Sentiment Analysis:**
+
+The phrase ""long $AAPL"" is a very common and direct expression of a bullish sentiment towards Apple stock. ""Long"" in this context means the investor is betting that the price of Apple stock will increase.
+
+**Sentiment Score:**
+
+**AAPL: 0.850**
+
+**Explanation:**
+
+*   The sentiment is strongly positive, hence the high score.
+*   I've assigned",AAPL,0.648,"ModelResponse(id='chatcmpl-bc92da31-1154-4db8-8281-10657a4bfb35', created=1739174490, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I\'m ready to analyze the sentiment.\n\n**Sentence:** long $AAPL.\n\n**Snippets:** long $AAPL.\n\n**Target aspect:** AAPL (Apple Inc.)\n\n**Sentiment Analysis:**\n\nThe phrase ""long $AAPL"" is a very common and direct expression of a bullish sentiment towards Apple stock. ""Long"" in this context means the investor is betting that the price of Apple stock will increase.\n\n**Sentiment Score:**\n\n**AAPL: 0.850**\n\n**Explanation:**\n\n*   The sentiment is strongly positive, hence the high score.\n*   I\'ve assigned', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=132, prompt_tokens=97, total_tokens=229, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: $FB popping up to HOD. Snippets: $FB popping up to HOD. Target aspect: FB,"Okay, I can analyze the provided sentence and assign a sentiment score.
+
+**Sentence:** $FB popping up to HOD.
+
+**Target Aspect:** FB (Facebook/Meta)
+
+**Analysis:**
+
+*   ""Popping up"" suggests a positive price movement.
+*   ""HOD"" likely refers to ""High of Day,"" indicating the stock price is reaching its highest point for the current trading day. This is generally considered a positive signal.
+
+**Sentiment Score:**
+
+Based on the analysis, the sentiment towards Facebook (FB) is positive.
+
+**Sentiment Score: 0.750**
+",FB,0.446,"ModelResponse(id='chatcmpl-cb668eaf-43d6-45c9-8b1e-63efa46778d6', created=1739174491, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Okay, I can analyze the provided sentence and assign a sentiment score.\n\n**Sentence:** $FB popping up to HOD.\n\n**Target Aspect:** FB (Facebook/Meta)\n\n**Analysis:**\n\n*   ""Popping up"" suggests a positive price movement.\n*   ""HOD"" likely refers to ""High of Day,"" indicating the stock price is reaching its highest point for the current trading day. This is generally considered a positive signal.\n\n**Sentiment Score:**\n\nBased on the analysis, the sentiment towards Facebook (FB) is positive.\n\n**Sentiment Score: 0.750**\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=125, prompt_tokens=100, total_tokens=225, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: $TSLA yeah lets go down to 230s lol. Snippets: $TSLA yeah lets go down to 230s lol. Target aspect: TSLA,"Okay, I can analyze the sentiment of the provided sentence regarding the target aspect ""TSLA"".
+
+**Sentence:** $TSLA yeah lets go down to 230s lol.
+
+**Target Aspect:** TSLA
+
+**Analysis:**
+
+The sentence expresses an expectation or prediction that TSLA's price will decrease to the $230s. The ""lol"" at the end suggests a somewhat dismissive or sarcastic tone. While ""yeah"" might seem positive in isolation, in this context, it's used to emphasize the anticipated downward movement. The overall sentiment is negative, as the speaker is anticipating a price decrease",TSLA,-0.355,"ModelResponse(id='chatcmpl-8b15df7a-002d-4b96-942e-96f75c34fea3', created=1739174493, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can analyze the sentiment of the provided sentence regarding the target aspect ""TSLA"".\n\n**Sentence:** $TSLA yeah lets go down to 230s lol.\n\n**Target Aspect:** TSLA\n\n**Analysis:**\n\nThe sentence expresses an expectation or prediction that TSLA\'s price will decrease to the $230s. The ""lol"" at the end suggests a somewhat dismissive or sarcastic tone. While ""yeah"" might seem positive in isolation, in this context, it\'s used to emphasize the anticipated downward movement. The overall sentiment is negative, as the speaker is anticipating a price decrease', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=128, prompt_tokens=117, total_tokens=245, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: #NDX component Tesla has announced it is recalling 2700 Model X SUVs. $TSLA. Snippets: #NDX component Tesla has announced it is recalling 2700 Model X SUVs. $TSLA. Target aspect: TSLA,"Okay, I can analyze the sentiment of the provided sentence regarding Tesla (TSLA).
+
+**Sentence:** #NDX component Tesla has announced it is recalling 2700 Model X SUVs. $TSLA.
+
+**Target Aspect:** TSLA (Tesla)
+
+**Analysis:**
+
+The sentence reports a recall of 2700 Model X SUVs. Recalls are generally viewed negatively by the market as they can indicate quality control issues, potential safety concerns, and increased costs for the company (repairs, logistics, reputational damage). While the number of vehicles recalled (2700) might not be a massive",TSLA,-0.221,"ModelResponse(id='chatcmpl-2c81a9d8-341a-45c1-b6e3-dd07f919a0c2', created=1739174494, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can analyze the sentiment of the provided sentence regarding Tesla (TSLA).\n\n**Sentence:** #NDX component Tesla has announced it is recalling 2700 Model X SUVs. $TSLA.\n\n**Target Aspect:** TSLA (Tesla)\n\n**Analysis:**\n\nThe sentence reports a recall of 2700 Model X SUVs. Recalls are generally viewed negatively by the market as they can indicate quality control issues, potential safety concerns, and increased costs for the company (repairs, logistics, reputational damage). While the number of vehicles recalled (2700) might not be a massive', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=128, prompt_tokens=133, total_tokens=261, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: $YHOO making new HOD. Snippets: $YHOO making new HOD. Target aspect: YHOO,"Okay, I can analyze the sentiment of the provided sentence regarding the target aspect ""YHOO"".
+
+The sentence ""$YHOO making new HOD"" implies that Yahoo's stock ($YHOO) is reaching a new high of day (HOD). This is generally considered a positive development for the stock.
+
+Therefore, my sentiment analysis is as follows:
+
+*   **Target Aspect:** YHOO
+*   **Sentiment Score:** 0.750
+
+**Explanation:**
+
+I assigned a score of 0.750 because ""making new HOD"" is a strong indicator of positive price",YHOO,0.442,"ModelResponse(id='chatcmpl-24c7b0f9-a8ce-4f45-9d5c-11e34b927d3a', created=1739174496, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can analyze the sentiment of the provided sentence regarding the target aspect ""YHOO"".\n\nThe sentence ""$YHOO making new HOD"" implies that Yahoo\'s stock ($YHOO) is reaching a new high of day (HOD). This is generally considered a positive development for the stock.\n\nTherefore, my sentiment analysis is as follows:\n\n*   **Target Aspect:** YHOO\n*   **Sentiment Score:** 0.750\n\n**Explanation:**\n\nI assigned a score of 0.750 because ""making new HOD"" is a strong indicator of positive price', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=121, prompt_tokens=101, total_tokens=222, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+"Sentence: Daily Mail owner considering Yahoo bid $yhoo ,up 2,05% https://t.co/extZr1riyP. Snippets: Daily Mail owner considering Yahoo bid $yhoo ,up 2,05% https://t.co/extZr1riyP. Target aspect: YHOO","Here's my analysis of the provided sentence:
+
+**Sentence:** Daily Mail owner considering Yahoo bid $yhoo ,up 2,05% https://t.co/extZr1riyP
+
+**Target Aspect:** YHOO (Yahoo)
+
+**Sentiment Score:** 0.450
+
+**Explanation:**
+
+The sentence indicates that the Daily Mail owner is considering a bid for Yahoo. The phrase ""up 2.05%"" suggests a positive market reaction to this news, implying a potential increase in Yahoo's value. Therefore, the sentiment towards Yahoo is moderately positive.
+",YHOO,0.288,"ModelResponse(id='chatcmpl-550d6284-e3bd-4033-84eb-1e2fc1778dd0', created=1739174497, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Here\'s my analysis of the provided sentence:\n\n**Sentence:** Daily Mail owner considering Yahoo bid $yhoo ,up 2,05% https://t.co/extZr1riyP\n\n**Target Aspect:** YHOO (Yahoo)\n\n**Sentiment Score:** 0.450\n\n**Explanation:**\n\nThe sentence indicates that the Daily Mail owner is considering a bid for Yahoo. The phrase ""up 2.05%"" suggests a positive market reaction to this news, implying a potential increase in Yahoo\'s value. Therefore, the sentiment towards Yahoo is moderately positive.\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=123, prompt_tokens=145, total_tokens=268, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: $PCLN Back to Back intraday reversals look out below. Shorts moving in!. Snippets: $PCLN Back to Back intraday reversals look out below. Shorts moving in!. Target aspect: PCLN,"Okay, I can analyze the sentiment of the provided sentence regarding the target aspect ""PCLN"".
+
+**Analysis:**
+
+The sentence expresses a negative sentiment towards PCLN (which is the old ticker for Booking Holdings). The phrases ""Back to Back intraday reversals look out below"" and ""Shorts moving in!"" strongly suggest a bearish outlook. ""Look out below"" implies a significant downward price movement is expected, and ""Shorts moving in!"" indicates increased short-selling activity, further reinforcing the negative sentiment.
+
+**Sentiment Score:**
+
+Based on the strong negative indicators, I assign the following sentiment score:
+
+**Target Aspect:**",PCLN,-0.53,"ModelResponse(id='chatcmpl-46f4c0e3-da11-4169-9cc1-60d3c4eed2e3', created=1739174498, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can analyze the sentiment of the provided sentence regarding the target aspect ""PCLN"".\n\n**Analysis:**\n\nThe sentence expresses a negative sentiment towards PCLN (which is the old ticker for Booking Holdings). The phrases ""Back to Back intraday reversals look out below"" and ""Shorts moving in!"" strongly suggest a bearish outlook. ""Look out below"" implies a significant downward price movement is expected, and ""Shorts moving in!"" indicates increased short-selling activity, further reinforcing the negative sentiment.\n\n**Sentiment Score:**\n\nBased on the strong negative indicators, I assign the following sentiment score:\n\n**Target Aspect:**', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=127, prompt_tokens=123, total_tokens=250, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: $PYPL great vol flow trade here.. Love this company long time.. Snippets: $PYPL great vol flow trade here.. Love this company long time.. Target aspect: PYPL,"Okay, I can analyze the sentiment of the provided sentence regarding the target aspect ""PYPL"".
+
+**Sentence:** $PYPL great vol flow trade here.. Love this company long time..
+
+**Target Aspect:** PYPL
+
+**Analysis:**
+
+The sentence expresses a positive sentiment towards PYPL (PayPal). The phrases ""great vol flow trade here"" and ""Love this company long time"" clearly indicate a favorable view. ""Great vol flow trade"" suggests positive trading activity related to the stock, and ""Love this company long time"" expresses strong, enduring affection for the company.
+
+**Sentiment Score:**
+
+0.850",PYPL,0.408,"ModelResponse(id='chatcmpl-d47c3847-d6c1-4b8e-90b3-7684fed6ea88', created=1739174500, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can analyze the sentiment of the provided sentence regarding the target aspect ""PYPL"".\n\n**Sentence:** $PYPL great vol flow trade here.. Love this company long time..\n\n**Target Aspect:** PYPL\n\n**Analysis:**\n\nThe sentence expresses a positive sentiment towards PYPL (PayPal). The phrases ""great vol flow trade here"" and ""Love this company long time"" clearly indicate a favorable view. ""Great vol flow trade"" suggests positive trading activity related to the stock, and ""Love this company long time"" expresses strong, enduring affection for the company.\n\n**Sentiment Score:**\n\n0.850', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=128, prompt_tokens=117, total_tokens=245, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: $ISRG PT raised to $700 from $640 at Leerink - keeps Outperform rated. Snippets: $ISRG PT raised to $700 from $640 at Leerink - keeps Outperform rated. Target aspect: ISRG,"Okay, I can analyze the sentiment towards the target aspect ""ISRG"" in the provided sentence.
+
+**Sentence:** $ISRG PT raised to $700 from $640 at Leerink - keeps Outperform rated.
+
+**Target Aspect:** ISRG
+
+**Analysis:**
+
+The sentence indicates a positive outlook for ISRG (Intuitive Surgical). The price target (PT) being raised from $640 to $700 suggests that Leerink analysts believe the stock has further upside potential. The ""Outperform"" rating further reinforces this positive sentiment.
+
+**Sentiment Score:**
+
+Based on this analysis,",ISRG,0.489,"ModelResponse(id='chatcmpl-2c5dfba6-242a-4014-b886-f7c4e84fe3dd', created=1739174501, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can analyze the sentiment towards the target aspect ""ISRG"" in the provided sentence.\n\n**Sentence:** $ISRG PT raised to $700 from $640 at Leerink - keeps Outperform rated.\n\n**Target Aspect:** ISRG\n\n**Analysis:**\n\nThe sentence indicates a positive outlook for ISRG (Intuitive Surgical). The price target (PT) being raised from $640 to $700 suggests that Leerink analysts believe the stock has further upside potential. The ""Outperform"" rating further reinforces this positive sentiment.\n\n**Sentiment Score:**\n\nBased on this analysis,', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=128, prompt_tokens=135, total_tokens=263, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: Long $TSLA short $MBLY https://t.co/jSpUSzo6na. Snippets: Long $TSLA short $MBLY https://t.co/jSpUSzo6na. Target aspect: TSLA,"Here's the analysis:
+
+*   **Target Aspect:** TSLA (Tesla Inc.)
+*   **Sentiment:** 0.750
+
+**Explanation:**
+
+The phrase ""Long $TSLA"" indicates a bullish (positive) sentiment towards Tesla. ""Long"" in trading terminology means buying an asset with the expectation that its price will increase. Therefore, a positive sentiment score is appropriate. I've assigned 0.750 to reflect a moderately strong positive sentiment.
+",TSLA,0.607,"ModelResponse(id='chatcmpl-6a75f135-4665-46e2-8173-c7e91139c248', created=1739174503, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='stop', index=0, message=Message(content='Here\'s the analysis:\n\n*   **Target Aspect:** TSLA (Tesla Inc.)\n*   **Sentiment:** 0.750\n\n**Explanation:**\n\nThe phrase ""Long $TSLA"" indicates a bullish (positive) sentiment towards Tesla. ""Long"" in trading terminology means buying an asset with the expectation that its price will increase. Therefore, a positive sentiment score is appropriate. I\'ve assigned 0.750 to reflect a moderately strong positive sentiment.\n', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=101, prompt_tokens=131, total_tokens=232, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+"Sentence: $TSLA recalls 2,700 Model X cars. Stock dropping hard.... Snippets: $TSLA recalls 2,700 Model X cars. Stock dropping hard.... Target aspect: TSLA","Okay, I can analyze the provided sentence and assign a sentiment score to the target aspect.
+
+**Sentence:** $TSLA recalls 2,700 Model X cars. Stock dropping hard....
+
+**Target Aspect:** TSLA
+
+**Analysis:**
+
+The sentence mentions a recall of Tesla's Model X cars and explicitly states that the stock is ""dropping hard.""  A recall is generally negative news for a car manufacturer, as it implies potential quality or safety issues. The phrase ""stock dropping hard"" reinforces the negative impact on the company's valuation.
+
+**Sentiment Score:**
+
+-0.850
+
+**",TSLA,-0.626,"ModelResponse(id='chatcmpl-4d2eed45-b079-474a-87ab-7835f90f87dc', created=1739174504, model='gemini-2.0-flash-exp', object='chat.completion', system_fingerprint=None, choices=[Choices(finish_reason='length', index=0, message=Message(content='Okay, I can analyze the provided sentence and assign a sentiment score to the target aspect.\n\n**Sentence:** $TSLA recalls 2,700 Model X cars. Stock dropping hard....\n\n**Target Aspect:** TSLA\n\n**Analysis:**\n\nThe sentence mentions a recall of Tesla\'s Model X cars and explicitly states that the stock is ""dropping hard.""  A recall is generally negative news for a car manufacturer, as it implies potential quality or safety issues. The phrase ""stock dropping hard"" reinforces the negative impact on the company\'s valuation.\n\n**Sentiment Score:**\n\n-0.850\n\n**', role='assistant', tool_calls=None, function_call=None))], usage=Usage(completion_tokens=128, prompt_tokens=123, total_tokens=251, completion_tokens_details=None, prompt_tokens_details=None), vertex_ai_grounding_metadata=[], vertex_ai_safety_results=[], vertex_ai_citation_metadata=[])"
+Sentence: $AAPL - Has broken its downtrend - but 200DMA proving to be stiff resistance short term. https://t.co/VlzlgvIHZV. Snippets: $AAPL - Has broken its downtrend - but 200DMA proving to be stiff resistance short term. https://t.co/VlzlgvIHZV. Target aspect: AAPL,,AAPL,0.222,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: potential defect with third-row seat belts. Tesla Motors recalls 2,700 Model X SUVs $TSLA https://t.co/YVYDncdNdi. Snippets: potential defect with third-row seat belts. Tesla Motors recalls 2,700 Model X SUVs $TSLA https://t.co/YVYDncdNdi. Target aspect: TSLA",,TSLA,-0.366,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Netflix Grows Efforts To Create Loyal Customers $NFLX https://t.co/5QXBkoBphe. Snippets: Netflix Grows Efforts To Create Loyal Customers $NFLX https://t.co/5QXBkoBphe. Target aspect: NFLX,,NFLX,0.225,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Tesla Motors recalls 2,700 Model X SUVs $TSLA https://t.co/F55dx4aegI. Snippets: Tesla Motors recalls 2,700 Model X SUVs $TSLA https://t.co/F55dx4aegI. Target aspect: TSLA",,TSLA,-0.307,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $FB $AAPL $NKE $JWN bearish charts keep getting worse.. Snippets: $FB $AAPL $NKE $JWN bearish charts keep getting worse.. Target aspect: NKE,,NKE,-0.619,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Apple expected to launch new iPhone, iPad today $AAPL https://t.co/XfnICWeBeG. Snippets: Apple expected to launch new iPhone, iPad today $AAPL https://t.co/XfnICWeBeG. Target aspect: AAPL",,AAPL,0.264,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $TSLA stock gaining steam... Plus other notable moves from this week: https://t.co/Hz0wdp5za1. Snippets: $TSLA stock gaining steam... Plus other notable moves from this week: https://t.co/Hz0wdp5za1. Target aspect: TSLA,,TSLA,0.349,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $GILD  is expanding its research facilities...keeping up with the pace of innovation  https://t.co/uOE7FJ4LOP. Snippets: $GILD  is expanding its research facilities...keeping up with the pace of innovation  https://t.co/uOE7FJ4LOP. Target aspect: GILD,,GILD,0.297,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $ENDP - we saw a large order in this one last week, someone also accumulating May & Jun 35's Calls today. Snippets: $ENDP - we saw a large order in this one last week, someone also accumulating May & Jun 35's Calls today. Target aspect: ENDP",,ENDP,0.613,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: TripAdvisor jumps on M&A rumors https://t.co/O4lwCDXMbr $TRIP. Snippets: TripAdvisor jumps on M&A rumors https://t.co/O4lwCDXMbr $TRIP. Target aspect: TRIP,,TRIP,0.47,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Seat belt recall? who cares....  I'm a buyer $TSLA. Snippets: Seat belt recall? who cares....  I'm a buyer $TSLA. Target aspect: TSLA,,TSLA,0.598,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $FB gettin in the buy zone soon ;). Snippets: $FB gettin in the buy zone soon ;). Target aspect: FB,,FB,0.361,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Starbucks downgraded on same day as new downgraded rewards program starts  $SBUX. Snippets: Starbucks downgraded on same day as new downgraded rewards program starts  $SBUX. Target aspect: SBUX,,SBUX,-0.46,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $ADBE technical alerts: Expansion Breakout, Gilligan's Island Sell Setup, Volume Surge, and New 52... https://t.co/LxX66tknFH. Snippets: $ADBE technical alerts: Expansion Breakout, Gilligan's Island Sell Setup, Volume Surge, and New 52... https://t.co/LxX66tknFH. Target aspect: ADBE",,ADBE,0.208,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $AAPL a new long IF 110.61 is broken. Targets are 112.19, 119.86 & 123.82. Bears must retake 102.77. $QQQ $NQ_F $NDX https://t.co/6l3m1wXChw. Snippets: $AAPL a new long IF 110.61 is broken. Targets are 112.19, 119.86 & 123.82. Bears must retake 102.77. $QQQ $NQ_F $NDX https://t.co/6l3m1wXChw. Target aspect: QQQ",,QQQ,0.172,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Thank you $GOOG (Google Alphabet) and $FB (Facebook) stocks! What a nice reversal.. Snippets: Thank you $GOOG (Google Alphabet) and $FB (Facebook) stocks! What a nice reversal.. Target aspect: GOOG,,GOOG,0.318,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Tesla Motors recalls 2,700 Model X SUVs https://t.co/BFWS3DbM0U $TSLA. Snippets: Tesla Motors recalls 2,700 Model X SUVs https://t.co/BFWS3DbM0U $TSLA. Target aspect: TSLA",,TSLA,-0.424,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $AAPL bounces off support, it seems. Snippets: $AAPL bounces off support, it seems. Target aspect: AAPL",,AAPL,0.443,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Deutsche Bank downgrades Starbucks because of new loyalty program https://t.co/Iy4LCUGABc $SBUX. Snippets: Deutsche Bank downgrades Starbucks because of new loyalty program https://t.co/Iy4LCUGABc $SBUX. Target aspect: SBUX,,SBUX,-0.436,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $GOOGL gets an upgrade price target $970. Snippets: $GOOGL gets an upgrade price target $970. Target aspect: GOOGL,,GOOGL,0.47,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: NetApp downgraded by Macquarie to underperform. $22.00 PT. https://t.co/XCNgws0t4q $NTAP #NTAP via @RatingsNetwork. Snippets: NetApp downgraded by Macquarie to underperform. $22.00 PT. https://t.co/XCNgws0t4q $NTAP #NTAP via @RatingsNetwork. Target aspect: NTAP,,NTAP,-0.574,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Tesla is recalling 2,700 Model X cars: https://t.co/8Z7BkVsTl9 $TSLA. Snippets: Tesla is recalling 2,700 Model X cars: https://t.co/8Z7BkVsTl9 $TSLA. Target aspect: TSLA",,TSLA,-0.291,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $fb small long 109.25 via calls. Snippets: $fb small long 109.25 via calls. Target aspect: FB,,FB,0.352,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Commodity Channel Index Indicator signaled a Oversold for $FB #stockmarket https://t.co/VM32d3M9xi https://t.co/cvkojk05Xn. Snippets: Commodity Channel Index Indicator signaled a Oversold for $FB #stockmarket https://t.co/VM32d3M9xi https://t.co/cvkojk05Xn. Target aspect: FB,,FB,0.324,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Isolationism? Another Sell Rating, Sell Ratings On SPY, QQQ, IWM And Several Companies https://t.co/6NKWEcrBA5 $AAPL $AXP $BAC $BLUE $FXE. Snippets: Isolationism? Another Sell Rating, Sell Ratings On SPY, QQQ, IWM And Several Companies https://t.co/6NKWEcrBA5 $AAPL $AXP $BAC $BLUE $FXE. Target aspect: FXE",,FXE,-0.389,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: ALERT: New RSI signal created on $COST - Buy at 148.78 - Time: 14:19 - Strength: 10. Powered by https://t.co/MhOBzU3Rmx. Snippets: ALERT: New RSI signal created on $COST - Buy at 148.78 - Time: 14:19 - Strength: 10. Powered by https://t.co/MhOBzU3Rmx. Target aspect: COST,,COST,0.497,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $SAP Q1 disappoints as #software licenses down. Real problem? #Cloud growth trails $MSFT $ORCL $GOOG $CRM $ADBE https://t.co/jNDphllzq5. Snippets: $SAP Q1 disappoints as #software licenses down. Real problem? #Cloud growth trails $MSFT $ORCL $GOOG $CRM $ADBE https://t.co/jNDphllzq5. Target aspect: SAP,,SAP,-0.431,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $FB gone green on day. Snippets: $FB gone green on day. Target aspect: FB,,FB,0.476,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $AMZN rejected that 604 to the penny. Weak open and it goes r/g within first 30 mins, could have 8-10 points in it. https://t.co/58tEAEXxpE. Snippets: $AMZN rejected that 604 to the penny. Weak open and it goes r/g within first 30 mins, could have 8-10 points in it. https://t.co/58tEAEXxpE. Target aspect: AMZN",,AMZN,-0.229,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $GOOGL is setting up above its 50-day moving average. https://t.co/tTm9RnFoXJ. Snippets: $GOOGL is setting up above its 50-day moving average. https://t.co/tTm9RnFoXJ. Target aspect: GOOGL,,GOOGL,0.516,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $FB still a dog going much lower this week. Snippets: $FB still a dog going much lower this week. Target aspect: FB,,FB,-0.554,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Academics claim Google Android two-factor authentication is breakable. #security #authentication #hacking $goog https://t.co/nJx4mnrGLo. Snippets: Academics claim Google Android two-factor authentication is breakable. #security #authentication #hacking $goog https://t.co/nJx4mnrGLo. Target aspect: GOOG,,GOOG,-0.309,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: ALERT: New MACD signal created on $CTXS - Buy at 77.09 - Time: 18:23 - Strength: 10. Powered by https://t.co/4TdgjEDLLZ. Snippets: ALERT: New MACD signal created on $CTXS - Buy at 77.09 - Time: 18:23 - Strength: 10. Powered by https://t.co/4TdgjEDLLZ. Target aspect: CTXS,,CTXS,0.49,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $BAC $ADSK $NFLX long this morning. Snippets: $BAC $ADSK $NFLX long this morning. Target aspect: NFLX,,NFLX,0.476,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Locked in some $FB puts for nice gain. Snippets: Locked in some $FB puts for nice gain. Target aspect: FB,,FB,-0.524,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: 3rd red day in a row ? $TSLA. Snippets: 3rd red day in a row ? $TSLA. Target aspect: TSLA,,TSLA,-0.43,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Just went long $ILMN. Snippets: Just went long $ILMN. Target aspect: ILMN,,ILMN,0.558,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: #Apple up almost 20% from its February lows with very little fanfare. $AAPL. Snippets: #Apple up almost 20% from its February lows with very little fanfare. $AAPL. Target aspect: AAPL,,AAPL,0.431,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $DISH weakness continues again. 49.43 area resistance after last week. Snippets: $DISH weakness continues again. 49.43 area resistance after last week. Target aspect: DISH,,DISH,-0.41,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $AAPL iPhone shipments on track to exceed forecasts - MarketWatch https://t.co/2CXahJIX7d. Snippets: $AAPL iPhone shipments on track to exceed forecasts - MarketWatch https://t.co/2CXahJIX7d. Target aspect: AAPL,,AAPL,0.367,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $COST short finally making gains. I will take half my gains at 147. Snippets: $COST short finally making gains. I will take half my gains at 147. Target aspect: COST,,COST,-0.41,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Why $TWTR is doomed in 1 chart $FB $GOOG  https://t.co/MpyLiReQjh https://t.co/nlcZawDoHP. Snippets: Why $TWTR is doomed in 1 chart $FB $GOOG  https://t.co/MpyLiReQjh https://t.co/nlcZawDoHP. Target aspect: GOOG,,GOOG,-0.07,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Apple Inc.: The Rip-Roaring Rally Is Just Beginning! (AAPL) | InvestorPlace $AAPL https://t.co/jrcFC8XlY9. Snippets: Apple Inc.: The Rip-Roaring Rally Is Just Beginning! (AAPL) | InvestorPlace $AAPL https://t.co/jrcFC8XlY9. Target aspect: AAPL,,AAPL,0.559,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Upside moves in the volatile #mining sector, sending Anglo American PLC $AAL up 6.8% as of 4:30 PM, London time. Snippets: Upside moves in the volatile #mining sector, sending Anglo American PLC $AAL up 6.8% as of 4:30 PM, London time. Target aspect: AAL",,AAL,0.462,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Tesla: Voluntary recall of 2,700 Model X vehicles, due to back seat issue. $TSLA https://t.co/NPAkc3U6GS. Snippets: Tesla: Voluntary recall of 2,700 Model X vehicles, due to back seat issue. $TSLA https://t.co/NPAkc3U6GS. Target aspect: TSLA",,TSLA,-0.327,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: @scottrade Why is $tsla not available for shorting at this time?  Same for $w?. Snippets: @scottrade Why is $tsla not available for shorting at this time?  Same for $w?. Target aspect: W,,W,-0.528,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Deutsche Bank Downgraded Starbucks Co. $SBUX https://t.co/QqlEvVwPMV https://t.co/f2PdQjuTHa. Snippets: Deutsche Bank Downgraded Starbucks Co. $SBUX https://t.co/QqlEvVwPMV https://t.co/f2PdQjuTHa. Target aspect: SBUX,,SBUX,-0.611,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Coke dividend - 3%. Google dividend - 0%. For passive income Coke takes it. $GOOG $KO https://t.co/QBsoWjxOST. Snippets: Coke dividend - 3%. Google dividend - 0%. For passive income Coke takes it. $GOOG $KO https://t.co/QBsoWjxOST. Target aspect: GOOG,,GOOG,-0.066,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Juniper tumbles on Q1 warning; Cisco also lower https://t.co/N8X8BpLJ1E $JNPR $CSCO. Snippets: Juniper tumbles on Q1 warning; Cisco also lower https://t.co/N8X8BpLJ1E $JNPR $CSCO. Target aspect: JNPR,,JNPR,-0.556,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Looking for a strong bounce $SPY -- Lunchtime rally coming. $DIA $IWM $QQQ $AA $FB. Snippets: Looking for a strong bounce $SPY -- Lunchtime rally coming. $DIA $IWM $QQQ $AA $FB. Target aspect: SPY,,SPY,0.521,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: DJI overbought: $AAPL, $AXP, $BA, $CVX, $IBM, $INTC, $VZ https://t.co/wMy1PnomJF. Snippets: DJI overbought: $AAPL, $AXP, $BA, $CVX, $IBM, $INTC, $VZ https://t.co/wMy1PnomJF. Target aspect: VZ",,VZ,-0.296,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Baird likes $TSLA - upgrades to outperform, lifts price target to $300. Research firm also sees no capital raise necessary in next few qtrs. Snippets: Baird likes $TSLA - upgrades to outperform, lifts price target to $300. Research firm also sees no capital raise necessary in next few qtrs. Target aspect: TSLA",,TSLA,0.61,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $tsla X recall not a big deal... the problem is now they will have an excuse to guide way way lower.... Snippets: $tsla X recall not a big deal... the problem is now they will have an excuse to guide way way lower.... Target aspect: TSLA,,TSLA,0.003,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $TSLA not dipping - testing the 200 day ma https://t.co/jEPLmZQKGW. Snippets: $TSLA not dipping - testing the 200 day ma https://t.co/jEPLmZQKGW. Target aspect: TSLA,,TSLA,0.281,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: On #FEDDAY looking for a sharp move up in equities $AAPL $HD $LOW $FB seeing $UVXY $TVIX getting hammered, even though market is down.. Snippets: On #FEDDAY looking for a sharp move up in equities $AAPL $HD $LOW $FB seeing $UVXY $TVIX getting hammered, even though market is down.. Target aspect: LOW",,LOW,0.368,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $JD down 20% in after-hour market. anyone care to explain why?. Snippets: $JD down 20% in after-hour market. anyone care to explain why?. Target aspect: JD,,JD,-0.551,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Look at that $AMZN > 600. Snippets: Look at that $AMZN > 600. Target aspect: AMZN,,AMZN,0.326,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Yahoo stock is up to $36.46 as the bidding war picks up for the company https://t.co/JDNZXDCMkl $YHOO https://t.co/HmOegfHgvn. Snippets: Yahoo stock is up to $36.46 as the bidding war picks up for the company https://t.co/JDNZXDCMkl $YHOO https://t.co/HmOegfHgvn. Target aspect: YHOO,,YHOO,0.391,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Starbucks shares down as much as ~4.2% $SBUX https://t.co/JlgrprR54k. Snippets: Starbucks shares down as much as ~4.2% $SBUX https://t.co/JlgrprR54k. Target aspect: SBUX,,SBUX,-0.383,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $AAPL Beat the estimates. Will still go down on lack of new products. https://t.co/sX3z7u6N8o. Snippets: $AAPL Beat the estimates. Will still go down on lack of new products. https://t.co/sX3z7u6N8o. Target aspect: AAPL,,AAPL,-0.248,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: long $AAPL 107 calls @ .40. Snippets: long $AAPL 107 calls @ .40. Target aspect: AAPL,,AAPL,0.613,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Facebook, near a buy point last week, faces a different technical test today https://t.co/c72LLMpiNM $FB $AAPL $NFLX https://t.co/fPFbYTYPuY. Snippets: Facebook, near a buy point last week, faces a different technical test today https://t.co/c72LLMpiNM $FB $AAPL $NFLX https://t.co/fPFbYTYPuY. Target aspect: NFLX",,NFLX,0.102,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: $SBUX down PM, from $DB downgrade.. PT cut from 70 to $64. Snippets: $SBUX down PM, from $DB downgrade.. PT cut from 70 to $64. Target aspect: SBUX",,SBUX,-0.531,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $EBAY  e-bay bay!  working on a couple daily dojis .. should continue to the downside  https://t.co/lgU0yBxEZe. Snippets: $EBAY  e-bay bay!  working on a couple daily dojis .. should continue to the downside  https://t.co/lgU0yBxEZe. Target aspect: EBAY,,EBAY,-0.441,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Breaking 52 week highs timing looks great now $AHS $BABY $POST $IGE $IRDM $EWBC $PHYS $ULTA $VNET $BIV https://t.co/11K8JzuzMU. Snippets: Breaking 52 week highs timing looks great now $AHS $BABY $POST $IGE $IRDM $EWBC $PHYS $ULTA $VNET $BIV https://t.co/11K8JzuzMU. Target aspect: VNET,,VNET,0.419,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $TSLA recalling pretty much every single model X @cnnbrk got to short that even at work you jump in money trade. Snippets: $TSLA recalling pretty much every single model X @cnnbrk got to short that even at work you jump in money trade. Target aspect: TSLA,,TSLA,-0.378,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $aapl high of day just hit. Back at it tomorrow.. Snippets: $aapl high of day just hit. Back at it tomorrow.. Target aspect: AAPL,,AAPL,0.394,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: ouch looks like $tsla shorts getting skinned again. Snippets: ouch looks like $tsla shorts getting skinned again. Target aspect: TSLA,,TSLA,0.518,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Qualcomm: 10% Dividend Increase Rewards Patient Investors, The Future Looks Bright https://t.co/TJjVpqhHqD $QCOM. Snippets: Qualcomm: 10% Dividend Increase Rewards Patient Investors, The Future Looks Bright https://t.co/TJjVpqhHqD $QCOM. Target aspect: QCOM",,QCOM,0.484,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Facebook $FB received a Buy rating from Wells Fargo 5-star Analyst Peter Stabler (Wells Fargo) https://t.co/jnB4c9vdCu. Snippets: Facebook $FB received a Buy rating from Wells Fargo 5-star Analyst Peter Stabler (Wells Fargo) https://t.co/jnB4c9vdCu. Target aspect: FB,,FB,0.456,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: $TSLA Wish had my puts back but see if we can find support around 243.39 and pop up so that I can get back in. https://t.co/hFkLq3WObV. Snippets: $TSLA Wish had my puts back but see if we can find support around 243.39 and pop up so that I can get back in. https://t.co/hFkLq3WObV. Target aspect: TSLA,,TSLA,-0.485,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Citrix Systems Inc $CTXS Position Increased by Mizuho… https://t.co/v7Lkq08Flp @ShareStockNews. Snippets: Citrix Systems Inc $CTXS Position Increased by Mizuho… https://t.co/v7Lkq08Flp @ShareStockNews. Target aspect: CTXS,,CTXS,0.529,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+"Sentence: Notable gainers among liquid option names this morning include $STX (+7.0%), $NEM (+4.6%), $WDC (+4.2%), $X (+4.1%), and $GME (+3.4%),. Snippets: Notable gainers among liquid option names this morning include $STX (+7.0%), $NEM (+4.6%), $WDC (+4.2%), $X (+4.1%), and $GME (+3.4%),. Target aspect: X",,X,0.513,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"
+Sentence: Is #Facebook's user engagement falling? https://t.co/tqMMt7N16X $FB https://t.co/sedqRWgdkt. Snippets: Is #Facebook's user engagement falling? https://t.co/tqMMt7N16X $FB https://t.co/sedqRWgdkt. Target aspect: FB,,FB,-0.39,"litellm.RateLimitError: litellm.RateLimitError: VertexAIException - {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Resource has been exhausted (e.g. check quota)."",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+"

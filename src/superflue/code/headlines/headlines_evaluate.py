@@ -150,6 +150,8 @@ def headlines_evaluate(file_name, args):
 
     # Metrics
 
+    df["extracted_labels"] = extracted_labels
+
     accuracies = []
 
     for extracted, actual in zip(extracted_labels, actual_predictions):

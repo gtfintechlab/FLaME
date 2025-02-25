@@ -22,6 +22,7 @@ from superflue.code.tatqa.tatqa_evaluate import tatqa_evaluate
 # from superflue.code.bizbench.bizbench_evaluate import bizbench_evaluate
 # from superflue.code.econlogicqa.econlogicqa_evaluate import econlogicqa_evaluate
 # from superflue.code.causal_detection.cd_evaluate import cd_evaluate
+from superflue.code.causal_detection.casual_detection_evaluate_llm import causal_detection_evaluate
 
 import pandas as pd
 from time import time
@@ -70,8 +71,8 @@ def main(args):
         "banking77": banking77_evaluate,
         "convfinqa": convfinqa_evaluate,
         "finqa": finqa_evaluate,
-        "tatqa": tatqa_evaluate
-        # cd evaluate here
+        "tatqa": tatqa_evaluate,
+        "causal_detection": causal_detection_evaluate
     }
 
     if task in task_evaluate_map:

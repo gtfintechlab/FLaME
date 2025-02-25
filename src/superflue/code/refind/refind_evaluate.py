@@ -30,7 +30,7 @@ def extraction_prompt(llm_response: str):
                 
                 Here is the LLM response to analyze:
                 "{llm_response}"
-                Provide only the label that best matches the response, exactly as it is listed above. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation."""
+                Provide only the label that best matches the response, exactly as it is listed in the approved label list, with a dash (-) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation. Only output the label."""
     return prompt
 
 def save_progress(df, path):
@@ -113,12 +113,15 @@ def refind_evaluate(file_name, args):
             except Exception as e:
                 logger.error(f"Error processing response: {e}")
                 extracted_labels.append('NO-REL')
-            extracted_label = extracted_label.replace(' ', '').upper()
+            extracted_label = extracted_label.replace(' ', '').replace('/', '-').replace('_', '-').upper()
             if extracted_label not in possible_relationships:
+                print(f"Invalid label: {extracted_label}")
                 extracted_label = 'NO-REL'
             extracted_labels.append(extracted_label)
 
     df['extracted_labels'] = extracted_labels
+
+    correct_labels = [label.replace(' ', '').replace('/', '-').replace('_', '-').upper() for label in correct_labels]
 
     # Evaluate the performance
     accuracy = accuracy_score(correct_labels, extracted_labels)

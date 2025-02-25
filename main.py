@@ -5,6 +5,7 @@ import os
 from superflue.code.inference import main as inference
 from huggingface_hub import login
 from superflue.code.evaluate import main as evaluate
+import litellm
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="SuperFLUE")
@@ -67,6 +68,8 @@ if __name__ == "__main__":
         "batch_size": 10,
         "prompt_format": "superflue",
     }
+
+    litellm.drop_params=True
 
     args2 = parse_arguments()
     for key, value in vars(args2).items():

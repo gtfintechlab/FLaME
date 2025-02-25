@@ -73,7 +73,7 @@ banking77_list = [
     "receiving_money",
     "Refund_not_showing_up",
     "request_refund",
-    "reverted_card_payment?",
+    "reverted_card_payment",
     "supported_cards_and_currencies",
     "terminate_account",
     "top_up_by_bank_transfer_charge",
@@ -104,11 +104,13 @@ banking77_label_map = {category: index for index, category in enumerate(banking7
 def extraction_prompt(llm_response: str):
     prompt = f"""Based on the following list of banking intents: {banking77_list}, extract the most relevant category from the following response:
                 "{llm_response}"
-                Provide only the label that best matches the response. Only output alphanumeric characters and spaces and underscores. Do not include any special characters or punctuation."""
+                Provide only the label that best matches the response, exactly as it appears in the initial list of intents, with an underscore (_) between words. Only output alphanumeric characters and underscores. Do not include any special characters or punctuation. Only output the label. Do not list an explanation or multiple labels."""
     return prompt
 
 def map_extracted_label_to_number(extracted_label: str):
     """Map the extracted label to its corresponding numerical value."""
+    if extracted_label not in banking77_label_map:
+        logger.error(f"Label not found: {extracted_label}")
     return banking77_label_map.get(extracted_label, -1)  # Return -1 if the label is not found
 
 def save_progress(df, path):

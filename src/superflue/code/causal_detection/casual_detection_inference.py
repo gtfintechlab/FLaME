@@ -30,9 +30,9 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             messages=messages_batch,
             max_tokens=args.max_tokens,
             temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
+            # top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
+            # repetition_penalty=args.repetition_penalty,
             num_retries=3  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
@@ -114,4 +114,8 @@ def casual_detection_inference(args):
     # df.to_csv(results_path, index=False)
 
     # logger.info(f"Inference completed. Results saved to {results_path}")
+
+    success_rate = (df['predicted_tags'].notna().sum() / len(df)) * 100
+    logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
+
     return df

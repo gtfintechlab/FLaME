@@ -101,9 +101,10 @@ def finer_prompt(sentence: str):
                     the label. If the token doesn’t fit in any of those three categories or is not a named entity
                     label it ‘Other’. Do not combine words yourself. Use a colon to separate token and label.
                     So the format should be token:label. \n\n + {sentence} """
-
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-
+ 
+    # prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+    prompt = system_prompt + user_msg
+ 
     return prompt
 
 

@@ -31,9 +31,9 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             messages=messages_batch,
             max_tokens=args.max_tokens,
             temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
+            # top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
+            # repetition_penalty=args.repetition_penalty,
             num_retries=3  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
@@ -93,5 +93,8 @@ def finqa_inference(args):
             "complete_responses": complete_responses,
         }
     )
+
+    success_rate = (df['response'].notna().sum() / len(df)) * 100
+    logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
     
     return df

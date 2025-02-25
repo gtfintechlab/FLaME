@@ -37,7 +37,7 @@ def extraction_prompt(llm_response: str):
                 
                 Here is the LLM response to analyze:
                 "{llm_response}"
-                Provide only the label that best matches the response, exactly as it is listed above. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation.'''
+                Provide only the label that best matches the response, exactly as it is listed in the approved label list, with an underscore (_) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, asterisks, or punctuation, etc. Only output the label. Do not list an explanation or multiple labels.'''
     return prompt
 
 def save_progress(df, path):
@@ -125,6 +125,7 @@ def finred_evaluate(file_name, args):
             # Normalize and validate extracted label
             extracted_label = extracted_label.replace(' ', '')
             if extracted_label not in possible_relationships:
+                logger.error(f"Invalid label: {extracted_label}")
                 extracted_label = 'NO-REL'
 
             extracted_labels.append(extracted_label)

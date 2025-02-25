@@ -1,64 +1,72 @@
 import time
 from datetime import date
-
 import pandas as pd
 from datasets import load_dataset
-
-from litellm import completion 
+from litellm import batch_completion
 from superflue.code.prompts_oldsuperflue import finer_prompt
-from superflue.code.tokens import tokens
-
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
+from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-
+ 
 logger = setup_logger(
     name="finer_inference", log_file=LOG_DIR / "finer_inference.log", level=LOG_LEVEL
 )
-
+ 
+import litellm
+litellm.drop_params = True
+ 
 def finer_inference(args):
     today = date.today()
     logger.info(f"Starting FinER inference on {today}")
-
+ 
+    # Load the dataset
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/finer-ord-bio", trust_remote_code=True)
-
-    # Initialize lists to store actual labels and model responses
-    sentences = []
+ 
+    # Extract data
+    sentences = [row["tokens"] for row in dataset["test"]]  # type: ignore
+    actual_labels = [row["tags"] for row in dataset["test"]]  # type: ignore
+ 
     llm_responses = []
-    actual_labels = []
     complete_responses = []
-
-    logger.info(f"Starting inference on finer...")
-    for i in range(len(dataset["test"])): # type: ignore
-        sentence = dataset["test"][i]["tokens"] # type: ignore
-        actual_label = dataset["test"][i]["tags"] # type: ignore
-        sentences.append(sentence)
-        actual_labels.append(actual_label)
+ 
+    batch_size = args.batch_size
+    total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)
+    logger.info(f"Processing {len(sentences)} sentences in {total_batches} batches.")
+ 
+    # Create batches
+    sentence_batches = chunk_list(sentences, batch_size)
+    label_batches = chunk_list(actual_labels, batch_size)
+ 
+    for batch_idx, sentence_batch in enumerate(sentence_batches):
+        # Create prompt messages for the batch
+        messages_batch = [
+            [{"role": "user", "content": finer_prompt(sentence)}]
+            for sentence in sentence_batch
+        ]
+ 
         try:
-            logger.debug(f"Processing sentence {i+1}/{len(dataset['test'])}") # type: ignore
-            model_response = completion(
-            model=args.model,
-            messages=[{"role": "user", "content": finer_prompt(sentence)}],
-            tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            stop=tokens(args.model),
-            )
-            
-            complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content # type: ignore
-            logger.info(f"Model response: {response_label}")
-            llm_responses.append(response_label)
-
+            # Process the batch
+            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+ 
+            for response in batch_responses:
+                try:
+                    response_label = response.choices[0].message.content.strip()  # type: ignore
+                    llm_responses.append(response_label)
+                    complete_responses.append(response)
+                except (KeyError, IndexError, AttributeError) as e:
+                    logger.error(f"Error extracting response: {e}")
+                    llm_responses.append("error")
+                    complete_responses.append(None)
+ 
         except Exception as e:
-            logger.error(f"Error processing sentence {i+1}: {e}")
-            llm_responses.append(None)
-            complete_responses.append(None)
-            time.sleep(10.0)
+            logger.error(f"Batch {batch_idx + 1} failed: {e}")
+            llm_responses.extend(["error"] * len(sentence_batch))
+            complete_responses.extend([None] * len(sentence_batch))
             continue
-    
+ 
+    # Create the final DataFrame
     df = pd.DataFrame(
         {
             "sentences": sentences,
@@ -67,7 +75,8 @@ def finer_inference(args):
             "complete_responses": complete_responses,
         }
     )
-    
+ 
+    # Save results to a CSV file
     results_path = (
         RESULTS_DIR
         / "finer"
@@ -76,5 +85,5 @@ def finer_inference(args):
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")
-
+ 
     return df
