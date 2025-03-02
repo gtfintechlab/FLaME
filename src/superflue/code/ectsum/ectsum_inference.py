@@ -4,8 +4,8 @@ import pandas as pd
 from datasets import load_dataset
 
 from litellm import completion 
-from superflue.code.prompts import ectsum_prompt
-from superflue.code.tokens import tokens
+from superflue.code.prompts_oldsuperflue import ectsum_prompt
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
@@ -13,6 +13,8 @@ from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 logger = setup_logger(
     name="ectsum_inference", log_file=LOG_DIR / "ectsum_inference.log", level=LOG_LEVEL
 )
+import litellm
+litellm.drop_params = True
 
 def ectsum_inference(args):
 
@@ -42,8 +44,8 @@ def ectsum_inference(args):
     for i in range(len(dataset["test"])):  # type: ignore
         document = dataset["test"][i]["context"]  # Extract document (context) # type: ignore
         actual_label = dataset["test"][i]["response"]  # Extract the actual label (response) # type: ignore
-        documents.append(document)
-        actual_labels.append(actual_label)
+        # documents.append(document)
+        # actual_labels.append(actual_label)
         
         try:
             logger.info(f"Processing document {i+1}/{len(dataset['test'])}")  # type: ignore
@@ -51,29 +53,37 @@ def ectsum_inference(args):
             model_response = completion(
                 model=args.model,
                 messages=[{"role": "user", "content": ectsum_prompt(document)}],
-                tokens=args.max_tokens,
+                # tokens=args.max_tokens,
                 temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+                # top_k=args.top_k,
+                # top_p=args.top_p,
+                # repetition_penalty=args.repetition_penalty,
+                # stop=tokens(args.model),
             )
             
             # Append the model response and complete response for the document
-            complete_responses.append(model_response)
+            # complete_responses.append(model_response)
             response_text = model_response.choices[0].message.content.strip()  # type: ignore
-            llm_responses.append(response_text)
+            # llm_responses.append(response_text)
 
             logger.info(f"Model response for document {i+1}: {response_text}")
 
         except Exception as e:
             # Log the error and retry the same document after a delay
             logger.error(f"Error processing document {i+1}: {e}")
-            complete_responses.append(None)
-            llm_responses.append(None)
-            time.sleep(10.0)
-            continue  # Proceed to the next document after sleeping
-
+            # documents.append(document if 'document' in locals() else None)
+            # actual_labels.append(actual_label if 'actual_label' in locals() else None)
+            # complete_responses.append("Error")
+            # llm_responses.append("Error")
+            response_text = "Error"
+            model_response = "Error"
+        
+        
+        documents.append(document)
+        actual_labels.append(actual_label)
+        llm_responses.append(response_text)
+        complete_responses.append(model_response)
+        
     # Create the final DataFrame after the loop
     df = pd.DataFrame(
         {

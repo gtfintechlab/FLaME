@@ -1,5 +1,5 @@
 from litellm import batch_completion
-from superflue.code.tokens import tokens
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import LOG_LEVEL, LOG_DIR
 
@@ -38,18 +38,20 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """
     logger.info(f"Processing batch {batch_idx + 1}/{total_batches}")
     try:
+        
         batch_responses = batch_completion(
             model=args.model,
             messages=messages_batch,
             temperature=args.temperature,
             max_tokens=args.max_tokens,
-            top_k=args.top_k,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
+            # top_k=args.top_k,
+            # top_p=args.top_p,
+            # repetition_penalty=args.repetition_penalty,
             num_retries=3,
-            stop=tokens(args.model),
+            # stop=tokens(args.model),
         )
         logger.info(f"Completed batch {batch_idx + 1}/{total_batches}")
+        print(batch_responses)
         return batch_responses
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")

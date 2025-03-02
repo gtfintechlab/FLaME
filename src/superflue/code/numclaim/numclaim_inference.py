@@ -5,10 +5,13 @@ from datasets import load_dataset
 
 from litellm import completion 
 from superflue.code.prompts import numclaim_prompt
-from superflue.code.tokens import tokens
-
+# from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from litellm import batch_completion 
+from superflue.utils.logging_utils import setup_logger
+from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
+from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 
 # Setup logger for Numclaim inference
 logger = setup_logger(
@@ -16,7 +19,10 @@ logger = setup_logger(
     log_file=LOG_DIR / "numclaim_inference.log",
     level=LOG_LEVEL,
 )
-
+import litellm
+litellm.drop_params = True
+# litellm.set_verbose = True
+# litellm._turn_on_debug()
 def numclaim_inference(args):
     
     today = date.today()
@@ -41,42 +47,50 @@ def numclaim_inference(args):
 
     logger.info(f"Starting inference on Numclaim with model {args.model}...")
 
-    # Iterate through the test split of the dataset
-    for i in range(len(dataset["test"])):  # type: ignore
-        sentence = dataset["test"][i]["context"]  # Extract context (sentence) # type: ignore
-        actual_label = dataset["test"][i]["response"]  # Extract the actual label (response) # type: ignore
-        sentences.append(sentence)
-        actual_labels.append(actual_label)
+    sentences = [row['context'] for row in dataset['test']]  # type: ignore
+    actual_labels = [row['response'] for row in dataset['test']]  # type: ignore
+    batch_size = args.batch_size
+    total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)
+    logger.info(f"Processing {len(sentences)} rows in {total_batches} batches.")
+
+    # Create batches
+    sentence_batches = chunk_list(sentences, batch_size)
+    response_batches = chunk_list(actual_labels, batch_size)
+    
+    for batch_idx, (sentence_batch, response_batch) in enumerate(
+        zip(sentence_batches, response_batches)
+    ):
+        # Create prompt messages for the batch
+        messages_batch = [
+            [{"role": "user", "content": numclaim_prompt(sentence)}] # type: ignore
+            for sentence in zip(
+                sentence_batch
+            )
+        ]
 
         try:
-            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
-            model_response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": numclaim_prompt(sentence)}],
-                tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
-            )
+            # Process the batch
+            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
 
-            # Append the model response and complete response for the sentence
-            complete_responses.append(model_response)
-            response_text = model_response.choices[0].message.content.strip()  # type: ignore
-            llm_responses.append(response_text)
-
-            logger.info(f"Model response for sentence {i+1}: {response_text}")
+            for response in batch_responses:
+                try:
+                    llm_response = response.choices[0].message.content.strip()  # type: ignore
+                    llm_responses.append(llm_response)
+                    complete_responses.append(response)
+                except (KeyError, IndexError, AttributeError) as e:
+                    logger.error(f"Error extracting response: {e}")
+                    llm_responses.append("error")
+                    complete_responses.append(None)
+                finally:
+                    time.sleep(1)  # Sleep for 1 second after each response
 
         except Exception as e:
-            # Log the error and retry the same sentence after a delay
-            logger.error(f"Error processing sentence {i+1}: {e}")
-            time.sleep(10.0)
-            complete_responses.append(None)
-            llm_responses.append(None)
-            continue  # Proceed to the next sentence after sleeping
+            logger.error(f"Batch {batch_idx + 1} failed: {e}")
+            llm_responses.extend(["error"] * len(sentence_batch))
+            complete_responses.extend([None] * len(sentence_batch))
+            continue
 
-    # Create the final DataFrame after the loop
+    # Create the final DataFrame
     df = pd.DataFrame(
         {
             "sentences": sentences,
@@ -85,7 +99,15 @@ def numclaim_inference(args):
             "complete_responses": complete_responses,
         }
     )
-
+    results_path = (
+        RESULTS_DIR
+        / "numclaim"
+        / f"numclaim_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(results_path, index=False)
+    logger.info(f"Inference completed. Results saved to {results_path}")
+    
     # Save the results to a CSV file
     df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")
