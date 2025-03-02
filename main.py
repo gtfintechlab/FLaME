@@ -42,7 +42,7 @@ if __name__ == "__main__":
     load_dotenv()
 
     # Optional: Verify that environment variables are loaded
-    print(f"TOGETHER_API_KEY: {os.getenv('TOGETHER_API_KEY')}")
+    print(f"TOGETHER_API_KEY: {os.getenv('TOGETHERAI_API_KEY')}")
     print(f"HUGGINGFACEHUB_API_TOKEN: {os.getenv('HUGGINGFACEHUB_API_TOKEN')}")
     HUGGINGFACEHUB_API_TOKEN = os.getenv('HUGGINGFACEHUB_API_TOKEN')
     # Log in to Hugging Face if the token is set
