@@ -8,7 +8,7 @@ from superflue.code.prompts_oldsuperflue import finer_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-
+ 
 logger = setup_logger(
     name="finer_inference", log_file=LOG_DIR / "finer_inference.log", level=LOG_LEVEL
 )
@@ -59,13 +59,11 @@ def finer_inference(args):
                     logger.error(f"Error extracting response: {e}")
                     llm_responses.append("error")
                     complete_responses.append(None)
-
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {e}")
             llm_responses.extend(["error"] * len(sentence_batch))
             complete_responses.extend([None] * len(sentence_batch))
             continue
-
     # Create the final DataFrame
     df = pd.DataFrame(
         {
@@ -75,7 +73,6 @@ def finer_inference(args):
             "complete_responses": complete_responses,
         }
     )
-
     # Save results to a CSV file
     results_path = (
         RESULTS_DIR
@@ -85,5 +82,5 @@ def finer_inference(args):
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")
-
+ 
     return df

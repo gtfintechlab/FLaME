@@ -47,6 +47,6 @@ def extract_numbers_from_responses(csv_file_path, output_file_path):
 
 # Example usage
 if __name__ == "__main__":
-    input_csv = "/Users/yangyang/Desktop/SuperFLUE/src/superflue/results/evaluation_results/finqa/evaluation_finqa_meta-llama/Llama-2-7b-chat-hf_07_10_2024.csv"
-    output_csv = "/Users/yangyang/Desktop/SuperFLUE/src/superflue/results/evaluation_results/finqa/evaluation_finqa_meta-llama/Llama-2-7b-chat-hf_07_10_2024_regex.csv"
+    input_csv = "../../../../results/finqa/finqa_together_ai/Qwen/Qwen2-72B-Instruct_10_12_2024.csv"
+    output_csv = "../../../../results/finqa/finqa_together_ai/Qwen/Qwen2-72B-Instruct_10_12_2024_regex.csv"
     extract_numbers_from_responses(input_csv, output_csv)

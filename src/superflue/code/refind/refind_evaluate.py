@@ -8,6 +8,9 @@ from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 import time
+import litellm
+from typing import Dict, Any, List, Optional, Tuple
+from tqdm import tqdm
 
 # Configure logging
 logger = setup_logger(
@@ -27,13 +30,38 @@ def extraction_prompt(llm_response: str):
                 
                 Here is the LLM response to analyze:
                 "{llm_response}"
-                Provide only the label that best matches the response, exactly as it is listed above. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation."""
+                Provide only the label that best matches the response, exactly as it is listed in the approved label list, with a dash (-) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation. Only output the label."""
     return prompt
 
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
+
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into chunks of specified size."""
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with litellm's retry mechanism."""
+    try:
+        # Using litellm's built-in retry mechanism
+        batch_responses = litellm.batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            top_k=args.top_k if args.top_k else None,
+            top_p=args.top_p,
+            repetition_penalty=args.repetition_penalty,
+            num_retries=3  # Using litellm's retry mechanism
+        )
+        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+            
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
 
 def refind_evaluate(file_name, args):
     """Evaluate Refind dataset and return results and metrics DataFrames."""
@@ -47,6 +75,10 @@ def refind_evaluate(file_name, args):
     # Prepare extracted labels
     extracted_labels = []
     correct_labels = df['actual_labels'].tolist()
+    all_responses = df['llm_responses'].tolist()
+
+    batches = chunk_list(all_responses, args.batch_size)
+    total_batches = len(batches)
 
     # Define paths
     evaluation_results_path = (
@@ -56,31 +88,40 @@ def refind_evaluate(file_name, args):
     )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Loop through the LLM responses and extract labels
-    for i, llm_response in tqdm(enumerate(df["llm_responses"]), total=len(df)):
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, batch in enumerate(pbar):
+        messages_batch = [
+            [{"role": "user", "content": extraction_prompt(llm_response)}]
+            for llm_response in batch
+        ]
+
         try:
-            model_response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+            # Process batch with retry logic
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
             )
-            extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
-            extracted_label = extracted_label.replace(' ', '').upper()
+
+        except Exception as e:
+            logger.error(f"Error processing batch {batch_idx + 1}: {e}")
+            for _ in batch:
+                extracted_labels.append('NO-REL')
+
+        # Process responses
+        for response in batch_responses:
+            try:
+                extracted_label = response.choices[0].message.content.strip()  # type: ignore
+            except Exception as e:
+                logger.error(f"Error processing response: {e}")
+                extracted_labels.append('NO-REL')
+            extracted_label = extracted_label.replace(' ', '').replace('/', '-').replace('_', '-').upper()
             if extracted_label not in possible_relationships:
+                print(f"Invalid label: {extracted_label}")
                 extracted_label = 'NO-REL'
             extracted_labels.append(extracted_label)
-        except Exception as e:
-            logger.error(f"Error processing response {i}: {e}")
-            extracted_labels.append('ERROR')
-            time.sleep(10.0)
 
-        # Update DataFrame with extracted labels and save progress
-        df.loc[i, 'extracted_labels'] = extracted_labels[-1]
-        save_progress(df, evaluation_results_path)
+    df['extracted_labels'] = extracted_labels
+
+    correct_labels = [label.replace(' ', '').replace('/', '-').replace('_', '-').upper() for label in correct_labels]
 
     # Evaluate the performance
     accuracy = accuracy_score(correct_labels, extracted_labels)

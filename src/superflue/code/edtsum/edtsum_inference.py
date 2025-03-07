@@ -2,62 +2,94 @@ import time
 import pandas as pd
 from datasets import load_dataset
 from litellm import completion 
-from superflue.code.prompts import edtsum_prompt
+from superflue.code.prompts_oldsuperflue import edtsum_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.code.tokens import tokens
 from superflue.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
+import litellm
+from typing import Dict, Any, List, Optional, Tuple
+from litellm.utils import trim_messages, get_max_tokens
 
 logger = setup_logger(
     name="edtsum_inference", log_file=LOG_DIR / "edtsum_inference.log", level=LOG_LEVEL
 )
 
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into chunks of specified size."""
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with litellm's retry mechanism."""
+    try:
+        # Using litellm's built-in retry mechanism
+        batch_responses = litellm.batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            # top_k=args.top_k if args.top_k else None,
+            top_p=args.top_p,
+            # repetition_penalty=args.repetition_penalty,
+            num_retries=3  # Using litellm's retry mechanism
+        )
+        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+            
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
 
 def edtsum_inference(args):
     # today = date.today()
 
     dataset = load_dataset("gtfintechlab/EDTSum", trust_remote_code=True)
 
+    test_data = dataset["test"] # type: ignore
+    all_documents = [data["text"] for data in test_data] # type: ignore
+    all_actual_labels = [data["answer"] for data in test_data] # type: ignore
+
+    sentence_batches = chunk_list(all_documents, args.batch_size)
+    total_batches = len(sentence_batches)
+
     documents = []
     llm_responses = []
     actual_labels = []
     complete_responses = []
 
-    # start_t = time.time()
-    for i in tqdm(range(len(dataset["test"])),  desc="Processing sentences"): # type: ignore
-        document = dataset["test"][i]["text"] # type: ignore
-        actual_label = dataset["test"][i]["answer"] # type: ignore
-        documents.append(document)
-        actual_labels.append(actual_label)
-
+    pbar = tqdm(sentence_batches, desc="Processing batches")
+    for batch_idx, batch_content in enumerate(pbar):
+        # Prepare messages for batch
+        messages_batch = [
+            [{"role": "user", "content": edtsum_prompt(document)}]
+            for document in batch_content
+        ]
         try:
-            model_response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": edtsum_prompt(document)}],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model)
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
             )
-            logger.debug(f"Model response: {model_response}")
-            complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content # type: ignore
-            llm_responses.append(response_label)
-
+        
         except Exception as e:
-            logger.error(f"Error at index {i}: {e}")
-            complete_responses.append(None)
-            llm_responses.append(None)
-            time.sleep(10.0)
+            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+            for _ in range(len(batch_content)):
+                documents.append(None)
+                llm_responses.append(None)
+                complete_responses.append(None)
+                actual_labels.append(None)
+            continue
 
-    assert (
-        len(documents)
-        == len(llm_responses)
-        == len(actual_labels)
-        == len(complete_responses)
-    ), "Lists are not of equal length!"
+        for document, response in zip(batch_content, batch_responses):
+            documents.append(document)
+            try:
+                response_label = response.choices[0].message.content # type: ignore
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_label = None
+            llm_responses.append(response_label)
+            complete_responses.append(response)
+            actual_labels.append(all_actual_labels[len(llm_responses) - 1])
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     df = pd.DataFrame(
         {
@@ -67,5 +99,8 @@ def edtsum_inference(args):
             "complete_responses": complete_responses,
         }
     )
+
+    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

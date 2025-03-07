@@ -3,10 +3,13 @@ import pandas as pd
 from datetime import date
 from pathlib import Path
 from litellm import completion
+import litellm
+from typing import Dict, Any, List, Optional, Tuple
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.utils.logging_utils import setup_logger
 from superflue.code.tokens import tokens
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from tqdm import tqdm
 
 # Configure logging
 logger = setup_logger(
@@ -70,7 +73,7 @@ banking77_list = [
     "receiving_money",
     "Refund_not_showing_up",
     "request_refund",
-    "reverted_card_payment?",
+    "reverted_card_payment",
     "supported_cards_and_currencies",
     "terminate_account",
     "top_up_by_bank_transfer_charge",
@@ -101,17 +104,44 @@ banking77_label_map = {category: index for index, category in enumerate(banking7
 def extraction_prompt(llm_response: str):
     prompt = f"""Based on the following list of banking intents: {banking77_list}, extract the most relevant category from the following response:
                 "{llm_response}"
-                Provide only the label that best matches the response. Only output alphanumeric characters and spaces and underscores. Do not include any special characters or punctuation."""
+                Provide only the label that best matches the response, exactly as it appears in the initial list of intents, with an underscore (_) between words. Only output alphanumeric characters and underscores. Do not include any special characters or punctuation. Only output the label. Do not list an explanation or multiple labels."""
     return prompt
 
 def map_extracted_label_to_number(extracted_label: str):
     """Map the extracted label to its corresponding numerical value."""
+    if extracted_label not in banking77_label_map:
+        logger.error(f"Label not found: {extracted_label}")
     return banking77_label_map.get(extracted_label, -1)  # Return -1 if the label is not found
 
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
+
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into chunks of specified size."""
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with litellm's retry mechanism."""
+    try:
+        # Using litellm's built-in retry mechanism
+        batch_responses = litellm.batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            top_k=args.top_k if args.top_k else None,
+            top_p=args.top_p,
+            repetition_penalty=args.repetition_penalty,
+            num_retries=3  # Using litellm's retry mechanism
+        )
+        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+            
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
 
 def banking77_evaluate(file_name, args):
     """Evaluate Banking 77 results and return results and metrics DataFrames."""
@@ -134,41 +164,52 @@ def banking77_evaluate(file_name, args):
     if 'extracted_labels' not in df.columns:
         df['extracted_labels'] = None
 
-    correct_labels = df['actual_labels'].tolist()
     extracted_labels = []
+    all_responses = df["llm_responses"].tolist()
+    correct_labels = df["actual_labels"].tolist()
 
-    for i, llm_response in enumerate(df["llm_responses"]):
-        if pd.notna(df.at[i, 'extracted_labels']):
-            # Skip already processed rows
-            continue
+    batches = chunk_list(all_responses, args.batch_size)
+    total_batches = len(batches)
+
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, batch in enumerate(pbar):
+        # Prepare messages for batch
+        messages_batch = [
+            [{"role": "user", "content": extraction_prompt(response)}]
+            for response in batch
+        ]
 
         try:
-            model_response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+            # Process batch with retry logic
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
             )
-            extracted_label = model_response.choices[0].message.content.strip()  # type: ignore
+
+        except Exception as e:
+            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+            # Add None values for failed batch
+            for _ in batch:
+                extracted_labels.append(-1)
+        
+        # Process responses
+        for response in batch_responses:
+            try:
+                extracted_label = response.choices[0].message.content.strip()  # type: ignore
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                extracted_label = "Error"
+            # print(extracted_label)
             mapped_label = map_extracted_label_to_number(extracted_label)
 
             if mapped_label == -1:
-                logger.error(f"Error processing response {i}: {llm_response}")
+                logger.debug(f"Error processing response {batch_idx}: {response}")
 
-            df.at[i, 'extracted_labels'] = mapped_label
             extracted_labels.append(mapped_label)
-            logger.info(f"Processed {i + 1}/{len(df)} responses.")
+            logger.debug(f"Processed {len(extracted_labels)}/{len(df)} responses.")
+        
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
-            # Save progress after each row
-            save_progress(df, evaluation_results_path)
-
-        except Exception as e:
-            logger.error(f"Error processing response {i}: {e}")
-            extracted_labels.append(-1)
-
+    df["extracted_labels"] = extracted_labels
     # Evaluate performance
     accuracy = accuracy_score(correct_labels, extracted_labels)
     precision, recall, f1, _ = precision_recall_fscore_support(correct_labels, extracted_labels, average="weighted")

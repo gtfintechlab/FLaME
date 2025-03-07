@@ -8,6 +8,10 @@ from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 import time
+import litellm
+from typing import Dict, Any, List, Optional, Tuple
+from tqdm import tqdm
+import ast
 
 # Configure logging
 logger = setup_logger(
@@ -63,6 +67,31 @@ def save_progress(df, path):
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into chunks of specified size."""
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with litellm's retry mechanism."""
+    try:
+        # Using litellm's built-in retry mechanism
+        batch_responses = litellm.batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            top_k=args.top_k if args.top_k else None,
+            top_p=args.top_p,
+            repetition_penalty=args.repetition_penalty,
+            num_retries=3  # Using litellm's retry mechanism
+        )
+        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+            
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
+
 def headlines_evaluate(file_name, args):
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
@@ -71,54 +100,43 @@ def headlines_evaluate(file_name, args):
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    # Paths
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
-
     # Initialize extracted labels if not present
     if "extracted_labels" not in df.columns:
         df["extracted_labels"] = None
 
-    correct_labels = df[[
-        "price_or_not", "direction_up", "direction_down",
-        "direction_constant", "past_price", "future_price", "past_news"
-    ]].values.tolist()
+    actual_labels = df['actual_labels'].tolist()
+    actual_predictions = [ast.literal_eval(labels) for labels in actual_labels]
     extracted_labels = []
 
-    for i, llm_response in enumerate(df["llm_responses"]):
-        if pd.notna(df.at[i, "extracted_labels"]):
-            continue
+    all_responses = df["llm_responses"].tolist()
+    batches = chunk_list(all_responses, args.batch_size)
+    total_batches = len(batches)
 
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, batch_content in enumerate(pbar):
+        messages_batch = [
+            [{"role": "user", "content": extraction_prompt(response)}]
+            for response in batch_content
+        ]
         try:
-            response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model)
-            )
-            raw_response = response.choices[0].message.content.strip()  # type: ignore # Extract raw response
-            preprocessed_response = preprocess_llm_response(raw_response)
-            if not preprocessed_response:
-                raise ValueError(f"Preprocessing failed for response: {raw_response}")
+            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+        except Exception as e:
+            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+            for _ in range(len(batch_content)):
+                extracted_labels.append([-1] * 7)
 
-            # Validate and parse JSON
-            try:
+        for response in batch_responses:
+            try: 
+                raw_response = response.choices[0].message.content.strip()
+                preprocessed_response = preprocess_llm_response(raw_response)
+                if not preprocessed_response:
+                    raise ValueError(f"Preprocessing failed for response: {raw_response}")
                 extracted_label_json = json.loads(preprocessed_response)
-            except json.JSONDecodeError as e:
-                logger.error(f"Invalid JSON in response {i}: {e}. response: {preprocessed_response}")
-                extracted_labels.append([-1] * 7)  # Assign default invalid labels
-                df.at[i, "extracted_labels"] = [-1] * 7
-                save_progress(df, evaluation_results_path)
+            except Exception as e:
+                logger.error(f"Error extracting response: {e}")
+                extracted_labels.append([-1] * 7)
                 continue
-
-            # Map the extracted labels to numeric values
+                
             mapped_labels = [
                 map_label_to_number(str(extracted_label_json.get("Price_or_Not", "")), "Price_or_Not"),
                 map_label_to_number(str(extracted_label_json.get("Direction_Up", "")), "Direction_Up"),
@@ -128,31 +146,28 @@ def headlines_evaluate(file_name, args):
                 map_label_to_number(str(extracted_label_json.get("Future_Price", "")), "Future_Price"),
                 map_label_to_number(str(extracted_label_json.get("Past_News", "")), "Past_News"),
             ]
-
-            # Update the DataFrame and save progress
-            df.at[i, "extracted_labels"] = mapped_labels
             extracted_labels.append(mapped_labels)
-            save_progress(df, evaluation_results_path)
-
-        except Exception as e:
-            logger.error(f"Error at row {i}: {e}")
-            extracted_labels.append([-1] * 7)
-            time.sleep(10.0)
 
     # Metrics
-    correct_predictions = [list(map(int, labels)) for labels in correct_labels]
-    accuracy = accuracy_score(correct_predictions, extracted_labels)
-    precision, recall, f1, _ = precision_recall_fscore_support(
-        correct_predictions, extracted_labels, average="weighted"
-    )
+
+    df["extracted_labels"] = extracted_labels
+
+    accuracies = []
+
+    for extracted, actual in zip(extracted_labels, actual_predictions):
+        acc = 0
+        for e, a in zip(extracted, actual):
+            if e == a:
+                acc += 1
+        accuracies.append(acc / len(actual))
+    
+    accuracy = sum(accuracies) / len(accuracies)
 
     metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1]
+        "Metric": ["Accuracy"],
+        "Value": [accuracy]
     })
 
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
-    metrics_df.to_csv(metrics_path, index=False)
+    logger.info(f"Accuracy: {accuracy:.4f}")
 
-    logger.info(f"Metrics saved to {metrics_path}")
     return df, metrics_df

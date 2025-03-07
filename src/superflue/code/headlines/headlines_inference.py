@@ -4,10 +4,13 @@ import pandas as pd
 from datasets import load_dataset
 from litellm import completion 
 
-from superflue.code.prompts import headlines_prompt
+from superflue.code.prompts_oldsuperflue import headlines_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+import litellm
+from typing import Dict, Any, List, Optional, Tuple
+from tqdm import tqdm
 
 # Setup logger for Headlines inference
 logger = setup_logger(
@@ -15,6 +18,31 @@ logger = setup_logger(
     log_file=LOG_DIR / "headlines_inference.log",
     level=LOG_LEVEL,
 )
+
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into chunks of specified size."""
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with litellm's retry mechanism."""
+    try:
+        # Using litellm's built-in retry mechanism
+        batch_responses = litellm.batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            # top_k=args.top_k if args.top_k else None,
+            top_p=args.top_p,
+            # repetition_penalty=args.repetition_penalty,
+            num_retries=3  # Using litellm's retry mechanism
+        )
+        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+            
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
 
 def headlines_inference(args):
     today = date.today()
@@ -24,107 +52,59 @@ def headlines_inference(args):
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/Headlines", '5768', trust_remote_code=True)
 
-    results_path = (
-        RESULTS_DIR
-        / "headlines"
-        / f"headlines_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-
     # Initialize lists to store news, model responses, labels, and actual labels
     news = []
     llm_responses = []
     complete_responses = []
-    price_or_not_list = []
-    direction_up_list = []
-    direction_down_list = []
-    direction_constant_list = []
-    past_price_list = []
-    future_price_list = []
-    past_news_list = []
     actual_labels = []  # List to store actual labels
 
-    logger.info(f"Starting inference on Headlines with model {args.model}...")
+    test_data = dataset["test"]  # type: ignore
+    all_sentences = [data["News"] for data in test_data]  # type: ignore
+    all_actual_labels = [[data['PriceOrNot'], data['DirectionUp'], data['DirectionDown'], data['DirectionConstant'], data['PastPrice'], data['FuturePrice'], data['PastNews']] for data in test_data]  # type: ignore
 
-    # Iterate through the test split of the dataset
-    for i in range(len(dataset["test"])):  # type: ignore
-        sentence = dataset["test"][i]["News"]  # Extract news (sentence) # type: ignore
-        price_or_not = dataset["test"][i]["PriceOrNot"]  # Extract price or not # type: ignore
-        direction_up = dataset["test"][i]["DirectionUp"]  # Extract direction up # type: ignore
-        direction_down = dataset["test"][i]["DirectionDown"]  # Extract direction down # type: ignore
-        direction_constant = dataset["test"][i]["DirectionConstant"]  # Extract direction constant # type: ignore
-        past_price = dataset["test"][i]["PastPrice"]  # Extract past price # type: ignore
-        future_price = dataset["test"][i]["FuturePrice"]  # Extract future price # type: ignore
-        past_news = dataset["test"][i]["PastNews"]  # Extract past news # type: ignore
+    batches = chunk_list(all_sentences, args.batch_size)
+    total_batches = len(batches)
 
-        # Append to respective lists
-        news.append(sentence)
-        price_or_not_list.append(price_or_not)
-        direction_up_list.append(direction_up)
-        direction_down_list.append(direction_down)
-        direction_constant_list.append(direction_constant)
-        past_price_list.append(past_price)
-        future_price_list.append(future_price)
-        past_news_list.append(past_news)
-        
-        # Append actual label (for comparison)
-        actual_labels.append({
-            'price_or_not': price_or_not,
-            'direction_up': direction_up,
-            'direction_down': direction_down,
-            'direction_constant': direction_constant,
-            'past_price': past_price,
-            'future_price': future_price,
-            'past_news': past_news
-        })
-
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, batch_content in enumerate(pbar):
+        messages_batch = [
+            [{"role": "user", "content": headlines_prompt(sentence)}]
+            for sentence in batch_content
+        ]
         try:
-            logger.info(f"Processing sentence {i+1}/{len(dataset['test'])}")  # type: ignore
-            model_response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": headlines_prompt(sentence)}],
-                tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
-            )
-
-            # Append the model response and complete response for the sentence
-            complete_responses.append(model_response)
-            response_text = model_response.choices[0].message.content.strip()  # type: ignore
-            llm_responses.append(response_text)
-
-            logger.info(f"Model response for sentence {i+1}: {response_text}")
-
+            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
         except Exception as e:
-            # Log the error and retry the same sentence after a delay
-            logger.error(f"Error processing sentence {i+1}: {e}")
-            time.sleep(10.0)
-            complete_responses.append(None)
-            llm_responses.append(None)
-            continue  # Proceed to the next sentence after sleeping
+            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+            for _ in batch_content:
+                news.append(None)
+                llm_responses.append(None)
+                actual_labels.append(None)
+                complete_responses.append(None)
+
+        for (sentence, response) in zip(batch_content, batch_responses):
+            news.append(sentence)
+            try:
+                response_text = response.choices[0].message.content.strip()  # type: ignore
+            except Exception as e:
+                logger.error(f"Error processing sentence: {e}")
+                response_text = None
+            llm_responses.append(response_text)
+            actual_labels.append(all_actual_labels[len(llm_responses) - 1])
+            complete_responses.append(response)
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     # Create the final DataFrame after the loop
     df = pd.DataFrame(
         {
             "news": news,
             "llm_responses": llm_responses,
-            "price_or_not": price_or_not_list,
-            "direction_up": direction_up_list,
-            "direction_down": direction_down_list,
-            "direction_constant": direction_constant_list,
-            "past_price": past_price_list,
-            "future_price": future_price_list,
-            "past_news": past_news_list,
             "complete_responses": complete_responses,
-            "actual_labels": actual_labels  # Add actual_labels to the DataFrame
+            "actual_labels": actual_labels
         }
     )
 
-    # Save the results to a CSV file
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
+    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

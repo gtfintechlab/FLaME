@@ -156,7 +156,6 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
     
     # Log detailed startup information
     logger.info(f"Starting {task} evaluation on model '{model_name}' from provider '{provider}'")
-    logger.info(f"Dataset organization: {args.dataset_org}")
     logger.info(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     relative_path = evaluation_results_path.relative_to(EVALUATION_DIR.parent)
     logger.info(f"Output directory: ./{relative_path.parent}")
@@ -208,19 +207,6 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
                     args.model, messages_batch, args, batch_idx, total_batches
                 )
                 
-                # Process responses
-                for idx, response in zip(indices_batch, batch_responses):
-                    extracted_label = response.choices[0].message.content.strip()
-                    mapped_label = map_label_to_number(extracted_label)
-                    
-                    # Update DataFrame with the result
-                    df.at[idx, "extracted_labels"] = mapped_label
-                
-                # Save progress after each batch
-                save_progress(df, evaluation_results_path)
-                
-                pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-                
             except Exception as e:
                 logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
                 # Mark failed extractions with -1
@@ -228,6 +214,23 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
                     df.at[idx, "extracted_labels"] = -1
                 time.sleep(10.0)
                 continue
+        
+            # Process responses
+            for idx, response in zip(indices_batch, batch_responses):
+                try:
+                    extracted_label = response.choices[0].message.content.strip()
+                except Exception as e:
+                    logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                    extracted_label = "Error"
+                mapped_label = map_label_to_number(extracted_label)
+                
+                # Update DataFrame with the result
+                df.at[idx, "extracted_labels"] = mapped_label
+            
+            # Save progress after each batch
+            save_progress(df, evaluation_results_path)
+            
+            pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     # Convert all extracted labels to list for metrics calculation
     extracted_labels = df["extracted_labels"].tolist()
@@ -254,13 +257,13 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     # Create metrics DataFrame with additional metadata
     metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score", "Dataset Organization"],
-        "Value": [accuracy, precision, recall, f1, args.dataset_org],
+        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+        "Value": [accuracy, precision, recall, f1],
     })
 
     # Save metrics DataFrame with consistent naming
-    metrics_path = evaluation_results_path.with_name(f"evaluation_{base_filename}_metrics.csv")
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    # metrics_path = evaluation_results_path.with_name(f"evaluation_{base_filename}_metrics.csv")
+    # metrics_df.to_csv(metrics_path, index=False)
+    # logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df
