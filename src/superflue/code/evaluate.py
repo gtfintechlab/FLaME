@@ -22,6 +22,7 @@ from superflue.code.tatqa.tatqa_evaluate import tatqa_evaluate
 # from superflue.code.bizbench.bizbench_evaluate import bizbench_evaluate
 # from superflue.code.econlogicqa.econlogicqa_evaluate import econlogicqa_evaluate
 # from superflue.code.causal_detection.cd_evaluate import cd_evaluate
+from superflue.code.causal_detection.casual_detection_evaluate_llm import causal_detection_evaluate
 
 import pandas as pd
 from time import time
@@ -43,15 +44,11 @@ def main(args):
     Args:
         args: Command line arguments containing:
             - dataset: Name of the task/dataset
-            - dataset_org: Organization holding the dataset
             - model: Model to use
             - file_name: Path to inference results
             - Other task-specific parameters
     """
     task = args.dataset.strip('"""')
-    
-    # Log dataset organization info
-    logger.info(f"Using dataset organization: {args.dataset_org}")
 
     # Map of tasks to their evaluation functions
     task_evaluate_map = {
@@ -74,8 +71,8 @@ def main(args):
         "banking77": banking77_evaluate,
         "convfinqa": convfinqa_evaluate,
         "finqa": finqa_evaluate,
-        "tatqa": tatqa_evaluate
-        # cd evaluate here
+        "tatqa": tatqa_evaluate,
+        "causal_detection": causal_detection_evaluate
     }
 
     if task in task_evaluate_map:
@@ -83,16 +80,6 @@ def main(args):
         
         # Run evaluation
         df, metrics_df = evaluate_function(args.file_name, args)
-        
-        # Add dataset organization to metrics if not already present
-        if "Dataset Organization" not in metrics_df["Metric"].values:
-            metrics_df = pd.concat([
-                metrics_df,
-                pd.DataFrame({
-                    "Metric": ["Dataset Organization"],
-                    "Value": [args.dataset_org]
-                })
-            ], ignore_index=True)
         
         # Save evaluation results
         results_path = f"evaluation_{args.file_name}"

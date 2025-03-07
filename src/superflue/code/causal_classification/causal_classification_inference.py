@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.
 
 from datasets import load_dataset
 from datetime import date
-from superflue.code.prompts import causal_classification_prompt
+from superflue.code.prompts_oldsuperflue import causal_classification_prompt
 from superflue.code.tokens import tokens
 from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from superflue.utils.logging_utils import setup_logger

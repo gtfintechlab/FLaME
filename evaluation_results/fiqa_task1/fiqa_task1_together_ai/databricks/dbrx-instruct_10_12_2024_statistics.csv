@@ -1,0 +1,5 @@
+Metric,Value
+Mean Squared Error,0.16008303913043478
+Mean Absolute Error,0.32062173913043485
+R2 Score,0.0518739453390179
+Answer Coverage,0.9956521739130435

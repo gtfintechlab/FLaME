@@ -207,15 +207,6 @@ def mmlu_inference(args) -> pd.DataFrame:
                 args, messages_batch, batch_idx, total_batches
             )
             
-            # Process responses
-            for (question, choices, answer, subject), response in zip(batch, batch_responses):
-                questions.append(question)
-                raw_responses.append(response.choices[0].message.content)
-                actual_answers.append(answer)
-                subjects.append(subject)
-                
-            pbar.set_description(f"Processing batches (Batch {batch_idx + 1}/{total_batches} succeeded)")
-            
         except Exception as e:
             pbar.set_description(f"Processing batches (Batch {batch_idx + 1}/{total_batches} failed)")
             logger.error(f"Batch {batch_idx + 1} failed completely: {str(e)}")
@@ -226,6 +217,19 @@ def mmlu_inference(args) -> pd.DataFrame:
                 actual_answers.append(None)
                 subjects.append(None)
             continue
+    
+        # Process responses
+        for (question, choices, answer, subject), response in zip(batch, batch_responses):
+            questions.append(question)
+            try:
+                raw_responses.append(response.choices[0].message.content)
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                raw_responses.append(None)
+            actual_answers.append(answer)
+            subjects.append(subject)
+            
+        pbar.set_description(f"Processing batches (Batch {batch_idx + 1}/{total_batches} succeeded)")
     
     # Create results DataFrame
     results_df = pd.DataFrame({

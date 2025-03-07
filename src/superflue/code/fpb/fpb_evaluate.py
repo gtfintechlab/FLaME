@@ -8,6 +8,9 @@ from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 import time
+import litellm
+from typing import Dict, Any, List, Optional, Tuple
+from tqdm import tqdm
 
 # Configure logging
 logger = setup_logger(
@@ -40,6 +43,31 @@ def save_progress(df, path):
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into chunks of specified size."""
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with litellm's retry mechanism."""
+    try:
+        # Using litellm's built-in retry mechanism
+        batch_responses = litellm.batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            top_k=args.top_k if args.top_k else None,
+            top_p=args.top_p,
+            repetition_penalty=args.repetition_penalty,
+            num_retries=3  # Using litellm's retry mechanism
+        )
+        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+            
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
+
 def fpb_evaluate(file_name, args):
     """Evaluate FPB dataset and return results and metrics DataFrames."""
     task = args.dataset.strip('“”"')
@@ -63,40 +91,37 @@ def fpb_evaluate(file_name, args):
 
     correct_labels = df["actual_labels"].tolist()
     extracted_labels = []
+    all_responses = df["llm_responses"].tolist()
 
-    for i, llm_response in enumerate(df["llm_responses"]):
-        if pd.notna(df.at[i, "extracted_labels"]):
-            continue
+    batches = chunk_list(all_responses, args.batch_size)
+    total_batches = len(batches)
 
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, batch_content in enumerate(pbar):
+        messages_batch = [
+            [{"role": "user", "content": extraction_prompt(response)}]
+            for response in batch_content
+        ]
         try:
-            # Generate prompt and get LLM response
-            model_response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
-            )
-            extracted_label = model_response.choices[0].message.content.strip() # type: ignore
-            mapped_label = map_label_to_number(extracted_label)
-
-            # Handle invalid labels
-            if mapped_label == -1:
-                logger.error(f"Invalid label for response {i}: {llm_response}")
-                extracted_labels.append(-1)
-            else:
-                extracted_labels.append(mapped_label)
-
-            # Update the DataFrame and save progress
-            df.at[i, "extracted_labels"] = mapped_label
-            save_progress(df, evaluation_results_path)
-
+            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
         except Exception as e:
-            logger.error(f"Error processing response {i}: {e}")
-            extracted_labels.append(-1)
-            time.sleep(10.0)
+            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+            for _ in range(len(batch_content)):
+                extracted_labels.append(-1)
+        
+        for response in batch_responses:
+            try: 
+                extracted_label = response.choices[0].message.content.strip()
+                mapped_label = map_label_to_number(extracted_label)
+
+                if mapped_label == -1:
+                    logger.error(f"Invalid label for response: {extracted_label}")
+            
+            except Exception as e:
+                logger.error(f"Error extracting response: {e}")
+                mapped_label = -1
+
+            extracted_labels.append(mapped_label)
 
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, extracted_labels)
@@ -116,9 +141,9 @@ def fpb_evaluate(file_name, args):
         "Value": [accuracy, precision, recall, f1],
     })
 
-    # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    # # Save metrics DataFrame
+    # metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    # metrics_df.to_csv(metrics_path, index=False)
+    # logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df

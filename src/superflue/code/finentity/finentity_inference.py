@@ -6,7 +6,7 @@ import pandas as pd
 from datasets import load_dataset
 
 from litellm import completion 
-from superflue.code.prompts import finentity_prompt
+from superflue.code.prompts_oldsuperflue import finentity_prompt
 from superflue.code.tokens import tokens
 
 nltk.download("punkt")

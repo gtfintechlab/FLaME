@@ -6,7 +6,7 @@ from litellm import completion
 import json
 
 # Custom imports for FNXL prompt and token handling
-from superflue.code.prompts import fnxl_prompt  # Custom prompt function for FNXL
+from superflue.code.prompts_oldsuperflue import fnxl_prompt  # Custom prompt function for FNXL
 from superflue.code.tokens import tokens  # Custom token handling function for FNXL
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL

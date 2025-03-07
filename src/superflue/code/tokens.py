@@ -1,7 +1,8 @@
 from typing import List
 
-@DeprecationWarning("We do not need to pass in the tokens when using litellm")
+# @DeprecationWarning("We do not need to pass in the tokens when using litellm")
 def tokens(api_model_string: str) -> List[str]:
+    raise DeprecationWarning("This function is deprecated. Do not pass stop tokens with LiteLLM.")
     """
     Returns the stop tokens for a given Language Model (LLM) based on its API Model String.
 

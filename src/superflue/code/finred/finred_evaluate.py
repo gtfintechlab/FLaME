@@ -8,6 +8,8 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+import litellm
+from typing import Dict, Any, List, Optional, Tuple
 
 # Configure logging
 logger = setup_logger(
@@ -35,13 +37,38 @@ def extraction_prompt(llm_response: str):
                 
                 Here is the LLM response to analyze:
                 "{llm_response}"
-                Provide only the label that best matches the response, exactly as it is listed above. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation.'''
+                Provide only the label that best matches the response, exactly as it is listed in the approved label list, with an underscore (_) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, asterisks, or punctuation, etc. Only output the label. Do not list an explanation or multiple labels.'''
     return prompt
 
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
+
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into chunks of specified size."""
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with litellm's retry mechanism."""
+    try:
+        # Using litellm's built-in retry mechanism
+        batch_responses = litellm.batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            top_k=args.top_k if args.top_k else None,
+            top_p=args.top_p,
+            repetition_penalty=args.repetition_penalty,
+            num_retries=3  # Using litellm's retry mechanism
+        )
+        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+            
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
 
 def finred_evaluate(file_name, args):
     """Evaluate FinRED dataset and return results and metrics DataFrames."""
@@ -65,38 +92,46 @@ def finred_evaluate(file_name, args):
 
     correct_labels = df["actual_labels"].tolist()
     extracted_labels = []
+    all_responses = df["llm_responses"].tolist()
 
-    for i, llm_response in tqdm(enumerate(df["llm_responses"]), total=len(df["llm_responses"])):
-        if pd.notna(df.at[i, "extracted_labels"]):
-            continue
-
+    batches = chunk_list(all_responses, args.batch_size)
+    total_batches = len(batches)
+    
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, sentence_batch in enumerate(pbar):
+        # Prepare messages for batch
+        messages_batch = [
+            [{"role": "user", "content": extraction_prompt(sentence)}]
+            for sentence in sentence_batch
+        ]
         try:
-            response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": extraction_prompt(llm_response)}],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
             )
-            extracted_label = response.choices[0].message.content.strip() # type: ignore
 
+        except Exception as e:
+            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+            for _ in sentence_batch:
+                extracted_labels.append('NO-REL')
+
+        # Process responses
+        for response in batch_responses:
+            try:
+                extracted_label = response.choices[0].message.content.strip() # type: ignore
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                extracted_label = 'NO-REL'
+                
             # Normalize and validate extracted label
             extracted_label = extracted_label.replace(' ', '')
             if extracted_label not in possible_relationships:
+                logger.error(f"Invalid label: {extracted_label}")
                 extracted_label = 'NO-REL'
 
             extracted_labels.append(extracted_label)
-            df.at[i, "extracted_labels"] = extracted_label
 
-            # Save progress after each row
-            save_progress(df, evaluation_results_path)
-
-        except Exception as e:
-            logger.error(f"Error processing response {i}: {e}")
-            extracted_labels.append('NO-REL')
-
+    df['extracted_labels'] = extracted_labels
+    
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, extracted_labels)
     precision, recall, f1, _ = precision_recall_fscore_support(
