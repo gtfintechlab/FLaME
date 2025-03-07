@@ -1,16 +1,16 @@
-def fnxl_prompt(sentence: str):
-    system_prompt = """You are an expert in financial text processing focused on numeric data tagging for financial documents."""
+# def fnxl_prompt(sentence: str):
+#     system_prompt = """You are an expert in financial text processing focused on numeric data tagging for financial documents."""
 
-    user_msg = f"""Identify the numerical figures in the following financial text, and assign each a label according to the FNXL taxonomy. 
-                Use one of these categories based on the context:
-                - 0 (No special label needed for this numeral)
-                - 1 (Rarely used numeral label for financial extremes)
-                - Higher integers as appropriate based on the prominence or financial significance. 
-                Output as a list of integers with the length matching the number of numerical figures identified in the text.
+#     user_msg = f"""Identify the numerical figures in the following financial text, and assign each a label according to the FNXL taxonomy. 
+#                 Use one of these categories based on the context:
+#                 - 0 (No special label needed for this numeral)
+#                 - 1 (Rarely used numeral label for financial extremes)
+#                 - Higher integers as appropriate based on the prominence or financial significance. 
+#                 Output as a list of integers with the length matching the number of numerical figures identified in the text.
                 
-                Sentence: {sentence}"""
+#                 Sentence: {sentence}"""
 
-    prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
+#     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
 def headlines_prompt(sentence: str):
 
@@ -101,10 +101,10 @@ def finer_prompt(sentence: str):
                     the label. If the token doesn’t fit in any of those three categories or is not a named entity
                     label it ‘Other’. Do not combine words yourself. Use a colon to separate token and label.
                     So the format should be token:label. \n\n + {sentence} """
- 
+
     # prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
     prompt = system_prompt + user_msg
- 
+
     return prompt
 
 
@@ -393,41 +393,35 @@ def subjectiveqa_prompt(feature, definition, question, answer):
     return prompt
 
 
-def fnxl_prompt(sentence, numerals, company, doc_type):
+def fnxl_prompt(sentence, company, doc_type):
     """
-    Generates a prompt for the LLM to associate numerals with the correct XBRL tags.
-    
-    Parameters:
-    - sentence (str): The sentence containing financial numerals.
-    - numerals (list): List of numerals to be tagged.
-    - company (str): The name of the company (for additional context).
-    - doc_type (str): The document type (e.g., "10-K").
+    Prompt that instructs the LLM to:
+      - Extract ALL numerals from the sentence
+      - Assign each numeral to the most appropriate XBRL tag or 'other'.
+      - Return a JSON object mapping 'numeral_string' -> 'xbrl_tag'.
 
-    Returns:
-    - str: The prompt to be passed to the LLM.
+    Example JSON output:
+    {
+      "7.2": "us-gaap:SomeExpenseTag",
+      "9.0": "us-gaap:SomeExpenseTag",
+      "2.5": "other"
+    }
     """
-    # Example prompt format
     prompt = f"""
-You are a financial assistant skilled in SEC reporting. Your task is to analyze sentences containing financial numerals and associate each numeral with its corresponding financial XBRL tag based on the context. 
-Give the most accurate tag for that particular numeral.
-Below is an example:
+    You are an SEC reporting expert. Given a sentence from a financial filing, do two things:
+    1) Identify every numeral in the sentence.
+    2) For each numeral, assign the most appropriate US-GAAP XBRL tag based on context. 
+    If no tag is appropriate, label it as "other".
 
-**Example Input**:
-- Sentence: "The Operating Partnership incurred expenses pursuant to the Corporate Services Agreement for the years ended December 31, 2020, 2019 and 2018 of $3.5 million, $3.5 million and $1.9 million, respectively."
-- Numerals: [3.5, 3.5, 1.9]
-- Metadata:
-  - Company: MGM Growth Properties LLC
-  - Document Type: 10-K
-- Expected Output:
-  ```json
-  {{"3.5": "us-gaap:RelatedPartyTransactionSellingGeneralAndAdministrativeExpensesFromTransactionsWithRelatedParty", "1.9": "us-gaap:RelatedPartyTransactionSellingGeneralAndAdministrativeExpensesFromTransactionsWithRelatedParty"}}
-  
-  Input:
-  Sentence: {sentence}
-  Numerals: {numerals}
-  Company: {company}
-  Document Type: {doc_type}"""
-  
+    Return only valid JSON in this format:
+    ```json
+    {{
+    "12.0": "us-gaap:Revenue",
+    "9.5": "us-gaap:SomeExpense",
+    "100.0": "other"
+    }}```
+    The sentnce is: {sentence}"""
+    
     return prompt
 
 def refind_prompt(entities):

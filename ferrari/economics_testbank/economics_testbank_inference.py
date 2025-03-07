@@ -9,7 +9,7 @@ import litellm
 import pandas as pd
 from datasets import load_dataset
 from superflue.config import LOG_DIR, LOG_LEVEL, RESULTS_DIR
-from superflue.code.prompts_fromferrari import economics_testbank_prompt
+from superflue.code.prompts import economics_testbank_prompt
 from superflue.utils.logging_utils import setup_logger
 from tqdm import tqdm
 

@@ -1,17 +1,12 @@
-from litellm import completion 
-import pandas as pd
-import time
-import sys
-import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
-
-from datasets import load_dataset
 from datetime import date
+import pandas as pd
+from datasets import load_dataset
+from litellm import batch_completion
 from superflue.code.prompts_oldsuperflue import causal_classification_prompt
-from superflue.code.tokens import tokens
-from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from superflue.utils.logging_utils import setup_logger
+from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
+from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
+import time
 
 logger = setup_logger(
     name="causal_classification_inference",
@@ -19,51 +14,60 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+import litellm
+litellm.drop_params = True
+
 def causal_classification_inference(args):
     today = date.today()
     logger.info(f"Starting Causal Classification inference on {today}")
 
+    # Load the dataset
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/CausalClassification", trust_remote_code=True)
 
-    # Initialize lists to store actual labels and model responses
-    texts = []
+    # Extract data from the test split
+    texts = [row["text"] for row in dataset["test"]]  # type: ignore
+    actual_labels = [row["label"] for row in dataset["test"]]  # type: ignore
     llm_responses = []
-    actual_labels = []
     complete_responses = []
 
-    logger.info(f"Starting inference on causal classification task with model {args.model}")
-    # start_t = time.time()
-    for i in range(len(dataset["test"])):  # type: ignore
-        text = dataset["test"][i]["text"]  # type: ignore
-        actual_label = dataset["test"][i]["label"]  # type: ignore
-        texts.append(text)
-        actual_labels.append(actual_label)
+    batch_size = args.batch_size
+    total_batches = len(texts) // batch_size + int(len(texts) % batch_size > 0)
+    logger.info(f"Processing {len(texts)} texts in {total_batches} batches.")
+
+    # Create batches
+    text_batches = chunk_list(texts, batch_size)
+    label_batches = chunk_list(actual_labels, batch_size)
+
+    for batch_idx, text_batch in enumerate(text_batches):
+        # Create prompt messages for the batch
+        messages_batch = [
+            [{"role": "user", "content": causal_classification_prompt(text)}]
+            for text in text_batch
+        ]
+
         try:
-            logger.info(f"Processing text {i+1}/{len(dataset['test'])}")  # type: ignore
-    
-            model_response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": causal_classification_prompt(text)}],
-                temperature=args.temperature,
-                tokens=args.max_tokens,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
-            )
-            complete_responses.append(model_response) 
-            response_label = model_response.choices[0].message.content # type: ignore
-            logger.info(f"Model response: {response_label}")  
-            llm_responses.append(response_label)
+            # Process the batch
+            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+            # time.sleep(1)
+
+            for response in batch_responses:
+                try:
+                    response_label = response.choices[0].message.content.strip()  # type: ignore
+                    llm_responses.append(response_label)
+                    complete_responses.append(response)
+                except (KeyError, IndexError, AttributeError) as e:
+                    logger.error(f"Error extracting response: {e}")
+                    llm_responses.append("error")
+                    complete_responses.append(None)
 
         except Exception as e:
-            logger.error(f"Error processing text {i+1}: {e}")
-            complete_responses.append(None)
-            llm_responses.append(None)
-            time.sleep(10.0)
+            logger.error(f"Batch {batch_idx + 1} failed: {e}")
+            llm_responses.extend(["error"] * len(text_batch))
+            complete_responses.extend([None] * len(text_batch))
             continue
 
+    # Create the final DataFrame
     df = pd.DataFrame(
         {
             "texts": texts,
@@ -72,7 +76,8 @@ def causal_classification_inference(args):
             "complete_responses": complete_responses,
         }
     )
-    
+
+    # Save results to a CSV file
     results_path = (
         RESULTS_DIR
         / "causal_classification"
@@ -80,6 +85,6 @@ def causal_classification_inference(args):
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
-    logger.info(f"Results saved to {results_path}")
+    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

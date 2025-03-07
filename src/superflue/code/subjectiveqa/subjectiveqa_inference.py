@@ -2,13 +2,12 @@ import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from litellm import batch_completion
+from litellm import batch_completion 
 from superflue.code.prompts_oldsuperflue import subjectiveqa_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 import random
- 
 logger = setup_logger(
     name="subjectiveqa_inference",
     log_file=LOG_DIR / "subjectiveqa_inference.log",
@@ -18,7 +17,6 @@ import traceback
 import litellm
 litellm.drop_params = True
 # litellm.set_verbose = True
- 
 def subjectiveqa_inference(args):
     definition_map = {
         "RELEVANT": "The speaker has answered the question entirely and appropriately.",
@@ -31,7 +29,6 @@ def subjectiveqa_inference(args):
  
     today = date.today()
     logger.info(f"Starting SubjectiveQA inference on {today}")
- 
     try:
         # Dataset Loading
         dataset = load_dataset("gtfintechlab/subjectiveqa", "5768", split="test", trust_remote_code=True)
@@ -39,7 +36,6 @@ def subjectiveqa_inference(args):
         logger.error(f"Dataset loading failed: {e}")
         logger.error(traceback.format_exc())
         return None
- 
     try:
         questions = [row["QUESTION"] for row in dataset]  # type: ignore
         answers = [row["ANSWER"] for row in dataset]  # type: ignore
@@ -51,27 +47,25 @@ def subjectiveqa_inference(args):
         logger.error(f"Error while extracting dataset fields: {e}")
         logger.error(traceback.format_exc())
         return None
- 
+
     feature_responses = {feature: [] for feature in definition_map.keys()}
- 
+
     batch_size = args.batch_size
     total_batches = len(questions) // batch_size + int(len(questions) % batch_size > 0)
     logger.info(f"Processing {len(questions)} rows in {total_batches} batches.")
- 
+
     question_batches = chunk_list(questions, batch_size)
     answer_batches = chunk_list(answers, batch_size)
     label_batches = {feature: chunk_list(labels, batch_size) for feature, labels in feature_labels.items()}
  
     for batch_idx, (question_batch, answer_batch) in enumerate(zip(question_batches, answer_batches)):
         messages_batch = []
- 
         for q, a in zip(question_batch, answer_batch):
             for feature in definition_map.keys():
                 messages_batch.append([
                     {"role": "system", "content": "You are an expert sentence classifier."},
                     {"role": "user", "content": subjectiveqa_prompt(feature, definition_map[feature], q, a)},
                 ])
- 
                 time.sleep(random.uniform(0.5, 1.5))  # Add a short randomized delay between features
         try:
             batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
@@ -81,7 +75,6 @@ def subjectiveqa_inference(args):
             for feature in definition_map.keys():
                 feature_responses[feature].extend(["error"] * len(question_batch))
             continue  # Move to next batch
- 
         response_idx = 0
         for q, a in zip(question_batch, answer_batch):
             for feature in definition_map.keys():
@@ -93,7 +86,6 @@ def subjectiveqa_inference(args):
                     logger.error(traceback.format_exc())
                     feature_responses[feature].append("error")
                 response_idx += 1
- 
     try:
         df = pd.DataFrame(
             {
@@ -107,7 +99,6 @@ def subjectiveqa_inference(args):
         logger.error(f"Error creating DataFrame: {e}")
         logger.error(traceback.format_exc())
         return None
- 
     try:
         results_path = RESULTS_DIR / "subjectiveqa" / f"subjectiveqa_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
         results_path.parent.mkdir(parents=True, exist_ok=True)
@@ -117,6 +108,5 @@ def subjectiveqa_inference(args):
         logger.error(f"Error saving results to CSV: {e}")
         logger.error(traceback.format_exc())
         return None
- 
+
     return df
- 

@@ -14,7 +14,7 @@ logger = setup_logger(
     name="fpb_inference", log_file=LOG_DIR / "fpb_inference.log", level=LOG_LEVEL
 )
 
-data_seed = '5768'
+# data_seed = '5768'
 
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
@@ -101,4 +101,4 @@ def fpb_inference(args):
     success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
-    return df
+#     return df

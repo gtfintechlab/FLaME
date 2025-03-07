@@ -5,7 +5,6 @@ import os
 from superflue.code.inference import main as inference
 from huggingface_hub import login
 from superflue.code.evaluate import main as evaluate
-import litellm
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="SuperFLUE")
@@ -43,7 +42,7 @@ if __name__ == "__main__":
     load_dotenv()
 
     # Optional: Verify that environment variables are loaded
-    print(f"TOGETHER_API_KEY: {os.getenv('TOGETHER_API_KEY')}")
+    print(f"TOGETHER_API_KEY: {os.getenv('TOGETHERAI_API_KEY')}")
     print(f"HUGGINGFACEHUB_API_TOKEN: {os.getenv('HUGGINGFACEHUB_API_TOKEN')}")
     HUGGINGFACEHUB_API_TOKEN = os.getenv('HUGGINGFACEHUB_API_TOKEN')
     # Log in to Hugging Face if the token is set
@@ -68,8 +67,6 @@ if __name__ == "__main__":
         "batch_size": 10,
         "prompt_format": "superflue",
     }
-
-    litellm.drop_params=True
 
     args2 = parse_arguments()
     for key, value in vars(args2).items():

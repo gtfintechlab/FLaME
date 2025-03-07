@@ -75,10 +75,10 @@ def ectsum_evaluate(file_name, args):
 
     # Create metrics DataFrame
     metrics_df = pd.DataFrame({
-        "Precision": [avg_precision],
-        "Recall": [avg_recall],
-        "F1 Score": [avg_f1]
-    })
+    "Metric": ["Precision", "Recall", "F1 Score"],
+    "Value": [avg_precision, avg_recall, avg_f1]
+})
+
 
     # Continual saving of progress and metrics
     save_progress(df, evaluation_results_path)
