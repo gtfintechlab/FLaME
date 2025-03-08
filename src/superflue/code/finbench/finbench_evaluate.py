@@ -6,8 +6,10 @@ from litellm import completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
+from superflue.code.extraction_prompts import finbench_extraction_prompt
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 import litellm
+from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from typing import Dict, Any, List, Optional, Tuple
 from tqdm import tqdm
 
@@ -24,12 +26,6 @@ label_mapping = {
     "HIGH RISK": 1,
 }
 
-def extraction_prompt(llm_response: str):
-    """Generate a prompt for extracting risk labels."""
-    prompt = f"""Based on the following list of labels: ‘HIGH RISK’, ‘LOW RISK’, extract the most relevant label from the following response:
-                "{llm_response}"
-                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
-    return prompt
 
 def map_label_to_number(label: str):
     """Map the extracted label to its corresponding numerical value."""
@@ -41,30 +37,6 @@ def save_progress(df, path):
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-            
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 def finbench_evaluate(file_name, args):
     """Evaluate the FinBench dataset and return results and metrics DataFrames."""
@@ -98,7 +70,7 @@ def finbench_evaluate(file_name, args):
     for batch_idx, batch in enumerate(pbar):
         # Prepare messages for batch
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(response)}]
+            [{"role": "user", "content": finbench_extraction_prompt(response)}]
             for response in batch
         ]
 
