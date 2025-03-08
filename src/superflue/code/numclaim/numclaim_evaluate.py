@@ -5,33 +5,22 @@ from pathlib import Path
 from litellm import batch_completion
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
+from superflue.code.extraction_prompts import numclaim_extraction_prompt
 from superflue.config import LOG_DIR, LOG_LEVEL
 
-# Setup logger
 logger = setup_logger(
     name="numclaim_evaluation",
     log_file=LOG_DIR / "numclaim_evaluation.log",
     level=LOG_LEVEL,
 )
 
-# Define prompt for extraction
-def extraction_prompt(llm_response: str):
-    prompt = f"""Based on the provided response, extract the following information:
-                - Label the response as 'INCLAIM' if it contains the word INCLAIM or any numeric value or quantitative assertion.
-                - Label the response as 'OUTCOFLAIM' if it contains the word OUTOFCLAIM or any qualitative assertion.
-                ONLY PROVIDE THE LABEL WITHOUT ANY ADDITIONAL TEXT.
-                The response: "{llm_response}"."""
-    return prompt
-
-# Mapping function to convert labels to binary
 def map_labels(label):
     return 1 if str(label).upper() == "INCLAIM" else 0
 
 def numclaim_evaluate(file_name, args):
     logger.info(f"Starting evaluation for Numclaim with model {args.model}...")
     task = args.dataset.strip('“”"')
-
-    # Load data from the specified file
+    
     results_file = Path(file_name)
     if not results_file.exists():
         raise FileNotFoundError(f"Results file {results_file} not found.")
@@ -40,7 +29,6 @@ def numclaim_evaluate(file_name, args):
     correct_labels = df['actual_labels'].apply(map_labels).tolist()
     llm_responses = df['llm_responses'].tolist()
     
-    # Initialize the column for storing extracted labels if it doesn't exist
     if 'extracted_labels' not in df.columns:
         df['extracted_labels'] = None
 
@@ -53,7 +41,7 @@ def numclaim_evaluate(file_name, args):
     for batch_idx, batch_indices in enumerate(index_batches):
         llm_responses_batch = [llm_responses[i] for i in batch_indices]
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(llm_response)}]
+            [{"role": "user", "content": numclaim_extraction_prompt(llm_response)}]
             for llm_response in llm_responses_batch
         ]
 
@@ -65,7 +53,6 @@ def numclaim_evaluate(file_name, args):
                     extracted_label = response.choices[0].message.content.strip()  # type: ignore
                     mapped_extracted_label = map_labels(extracted_label)
 
-                    # Update the DataFrame
                     df.at[row_idx, 'extracted_labels'] = mapped_extracted_label
 
                 except Exception as e:
@@ -79,21 +66,18 @@ def numclaim_evaluate(file_name, args):
 
     print(df['actual_labels'].value_counts())
     print(df['extracted_labels'].value_counts())
-
-    # Calculate evaluation metrics
+    
     extracted_labels = df['extracted_labels'].dropna().tolist()
     precision = precision_score(correct_labels, extracted_labels, average="binary")
     recall = recall_score(correct_labels, extracted_labels, average="binary")
     f1 = f1_score(correct_labels, extracted_labels, average="binary")
     accuracy = accuracy_score(correct_labels, extracted_labels)
 
-    # Log the evaluation metrics
     logger.info(f"Precision: {precision:.4f}")
     logger.info(f"Recall: {recall:.4f}")
     logger.info(f"F1 Score: {f1:.4f}")
     logger.info(f"Accuracy: {accuracy:.4f}")
 
-    # Save evaluation metrics to DataFrame
     metrics_df = pd.DataFrame({
         "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
         "Value": [precision, recall, f1, accuracy]
