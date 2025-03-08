@@ -153,3 +153,11 @@ def banking_77_extraction_prompt(llm_response: str):
                 "{llm_response}"
                 Provide only the label that best matches the response, exactly as it appears in the initial list of intents, with an underscore (_) between words. Only output alphanumeric characters and underscores. Do not include any special characters or punctuation. Only output the label. Do not list an explanation or multiple labels."""
     return prompt
+
+
+def finbench_extraction_prompt(llm_response: str):
+    """Generate a prompt for extracting risk labels."""
+    prompt = f"""Based on the following list of labels: ‘HIGH RISK’, ‘LOW RISK’, extract the most relevant label from the following response:
+                "{llm_response}"
+                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
+    return prompt
