@@ -7,10 +7,8 @@ import numpy as np
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 
-# Load BERTScore evaluation metric
 bertscore = load("bertscore")
 
-# Configure logging
 logger = setup_logger(
     name="edtsum_evaluation",
     log_file=LOG_DIR / "edtsum_evaluation.log",
@@ -35,11 +33,9 @@ def edtsum_evaluate(file_name, args):
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
-    # Load the CSV file
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    # Define paths for results and metrics
     evaluation_results_path = (
         EVALUATION_DIR
         / task
@@ -47,11 +43,9 @@ def edtsum_evaluate(file_name, args):
     )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Extract references and predictions
     correct_summaries = df["actual_labels"].tolist()
     llm_responses = df["llm_responses"].tolist()
 
-    # Compute BERTScore
     logger.info("Computing BERTScore metrics...")
     bert_scores = bertscore.compute(
         predictions=llm_responses, 
@@ -59,7 +53,6 @@ def edtsum_evaluate(file_name, args):
         model_type="distilbert-base-uncased"
     )
 
-    # Add BERTScore metrics to DataFrame
     df["precision"] = bert_scores["precision"]  # type: ignore
     df["recall"] = bert_scores["recall"]  # type: ignore
     df["f1"] = bert_scores["f1"]  # type: ignore
@@ -73,14 +66,12 @@ def edtsum_evaluate(file_name, args):
     logger.info(f"BERTScore Recall: {avg_recall:.4f}")
     logger.info(f"BERTScore F1: {avg_f1:.4f}")
 
-    # Create metrics DataFrame
     metrics_df = pd.DataFrame({
         "Precision": [avg_precision],
         "Recall": [avg_recall],
         "F1 Score": [avg_f1]
     })
-
-    # Continual saving of progress and metrics
+    
     save_progress(df, evaluation_results_path)
     metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
     metrics_df.to_csv(metrics_path, index=False)
