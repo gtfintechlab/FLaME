@@ -3,13 +3,12 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-from superflue.code.prompts_oldsuperflue import banking77_prompt
-from superflue.code.tokens import tokens
-from superflue.config import RESULTS_DIR
+from superflue.code.inference_prompts import banking77_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-from litellm import completion
+from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 import litellm
+
 from typing import Dict, Any, List, Optional, Tuple
 from tqdm import tqdm
 
@@ -17,37 +16,16 @@ logger = setup_logger(
     name="banking77_inference", log_file=LOG_DIR / "banking77_inference.log", level=LOG_LEVEL
 )
 
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            # top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            # repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-            
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 def banking77_inference(args):
     dataset = load_dataset("gtfintechlab/banking77", trust_remote_code=True)
     test_data = dataset["test"] # type: ignore
     all_documents = [data["text"] for data in test_data] # type: ignore
     all_actual_labels = [data["label"] for data in test_data] # type: ignore
-
+    
+    batch_size = args.batch_size
+    total_batches = len(all_documents) // batch_size + int(len(all_documents) % batch_size > 0)
+    logger.info(f"Processing {len(all_documents)} documents in {total_batches} batches.")
     sentence_batches = chunk_list(all_documents, args.batch_size)
     total_batches = len(sentence_batches)
 

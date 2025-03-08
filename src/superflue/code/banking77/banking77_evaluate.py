@@ -9,16 +9,17 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.utils.logging_utils import setup_logger
 from superflue.code.tokens import tokens
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.code.extraction_prompts import banking_77_extraction_prompt
+from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from tqdm import tqdm
 
-# Configure logging
 logger = setup_logger(
     name="banking77_evaluate",
     log_file=LOG_DIR / "banking77_evaluate.log",
     level=LOG_LEVEL,
 )
 
-# Banking 77 categories list and mappings
+
 banking77_list = [
     "activate_my_card",
     "age_limit",
@@ -100,59 +101,26 @@ banking77_list = [
 ]
 banking77_label_map = {category: index for index, category in enumerate(banking77_list)}
 
-# Define the prompt for LLM response extraction
-def extraction_prompt(llm_response: str):
-    prompt = f"""Based on the following list of banking intents: {banking77_list}, extract the most relevant category from the following response:
-                "{llm_response}"
-                Provide only the label that best matches the response, exactly as it appears in the initial list of intents, with an underscore (_) between words. Only output alphanumeric characters and underscores. Do not include any special characters or punctuation. Only output the label. Do not list an explanation or multiple labels."""
-    return prompt
-
 def map_extracted_label_to_number(extracted_label: str):
     """Map the extracted label to its corresponding numerical value."""
     if extracted_label not in banking77_label_map:
         logger.error(f"Label not found: {extracted_label}")
-    return banking77_label_map.get(extracted_label, -1)  # Return -1 if the label is not found
+    return banking77_label_map.get(extracted_label, -1)
 
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-            
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 def banking77_evaluate(file_name, args):
     """Evaluate Banking 77 results and return results and metrics DataFrames."""
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
-    # Load the CSV file
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    # Continual save path
     evaluation_results_path = (
         EVALUATION_DIR
         / task
@@ -160,7 +128,6 @@ def banking77_evaluate(file_name, args):
     )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Initialize extracted_labels column if it doesn't exist
     if 'extracted_labels' not in df.columns:
         df['extracted_labels'] = None
 
@@ -173,32 +140,27 @@ def banking77_evaluate(file_name, args):
 
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
-        # Prepare messages for batch
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(response)}]
+            [{"role": "user", "content": banking_77_extraction_prompt(response)}]
             for response in batch
         ]
 
         try:
-            # Process batch with retry logic
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches
             )
 
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-            # Add None values for failed batch
             for _ in batch:
                 extracted_labels.append(-1)
         
-        # Process responses
         for response in batch_responses:
             try:
                 extracted_label = response.choices[0].message.content.strip()  # type: ignore
             except Exception as e:
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 extracted_label = "Error"
-            # print(extracted_label)
             mapped_label = map_extracted_label_to_number(extracted_label)
 
             if mapped_label == -1:
@@ -210,7 +172,6 @@ def banking77_evaluate(file_name, args):
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     df["extracted_labels"] = extracted_labels
-    # Evaluate performance
     accuracy = accuracy_score(correct_labels, extracted_labels)
     precision, recall, f1, _ = precision_recall_fscore_support(correct_labels, extracted_labels, average="weighted")
 
@@ -219,7 +180,6 @@ def banking77_evaluate(file_name, args):
     logger.info(f"Recall: {recall:.4f}")
     logger.info(f"F1 Score: {f1:.4f}")
 
-    # Create metrics DataFrame
     metrics_df = pd.DataFrame({
         "Accuracy": [accuracy],
         "Precision": [precision],
@@ -227,7 +187,6 @@ def banking77_evaluate(file_name, args):
         "F1 Score": [f1],
     })
 
-    # Save metrics DataFrame
     metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
