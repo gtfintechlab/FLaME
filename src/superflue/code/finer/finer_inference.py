@@ -3,7 +3,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 from litellm import batch_completion
-from superflue.code.prompts_oldsuperflue import finer_prompt
+from superflue.code.inference_prompts import finer_prompt
 # from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -20,11 +20,9 @@ def finer_inference(args):
     today = date.today()
     logger.info(f"Starting FinER inference on {today}")
 
-    # Load the dataset
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/finer-ord-bio", trust_remote_code=True)
 
-    # Extract data
     sentences = [row["tokens"] for row in dataset["test"]]  # type: ignore
     actual_labels = [row["tags"] for row in dataset["test"]]  # type: ignore
 
@@ -35,19 +33,17 @@ def finer_inference(args):
     total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)
     logger.info(f"Processing {len(sentences)} sentences in {total_batches} batches.")
 
-    # Create batches
     sentence_batches = chunk_list(sentences, batch_size)
     label_batches = chunk_list(actual_labels, batch_size)
 
     for batch_idx, sentence_batch in enumerate(sentence_batches):
-        # Create prompt messages for the batch
         messages_batch = [
             [{"role": "user", "content": finer_prompt(sentence)}]
             for sentence in sentence_batch
         ]
 
         try:
-            # Process the batch
+
             batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
 
             for response in batch_responses:
@@ -64,7 +60,7 @@ def finer_inference(args):
             llm_responses.extend(["error"] * len(sentence_batch))
             complete_responses.extend([None] * len(sentence_batch))
             continue
-    # Create the final DataFrame
+        
     df = pd.DataFrame(
         {
             "sentences": sentences,
@@ -73,7 +69,7 @@ def finer_inference(args):
             "complete_responses": complete_responses,
         }
     )
-    # Save results to a CSV file
+    
     results_path = (
         RESULTS_DIR
         / "finer"
