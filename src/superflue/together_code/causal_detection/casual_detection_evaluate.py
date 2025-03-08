@@ -1,3 +1,5 @@
+import re
+import json
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report
 from superflue.utils.logging_utils import setup_logger
@@ -11,13 +13,45 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+def parse_label_list(raw_string: str):
+    """
+    Safely parse a string that may contain bracketed label lists with extra commas,
+    single quotes, or additional text. Returns a clean list of tags or an empty list.
+    """
+    if not isinstance(raw_string, str):
+        return []
+
+    
+    start = raw_string.find('[')
+    end = raw_string.rfind(']')
+    if start == -1 or end == -1 or end < start:
+       
+        return []
+
+    
+    bracketed = raw_string[start:end+1]
+
+    bracketed = bracketed.replace("'", '"')
+
+    
+    bracketed = re.sub(r'(".*?"),\s*', r'\1,', bracketed)  # handle embedded strings
+    bracketed = re.sub(r',\s*\]', ']', bracketed)         # remove trailing commas before the ]
+
+  
+    try:
+        parsed = json.loads(bracketed)
+        cleaned = [re.sub(r',$', '', item.strip()) for item in parsed if isinstance(item, str)]
+        return cleaned
+    except Exception:
+        return []
+
 def adjust_tags(row):
     actual = row["actual_tags"]
     predicted = row["predicted_tags"]
     if len(predicted) > len(actual):
         return predicted[:len(actual)]
     elif len(predicted) < len(actual):
-        return None  # Mark for exclusion
+        return None  
     else:
         return predicted
 
@@ -25,11 +59,11 @@ def casual_detection_evaluate(file_name, args):
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
-    # Load CSV
+   
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    # Define paths
+   
     evaluation_results_path = (
         EVALUATION_DIR
         / task
@@ -37,16 +71,18 @@ def casual_detection_evaluate(file_name, args):
     )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
-    df["actual_tags"] = df["actual_tags"].apply(eval)  # Convert string to list
-    df["predicted_tags"] = df["predicted_tags"].apply(eval)  # Convert string to list
-    df["adjusted_predicted_tags"] = df.apply(adjust_tags, axis=1) # type: ignore
+   
+    df["actual_tags"] = df["actual_tags"].apply(parse_label_list)
+    df["predicted_tags"] = df["predicted_tags"].apply(parse_label_list)
+    
+    df["adjusted_predicted_tags"] = df.apply(adjust_tags, axis=1)
 
-    # Exclude rows with mismatched lengths after adjustment
+   
     df["length_match"] = df["adjusted_predicted_tags"].notnull()
 
     df["row_accuracy"] = df.apply(
-        lambda row: accuracy_score(row["actual_tags"], row["adjusted_predicted_tags"]) # type: ignore
-        if row["length_match"] else 0.0, 
+        lambda row: accuracy_score(row["actual_tags"], row["adjusted_predicted_tags"])
+        if row["length_match"] else 0.0,
         axis=1
     ) 
 
@@ -62,7 +98,6 @@ def casual_detection_evaluate(file_name, args):
     accuracy = accuracy_score(flat_actual, flat_predicted)
     print(f"Overall Token-Level Accuracy: {accuracy:.4f}")
 
-    accuracy = accuracy_score(flat_actual, flat_predicted)
     precision, recall, f1, _ = precision_recall_fscore_support(flat_actual, flat_predicted, average="weighted")
 
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
