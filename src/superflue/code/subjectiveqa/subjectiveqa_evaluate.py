@@ -4,6 +4,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_sc
 from litellm import batch_completion
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
+from superflue.code.extraction_prompts import subjectiveqa_extraction_prompt
 from superflue.config import LOG_DIR, LOG_LEVEL
 # Setup logger
 logger = setup_logger(
@@ -11,22 +12,12 @@ logger = setup_logger(
     log_file=LOG_DIR / "subjectiveqa_evaluation.log",
     level=LOG_LEVEL,
 )
-def extraction_prompt(llm_response, feature):
-    """Prompt to extract a valid label for SubjectiveQA."""
-    return f"""The LLM output provided below contains the predicted rating for the feature '{feature}'.
-    Extract the rating as one of the following numbers: 0, 1, or 2, without any explanation or additional text.
-    If the rating is missing or the format is invalid, return 'error'.
-
-    LLM Response: "{llm_response}" """
 
 
 def normalize_response(response):
     """Normalize the LLM response to extract the predicted label."""
     try:
-        # Strip whitespace
         response = str(response).strip()
-
-        # If the response is directly a valid number, return it
         if response.isdigit() and int(response) in [0, 1, 2]:
             return int(response)
 
@@ -49,11 +40,9 @@ def subjectiveqa_evaluate(file_name, args):
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
  
-    # Load the input CSV file
     data = pd.read_csv(file_name)
     logger.info(f"Loaded data from {file_name} for evaluation.")
  
-    # Define label pairs for evaluation
     label_pairs = [
         ("RELEVANT_actual_label", "RELEVANT_response"),
         ("SPECIFIC_actual_label", "SPECIFIC_response"),
@@ -64,11 +53,9 @@ def subjectiveqa_evaluate(file_name, args):
     ]
 
 
-    # Initialize lists for metrics
     metrics = []
     extracted_labels = {label: [] for _, label in label_pairs}
 
-    # Process each label in batches
     batch_size = 10
     for actual_label, predicted_label in label_pairs:
         responses = data[predicted_label].tolist()
@@ -77,7 +64,7 @@ def subjectiveqa_evaluate(file_name, args):
         for batch_idx, batch_indices in enumerate(index_batches):
             response_batch = [responses[i] for i in batch_indices]
             messages_batch = [
-                [{"role": "user", "content": extraction_prompt(resp, predicted_label)}]
+                [{"role": "user", "content": subjectiveqa_extraction_prompt(resp, predicted_label)}]
                 for resp in response_batch
             ]
             try:
@@ -102,8 +89,7 @@ def subjectiveqa_evaluate(file_name, args):
                 logger.error(f"Batch {batch_idx + 1} failed: {e}")
                 extracted_labels[predicted_label].extend([-1] * len(batch_indices))
                 continue
-        # Compute metrics for the current label
-        # assert len(actuals) == len(predicted_labels)
+       
         actuals = [label if label in [0, 1, 2] else -1 for label in actuals]
         predicted_labels = extracted_labels[predicted_label]
         predicted_labels = [label if label in [0, 1, 2] else -1 for label in predicted_labels]
@@ -115,7 +101,7 @@ def subjectiveqa_evaluate(file_name, args):
             f1 = f1_score(filtered_actuals, filtered_predictions, average="weighted", zero_division=0)
             accuracy = accuracy_score(filtered_actuals, filtered_predictions)
         else:
-            precision = recall = f1 = accuracy = 0.0  # If no valid labels, set metrics to zero
+            precision = recall = f1 = accuracy = 0.0  
             
         metrics.append({
             "Label": predicted_label,
@@ -126,11 +112,9 @@ def subjectiveqa_evaluate(file_name, args):
         })
 
         logger.info(f"Metrics for {predicted_label}: Precision={precision:.4f}, Recall={recall:.4f}, F1={f1:.4f}, Accuracy={accuracy:.4f}")
-
-    # Create metrics DataFrame
+        
     results_df = pd.DataFrame(metrics)
 
-    # Compute average metrics
     if len(metrics) > 0:
         average_precision = sum(result["Precision"] for result in metrics) / len(metrics)
         average_recall = sum(result["Recall"] for result in metrics) / len(metrics)
@@ -143,7 +127,6 @@ def subjectiveqa_evaluate(file_name, args):
     logger.info(f"Average F1: {average_f1:.4f}")
     logger.info(f"Average Accuracy: {average_accuracy:.4f}")
  
-    # Create DataFrame for aggregated statistics
     statistics_df = pd.DataFrame({
         "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
         "Average": [average_precision, average_recall, average_f1, average_accuracy]
