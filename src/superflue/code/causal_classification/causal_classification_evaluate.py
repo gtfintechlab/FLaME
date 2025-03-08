@@ -6,20 +6,14 @@ import litellm
 # litellm.set_verbose=True
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
+from superflue.code.extraction_prompts import causal_classifciation_extraction_prompt
 from superflue.config import LOG_DIR, LOG_LEVEL
 
-# Set up logging
 logger = setup_logger(
     name="causal_classification_evaluation",
     log_file=LOG_DIR / "causal_classification_evaluation.log",
     level=LOG_LEVEL,
 )
-
-def extraction_prompt(llm_response: str):
-    """Generate a prompt to extract the label from the LLM response."""
-    return f"""The LLM output provided below contains the predicted label. Extract the label as a single number (0, 1, or 2) without any explanation or additional text. If the label is missing, return 'error'.
-
-    LLM Response: "{llm_response}" """
 
 def normalize_response(response):
     """Normalize the LLM response to extract the predicted label."""
@@ -63,7 +57,7 @@ def causal_classification_evaluate(file_name, args):
         actual_labels_batch = [df.at[i, "actual_labels"] for i in batch_indices]
         logger.info(f"Processing batch {batch_idx + 1} with {len(batch_indices)} rows.")
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(llm_response)}]
+            [{"role": "user", "content": causal_classifciation_extraction_prompt(llm_response)}]
             for llm_response in llm_responses_batch
         ]
         logger.info(f"Generated messages for batch {messages_batch}.")
@@ -79,7 +73,7 @@ def causal_classification_evaluate(file_name, args):
 
                     if predicted_label is not None:
                         extracted_labels.append(predicted_label)
-                        metrics.append((actual_label, predicted_label))  # Store actual vs predicted pairs
+                        metrics.append((actual_label, predicted_label))
                     else:
                         extracted_labels.append(None)
 
@@ -97,27 +91,22 @@ def causal_classification_evaluate(file_name, args):
             metrics.extend([{"precision": 0, "recall": 0, "f1": 0, "accuracy": 0}] * len(batch_indices))
             continue
 
-    # Add extracted labels to the DataFrame
     df["extracted_labels"] = extracted_labels
 
-    # Aggregate metrics
     valid_indices = [i for i in range(len(extracted_labels)) if extracted_labels[i] is not None]
     filtered_predicted = [extracted_labels[i] for i in valid_indices]
     filtered_actual = [df.at[i, "actual_labels"] for i in valid_indices]
 
-    # Compute evaluation metrics
     precision = precision_score(filtered_actual, filtered_predicted, average="macro")
     recall = recall_score(filtered_actual, filtered_predicted, average="macro")
     f1 = f1_score(filtered_actual, filtered_predicted, average="macro")
     accuracy = accuracy_score(filtered_actual, filtered_predicted)
 
-    # Metrics DataFrame
     metrics_df = pd.DataFrame({
         "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
         "Value": [precision, recall, f1, accuracy],
     })
 
-    # Log metrics
     logger.info(f"Precision: {precision:.4f}")
     logger.info(f"Recall: {recall:.4f}")
     logger.info(f"F1 Score: {f1:.4f}")

@@ -2,7 +2,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 from litellm import batch_completion
-from superflue.code.prompts_oldsuperflue import causal_classification_prompt
+from superflue.code.inference_prompts import causal_classification_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -21,11 +21,9 @@ def causal_classification_inference(args):
     today = date.today()
     logger.info(f"Starting Causal Classification inference on {today}")
 
-    # Load the dataset
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/CausalClassification", trust_remote_code=True)
 
-    # Extract data from the test split
     texts = [row["text"] for row in dataset["test"]]  # type: ignore
     actual_labels = [row["label"] for row in dataset["test"]]  # type: ignore
     llm_responses = []
@@ -35,19 +33,16 @@ def causal_classification_inference(args):
     total_batches = len(texts) // batch_size + int(len(texts) % batch_size > 0)
     logger.info(f"Processing {len(texts)} texts in {total_batches} batches.")
 
-    # Create batches
     text_batches = chunk_list(texts, batch_size)
     label_batches = chunk_list(actual_labels, batch_size)
 
     for batch_idx, text_batch in enumerate(text_batches):
-        # Create prompt messages for the batch
         messages_batch = [
             [{"role": "user", "content": causal_classification_prompt(text)}]
             for text in text_batch
         ]
 
         try:
-            # Process the batch
             batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
             # time.sleep(1)
 
@@ -67,7 +62,6 @@ def causal_classification_inference(args):
             complete_responses.extend([None] * len(text_batch))
             continue
 
-    # Create the final DataFrame
     df = pd.DataFrame(
         {
             "texts": texts,
@@ -77,7 +71,6 @@ def causal_classification_inference(args):
         }
     )
 
-    # Save results to a CSV file
     results_path = (
         RESULTS_DIR
         / "causal_classification"
