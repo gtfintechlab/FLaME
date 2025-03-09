@@ -3,10 +3,10 @@ import time
 from tqdm import tqdm
 from datasets import load_dataset
 from datetime import date
-from superflue.code.prompts_oldsuperflue import fpb_prompt
+from superflue.code.inference_prompts import fpb_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-from litellm import completion 
+from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
 import litellm
 from typing import Dict, Any, List, Optional, Tuple
 
@@ -14,32 +14,8 @@ logger = setup_logger(
     name="fpb_inference", log_file=LOG_DIR / "fpb_inference.log", level=LOG_LEVEL
 )
 
-# data_seed = '5768'
+data_seed = '5768'
 
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            # top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            # repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-            
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 def fpb_inference(args):
     # TODO: (Glenn) Very low priority, we can set the data_split as configurable in yaml

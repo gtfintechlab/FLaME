@@ -216,3 +216,10 @@ def fomc_extraction_prompt(llm_response: str) -> str:
                 "{llm_response}"
                 Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation.'''
     return prompt
+
+def fpb_extraction_prompt(llm_response: str):
+    """Generate a prompt to extract the most relevant label from the LLM response."""
+    prompt = f"""Based on the following list of labels: ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’, extract the most relevant label from the following response:
+                "{llm_response}"
+                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
+    return prompt
