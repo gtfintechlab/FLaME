@@ -161,3 +161,17 @@ def finbench_extraction_prompt(llm_response: str):
                 "{llm_response}"
                 Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
     return prompt
+
+
+def finqa_extraction_prompt(llm_response: str):
+    prompt = f"""
+    You will receive a response from a language model that may include a numerical answer within its text. 
+    Your task is to extract and return only the main/final answer. This could be represented as an integer, decimal, percentage, or text.
+    Respond with whatever is labeled as the final answer, if that exists, even if that contains text. Otherwise, stick to numerical answers.
+    Do not include any additional text or formatting. 
+
+    Model Response: {llm_response}
+
+    Please respond with the final answer. If a final answer was not provided, respond NA.
+    """
+    return prompt
