@@ -175,3 +175,26 @@ def finqa_extraction_prompt(llm_response: str):
     Please respond with the final answer. If a final answer was not provided, respond NA.
     """
     return prompt
+
+
+# Define possible relationships
+possible_relationships = [
+    'subsidiary', 'owned_by', 'employer', 'product_or_material_produced', 'industry',
+    'manufacturer', 'developer', 'legal_form', 'parent_organization', 'distribution_format',
+    'chairperson', 'location_of_formation', 'headquarters_location', 'operator', 'creator',
+    'currency', 'founded_by', 'original_broadcaster', 'owner_of', 'director_/_manager',
+    'business_division', 'chief_executive_officer', 'position_held', 'platform', 'brand',
+    'distributed_by', 'publisher', 'stock_exchange', 'member_of'
+]
+
+def finred_extraction_prompt(llm_response: str):
+    """Generate a prompt to extract the classification label from the LLM response."""
+    relationship_choices = ', '.join(possible_relationships)
+    prompt = f'''Extract the classification label from the following LLM response. The label should be one of the following {relationship_choices}. 
+    
+                Pick the label out of the list that is the closest to the LLM response, but list ‘NO-REL’ if the LLM did not output a clear answer.
+                
+                Here is the LLM response to analyze:
+                "{llm_response}"
+                Provide only the label that best matches the response, exactly as it is listed in the approved label list, with an underscore (_) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, asterisks, or punctuation, etc. Only output the label. Do not list an explanation or multiple labels.'''
+    return prompt
