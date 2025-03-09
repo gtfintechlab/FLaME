@@ -198,3 +198,21 @@ def finred_extraction_prompt(llm_response: str):
                 "{llm_response}"
                 Provide only the label that best matches the response, exactly as it is listed in the approved label list, with an underscore (_) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, asterisks, or punctuation, etc. Only output the label. Do not list an explanation or multiple labels.'''
     return prompt
+
+
+
+def fomc_extraction_prompt(llm_response: str) -> str:
+    """Generate a prompt to extract the classification label from the LLM response.
+    
+    Args:
+        llm_response: The raw response from the language model
+        
+    Returns:
+        A formatted prompt string for label extraction
+    """
+    prompt = f'''Extract the classification label from the following LLM response. The label should be one of the following: 'HAWKISH', 'DOVISH', or 'NEUTRAL'.
+                
+                Here is the LLM response to analyze:
+                "{llm_response}"
+                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation.'''
+    return prompt

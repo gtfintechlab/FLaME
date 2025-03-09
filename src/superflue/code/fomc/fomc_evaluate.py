@@ -4,10 +4,11 @@ import logging
 from datetime import datetime
 from pathlib import Path
 import uuid
-from litellm import completion, batch_completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
+from superflue.code.extraction_prompts import fomc_extraction_prompt
+from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 import time
 from tqdm import tqdm
@@ -26,21 +27,7 @@ label_mapping: Dict[str, int] = {
     "NEUTRAL": 2,  # Indicates balanced monetary policy stance
 }
 
-def extraction_prompt(llm_response: str) -> str:
-    """Generate a prompt to extract the classification label from the LLM response.
-    
-    Args:
-        llm_response: The raw response from the language model
-        
-    Returns:
-        A formatted prompt string for label extraction
-    """
-    prompt = f'''Extract the classification label from the following LLM response. The label should be one of the following: 'HAWKISH', 'DOVISH', or 'NEUTRAL'.
-                
-                Here is the LLM response to analyze:
-                "{llm_response}"
-                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation.'''
-    return prompt
+
 
 def map_label_to_number(label: str) -> int:
     """Map the extracted label to its corresponding numerical value after normalizing.
@@ -108,28 +95,6 @@ def generate_evaluation_filename(task: str, model: str) -> Tuple[str, Path]:
     
     return base_filename, full_path
 
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-def process_batch_with_retry(model: str, messages_batch: List[List[Dict]], args, batch_idx: int, total_batches: int):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        batch_responses = batch_completion(
-            model=model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-            
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Evaluate FOMC dataset and return results and metrics DataFrames.
@@ -197,14 +162,14 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
         for batch_idx, (response_batch, indices_batch) in enumerate(pbar):
             # Prepare messages for batch
             messages_batch = [
-                [{"role": "user", "content": extraction_prompt(response)}]
+                [{"role": "user", "content": fomc_extraction_prompt(response)}]
                 for response in response_batch
             ]
-            
+       
             try:
                 # Process batch with retry logic
                 batch_responses = process_batch_with_retry(
-                    args.model, messages_batch, args, batch_idx, total_batches
+                    args.model, messages_batch, args, batch_idx
                 )
                 
             except Exception as e:
