@@ -239,3 +239,12 @@ def headlines_extraction_prompt(llm_response: str):
     LLM Response:
     "{llm_response}" """
     return prompt
+
+def refind_extraction_prompt(llm_response: str):
+    """Construct the extraction prompt."""
+    prompt = f"""Extract the classification label from the following LLM response. The label should be one of the following: ‘PERSON-TITLE’, ‘PERSON-GOV_AGY’, ‘PERSON-ORG’, ‘PERSON-UNIV’, ‘ORG-ORG’, ‘ORG-MONEY’, ‘ORG-GPE’, or ‘ORG-DATE’. List ‘NO-REL’ if the LLM did not output a clear answer.
+                
+                Here is the LLM response to analyze:
+                "{llm_response}"
+                Provide only the label that best matches the response, exactly as it is listed in the approved label list, with a dash (-) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation. Only output the label."""
+    return prompt
