@@ -223,3 +223,19 @@ def fpb_extraction_prompt(llm_response: str):
                 "{llm_response}"
                 Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
     return prompt
+
+
+def headlines_extraction_prompt(llm_response: str):
+    """Generate a prompt to extract the relevant information from the LLM response."""
+    prompt = f"""Extract the relevant information from the following LLM response and provide a score of 0 or 1 for each attribute based on the content. Format your output as a JSON object with these keys:
+    - "Price_or_Not"
+    - "Direction_Up"
+    - "Direction_Down"
+    - "Direction_Constant"
+    - "Past_Price"
+    - "Future_Price"
+    - "Past_News"
+    Only output the keys and values in the JSON object. Do not include any additional text.
+    LLM Response:
+    "{llm_response}" """
+    return prompt

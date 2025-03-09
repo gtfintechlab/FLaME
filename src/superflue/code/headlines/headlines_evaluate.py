@@ -3,7 +3,9 @@ from datetime import date
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from litellm import completion
+from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
 from pathlib import Path
+from superflue.code.extraction_prompts import headlines_extraction_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
@@ -43,20 +45,6 @@ def preprocess_llm_response(raw_response: str):
         logger.error(f"Error preprocessing LLM response: {e}")
         return None
 
-def extraction_prompt(llm_response: str):
-    """Generate a prompt to extract the relevant information from the LLM response."""
-    prompt = f"""Extract the relevant information from the following LLM response and provide a score of 0 or 1 for each attribute based on the content. Format your output as a JSON object with these keys:
-    - "Price_or_Not"
-    - "Direction_Up"
-    - "Direction_Down"
-    - "Direction_Constant"
-    - "Past_Price"
-    - "Future_Price"
-    - "Past_News"
-    Only output the keys and values in the JSON object. Do not include any additional text.
-    LLM Response:
-    "{llm_response}" """
-    return prompt
 
 def map_label_to_number(label: str, category: str):
     """Map extracted labels to numeric values."""
@@ -67,30 +55,6 @@ def save_progress(df, path):
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-            
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 def headlines_evaluate(file_name, args):
     task = args.dataset.strip('“”"')
@@ -115,7 +79,7 @@ def headlines_evaluate(file_name, args):
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch_content in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(response)}]
+            [{"role": "user", "content": headlines_extraction_prompt(response)}]
             for response in batch_content
         ]
         try:
