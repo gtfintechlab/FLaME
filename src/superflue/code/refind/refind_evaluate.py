@@ -4,13 +4,8 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
 from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
 from superflue.code.extraction_prompts import refind_extraction_prompt
-from pathlib import Path
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-import time
-import litellm
-from typing import Dict, Any, List, Optional, Tuple
 from tqdm import tqdm
 
 # Configure logging
@@ -25,16 +20,10 @@ possible_relationships = [
     'ORG-ORG', 'ORG-MONEY', 'ORG-GPE', 'ORG-DATE'
 ]
 
-def save_progress(df, path):
-    """Save the current progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
-
-
 def refind_evaluate(file_name, args):
     """Evaluate Refind dataset and return results and metrics DataFrames."""
     task = args.dataset.strip('“”"')
-    logger.info(f"Starting evaluation for {task} using model {args.model}...")
+    logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load the CSV file with the LLM responses
     df = pd.read_csv(file_name)
@@ -47,14 +36,6 @@ def refind_evaluate(file_name, args):
 
     batches = chunk_list(all_responses, args.batch_size)
     total_batches = len(batches)
-
-    # Define paths
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
@@ -73,6 +54,7 @@ def refind_evaluate(file_name, args):
             logger.error(f"Error processing batch {batch_idx + 1}: {e}")
             for _ in batch:
                 extracted_labels.append('NO-REL')
+            continue
 
         # Process responses
         for response in batch_responses:
@@ -86,6 +68,9 @@ def refind_evaluate(file_name, args):
                 print(f"Invalid label: {extracted_label}")
                 extracted_label = 'NO-REL'
             extracted_labels.append(extracted_label)
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
     df['extracted_labels'] = extracted_labels
 
@@ -107,9 +92,7 @@ def refind_evaluate(file_name, args):
         "Value": [accuracy, precision, recall, f1]
     })
 
-    # Save metrics DataFrame
-    metrics_results_path = Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv")
-    metrics_df.to_csv(metrics_results_path, index=False)
-    logger.info(f"Metrics saved to {metrics_results_path}")
+    success_rate = df["extracted_labels"].notnull().sum() / len(df) * 100
+    logger.info(f"Success rate: {success_rate}")
 
     return df, metrics_df

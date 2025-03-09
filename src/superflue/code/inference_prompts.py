@@ -84,7 +84,7 @@ def finer_prompt(sentence: str):
     return prompt
 
 
-def fpb_prompt(sentence: str, prompt_format: str):
+def fpb_prompt(sentence: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
                     sifier. Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
                     class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is

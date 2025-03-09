@@ -1,41 +1,19 @@
 import pandas as pd
-import logging
 import numpy as np
-from datetime import date
-from pathlib import Path
 import json
 import re
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
-from litellm import batch_completion
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.code.extraction_prompts import finer_extraction_prompt
+from tqdm import tqdm
  
 logger = setup_logger(
     name="finer_evaluation",
     log_file=LOG_DIR / "finer_evaluation.log",
     level=LOG_LEVEL,
 )
- 
-def extraction_prompt_finer(llm_response: str):
-    """Generate a prompt to extract numeric labels for named entity recognition."""
-    prompt = f"""For each token in the following response, map the named entity labels to these numeric values:
-                    - "O" (Other): 0
-                    - "PER_B" (Person_B): 1
-                    - "PER_I" (Person_I): 2
-                    - "LOC_B" (Location_B): 3
-                    - "LOC_I" (Location_I): 4
-                    - "ORG_B" (Organisation_B): 5
-                    - "ORG_I" (Organisation_I): 6
- 
-                Provide only the list of integer labels, in the format:
-                [0, 1, 0, ...]
- 
-                Do not include any additional text, explanations, or formatting other than a plain list.
- 
-                LLM response:
-                "{llm_response}"."""
-    return prompt
  
 def clean_extracted_list(response: str) -> str:
     """Clean and format the extracted response into a valid JSON list."""
@@ -44,11 +22,6 @@ def clean_extracted_list(response: str) -> str:
     if not (cleaned_response.startswith("[") and cleaned_response.endswith("]")):
         cleaned_response = f"[{cleaned_response}]"
     return cleaned_response
- 
-def save_progress(df, path):
-    """Save the current progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
 
 def finer_evaluate(file_name, args):
     """
@@ -57,50 +30,53 @@ def finer_evaluate(file_name, args):
     Compute row-level metrics and aggregate them.
     """
     task = args.dataset.strip('“”"')
-    logger.info(f"Starting row-by-row evaluation for {task} using model {args.model}.")
+    logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
-
-    if "actual_labels" not in df.columns or "llm_responses" not in df.columns:
-        logger.error("The input CSV must contain 'actual_labels' and 'llm_responses' columns.")
-        raise ValueError("Missing required columns in the input file.")
 
     correct_labels = df["actual_labels"].apply(lambda x: json.loads(x) if pd.notna(x) else [])
     
     extracted_labels = []
 
-    batch_size = args.batch_size
-    indices = list(range(len(df)))
-    index_batches = chunk_list(indices, batch_size)
-    logger.info(f"Processing {len(df)} rows in {len(index_batches)} batches.")
-    for batch_idx, batch_indices in enumerate(index_batches):
-        llm_responses_batch = [df.at[i, "llm_responses"] for i in batch_indices]
-        logger.info(f"Processing batch {batch_idx + 1} with {len(batch_indices)} rows.")
+    all_responses = df["llm_responses"].tolist()
+
+    batches = chunk_list(all_responses, args.batch_size)
+    total_batches = len(batches)
+
+    logger.info(f"Processing {len(df)} rows in {total_batches} batches.")
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, batch in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt_finer(llm_response)}]
-            for llm_response in llm_responses_batch
+            [{"role": "user", "content": finer_extraction_prompt(response)}]
+            for response in batch
         ]
+
         try:
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, len(index_batches))
-            logger.info(f"Processed responses for batch {batch_idx + 1}.")
-            for idx, (response, row_idx) in enumerate(zip(batch_responses, batch_indices)):
-                try:
-                    if response is None or not hasattr(response, "choices") or not response.choices:
-                        raise ValueError(f"Invalid API response: {response}")
-                    llm_response = response.choices[0].message.content.strip()  # type: ignore
-                    cleaned_response = clean_extracted_list(llm_response)
-                    extracted_tokens = json.loads(cleaned_response)
-                    extracted_labels.append(extracted_tokens)
-
-                except Exception as e:
-                    logger.error(f"Error processing response for row {row_idx}: {e}")
-                    extracted_labels.append([])
-
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {e}")
-            extracted_labels.extend([[]] * len(batch_indices))
+            for _ in batch:
+                extracted_labels.append([])
             continue
+
+        for response in batch_responses:
+            try:
+                llm_response = response.choices[0].message.content.strip()  # type: ignore
+                cleaned_response = clean_extracted_list(llm_response)
+                extracted_tokens = json.loads(cleaned_response)
+                extracted_labels.append(extracted_tokens)
+
+            except:
+                logger.error(f"Error in response: {response}")
+                extracted_labels.append([])
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
+
+    df['extracted_labels'] = extracted_labels
         
     row_precisions = []
     row_recalls = []
@@ -128,7 +104,6 @@ def finer_evaluate(file_name, args):
         logger.warning("No rows were evaluated (row_precisions is empty).")
         return None
 
-
     macro_precision = np.mean(row_precisions)
     macro_recall = np.mean(row_recalls)
     macro_f1 = np.mean(row_f1s)
@@ -141,5 +116,8 @@ def finer_evaluate(file_name, args):
         "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
         "Value": [macro_precision, macro_recall, macro_f1, macro_accuracy]
     })
+
+    success_rate = df["extracted_labels"].notnull().sum() / len(df) * 100
+    logger.info(f"Success rate: {success_rate}")
 
     return df, metrics_df

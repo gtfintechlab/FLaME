@@ -1,13 +1,10 @@
 import pandas as pd
-from datetime import date
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-from litellm import batch_completion
-import litellm
-# litellm.set_verbose=True
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from superflue.code.extraction_prompts import causal_classifciation_extraction_prompt
 from superflue.config import LOG_DIR, LOG_LEVEL
+from tqdm import tqdm
 
 logger = setup_logger(
     name="causal_classification_evaluation",
@@ -35,61 +32,54 @@ def normalize_response(response):
 
 def causal_classification_evaluate(file_name, args):
     """Evaluate causal classification results with label extraction and comparison."""
-    task = "causal_classification"
+    task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load the CSV file
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    if 'actual_labels' not in df.columns or 'llm_responses' not in df.columns:
-        logger.error("The input CSV must contain 'actual_labels' and 'llm_responses' columns.")
-        raise ValueError("Missing required columns in the input file.")
-    batch_size = args.batch_size
-    indices = list(range(len(df)))
-    index_batches = chunk_list(indices, batch_size)
+    all_responses = df["llm_responses"].tolist()
+    batches = chunk_list(all_responses, args.batch_size)
+    total_batches = len(batches)
 
     extracted_labels = []
-    metrics = []
-    logger.info(f"Processing {len(df)} rows in {len(index_batches)} batches.")
-    for batch_idx, batch_indices in enumerate(index_batches):
-        llm_responses_batch = [df.at[i, "llm_responses"] for i in batch_indices]
-        actual_labels_batch = [df.at[i, "actual_labels"] for i in batch_indices]
-        logger.info(f"Processing batch {batch_idx + 1} with {len(batch_indices)} rows.")
+    logger.info(f"Processing {len(df)} rows in {total_batches} batches.")
+
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, batch in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": causal_classifciation_extraction_prompt(llm_response)}]
-            for llm_response in llm_responses_batch
+            [{"role": "user", "content": causal_classifciation_extraction_prompt(response)}]
+            for response in batch
         ]
         logger.info(f"Generated messages for batch {messages_batch}.")
 
         try:
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, len(index_batches))
-            logger.info(f"{batch_responses}")
-            for idx, (response, actual_label) in enumerate(zip(batch_responses, actual_labels_batch)):
-                try:
-                    
-                    llm_response = response.choices[0].message.content.strip()  # type: ignore
-                    predicted_label = normalize_response(llm_response)
-
-                    if predicted_label is not None:
-                        extracted_labels.append(predicted_label)
-                        metrics.append((actual_label, predicted_label))
-                    else:
-                        extracted_labels.append(None)
-
-
-                except Exception as e:
-                    logger.error(f"Error processing response for row {batch_indices[idx]}: {e}")
-                    extracted_labels.append(None)
-                    metrics.append({
-                        "precision": 0, "recall": 0, "f1": 0, "accuracy": 0,
-                    })
-
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {e}")
-            extracted_labels.extend([None] * len(batch_indices))
-            metrics.extend([{"precision": 0, "recall": 0, "f1": 0, "accuracy": 0}] * len(batch_indices))
+            for _ in batch:
+                extracted_labels.append(None)
             continue
+        
+        for response in batch_responses:
+            try:
+                llm_response = response.choices[0].message.content.strip()  # type: ignore
+                predicted_label = normalize_response(llm_response)
+
+                if predicted_label is not None:
+                    extracted_labels.append(predicted_label)
+                else:
+                    extracted_labels.append(None)
+
+            except Exception as e:
+                logger.error(f"Error processing response for batch {batch_idx}: {e}")
+                extracted_labels.append(None)
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
     df["extracted_labels"] = extracted_labels
 
@@ -111,5 +101,8 @@ def causal_classification_evaluate(file_name, args):
     logger.info(f"Recall: {recall:.4f}")
     logger.info(f"F1 Score: {f1:.4f}")
     logger.info(f"Accuracy: {accuracy:.4f}")
+
+    success_rate = df["extracted_labels"].notnull().sum() / len(df) * 100
+    logger.info(f"Success rate: {success_rate}")
 
     return df, metrics_df

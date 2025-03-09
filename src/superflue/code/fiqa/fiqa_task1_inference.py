@@ -1,14 +1,9 @@
-import time
 import pandas as pd
-from datetime import date
 from datasets import load_dataset
 from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
 from superflue.code.inference_prompts import fiqa_task1_prompt
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-import litellm
-from typing import Dict, Any, List, Optional, Tuple
 from tqdm import tqdm
 
 # Set up logger
@@ -18,9 +13,9 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
-
 def fiqa_task1_inference(args):
-    # Load dataset and initialize storage for results
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting inference for {task} using model {args.model}.")
     dataset = load_dataset("gtfintechlab/FiQA_Task1", trust_remote_code=True)
 
     test_data = dataset["test"] # type: ignore
@@ -30,10 +25,7 @@ def fiqa_task1_inference(args):
 
     sentence_batches = chunk_list(all_texts, args.batch_size)
     total_batches = len(sentence_batches)
-    context = []
     llm_responses = []
-    actual_targets = []
-    actual_sentiments = []
     complete_responses = []
 
     pbar = tqdm(sentence_batches, desc="Processing batches")
@@ -52,11 +44,9 @@ def fiqa_task1_inference(args):
             for _ in range(len(sentence_batch)):
                 llm_responses.append(None)
                 complete_responses.append(None)
-                context.append(None)
-                actual_targets.append(None)
-                actual_sentiments.append(None)
+            continue
         
-        for sentence, response in zip(sentence_batch, batch_responses):
+        for response in batch_responses:
             try:
                 response_label = response.choices[0].message.content
             except Exception as e:
@@ -64,18 +54,17 @@ def fiqa_task1_inference(args):
                 response_label = None
             llm_responses.append(response_label)
             complete_responses.append(response)
-            context.append(sentence)
-            actual_targets.append(all_targets[len(llm_responses) - 1])
-            actual_sentiments.append(all_sentiments[len(llm_responses) - 1])
-        pbar.set_description(f"Completed batch {batch_idx + 1}/{total_batches}")
+        
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
     
     # Create DataFrame with results
     df = pd.DataFrame(
         {
-            "context": context,
+            "context": all_texts,
             "llm_responses": llm_responses,
-            "actual_target": actual_targets,
-            "actual_sentiment": actual_sentiments,
+            "actual_target": all_targets,
+            "actual_sentiment": all_sentiments,
             "complete_responses": complete_responses,
         }
     )

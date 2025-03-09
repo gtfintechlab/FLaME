@@ -1,16 +1,9 @@
 import pandas as pd
-import logging
-from datetime import date
-from pathlib import Path
-from litellm import completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.code.extraction_prompts import finbench_extraction_prompt
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-import litellm
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
-from typing import Dict, Any, List, Optional, Tuple
 from tqdm import tqdm
 
 # Configure logging
@@ -26,17 +19,10 @@ label_mapping = {
     "HIGH RISK": 1,
 }
 
-
 def map_label_to_number(label: str):
     """Map the extracted label to its corresponding numerical value."""
     normalized_label = label.strip().upper()  # Normalize label to uppercase
     return label_mapping.get(normalized_label, -1)  # Return -1 if the label is not found
-
-def save_progress(df, path):
-    """Save the current progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
-
 
 def finbench_evaluate(file_name, args):
     """Evaluate the FinBench dataset and return results and metrics DataFrames."""
@@ -46,17 +32,6 @@ def finbench_evaluate(file_name, args):
     # Load the CSV file
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
-
-    # Define paths for results and metrics
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
-
-    if "extracted_labels" not in df.columns:
-        df["extracted_labels"] = None
 
     # Initialize extracted labels
     extracted_labels = []
@@ -84,6 +59,7 @@ def finbench_evaluate(file_name, args):
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in batch:
                 extracted_labels.append(-1)
+            continue
         
         # Process responses
         for response in batch_responses:
@@ -96,10 +72,11 @@ def finbench_evaluate(file_name, args):
 
             if mapped_label == -1:
                 logger.error(f"Invalid label for response {batch_idx}: {response}")
-            else:
-                logger.info(f"Extracted label for row {batch_idx}: {mapped_label}")
 
             extracted_labels.append(mapped_label)
+        
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
     df["extracted_labels"] = extracted_labels
 
@@ -117,9 +94,7 @@ def finbench_evaluate(file_name, args):
         "F1 Score": [f1],
     })
 
-    # Save metrics to CSV
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    success_rate = df["extracted_labels"].notnull().sum() / len(df) * 100
+    logger.info(f"Success rate: {success_rate}")
 
     return df, metrics_df

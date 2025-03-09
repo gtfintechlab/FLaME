@@ -58,12 +58,39 @@ def finentity_extraction_prompt(model_response: str):
                 Please ensure the format is valid JSON with all required fields. Make sure it does not throw a JSON decoding error."""
     return prompt
 
+def finer_extraction_prompt(llm_response: str):
+    """Generate a prompt to extract numeric labels for named entity recognition."""
+    prompt = f"""For each token in the following response, map the named entity labels to these numeric values:
+                    - "O" (Other): 0
+                    - "PER_B" (Person_B): 1
+                    - "PER_I" (Person_I): 2
+                    - "LOC_B" (Location_B): 3
+                    - "LOC_I" (Location_I): 4
+                    - "ORG_B" (Organisation_B): 5
+                    - "ORG_I" (Organisation_I): 6
+ 
+                Provide only the list of integer labels, in the format:
+                [0, 1, 0, ...]
+ 
+                Do not include any additional text, explanations, or formatting other than a plain list.
+ 
+                LLM response:
+                "{llm_response}"."""
+    return prompt
 
 def causal_classifciation_extraction_prompt(llm_response: str):
     """Generate a prompt to extract the label from the LLM response."""
     return f"""The LLM output provided below contains the predicted label. Extract the label as a single number (0, 1, or 2) without any explanation or additional text. If the label is missing, return 'error'.
 
     LLM Response: "{llm_response}" """
+
+def causal_detection_extraction_prompt(llm_response: str):
+    prompt = f"""Given the following output from a language model, extract the entire list of tokens. The allowed tokens are 'O', 'I-CAUSE', 'B-CAUSE', 'I-EFFECT', and 'B-EFFECT'.
+                The list should only contain these tokens and should be enclosed in brackets. Each token should be a string and surrounded by quotations ('').
+                Extract all tokens that were found and output them in the exact order they were originally written. Only output tokens from the input, do not add any tokens. If no tokens were found, output an empty list.
+                Only output a list of tokens enclosed in brackets, do not include any additional text or formatting.
+                Response: {llm_response}"""
+    return prompt
     
     
 banking77_list = [
@@ -176,9 +203,22 @@ def finqa_extraction_prompt(llm_response: str):
     """
     return prompt
 
+def finqa_evaluate_answer(predicted_answer: str, correct_answer: str):
+    prompt = f"""
+    You will receive two answers. Your job is to evaluate if they are exactly the same, with some caveats. 
+    If they are wholly different answers (eg: 8 and 9), they are considered different.
+    If the first answer is a more precise version of the second answer (eg: units listed, more decimal points reported, etc), they are the same.
+    If the first answer can be rounded to the second answer, with the exact level of precision that the second answer uses, they are considered the same. If they cannot, they are different.
+    If the answers are numbers and the first number cannot be rounded to the second number, respond with 'different'.
+    For example, if the first answer is '1.02' and the second answer is '1', they are considered the same,
+    but if the second answer is '1.02' and the first answer is '1.03' or '1', they are considered different.
+    If the first answer is '5%' and the second answer is '5', they are considered the same.
+    If the answers are the same, respond with 'correct'. If they are different, respond with 'wrong'.
+    First answer: {predicted_answer}. Second answer: {correct_answer}
+    """
+    return prompt
 
-# Define possible relationships
-possible_relationships = [
+finred_possible_relationships = [
     'subsidiary', 'owned_by', 'employer', 'product_or_material_produced', 'industry',
     'manufacturer', 'developer', 'legal_form', 'parent_organization', 'distribution_format',
     'chairperson', 'location_of_formation', 'headquarters_location', 'operator', 'creator',

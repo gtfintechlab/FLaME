@@ -1,23 +1,19 @@
 import time
-
 import pandas as pd
 from datasets import load_dataset
-from datetime import date
 from superflue.code.inference_prompts import finqa_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
-import litellm
-from typing import Dict, Any, List, Optional, Tuple
 from tqdm import tqdm
-
-# TODO: (Glenn) Is FinQA saving results to a file properly?
 
 logger = setup_logger(
     name="finqa_inference", log_file=LOG_DIR / "finqa_inference.log", level=LOG_LEVEL
 )
 
 def finqa_inference(args):
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting inference for {task} using model {args.model}.")
     dataset = load_dataset("gtfintechlab/finqa", trust_remote_code=True)
     test_data = dataset["test"]  # type: ignore
     all_texts = [f"{' '.join(data['pre_text'])} {' '.join(data['post_text'])} {' '.join([' '.join(row) for row in data['table_ori']])} {data['question']}" for data in test_data]  # type: ignore
@@ -25,9 +21,7 @@ def finqa_inference(args):
     text_batches = chunk_list(all_texts, args.batch_size)
     total_batches = len(text_batches)
 
-    context = []
     llm_responses = []
-    actual_labels = []
     complete_responses = []
     
     pbar = tqdm(text_batches, desc="Processing batches")
@@ -41,13 +35,11 @@ def finqa_inference(args):
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in text_batch:
-                context.append(None)
                 llm_responses.append(None)
                 complete_responses.append(None)
-                actual_labels.append(None)
+            continue
         
         for text, response in zip(text_batch, batch_responses):
-            context.append(text)
             try:
                 response_label = response.choices[0].message.content  # type: ignore
             except Exception as e:
@@ -55,15 +47,15 @@ def finqa_inference(args):
                 response_label = None
             llm_responses.append(response_label)
             complete_responses.append(response)
-            actual_labels.append(all_actual_labels[len(llm_responses) - 1])
             
-        pbar.set_description(f"Completed batch {batch_idx + 1}/{total_batches}")
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
     df = pd.DataFrame(
         {
-            "context": context,
+            "context": all_texts,
             "response": llm_responses,
-            "actual_label": actual_labels,
+            "actual_label": all_actual_labels,
             "complete_responses": complete_responses,
         }
     )

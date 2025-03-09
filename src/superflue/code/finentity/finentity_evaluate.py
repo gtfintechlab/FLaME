@@ -1,21 +1,18 @@
 import pandas as pd
-import logging
-from datetime import date
 import json
 import re
 import ast
-from litellm import batch_completion
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from superflue.code.extraction_prompts import finentity_extraction_prompt
 from superflue.config import LOG_DIR, LOG_LEVEL
+from tqdm import tqdm
 
 logger = setup_logger(
     name="finentity_evaluation",
     log_file=LOG_DIR / "finentity_evaluation.log",
     level=LOG_LEVEL,
 )
-
 
 def sanitize_json_string(json_str):
     """Sanitize JSON strings by fixing common formatting issues."""
@@ -80,40 +77,46 @@ def finentity_evaluate(file_name, args):
     if "extracted_labels" not in df.columns:
         df["extracted_labels"] = None
 
-    batch_size = args.batch_size
-    indices = list(range(len(df)))
-    index_batches = chunk_list(indices, batch_size)
-    logger.info(f"Processing {len(df)} rows in {len(index_batches)} batches.")
+    all_responses = df["llm_responses"].tolist()
 
-    for batch_idx, batch_indices in enumerate(index_batches):
-        llm_responses_batch = [df.at[i, "llm_responses"] for i in batch_indices]
-        logger.info(f"Processing batch {batch_idx + 1}/{len(index_batches)} with {len(batch_indices)} rows.")
+    batches = chunk_list(all_responses, args.batch_size)
+    total_batches = len(batches)
+    logger.info(f"Processing {len(df)} rows in {total_batches} batches.")
+
+    extracted_labels = []
+
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, batch in enumerate(pbar):
         messages_batch = [
             [{"role": "user", "content": finentity_extraction_prompt(response)}]
-            for response in llm_responses_batch
+            for response in batch
         ]
 
         try:
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, len(index_batches))
-            for idx, (response, row_idx) in enumerate(zip(batch_responses, batch_indices)):
-                try:
-                    if response is None or not hasattr(response, "choices") or not response.choices:
-                        raise ValueError(f"Invalid API response: {response}")
-
-                    llm_response = response.choices[0].message.content.strip()  # type: ignore
-                    sanitized_label = sanitize_json_string(llm_response)
-                    parsed_label = parse_json_content(sanitized_label)
-
-                    df.at[row_idx, "extracted_labels"] = json.dumps(parsed_label)
-
-                except Exception as e:
-                    logger.error(f"Error processing response for row {row_idx}: {e}")
-                    df.at[row_idx, "extracted_labels"] = json.dumps([])
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
 
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {e}")
-            for row_idx in batch_indices:
-                df.at[row_idx, "extracted_labels"] = json.dumps([])
+            for _ in batch:
+                extracted_labels.append(json.dumps([]))
+            continue
+
+        for response in batch_responses:
+            try:
+                llm_response = response.choices[0].message.content.strip()  # type: ignore
+                sanitized_label = sanitize_json_string(llm_response)
+                parsed_label = parse_json_content(sanitized_label)
+                extracted_labels.append(json.dumps(parsed_label))
+            except Exception as e:
+                logger.error(f"Error processing response: {e}")
+                extracted_labels.append(json.dumps([]))
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
+
+    df["extracted_labels"] = extracted_labels
 
     # Evaluate extracted vs actual labels
     evaluation_results = []
@@ -134,5 +137,8 @@ def finentity_evaluate(file_name, args):
             aggregated_metrics["accuracy"]
         ]
     })
+
+    success_rate = df["extracted_labels"].notnull().sum() / len(df) * 100
+    logger.info(f"Success rate: {success_rate}")
 
     return df, metrics_df

@@ -23,7 +23,7 @@ from superflue.code.mmlu.mmlu_evaluate import mmlu_evaluate
 # from superflue.code.bizbench.bizbench_evaluate import bizbench_evaluate
 # from superflue.code.econlogicqa.econlogicqa_evaluate import econlogicqa_evaluate
 # from superflue.code.causal_detection.cd_evaluate import cd_evaluate
-from superflue.code.causal_detection.casual_detection_evaluate_llm import causal_detection_evaluate
+from superflue.code.causal_detection.casual_detection_evaluate import causal_detection_evaluate
 
 import pandas as pd
 from time import time
@@ -85,22 +85,12 @@ def main(args):
         # Save evaluation results
         results_path = f"evaluation_{args.file_name}"
         results_path = Path(results_path)
-        # results_path = (
-        #     EVALUATION_DIR
-        #     / task
-        #     / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-        # )
         results_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(results_path, index=False)
         logger.info(f"Evaluation completed for {task}. Results saved to {results_path}")
         
         # Save metrics
         metrics_path = Path(f"{str(results_path)[:-4]}_metrics.csv")
-        # metrics_path = (
-        #     EVALUATION_DIR
-        #     / task
-        #     / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}_metrics.csv"
-        # )
         metrics_path.parent.mkdir(parents=True, exist_ok=True)
         metrics_df.to_csv(metrics_path, index=False)
         logger.info(f"Metrics saved to {metrics_path}")

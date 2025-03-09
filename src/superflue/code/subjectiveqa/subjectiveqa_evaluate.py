@@ -1,18 +1,17 @@
 from datetime import date
 import pandas as pd
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-from litellm import batch_completion
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from superflue.code.extraction_prompts import subjectiveqa_extraction_prompt
 from superflue.config import LOG_DIR, LOG_LEVEL
+
 # Setup logger
 logger = setup_logger(
     name="subjectiveqa_evaluation",
     log_file=LOG_DIR / "subjectiveqa_evaluation.log",
     level=LOG_LEVEL,
 )
-
 
 def normalize_response(response):
     """Normalize the LLM response to extract the predicted label."""
@@ -34,11 +33,10 @@ def normalize_response(response):
         logger.error(f"Error normalizing response: {e}")
         return None
 
-
 def subjectiveqa_evaluate(file_name, args):
     """Evaluate SubjectiveQA results with extraction and batching logic."""
     task = args.dataset.strip('“”"')
-    logger.info(f"Starting evaluation for {task} using model {args.model}...")
+    logger.info(f"Starting evaluation for {task} using model {args.model}.")
  
     data = pd.read_csv(file_name)
     logger.info(f"Loaded data from {file_name} for evaluation.")
@@ -52,15 +50,13 @@ def subjectiveqa_evaluate(file_name, args):
         ("OPTIMISTIC_actual_label", "OPTIMISTIC_response"),
     ]
 
-
     metrics = []
     extracted_labels = {label: [] for _, label in label_pairs}
 
-    batch_size = 10
     for actual_label, predicted_label in label_pairs:
         responses = data[predicted_label].tolist()
         actuals = data[actual_label].tolist()
-        index_batches = chunk_list(list(range(len(responses))), batch_size)
+        index_batches = chunk_list(list(range(len(responses))), args.batch_size)
         for batch_idx, batch_indices in enumerate(index_batches):
             response_batch = [responses[i] for i in batch_indices]
             messages_batch = [
@@ -68,28 +64,31 @@ def subjectiveqa_evaluate(file_name, args):
                 for resp in response_batch
             ]
             try:
-                batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, len(index_batches))
-                for idx, (response, row_idx) in enumerate(zip(batch_responses, batch_indices)):
-                    try:
-                        if response is None or not hasattr(response, "choices") or not response.choices:
-                            raise ValueError(f"Invalid API response: {response}")
-
-                        llm_response = response.choices[0].message.content.strip()  # type: ignore
-                        extracted_label = normalize_response(llm_response)
-
-                        extracted_labels[predicted_label].append(
-                            extracted_label if extracted_label is not None else -1
-                        )
-
-                    except Exception as e:
-                        logger.error(f"Error processing response for row {row_idx}: {e}")
-                        extracted_labels[predicted_label].append(-1)
+                batch_responses = process_batch_with_retry(
+                    args, messages_batch, batch_idx, len(index_batches)
+                )
 
             except Exception as e:
                 logger.error(f"Batch {batch_idx + 1} failed: {e}")
                 extracted_labels[predicted_label].extend([-1] * len(batch_indices))
                 continue
-       
+
+            for idx, (response, row_idx) in enumerate(zip(batch_responses, batch_indices)):
+                try:
+                    if response is None or not hasattr(response, "choices") or not response.choices:
+                        raise ValueError(f"Invalid API response: {response}")
+
+                    llm_response = response.choices[0].message.content.strip()  # type: ignore
+                    extracted_label = normalize_response(llm_response)
+
+                    extracted_labels[predicted_label].append(
+                        extracted_label if extracted_label is not None else -1
+                    )
+
+                except Exception as e:
+                    logger.error(f"Error processing response for row {row_idx}: {e}")
+                    extracted_labels[predicted_label].append(-1)
+    
         actuals = [label if label in [0, 1, 2] else -1 for label in actuals]
         predicted_labels = extracted_labels[predicted_label]
         predicted_labels = [label if label in [0, 1, 2] else -1 for label in predicted_labels]

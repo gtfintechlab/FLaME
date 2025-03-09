@@ -1,17 +1,12 @@
 import pandas as pd
-import logging
 from datetime import date
-from pathlib import Path
-from litellm import completion
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.code.extraction_prompts import finred_extraction_prompt
+from superflue.code.extraction_prompts import finred_extraction_prompt, finred_possible_relationships
 from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-import litellm
-from typing import Dict, Any, List, Optional, Tuple
 
 # Configure logging
 logger = setup_logger(
@@ -19,21 +14,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "finred_evaluation.log",
     level=LOG_LEVEL,
 )
-
-possible_relationships = [
-    'subsidiary', 'owned_by', 'employer', 'product_or_material_produced', 'industry',
-    'manufacturer', 'developer', 'legal_form', 'parent_organization', 'distribution_format',
-    'chairperson', 'location_of_formation', 'headquarters_location', 'operator', 'creator',
-    'currency', 'founded_by', 'original_broadcaster', 'owner_of', 'director_/_manager',
-    'business_division', 'chief_executive_officer', 'position_held', 'platform', 'brand',
-    'distributed_by', 'publisher', 'stock_exchange', 'member_of'
-]
-
-def save_progress(df, path):
-    """Save the current progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
-
 
 def finred_evaluate(file_name, args):
     """Evaluate FinRED dataset and return results and metrics DataFrames."""
@@ -43,17 +23,6 @@ def finred_evaluate(file_name, args):
     # Load CSV
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
-
-    # Define paths
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
-
-    if "extracted_labels" not in df.columns:
-        df["extracted_labels"] = None
 
     correct_labels = df["actual_labels"].tolist()
     extracted_labels = []
@@ -73,11 +42,11 @@ def finred_evaluate(file_name, args):
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches
             )
-
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in sentence_batch:
                 extracted_labels.append('NO-REL')
+            continue
 
         # Process responses
         for response in batch_responses:
@@ -89,11 +58,14 @@ def finred_evaluate(file_name, args):
                 
             # Normalize and validate extracted label
             extracted_label = extracted_label.replace(' ', '')
-            if extracted_label not in possible_relationships:
+            if extracted_label not in finred_possible_relationships:
                 logger.error(f"Invalid label: {extracted_label}")
                 extracted_label = 'NO-REL'
 
             extracted_labels.append(extracted_label)
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
     df['extracted_labels'] = extracted_labels
     
@@ -115,9 +87,7 @@ def finred_evaluate(file_name, args):
         "Value": [accuracy, precision, recall, f1],
     })
 
-    # Save metrics
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    success_rate = df["extracted_labels"].notnull().sum() / len(df) * 100
+    logger.info(f"Success rate: {success_rate}")
 
     return df, metrics_df

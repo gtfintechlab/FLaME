@@ -1,19 +1,10 @@
-import time
-from datetime import date
-
 import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
-
 from superflue.code.inference_prompts import finbench_prompt
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-
-from litellm import completion 
-import litellm
-from typing import Dict, Any, List, Optional, Tuple
 
 logger = setup_logger(
     name="finbench_inference",
@@ -21,18 +12,12 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
-
 def finbench_inference(args):
-    today = date.today()
-    logger.info(f"Starting FinBench inference on {today}")
-
-    # Load dataset
-    logger.info("Loading dataset...")
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting inference for {task} using model {args.model}.")
     dataset = load_dataset("gtfintechlab/finbench", trust_remote_code=True)
 
     # Initialize lists to store actual labels and model responses
-    X_profile_data = []
-    y_data = []
     llm_responses = []
     complete_responses = []
 
@@ -61,15 +46,12 @@ def finbench_inference(args):
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             
             for _ in sentence_batch:
-                X_profile_data.append(None)
                 complete_responses.append(None)
                 llm_responses.append(None)
-                y_data.append(None)
             continue
     
         # Process responses
-        for profile, response in zip(sentence_batch, batch_responses):
-            X_profile_data.append(profile)
+        for response in batch_responses:
             complete_responses.append(response)
             try:
                 response_label = response.choices[0].message.content
@@ -77,14 +59,14 @@ def finbench_inference(args):
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 response_label = None
             llm_responses.append(response_label)
-            y_data.append(all_actual_labels[len(llm_responses) - 1])
         
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
     df = pd.DataFrame(
         {
             "X_profile": all_profiles,
-            "y": y_data,
+            "y": all_actual_labels,
             "llm_responses": llm_responses,
             "complete_responses": complete_responses,
         }

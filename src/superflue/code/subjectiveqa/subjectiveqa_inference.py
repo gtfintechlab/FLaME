@@ -1,8 +1,6 @@
 import time
-from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from litellm import batch_completion 
 from superflue.code.inference_prompts import subjectiveqa_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
@@ -14,9 +12,6 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 import traceback
-import litellm
-litellm.drop_params = True
-
 
 def subjectiveqa_inference(args):
     definition_map = {
@@ -28,8 +23,8 @@ def subjectiveqa_inference(args):
         "OPTIMISTIC": "The speaker answers with a positive tone regarding outcomes.",
     }
     
-    today = date.today()
-    logger.info(f"Starting SubjectiveQA inference on {today}")
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting inference for {task} using model {args.model}.")
     try:
         dataset = load_dataset("gtfintechlab/subjectiveqa", "5768", split="test", trust_remote_code=True)
     except Exception as e:

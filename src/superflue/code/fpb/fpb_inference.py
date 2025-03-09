@@ -1,5 +1,4 @@
 import pandas as pd
-import time
 from tqdm import tqdm
 from datasets import load_dataset
 from datetime import date
@@ -7,27 +6,17 @@ from superflue.code.inference_prompts import fpb_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
-import litellm
-from typing import Dict, Any, List, Optional, Tuple
 
 logger = setup_logger(
     name="fpb_inference", log_file=LOG_DIR / "fpb_inference.log", level=LOG_LEVEL
 )
 
-data_seed = '5768'
-
-
 def fpb_inference(args):
-    # TODO: (Glenn) Very low priority, we can set the data_split as configurable in yaml
-    # data_splits = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
-    logger.info("Starting FPB inference")
-    logger.info("Loading dataset...")
-    # for data_split in data_splits:
-    dataset = load_dataset("gtfintechlab/financial_phrasebank_sentences_allagree", data_seed, trust_remote_code=True)
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting inference for {task} using model {args.model}.")
+    dataset = load_dataset("gtfintechlab/financial_phrasebank_sentences_allagree", '5768', trust_remote_code=True)
 
-    sentences = []
     llm_responses = []
-    actual_labels = []
     complete_responses = []
 
     test_data = dataset['test'] # type: ignore
@@ -40,36 +29,36 @@ def fpb_inference(args):
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch_content in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": fpb_prompt(sentence, prompt_format='superflue')}]
+            [{"role": "user", "content": fpb_prompt(sentence)}]
             for sentence in batch_content]
         try:
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in batch_content:
                 complete_responses.append(None)
                 llm_responses.append(None)
-                actual_labels.append(None)
-                sentences.append(None)
+            continue
         
-        for (sentence, response) in zip(batch_content, batch_responses):
-            sentences.append(sentence)
+        for response in batch_responses:
             try:
                 response_label = response.choices[0].message.content # type: ignore
             except Exception as e:
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 response_label = None
             llm_responses.append(response_label)
-            actual_labels.append(all_actual_labels[len(llm_responses) - 1])
             complete_responses.append(response)
 
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
     df = pd.DataFrame(
         {
-            "sentences": sentences,
+            "sentences": all_sentences,
             "llm_responses": llm_responses,
-            "actual_labels": actual_labels,
+            "actual_labels": all_actual_labels,
             "complete_responses": complete_responses,
         }
     )
@@ -77,4 +66,4 @@ def fpb_inference(args):
     success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
-#     return df
+    return df

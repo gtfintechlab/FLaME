@@ -1,19 +1,16 @@
 import json
 import pandas as pd
-import logging
-from datetime import date
-from litellm import batch_completion
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from superflue.utils.logging_utils import setup_logger
 from superflue.code.extraction_prompts import fnxl_extraction_prompt
 from superflue.config import LOG_DIR, LOG_LEVEL
+from tqdm import tqdm
 
 logger = setup_logger(
     name="fnxl_evaluation",
     log_file=LOG_DIR / "fnxl_evaluation.log",
     level=LOG_LEVEL,
 )
-
 
 def normalize_taglist_json(json_input):
     """
@@ -87,29 +84,35 @@ def fnxl_evaluate(file_name, args):
       3) Compare partial-credit for each row. Sum up micro-average metrics.
       4) Return (df_with_extractions, metrics_df).
     """
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting evaluation for {task} using model {args.model}.")
+
     logger.info(f"Loading file: {file_name}")
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
-    
-    if "extracted_labels" not in df.columns:
-        df["extracted_labels"] = None
 
     row_metrics = []
 
-    batch_size = args.batch_size
-    index_batches = chunk_list(list(df.index), batch_size)
+    all_responses = df["llm_responses"].tolist()
+    batches = chunk_list(all_responses, args.batch_size)
+    actual_labels = df["actual_labels"].tolist()
+    actual_labels_batches = chunk_list(actual_labels, args.batch_size)
+    total_batches = len(batches)
 
-    for batch_idx, batch_indices in enumerate(index_batches):
-        raw_responses_batch = df.loc[batch_indices, "llm_responses"].tolist()
-        actual_labels_batch = df.loc[batch_indices, "actual_labels"].tolist()
+    extracted_labels = []
 
-        messages_batch = []
-        for raw_resp in raw_responses_batch:
-            user_msg = fnxl_extraction_prompt(raw_resp)
-            messages_batch.append([{"role": "user", "content": user_msg}])
+    logger.info(f"Processing {len(df)} rows in {total_batches} batches.")
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, batch in enumerate(pbar):
+        messages_batch = [
+            [{"role": "user", "content": fnxl_extraction_prompt(response)}]
+            for response in batch
+        ]
 
         try:
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, len(index_batches))
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+                )
         except Exception as e:
             logger.error(f"Batch {batch_idx+1} second-pass extraction failed: {e}")
             for _ in messages_batch:
@@ -119,6 +122,7 @@ def fnxl_evaluate(file_name, args):
                 })
             continue
         
+        actual_labels_batch = actual_labels_batches[batch_idx]
         for i, response in enumerate(batch_responses):
             try:
                 cleaned_json_str = response.choices[0].message.content.strip()  # type: ignore
@@ -133,14 +137,19 @@ def fnxl_evaluate(file_name, args):
                     "total_actual": total_act,
                     "total_predicted": total_pred
                 })
-                df.at[batch_indices[i], "extracted_labels"] = cleaned_json_str
+                extracted_labels.append(cleaned_json_str)
             except Exception as e:
-                logger.error(f"Error processing row {batch_indices[i]}: {e}")
+                logger.error(f"Error processing: {e}")
                 row_metrics.append({
                     "tp": 0, "fp": 0, "fn": 0,
                     "total_actual": 0, "total_predicted": 0
                 })
-                df.at[batch_indices[i], "extracted_labels"] = None
+                extracted_labels.append(None)
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
+
+    df["extracted_labels"] = extracted_labels
 
     total_tp = sum(m["tp"] for m in row_metrics)
     total_fp = sum(m["fp"] for m in row_metrics)
