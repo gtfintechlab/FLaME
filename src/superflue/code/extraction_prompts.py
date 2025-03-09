@@ -248,3 +248,16 @@ def refind_extraction_prompt(llm_response: str):
                 "{llm_response}"
                 Provide only the label that best matches the response, exactly as it is listed in the approved label list, with a dash (-) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation. Only output the label."""
     return prompt
+
+
+# Function to create the extraction prompt
+def fiqa_1_extraction_prompt(llm_response: str):
+    prompt = f"""
+    You are tasked with extracting the sentiment score from a response. 
+    The sentiment score should be a single numeric value between -1 and 1.
+
+    Model Response: {llm_response}
+
+    Provide only the numerical sentiment score as the output.
+    """
+    return prompt

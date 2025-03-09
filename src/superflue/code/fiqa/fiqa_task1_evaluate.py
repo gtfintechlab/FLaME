@@ -3,7 +3,8 @@ import logging
 from datetime import date
 from pathlib import Path
 from superflue.code.tokens import tokens
-from litellm import completion 
+from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
+from superflue.code.extraction_prompts import fiqa_1_extraction_prompt
 import warnings
 import argparse
 import re
@@ -22,46 +23,12 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
-# Function to create the extraction prompt
-def extraction_prompt(llm_response: str):
-    prompt = f"""
-    You are tasked with extracting the sentiment score from a response. 
-    The sentiment score should be a single numeric value between -1 and 1.
 
-    Model Response: {llm_response}
-
-    Provide only the numerical sentiment score as the output.
-    """
-    return prompt
 
 def extract_numerical_value(text):
     match = re.search(r"(-?\d+\.\d+)", text)  # Adjusted to capture decimal values
     return float(match.group(0)) if match else None
 
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-            
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 def fiqa_task1_evaluate(file_name, args):
 
@@ -90,7 +57,7 @@ def fiqa_task1_evaluate(file_name, args):
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(llm_response)}]
+            [{"role": "user", "content": fiqa_1_extraction_prompt(llm_response)}]
             for llm_response in batch
         ]
 
