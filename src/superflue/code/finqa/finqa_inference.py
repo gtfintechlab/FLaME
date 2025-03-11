@@ -31,7 +31,9 @@ def finqa_inference(args):
             for sentence in text_batch
         ]
         try:
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in text_batch:
@@ -39,7 +41,7 @@ def finqa_inference(args):
                 complete_responses.append(None)
             continue
         
-        for text, response in zip(text_batch, batch_responses):
+        for response in batch_responses:
             try:
                 response_label = response.choices[0].message.content  # type: ignore
             except Exception as e:

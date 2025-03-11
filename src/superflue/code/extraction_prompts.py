@@ -190,7 +190,7 @@ def finbench_extraction_prompt(llm_response: str):
     return prompt
 
 
-def finqa_extraction_prompt(llm_response: str):
+def qa_extraction_prompt(llm_response: str):
     prompt = f"""
     You will receive a response from a language model that may include a numerical answer within its text. 
     Your task is to extract and return only the main/final answer. This could be represented as an integer, decimal, percentage, or text.
@@ -203,7 +203,7 @@ def finqa_extraction_prompt(llm_response: str):
     """
     return prompt
 
-def finqa_evaluate_answer(predicted_answer: str, correct_answer: str):
+def qa_evaluate_answer(predicted_answer: str, correct_answer: str):
     prompt = f"""
     You will receive two answers. Your job is to evaluate if they are exactly the same, with some caveats. 
     If they are wholly different answers (eg: 8 and 9), they are considered different.

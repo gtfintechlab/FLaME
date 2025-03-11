@@ -1,10 +1,8 @@
 import pandas as pd
-from superflue.code.tokens import tokens
 from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
-import re
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.logging_utils import setup_logger
-from superflue.code.extraction_prompts import finqa_extraction_prompt, finqa_evaluate_answer
+from superflue.code.extraction_prompts import qa_extraction_prompt, qa_evaluate_answer
 from tqdm import tqdm
 
 logger = setup_logger(
@@ -34,12 +32,11 @@ def finqa_evaluate(file_name, args):
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": finqa_extraction_prompt(response)}]
+            [{"role": "user", "content": qa_extraction_prompt(response)}]
             for response in batch
         ]
 
         try:
-            # Process batch with retry logic
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches
             )
@@ -52,13 +49,13 @@ def finqa_evaluate(file_name, args):
             continue
         
         for response in batch_responses:
-            extraction_model_response.append(response)
             try:
                 response_text = response.choices[0].message.content  # type: ignore
             except Exception as e:
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 response_text = None
             extraction_response.append(response_text)
+            extraction_model_response.append(response)
         
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         logger.info(f"Processed responses for batch {batch_idx + 1}.")
@@ -68,9 +65,10 @@ def finqa_evaluate(file_name, args):
     total_batches = len(batches)
 
     pbar = tqdm(batches, desc="Processing batches")
+    args.max_tokens *= 2
     for batch_idx, batch in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": finqa_evaluate_answer(predicted, actual)}]
+            [{"role": "user", "content": qa_evaluate_answer(predicted, actual)}]
             for predicted, actual in batch
         ]
 
@@ -94,6 +92,8 @@ def finqa_evaluate(file_name, args):
             except Exception as e:
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 response_text = None
+                answers.append(False)
+                continue
             evaluation_response.append(response_text)
             find_correct = response_text.find("correct") # type: ignore
             find_wrong = response_text.find("wrong") # type: ignore
