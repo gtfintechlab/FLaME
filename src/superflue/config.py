@@ -1,11 +1,23 @@
+"""Configuration settings for the Superflue project."""
+
 import logging
 from pathlib import Path
 
-PACKAGE_DIR = Path(__file__).resolve().parent.parent
+# Base directories
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+PACKAGE_DIR = ROOT_DIR / "src" / "superflue"
 DATA_DIR = ROOT_DIR / "data"
-LOG_DIR = ROOT_DIR / "logs"
+
+# Output directories
+OUTPUT_DIR = ROOT_DIR / "output"  # Parent directory for all outputs
 RESULTS_DIR = ROOT_DIR / "results"
-EVALUATION_DIR = ROOT_DIR / "evaluation_results"
-OUTPUT_DIR = ROOT_DIR / "outputs"
+EVALUATION_DIR = ROOT_DIR / "evaluation"
+LOG_DIR = ROOT_DIR / "logs"
+
+# Create directories if they don't exist
+for directory in [DATA_DIR, OUTPUT_DIR, RESULTS_DIR, EVALUATION_DIR, LOG_DIR]:
+    directory.mkdir(parents=True, exist_ok=True)
+
+# Logging settings
 LOG_LEVEL = logging.INFO
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

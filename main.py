@@ -2,9 +2,9 @@ import yaml
 import argparse
 from dotenv import load_dotenv
 import os
-from superflue.together_code.inference import main as inference
+from superflue.code.inference import main as inference
 from huggingface_hub import login
-from superflue.together_code.evaluate import main as evaluate
+from superflue.code.evaluate import main as evaluate
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="SuperFLUE")
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     load_dotenv()
 
     # Optional: Verify that environment variables are loaded
-    print(f"TOGETHER_API_KEY: {os.getenv('TOGETHER_API_KEY')}")
+    print(f"TOGETHER_API_KEY: {os.getenv('TOGETHERAI_API_KEY')}")
     print(f"HUGGINGFACEHUB_API_TOKEN: {os.getenv('HUGGINGFACEHUB_API_TOKEN')}")
     HUGGINGFACEHUB_API_TOKEN = os.getenv('HUGGINGFACEHUB_API_TOKEN')
     # Log in to Hugging Face if the token is set

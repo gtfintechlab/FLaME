@@ -1,0 +1,128 @@
+import pandas as pd
+from superflue.code.tokens import tokens
+from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
+import re
+from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.utils.logging_utils import setup_logger
+from superflue.code.extraction_prompts import finqa_extraction_prompt, finqa_evaluate_answer
+from tqdm import tqdm
+
+logger = setup_logger(
+    name="finqa_evaluation",
+    log_file=LOG_DIR / "finqa_evaluation.log",
+    level=LOG_LEVEL,
+)
+
+def finqa_evaluate(file_name, args):
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting evaluation for {task} using model {args.model}.")
+
+    df = pd.read_csv(file_name)
+    logger.info(f"Loaded data from {file_name} for evaluation.")
+    
+    extraction_response = []
+    extraction_model_response = []
+    evaluation_response = []
+    evaluation_model_response = []
+
+    answers = []
+
+    all_responses = df["response"].tolist()
+    batches = chunk_list(all_responses, args.batch_size)
+    total_batches = len(batches)
+
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, batch in enumerate(pbar):
+        messages_batch = [
+            [{"role": "user", "content": finqa_extraction_prompt(response)}]
+            for response in batch
+        ]
+
+        try:
+            # Process batch with retry logic
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
+
+        except Exception as e:
+            logger.error(f"Error processing batch: {e}")
+            for _ in range(len(batch)):
+                extraction_response.append(None)
+                extraction_model_response.append(str(e))
+            continue
+        
+        for response in batch_responses:
+            extraction_model_response.append(response)
+            try:
+                response_text = response.choices[0].message.content  # type: ignore
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_text = None
+            extraction_response.append(response_text)
+        
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
+
+    all_responses = [(response, actual_label) for response, actual_label in zip(extraction_response, df["actual_label"].tolist())]
+    batches = chunk_list(all_responses, args.batch_size)
+    total_batches = len(batches)
+
+    pbar = tqdm(batches, desc="Processing batches")
+    for batch_idx, batch in enumerate(pbar):
+        messages_batch = [
+            [{"role": "user", "content": finqa_evaluate_answer(predicted, actual)}]
+            for predicted, actual in batch
+        ]
+
+        try:
+            # Process batch with retry logic
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
+
+        except Exception as e:
+            logger.error(f"Error processing batch: {e}")
+            for _ in range(len(batch)):
+                evaluation_response.append(None)
+                evaluation_model_response.append(str(e))
+            continue
+        
+        for response in batch_responses:
+            evaluation_model_response.append(response)
+            try:
+                response_text = response.choices[0].message.content.lower()  # type: ignore
+            except Exception as e:
+                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                response_text = None
+            evaluation_response.append(response_text)
+            find_correct = response_text.find("correct") # type: ignore
+            find_wrong = response_text.find("wrong") # type: ignore
+            answers.append(find_correct != -1 and (find_wrong == -1 or find_correct < find_wrong))
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
+
+    df['extraction_model_response'] = extraction_model_response
+    df['extraction_response'] = extraction_response
+    df['evaluation_model_response'] = evaluation_model_response
+    df['evaluation_response'] = evaluation_response
+    df['final_answer'] = answers
+
+    # Calculate metrics
+    accuracy = len([answer for answer in answers if answer]) / len(answers)
+
+    # Log metrics
+    logger.info(f"Accuracy: {accuracy:.4f}")
+
+    # Create metrics DataFrame
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy"],
+            "Value": [accuracy],
+        }
+    )
+
+    success_rate = df["extraction_response"].notnull().sum() / len(df) * 100
+    logger.info(f"Success rate: {success_rate}")
+
+    return df, metrics_df
