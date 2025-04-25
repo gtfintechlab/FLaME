@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 from datasets import load_dataset
 import together
-from superflue.code.prompts_oldsuperflue import causal_detection_prompt
+from superflue.code.prompts_zeroshot import causal_detection_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL

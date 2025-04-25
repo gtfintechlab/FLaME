@@ -11,7 +11,6 @@ from superflue.code.tokens import tokens
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 from litellm.types.utils import ModelResponse, Choices, Message, Usage, CompletionTokensDetailsWrapper, PromptTokensDetailsWrapper
-from litellm.types.utils import *
 import ast
 # Configure logging
 logger = setup_logger(
@@ -150,9 +149,9 @@ def causal_detection_evaluate(file_name, args):
  
     df["row_accuracy"] = df.apply(
         lambda row: accuracy_score(row["actual_tags"], row["adjusted_extracted_tags"])
-        if row["length_match"] else 0.0,
+        if row["length_match"] else 0.0, # type: ignore
         axis=1
-    )
+    ) # type: ignore
  
     valid_rows = df[df["length_match"]]
  

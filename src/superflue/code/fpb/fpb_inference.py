@@ -3,7 +3,7 @@ import time
 from tqdm import tqdm
 from datasets import load_dataset
 from datetime import date
-from superflue.code.prompts_oldsuperflue import fpb_prompt
+from superflue.code.prompts_zeroshot import fpb_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from litellm import completion 

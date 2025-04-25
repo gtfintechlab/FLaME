@@ -7,7 +7,7 @@ from datasets import load_dataset
 from litellm import completion 
 import litellm
 from typing import Dict, Any, List, Optional, Tuple
-from superflue.code.prompts_oldsuperflue import finred_prompt
+from superflue.code.prompts_zeroshot import finred_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL

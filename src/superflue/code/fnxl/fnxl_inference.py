@@ -5,7 +5,7 @@ from datasets import load_dataset
 from litellm import batch_completion
 import json
 
-from superflue.code.prompts_oldsuperflue import fnxl_prompt
+from superflue.code.prompts_zeroshot import fnxl_prompt
 # from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry

@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import date
 from datasets import load_dataset
 from litellm import completion 
-from superflue.code.prompts_oldsuperflue import fiqa_task2_prompt
+from superflue.code.prompts_zeroshot import fiqa_task2_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL

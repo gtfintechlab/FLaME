@@ -3,7 +3,8 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-from superflue.code.prompts_oldsuperflue import banking77_prompt
+from superflue.code.prompts_zeroshot import banking77_zeroshot_prompt
+from superflue.code.prompts_fewshot import banking77_fewshot_prompt
 from superflue.code.tokens import tokens
 from superflue.config import RESULTS_DIR
 from superflue.utils.logging_utils import setup_logger
@@ -55,6 +56,10 @@ def banking77_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+    if args.prompt_format == "fewshot":
+        banking77_prompt = banking77_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        banking77_prompt = banking77_zeroshot_prompt
 
     pbar = tqdm(sentence_batches, desc="Processing batches")
     for batch_idx, sentence_batch in enumerate(pbar):

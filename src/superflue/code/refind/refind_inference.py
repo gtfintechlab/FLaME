@@ -6,7 +6,7 @@ from datasets import load_dataset
 import litellm
 from typing import Dict, Any, List, Optional, Tuple
 from litellm import completion 
-from superflue.code.prompts_oldsuperflue import refind_prompt
+from superflue.code.prompts_zeroshot import refind_prompt
 from superflue.code.tokens import tokens
 
 from superflue.utils.logging_utils import setup_logger

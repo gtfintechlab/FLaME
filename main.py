@@ -31,7 +31,8 @@ def parse_arguments():
     parser.add_argument(
         "--prompt_format",
         type=str,
-        default="superflue",
+        default="zero_shot",
+        choices=["zero_shot", "few_shot"],
         help="Version of the prompt to use",
     )
     return parser.parse_args()

@@ -15,7 +15,7 @@ from datasets import load_dataset
 import litellm
 from pathlib import Path
 
-from superflue.code.prompts_oldsuperflue import fomc_prompt
+from superflue.code.prompts_zeroshot import fomc_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 

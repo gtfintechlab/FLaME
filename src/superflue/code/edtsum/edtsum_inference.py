@@ -2,7 +2,7 @@ import time
 import pandas as pd
 from datasets import load_dataset
 from litellm import completion 
-from superflue.code.prompts_oldsuperflue import edtsum_prompt
+from superflue.code.prompts_zeroshot import edtsum_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.code.tokens import tokens
 from superflue.config import LOG_DIR, LOG_LEVEL

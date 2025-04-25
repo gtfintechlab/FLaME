@@ -86,16 +86,16 @@ def casual_detection_evaluate(file_name, args):
 
     print(df['predicted_tags'][0])
     
-    df["adjusted_predicted_tags"] = df.apply(adjust_tags, axis=1)
+    df["adjusted_predicted_tags"] = df.apply(adjust_tags, axis=1) # type: ignore
  
    
     df["length_match"] = df["adjusted_predicted_tags"].notnull()
  
     df["row_accuracy"] = df.apply(
         lambda row: accuracy_score(row["actual_tags"], row["adjusted_predicted_tags"])
-        if row["length_match"] else 0.0,
+        if row["length_match"] else 0.0, # type: ignore
         axis=1
-    )
+    ) # type: ignore
  
     valid_rows = df[df["length_match"]]
  

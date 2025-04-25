@@ -4,7 +4,7 @@ import nltk
 import pandas as pd
 from datasets import load_dataset
 from litellm import batch_completion
-from superflue.code.prompts_oldsuperflue import finentity_prompt
+from superflue.code.prompts_zeroshot import finentity_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry

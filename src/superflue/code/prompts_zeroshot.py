@@ -1,17 +1,3 @@
-# def fnxl_prompt(sentence: str):
-#     system_prompt = """You are an expert in financial text processing focused on numeric data tagging for financial documents."""
-
-#     user_msg = f"""Identify the numerical figures in the following financial text, and assign each a label according to the FNXL taxonomy. 
-#                 Use one of these categories based on the context:
-#                 - 0 (No special label needed for this numeral)
-#                 - 1 (Rarely used numeral label for financial extremes)
-#                 - Higher integers as appropriate based on the prominence or financial significance. 
-#                 Output as a list of integers with the length matching the number of numerical figures identified in the text.
-                
-#                 Sentence: {sentence}"""
-
-#     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
-
 def headlines_prompt(sentence: str):
 
         prompt = f'''Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
@@ -298,7 +284,7 @@ banking77_list = [
     "wrong_exchange_rate_for_cash_withdrawal",
 ]
 
-def banking77_prompt(sentence: str):
+def banking77_zeroshot_prompt(sentence: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert at
                 fine-grained single-domain intent detection. From the following list: {banking77_list}, identify
                 which category the following sentence belongs to.
@@ -439,7 +425,7 @@ prompt_map = {
     "finentity_prompt": finentity_prompt,
     "ectsum_prompt": ectsum_prompt,
     "edtsum_prompt": edtsum_prompt,
-    "banking77_prompt": banking77_prompt,
+    "banking77_prompt": banking77_zeroshot_prompt,
     "finqa_prompt": finqa_prompt,
     "convfinqa_prompt": convfinqa_prompt,
     "tatqa_prompt": tatqa_prompt,

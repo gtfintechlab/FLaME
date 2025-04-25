@@ -5,7 +5,7 @@ import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
 
-from superflue.code.prompts_oldsuperflue import finbench_prompt
+from superflue.code.prompts_zeroshot import finbench_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
