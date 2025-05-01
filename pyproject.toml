@@ -1,3 +1,31 @@
-[tool.ruff]
-lint.ignore = ["E402"]
-exclude = ["*.ipynb"]
+[project]
+name = "flame"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "backoff>=2.2.1",
+    "bert-score>=0.3.13",
+    "black>=25.1.0",
+    "datasets>=3.5.1",
+    "evaluate>=0.4.3",
+    "huggingface-hub>=0.30.2",
+    "litellm>=1.67.5",
+    "matplotlib>=3.10.1",
+    "nltk>=3.9.1",
+    "openai>=1.76.2",
+    "pandas>=2.2.3",
+    "pre-commit>=4.2.0",
+    "pytest>=8.3.5",
+    "python-dotenv>=1.1.0",
+    "pyyaml>=6.0.2",
+    "requests-mock>=1.12.1",
+    "ruff>=0.11.8",
+    "scikit-learn>=1.6.1",
+    "seaborn>=0.13.2",
+    "setuptools>=80.1.0",
+    "tiktoken>=0.9.0",
+    "together>=1.5.5",
+    "transformers>=4.51.3",
+]
