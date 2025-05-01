@@ -1,1 +1,1 @@
-"""Test package for Ferrari project.""" 
+"""Test package for Ferrari project."""

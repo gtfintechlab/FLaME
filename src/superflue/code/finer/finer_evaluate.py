@@ -1,24 +1,22 @@
 import pandas as pd
-import logging
 import numpy as np
-from datetime import date
-from pathlib import Path
 import json
 import re
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
-from litellm import batch_completion
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+
 # from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
- 
+from superflue.config import LOG_DIR, LOG_LEVEL
+
 # Configure logging
 logger = setup_logger(
     name="finer_evaluation",
     log_file=LOG_DIR / "finer_evaluation.log",
     level=LOG_LEVEL,
 )
- 
+
+
 def extraction_prompt_finer(llm_response: str):
     """Generate a prompt to extract numeric labels for named entity recognition."""
     prompt = f"""For each token in the following response, map the named entity labels to these numeric values:
@@ -38,7 +36,8 @@ def extraction_prompt_finer(llm_response: str):
                 LLM response:
                 "{llm_response}"."""
     return prompt
- 
+
+
 def clean_extracted_list(response: str) -> str:
     """Clean and format the extracted response into a valid JSON list."""
     cleaned_response = re.sub(r"[^\d,]", "", response)
@@ -46,11 +45,14 @@ def clean_extracted_list(response: str) -> str:
     if not (cleaned_response.startswith("[") and cleaned_response.endswith("]")):
         cleaned_response = f"[{cleaned_response}]"
     return cleaned_response
- 
+
+
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
+
+
 # def finer_evaluate(file_name, args):
 #     """Evaluate Finer dataset with batching and return results and metrics DataFrames."""
 #     task = args.dataset.strip('“”"')
@@ -149,11 +151,15 @@ def finer_evaluate(file_name, args):
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
     if "actual_labels" not in df.columns or "llm_responses" not in df.columns:
-        logger.error("The input CSV must contain 'actual_labels' and 'llm_responses' columns.")
+        logger.error(
+            "The input CSV must contain 'actual_labels' and 'llm_responses' columns."
+        )
         raise ValueError("Missing required columns in the input file.")
 
     # Convert JSON strings to lists for actual labels
-    correct_labels = df["actual_labels"].apply(lambda x: json.loads(x) if pd.notna(x) else [])
+    correct_labels = df["actual_labels"].apply(
+        lambda x: json.loads(x) if pd.notna(x) else []
+    )
 
     # We'll store the predicted labels (extracted labels) in a Python list
     extracted_labels = []
@@ -172,11 +178,19 @@ def finer_evaluate(file_name, args):
         ]
         try:
             # Process the batch with retry logic
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, len(index_batches))
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, len(index_batches)
+            )
             logger.info(f"Processed responses for batch {batch_idx + 1}.")
-            for idx, (response, row_idx) in enumerate(zip(batch_responses, batch_indices)):
+            for idx, (response, row_idx) in enumerate(
+                zip(batch_responses, batch_indices)
+            ):
                 try:
-                    if response is None or not hasattr(response, "choices") or not response.choices:
+                    if (
+                        response is None
+                        or not hasattr(response, "choices")
+                        or not response.choices
+                    ):
                         raise ValueError(f"Invalid API response: {response}")
                     llm_response = response.choices[0].message.content.strip()  # type: ignore
                     cleaned_response = clean_extracted_list(llm_response)
@@ -201,13 +215,15 @@ def finer_evaluate(file_name, args):
     # Compare row by row
     for i in range(len(correct_labels)):
         y_true = correct_labels[i]
-        y_pred = extracted_labels[i]   # <-- use the list you created
+        y_pred = extracted_labels[i]  # <-- use the list you created
         # Skip if lengths differ
         if len(y_true) != len(y_pred):
-            logger.debug(f"Skipping row {i} because lengths differ (true={len(y_true)}, pred={len(y_pred)}).")
+            logger.debug(
+                f"Skipping row {i} because lengths differ (true={len(y_true)}, pred={len(y_pred)})."
+            )
             continue
 
-        # If you're treating each position as a label for classification, 
+        # If you're treating each position as a label for classification,
         # you can directly use sklearn metrics row by row:
         try:
             p = precision_score(y_true, y_pred, average="macro", zero_division=0)
@@ -233,9 +249,11 @@ def finer_evaluate(file_name, args):
     logger.info(f"Macro Recall: {macro_recall:.4f}")
     logger.info(f"Macro F1: {macro_f1:.4f}")
     logger.info(f"Macro Accuracy: {macro_accuracy:.4f}")
-    metrics_df = pd.DataFrame({
-        "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
-        "Value": [macro_precision, macro_recall, macro_f1, macro_accuracy]
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
+            "Value": [macro_precision, macro_recall, macro_f1, macro_accuracy],
+        }
+    )
 
     return df, metrics_df

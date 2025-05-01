@@ -7,12 +7,14 @@ from pathlib import Path
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 # Function to extract numerical information using regex
 def extract_numerical_info(text):
     # Regex to match numbers (integers, decimals, with/without signs, percentages)
-    pattern = r'-?\d+\.?\d*%?'
+    pattern = r"-?\d+\.?\d*%?"
     numbers = re.findall(pattern, text)
     return numbers
+
 
 # Function to evaluate and extract numerical information
 def extract_numbers_from_responses(csv_file_path, output_file_path):
@@ -22,7 +24,7 @@ def extract_numbers_from_responses(csv_file_path, output_file_path):
     except Exception as e:
         logger.error(f"Failed to load CSV file: {e}")
         return
-    
+
     # List to store the extracted numerical information
     extracted_values = []
 
@@ -35,15 +37,16 @@ def extract_numbers_from_responses(csv_file_path, output_file_path):
         except Exception as e:
             logger.error(f"Error processing response {i + 1}: {e}")
             extracted_values.append(None)
-    
+
     # Add extracted numerical information to the DataFrame
-    df['extracted_numbers'] = extracted_values
+    df["extracted_numbers"] = extracted_values
 
     # Save the DataFrame with extracted values to a new CSV
     output_file = Path(output_file_path)
     output_file.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_file, index=False)
     logger.info(f"Results saved to: {output_file}")
+
 
 # Example usage
 if __name__ == "__main__":

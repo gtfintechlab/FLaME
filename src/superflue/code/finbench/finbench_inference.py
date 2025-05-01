@@ -1,4 +1,3 @@
-import time
 from datetime import date
 
 import pandas as pd
@@ -7,13 +6,11 @@ from tqdm import tqdm
 
 from superflue.code.prompts_zeroshot import finbench_zeroshot_prompt
 from superflue.code.prompts_fewshot import finbench_fewshot_prompt
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 
-from litellm import completion 
 import litellm
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, List
 
 logger = setup_logger(
     name="finbench_inference",
@@ -24,7 +21,8 @@ logger = setup_logger(
 
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """Process a batch with litellm's retry mechanism."""
@@ -38,11 +36,11 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             # top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             # repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
@@ -62,9 +60,9 @@ def finbench_inference(args):
     llm_responses = []
     complete_responses = []
 
-    test_data = dataset["test"] # type: ignore
-    all_profiles = [data["X_profile"] for data in test_data] # type: ignore
-    all_actual_labels = [data["y"] for data in test_data] # type: ignore
+    test_data = dataset["test"]  # type: ignore
+    all_profiles = [data["X_profile"] for data in test_data]  # type: ignore
+    all_actual_labels = [data["y"] for data in test_data]  # type: ignore
 
     sentence_batches = chunk_list(all_profiles, args.batch_size)
     total_batches = len(sentence_batches)
@@ -100,7 +98,7 @@ def finbench_inference(args):
                 llm_responses.append(None)
                 y_data.append(None)
             continue
-    
+
         # Process responses
         for profile, response in zip(sentence_batch, batch_responses):
             X_profile_data.append(profile)
@@ -112,7 +110,7 @@ def finbench_inference(args):
                 response_label = None
             llm_responses.append(response_label)
             y_data.append(all_actual_labels[len(llm_responses) - 1])
-        
+
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     df = pd.DataFrame(
@@ -124,7 +122,7 @@ def finbench_inference(args):
         }
     )
 
-    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
-    
+
     return df

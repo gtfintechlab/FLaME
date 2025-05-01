@@ -2,8 +2,7 @@ import os
 import sys
 from pathlib import Path
 from huggingface_hub import login
-import pandas as pd
-from datasets import Dataset, DatasetDict, load_dataset
+from datasets import DatasetDict, load_dataset
 import logging
 
 
@@ -21,6 +20,7 @@ login(HF_TOKEN)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def huggify_EDTSum(push_to_hub=False, TASK=None):
     try:
         directory_path = DATA_DIRECTORY / "EDTSum"
@@ -29,29 +29,28 @@ def huggify_EDTSum(push_to_hub=False, TASK=None):
         dataset = load_dataset("TheFinAI/flare-edtsum")
 
         test_set = dataset["test"] if "test" in dataset else []
-        
+
         hf_dataset = DatasetDict()
-    
 
         # Add test split
-        hf_dataset['test'] = test_set
-        
+        hf_dataset["test"] = test_set
 
         # Push to HF Hub
         if push_to_hub:
             hf_dataset.push_to_hub(
                 f"{HF_ORGANIZATION}/{DATASET}",
-                config_name= "main",
+                config_name="main",
                 private=True,
                 token=HF_TOKEN,
             )
 
-        logger.info(f"Finished processing EDTSum")
+        logger.info("Finished processing EDTSum")
         return hf_dataset
 
     except Exception as e:
         logger.error(f"Error processing EDTSum dataset: {str(e)}")
         raise e
+
 
 if __name__ == "__main__":
     TASK = "EDTSum"

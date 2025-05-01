@@ -76,5 +76,5 @@ ALL_SUBJECTS = [
     "sociology",
     "us_foreign_policy",
     "virology",
-    "world_religions"
-] 
+    "world_religions",
+]

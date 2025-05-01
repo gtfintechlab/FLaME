@@ -5,14 +5,17 @@ from datasets import load_dataset
 from superflue.code.prompts_zeroshot import convfinqa_zeroshot_prompt
 from superflue.code.prompts_fewshot import convfinqa_fewshot_prompt
 from superflue.code.tokens import tokens
-from litellm import completion 
+from litellm import completion
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
 # Set up logger
 logger = setup_logger(
-    name="convfinqa_inference", log_file=LOG_DIR / "convfinqa_inference.log", level=LOG_LEVEL
+    name="convfinqa_inference",
+    log_file=LOG_DIR / "convfinqa_inference.log",
+    level=LOG_LEVEL,
 )
+
 
 def convfinqa_inference(args):
     today = date.today()
@@ -34,8 +37,7 @@ def convfinqa_inference(args):
         question_0 = str(entry["question_0"]) if entry["question_0"] is not None else ""  # type: ignore
         question_1 = str(entry["question_1"]) if entry["question_1"] is not None else ""  # type: ignore
         answer_0 = str(entry["answer_0"]) if entry["answer_0"] is not None else ""  # type: ignore
-        answer_1 = str(entry["answer_1"]) if entry["answer_1"] is not None else ""  # type: ignore
-
+        # answer_1 = str(entry["answer_1"]) if entry["answer_1"] is not None else ""  # type: ignore
         combined_text = f"{pre_text} {post_text} {table_text} Question 0: {question_0} Answer: {answer_0}. Now answer the following question: {question_1}"
         context.append(combined_text)
         actual_label = entry["answer_1"]  # type: ignore
@@ -50,13 +52,13 @@ def convfinqa_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model)
+                stop=tokens(args.model),
             )
-            
+
             # Log and process the response
             logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content # type: ignore
+            response_label = model_response.choices[0].message.content  # type: ignore
             llm_responses.append(response_label)
 
         except Exception as e:
@@ -64,7 +66,7 @@ def convfinqa_inference(args):
             complete_responses.append(None)
             llm_responses.append(None)
             time.sleep(20.0)
-    
+
     df = pd.DataFrame(
         {
             "context": context,

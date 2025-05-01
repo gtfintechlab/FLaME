@@ -2,15 +2,11 @@ from datetime import date
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
-from litellm import completion
 from pathlib import Path
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-import time
 import litellm
-from typing import Dict, Any, List, Optional, Tuple
-from tqdm import tqdm
+from typing import Any, List
 
 # Configure logging
 logger = setup_logger(
@@ -20,9 +16,16 @@ logger = setup_logger(
 )
 
 possible_relationships = [
-    'PERSON-TITLE', 'PERSON-GOV_AGY', 'PERSON-ORG', 'PERSON-UNIV',
-    'ORG-ORG', 'ORG-MONEY', 'ORG-GPE', 'ORG-DATE'
+    "PERSON-TITLE",
+    "PERSON-GOV_AGY",
+    "PERSON-ORG",
+    "PERSON-UNIV",
+    "ORG-ORG",
+    "ORG-MONEY",
+    "ORG-GPE",
+    "ORG-DATE",
 ]
+
 
 def extraction_prompt(llm_response: str):
     """Construct the extraction prompt."""
@@ -33,14 +36,17 @@ def extraction_prompt(llm_response: str):
                 Provide only the label that best matches the response, exactly as it is listed in the approved label list, with a dash (-) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation. Only output the label."""
     return prompt
 
+
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
+
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """Process a batch with litellm's retry mechanism."""
@@ -54,14 +60,15 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
+
 
 def refind_evaluate(file_name, args):
     """Evaluate Refind dataset and return results and metrics DataFrames."""
@@ -74,8 +81,8 @@ def refind_evaluate(file_name, args):
 
     # Prepare extracted labels
     extracted_labels = []
-    correct_labels = df['actual_labels'].tolist()
-    all_responses = df['llm_responses'].tolist()
+    correct_labels = df["actual_labels"].tolist()
+    all_responses = df["llm_responses"].tolist()
 
     batches = chunk_list(all_responses, args.batch_size)
     total_batches = len(batches)
@@ -104,7 +111,7 @@ def refind_evaluate(file_name, args):
         except Exception as e:
             logger.error(f"Error processing batch {batch_idx + 1}: {e}")
             for _ in batch:
-                extracted_labels.append('NO-REL')
+                extracted_labels.append("NO-REL")
 
         # Process responses
         for response in batch_responses:
@@ -112,20 +119,30 @@ def refind_evaluate(file_name, args):
                 extracted_label = response.choices[0].message.content.strip()  # type: ignore
             except Exception as e:
                 logger.error(f"Error processing response: {e}")
-                extracted_labels.append('NO-REL')
-            extracted_label = extracted_label.replace(' ', '').replace('/', '-').replace('_', '-').upper()
+                extracted_labels.append("NO-REL")
+            extracted_label = (
+                extracted_label.replace(" ", "")
+                .replace("/", "-")
+                .replace("_", "-")
+                .upper()
+            )
             if extracted_label not in possible_relationships:
                 print(f"Invalid label: {extracted_label}")
-                extracted_label = 'NO-REL'
+                extracted_label = "NO-REL"
             extracted_labels.append(extracted_label)
 
-    df['extracted_labels'] = extracted_labels
+    df["extracted_labels"] = extracted_labels
 
-    correct_labels = [label.replace(' ', '').replace('/', '-').replace('_', '-').upper() for label in correct_labels]
+    correct_labels = [
+        label.replace(" ", "").replace("/", "-").replace("_", "-").upper()
+        for label in correct_labels
+    ]
 
     # Evaluate the performance
     accuracy = accuracy_score(correct_labels, extracted_labels)
-    precision, recall, f1, _ = precision_recall_fscore_support(correct_labels, extracted_labels, average='weighted')
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        correct_labels, extracted_labels, average="weighted"
+    )
 
     # Log metrics
     logger.info(f"Accuracy: {accuracy:.4f}")
@@ -134,10 +151,12 @@ def refind_evaluate(file_name, args):
     logger.info(f"F1 Score: {f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1]
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
     # Save metrics DataFrame
     metrics_results_path = Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv")

@@ -1,14 +1,13 @@
-import time
 from datetime import date
 import nltk
 import pandas as pd
 from datasets import load_dataset
-from litellm import batch_completion
 from superflue.code.prompts_zeroshot import finentity_zeroshot_prompt
 from superflue.code.prompts_fewshot import finentity_fewshot_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
+import litellm
 
 nltk.download("punkt")
 
@@ -17,8 +16,9 @@ logger = setup_logger(
     log_file=LOG_DIR / "finentity_inference.log",
     level=LOG_LEVEL,
 )
-import litellm
+
 litellm.drop_params = True
+
 
 def finentity_inference(args):
     today = date.today()
@@ -45,7 +45,6 @@ def finentity_inference(args):
 
     # Create batches
     sentence_batches = chunk_list(sentences, batch_size)
-    label_batches = chunk_list(actual_labels, batch_size)
 
     for batch_idx, sentence_batch in enumerate(sentence_batches):
         # Create prompt messages for the batch
@@ -56,7 +55,9 @@ def finentity_inference(args):
 
         try:
             # Process the batch
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
 
             for response in batch_responses:
                 try:

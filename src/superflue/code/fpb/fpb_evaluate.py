@@ -1,15 +1,10 @@
 import pandas as pd
-import logging
 from datetime import date
-from pathlib import Path
-from litellm import completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-import time
 import litellm
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, List
 from tqdm import tqdm
 
 # Configure logging
@@ -26,6 +21,7 @@ label_mapping = {
     "POSITIVE": 2,
 }
 
+
 def extraction_prompt(llm_response: str):
     """Generate a prompt to extract the most relevant label from the LLM response."""
     prompt = f"""Based on the following list of labels: ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’, extract the most relevant label from the following response:
@@ -33,19 +29,25 @@ def extraction_prompt(llm_response: str):
                 Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
     return prompt
 
+
 def map_label_to_number(label: str):
     """Map the extracted label to its corresponding numerical value after normalizing."""
     normalized_label = label.strip().upper()  # Normalize label to uppercase
-    return label_mapping.get(normalized_label, -1)  # Return -1 if the label is not found
+    return label_mapping.get(
+        normalized_label, -1
+    )  # Return -1 if the label is not found
+
 
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
+
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """Process a batch with litellm's retry mechanism."""
@@ -59,14 +61,15 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
+
 
 def fpb_evaluate(file_name, args):
     """Evaluate FPB dataset and return results and metrics DataFrames."""
@@ -103,20 +106,22 @@ def fpb_evaluate(file_name, args):
             for response in batch_content
         ]
         try:
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in range(len(batch_content)):
                 extracted_labels.append(-1)
-        
+
         for response in batch_responses:
-            try: 
+            try:
                 extracted_label = response.choices[0].message.content.strip()
                 mapped_label = map_label_to_number(extracted_label)
 
                 if mapped_label == -1:
                     logger.error(f"Invalid label for response: {extracted_label}")
-            
+
             except Exception as e:
                 logger.error(f"Error extracting response: {e}")
                 mapped_label = -1
@@ -136,10 +141,12 @@ def fpb_evaluate(file_name, args):
     logger.info(f"F1 Score: {f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
     # # Save metrics DataFrame
     # metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")

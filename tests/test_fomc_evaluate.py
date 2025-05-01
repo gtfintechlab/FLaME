@@ -1,23 +1,20 @@
 """Tests for FOMC evaluation functionality."""
+
 import pytest
 import pandas as pd
-import numpy as np
-from pathlib import Path
 from ferrari.code.fomc.fomc_evaluate import (
     map_label_to_number,
     extraction_prompt,
     validate_input_data,
     fomc_evaluate,
-    label_mapping
 )
 from tests.utils.fixtures import (
-    base_args,
-    task_args,
     create_mock_completion,
     setup_test_data,
-    assert_metrics_in_range
+    assert_metrics_in_range,
 )
 from tests.utils.constants import FOMC_TEST_CASES
+
 
 # Basic function tests
 def test_map_label_to_number():
@@ -28,6 +25,7 @@ def test_map_label_to_number():
     assert map_label_to_number("invalid") == -1
     assert map_label_to_number("") == -1
 
+
 def test_extraction_prompt():
     """Test prompt generation."""
     response = "The Fed's stance appears dovish"
@@ -37,17 +35,16 @@ def test_extraction_prompt():
     assert "NEUTRAL" in prompt
     assert response in prompt
 
+
 def test_validate_input_data():
     """Test data validation."""
-    valid_df = pd.DataFrame({
-        "llm_responses": ["response1"],
-        "actual_labels": [0]
-    })
+    valid_df = pd.DataFrame({"llm_responses": ["response1"], "actual_labels": [0]})
     validate_input_data(valid_df)  # Should not raise
 
     with pytest.raises(ValueError):
         invalid_df = pd.DataFrame({"llm_responses": ["response1"]})
         validate_input_data(invalid_df)
+
 
 # Main evaluation tests
 @pytest.mark.task_args({"dataset": "fomc"})
@@ -57,40 +54,42 @@ def test_evaluation(tmp_path, task_args, monkeypatch, test_case):
     # Setup test data with pre-generated responses
     test_data = {
         "llm_responses": test_case["llm_responses"],
-        "actual_labels": test_case["actual_labels"]
+        "actual_labels": test_case["actual_labels"],
     }
     test_file = setup_test_data(tmp_path, test_data)
-    
+
     # Mock completion to return expected labels
     mock_func = create_mock_completion(test_case["mock_responses"])
-    monkeypatch.setattr("ferrari.together_code.fomc.fomc_evaluate.completion", mock_func)
-    
+    monkeypatch.setattr(
+        "ferrari.together_code.fomc.fomc_evaluate.completion", mock_func
+    )
+
     # Run evaluation
     try:
         results_df, metrics_df = fomc_evaluate(str(test_file), task_args)
-        
+
         # Verify results
         assert len(results_df) == len(test_case["llm_responses"])
         assert "extracted_labels" in results_df.columns
         assert_metrics_in_range(metrics_df, "Accuracy", test_case["expected_accuracy"])
-        
+
     except Exception as e:
         pytest.fail(f"Evaluation failed: {str(e)}")
+
 
 @pytest.mark.task_args({"dataset": "fomc"})
 def test_invalid_responses(tmp_path, task_args, monkeypatch):
     """Test handling of invalid responses with a single example."""
     # Setup test data with pre-generated responses
-    test_data = {
-        "llm_responses": ["Invalid response"],
-        "actual_labels": [0]
-    }
+    test_data = {"llm_responses": ["Invalid response"], "actual_labels": [0]}
     test_file = setup_test_data(tmp_path, test_data)
-    
+
     # Mock completion to return invalid response
     mock_func = create_mock_completion(["INVALID_LABEL"])
-    monkeypatch.setattr("ferrari.together_code.fomc.fomc_evaluate.completion", mock_func)
-    
+    monkeypatch.setattr(
+        "ferrari.together_code.fomc.fomc_evaluate.completion", mock_func
+    )
+
     # Run evaluation
     try:
         results_df, _ = fomc_evaluate(str(test_file), task_args)
@@ -98,5 +97,6 @@ def test_invalid_responses(tmp_path, task_args, monkeypatch):
     except Exception as e:
         pytest.fail(f"Invalid response handling failed: {str(e)}")
 
+
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"]) 
+    pytest.main([__file__, "-v"])

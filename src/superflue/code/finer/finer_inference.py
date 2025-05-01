@@ -1,21 +1,21 @@
-import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from litellm import batch_completion
 from superflue.code.prompts_zeroshot import finer_zeroshot_prompt
 from superflue.code.prompts_fewshot import finer_fewshot_prompt
+import litellm
+
 # from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
- 
+
 logger = setup_logger(
     name="finer_inference", log_file=LOG_DIR / "finer_inference.log", level=LOG_LEVEL
 )
 
-import litellm
 litellm.drop_params = True
+
 
 def finer_inference(args):
     today = date.today()
@@ -43,7 +43,6 @@ def finer_inference(args):
 
     # Create batches
     sentence_batches = chunk_list(sentences, batch_size)
-    label_batches = chunk_list(actual_labels, batch_size)
 
     for batch_idx, sentence_batch in enumerate(sentence_batches):
         # Create prompt messages for the batch
@@ -54,7 +53,9 @@ def finer_inference(args):
 
         try:
             # Process the batch
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
 
             for response in batch_responses:
                 try:
@@ -81,12 +82,10 @@ def finer_inference(args):
     )
     # Save results to a CSV file
     results_path = (
-        RESULTS_DIR
-        / "finer"
-        / f"finer_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+        RESULTS_DIR / "finer" / f"finer_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")
- 
+
     return df

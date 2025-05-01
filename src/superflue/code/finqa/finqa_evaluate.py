@@ -1,19 +1,10 @@
 import pandas as pd
-import logging
 from datetime import date
-from pathlib import Path
-from superflue.code.tokens import tokens
-from litellm import completion 
-import warnings
-import argparse
 import re
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.logging_utils import setup_logger
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-import time
 import litellm
-from litellm import completion
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, List
 from tqdm import tqdm
 
 # Setup logger
@@ -22,6 +13,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "convfinqa_evaluation.log",
     level=LOG_LEVEL,
 )
+
 
 def extraction_prompt(llm_response: str):
     prompt = f"""
@@ -35,6 +27,7 @@ def extraction_prompt(llm_response: str):
     Please respond with the final answer. If a final answer was not provided, respond NA.
     """
     return prompt
+
 
 def evaluate_answer(predicted_answer: str, correct_answer: str):
     prompt = f"""
@@ -51,15 +44,20 @@ def evaluate_answer(predicted_answer: str, correct_answer: str):
     """
     return prompt
 
+
 def extract_numerical_value(text):
     match = re.search(r"(\d+(\.\d+)?%?)", text)
     return match.group(0) if match else None
 
+
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
 
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches, max_tokens):
+
+def process_batch_with_retry(
+    args, messages_batch, batch_idx, total_batches, max_tokens
+):
     """Process a batch with litellm's retry mechanism."""
     try:
         # Using litellm's built-in retry mechanism
@@ -71,17 +69,17 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches, max
             top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
 
-def finqa_evaluate(file_name, args):
 
+def finqa_evaluate(file_name, args):
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
@@ -95,7 +93,7 @@ def finqa_evaluate(file_name, args):
         / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     extraction_response = []
     extraction_model_response = []
     evaluation_response = []
@@ -125,7 +123,7 @@ def finqa_evaluate(file_name, args):
             for _ in range(len(batch)):
                 extraction_response.append(None)
                 extraction_model_response.append(str(e))
-        
+
         for response in batch_responses:
             extraction_model_response.append(response)
             try:
@@ -135,7 +133,12 @@ def finqa_evaluate(file_name, args):
                 response_text = None
             extraction_response.append(response_text)
 
-    all_responses = [(response, actual_label) for response, actual_label in zip(extraction_response, df["actual_label"].tolist())]
+    all_responses = [
+        (response, actual_label)
+        for response, actual_label in zip(
+            extraction_response, df["actual_label"].tolist()
+        )
+    ]
     batches = chunk_list(all_responses, args.batch_size)
     total_batches = len(batches)
 
@@ -157,7 +160,7 @@ def finqa_evaluate(file_name, args):
             for _ in range(len(batch)):
                 evaluation_response.append(None)
                 evaluation_model_response.append(str(e))
-        
+
         for response in batch_responses:
             evaluation_model_response.append(response)
             try:
@@ -166,15 +169,17 @@ def finqa_evaluate(file_name, args):
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 response_text = None
             evaluation_response.append(response_text)
-            find_correct = response_text.find("correct") # type: ignore
-            find_wrong = response_text.find("wrong") # type: ignore
-            answers.append(find_correct != -1 and (find_wrong == -1 or find_correct < find_wrong))
+            find_correct = response_text.find("correct")  # type: ignore
+            find_wrong = response_text.find("wrong")  # type: ignore
+            answers.append(
+                find_correct != -1 and (find_wrong == -1 or find_correct < find_wrong)
+            )
 
-    df['extraction_model_response'] = extraction_model_response
-    df['extraction_response'] = extraction_response
-    df['evaluation_model_response'] = evaluation_model_response
-    df['evaluation_response'] = evaluation_response
-    df['final_answer'] = answers
+    df["extraction_model_response"] = extraction_model_response
+    df["extraction_response"] = extraction_response
+    df["evaluation_model_response"] = evaluation_model_response
+    df["evaluation_response"] = evaluation_response
+    df["final_answer"] = answers
 
     # Calculate metrics
     accuracy = len([answer for answer in answers if answer]) / len(answers)
@@ -189,12 +194,16 @@ def finqa_evaluate(file_name, args):
             "value": [accuracy],
         }
     )
-    
-    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
+
+    logger.info(
+        f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}"
+    )
     df.to_csv(evaluation_results_path, index=False)
 
     # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
 

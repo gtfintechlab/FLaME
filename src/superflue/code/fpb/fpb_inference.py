@@ -1,15 +1,12 @@
 import pandas as pd
-import time
 from tqdm import tqdm
 from datasets import load_dataset
-from datetime import date
 from superflue.code.prompts_zeroshot import fpb_zeroshot_prompt
 from superflue.code.prompts_fewshot import fpb_fewshot_prompt
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-from litellm import completion 
+from superflue.config import LOG_DIR, LOG_LEVEL
 import litellm
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, List
 
 logger = setup_logger(
     name="fpb_inference", log_file=LOG_DIR / "fpb_inference.log", level=LOG_LEVEL
@@ -17,9 +14,11 @@ logger = setup_logger(
 
 # data_seed = '5768'
 
+
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """Process a batch with litellm's retry mechanism."""
@@ -33,14 +32,15 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             # top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             # repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
+
 
 def fpb_inference(args):
     # TODO: (Glenn) Very low priority, we can set the data_split as configurable in yaml
@@ -48,7 +48,11 @@ def fpb_inference(args):
     logger.info("Starting FPB inference")
     logger.info("Loading dataset...")
     # for data_split in data_splits:
-    dataset = load_dataset("gtfintechlab/financial_phrasebank_sentences_allagree", data_seed, trust_remote_code=True)
+    dataset = load_dataset(
+        "gtfintechlab/financial_phrasebank_sentences_allagree",
+        None,
+        trust_remote_code=True,
+    )
 
     sentences = []
     llm_responses = []
@@ -60,9 +64,9 @@ def fpb_inference(args):
     elif args.prompt_format == "zeroshot":
         fpb_prompt = fpb_zeroshot_prompt
 
-    test_data = dataset['test'] # type: ignore
-    all_sentences = [data["sentence"] for data in test_data] # type: ignore
-    all_actual_labels = [data["label"] for data in test_data] # type: ignore
+    test_data = dataset["test"]  # type: ignore
+    all_sentences = [data["sentence"] for data in test_data]  # type: ignore
+    all_actual_labels = [data["label"] for data in test_data]  # type: ignore
 
     batches = chunk_list(all_sentences, args.batch_size)
     total_batches = len(batches)
@@ -70,10 +74,18 @@ def fpb_inference(args):
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch_content in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": fpb_prompt(sentence, prompt_format='superflue')}]
-            for sentence in batch_content]
+            [
+                {
+                    "role": "user",
+                    "content": fpb_prompt(sentence, prompt_format="superflue"),
+                }
+            ]
+            for sentence in batch_content
+        ]
         try:
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in batch_content:
@@ -81,11 +93,11 @@ def fpb_inference(args):
                 llm_responses.append(None)
                 actual_labels.append(None)
                 sentences.append(None)
-        
-        for (sentence, response) in zip(batch_content, batch_responses):
+
+        for sentence, response in zip(batch_content, batch_responses):
             sentences.append(sentence)
             try:
-                response_label = response.choices[0].message.content # type: ignore
+                response_label = response.choices[0].message.content  # type: ignore
             except Exception as e:
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 response_label = None
@@ -104,7 +116,8 @@ def fpb_inference(args):
         }
     )
 
-    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
+
 
 #     return df

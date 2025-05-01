@@ -1,10 +1,7 @@
 import pandas as pd
-import logging
-from datetime import date
 import json
 import re
 import ast
-from litellm import batch_completion
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from superflue.config import LOG_DIR, LOG_LEVEL
@@ -15,6 +12,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "finentity_evaluation.log",
     level=LOG_LEVEL,
 )
+
 
 def finentity_prompt(model_response: str):
     """Generate a prompt to reformat extracted entity lists into structured JSON."""
@@ -34,17 +32,23 @@ def finentity_prompt(model_response: str):
                 Please ensure the format is valid JSON with all required fields. Make sure it does not throw a JSON decoding error."""
     return prompt
 
+
 def sanitize_json_string(json_str):
     """Sanitize JSON strings by fixing common formatting issues."""
-    
+
     json_str = json_str.strip()
-    json_str = json_str.replace(", }", "}").replace(", ]", "]")  # Remove trailing commas
-    json_str = json_str.replace("'", "\"")  # Ensure JSON uses double quotes
-    json_str = json_str.replace("\\\"", "\"")  # Fix double-escaped quotes
-    json_str = json_str.replace("“", "\"").replace("”", "\"")  # Handle curly quotes
-    json_str = re.sub(r'(?<!\\)"(s)', "'s", json_str)  # Fix possessive errors (e.g., Lowe"s → Lowe's)
-    
+    json_str = json_str.replace(", }", "}").replace(
+        ", ]", "]"
+    )  # Remove trailing commas
+    json_str = json_str.replace("'", '"')  # Ensure JSON uses double quotes
+    json_str = json_str.replace('\\"', '"')  # Fix double-escaped quotes
+    json_str = json_str.replace("“", '"').replace("”", '"')  # Handle curly quotes
+    json_str = re.sub(
+        r'(?<!\\)"(s)', "'s", json_str
+    )  # Fix possessive errors (e.g., Lowe"s → Lowe's)
+
     return json_str
+
 
 def parse_json_content(content):
     """Parse JSON content with error handling."""
@@ -58,17 +62,19 @@ def parse_json_content(content):
             logger.error(f"Failed content: {content}")
             return []
 
+
 def normalize_entities(entities):
     """Normalize entities for comparison."""
     return [
         {
             "value": entity["value"].strip().lower(),
             "tag": entity["tag"].strip().lower(),
-            "label": entity["label"].strip().lower()
+            "label": entity["label"].strip().lower(),
         }
         for entity in entities
         if "value" in entity and "tag" in entity and "label" in entity
     ]
+
 
 def evaluate_entities(pred_entities, true_entities):
     """Evaluate entity extraction by comparing predicted and true entities."""
@@ -79,12 +85,21 @@ def evaluate_entities(pred_entities, true_entities):
     unmatched_pred = len(normalized_pred) - matched
     unmatched_true = len(normalized_true) - matched
 
-    precision = matched / (matched + unmatched_pred) if (matched + unmatched_pred) > 0 else 0
-    recall = matched / (matched + unmatched_true) if (matched + unmatched_true) > 0 else 0
-    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    precision = (
+        matched / (matched + unmatched_pred) if (matched + unmatched_pred) > 0 else 0
+    )
+    recall = (
+        matched / (matched + unmatched_true) if (matched + unmatched_true) > 0 else 0
+    )
+    f1 = (
+        2 * (precision * recall) / (precision + recall)
+        if (precision + recall) > 0
+        else 0
+    )
     accuracy = matched / len(normalized_true) if len(normalized_true) > 0 else 0
 
     return {"precision": precision, "recall": recall, "f1": f1, "accuracy": accuracy}
+
 
 def finentity_evaluate(file_name, args):
     """Evaluate FinEntity dataset with batching."""
@@ -107,17 +122,27 @@ def finentity_evaluate(file_name, args):
     # Extract labels
     for batch_idx, batch_indices in enumerate(index_batches):
         llm_responses_batch = [df.at[i, "llm_responses"] for i in batch_indices]
-        logger.info(f"Processing batch {batch_idx + 1}/{len(index_batches)} with {len(batch_indices)} rows.")
+        logger.info(
+            f"Processing batch {batch_idx + 1}/{len(index_batches)} with {len(batch_indices)} rows."
+        )
         messages_batch = [
             [{"role": "user", "content": finentity_prompt(response)}]
             for response in llm_responses_batch
         ]
 
         try:
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, len(index_batches))
-            for idx, (response, row_idx) in enumerate(zip(batch_responses, batch_indices)):
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, len(index_batches)
+            )
+            for idx, (response, row_idx) in enumerate(
+                zip(batch_responses, batch_indices)
+            ):
                 try:
-                    if response is None or not hasattr(response, "choices") or not response.choices:
+                    if (
+                        response is None
+                        or not hasattr(response, "choices")
+                        or not response.choices
+                    ):
                         raise ValueError(f"Invalid API response: {response}")
 
                     llm_response = response.choices[0].message.content.strip()  # type: ignore
@@ -145,14 +170,16 @@ def finentity_evaluate(file_name, args):
 
     # Aggregate metrics
     aggregated_metrics = pd.DataFrame(evaluation_results).mean()
-    metrics_df = pd.DataFrame({
-        "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
-        "Value": [
-            aggregated_metrics["precision"],
-            aggregated_metrics["recall"],
-            aggregated_metrics["f1"],
-            aggregated_metrics["accuracy"]
-        ]
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
+            "Value": [
+                aggregated_metrics["precision"],
+                aggregated_metrics["recall"],
+                aggregated_metrics["f1"],
+                aggregated_metrics["accuracy"],
+            ],
+        }
+    )
 
     return df, metrics_df

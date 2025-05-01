@@ -1,15 +1,9 @@
 import json
-from datetime import date
 import pandas as pd
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from litellm import completion
-from pathlib import Path
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-import time
+from superflue.config import LOG_DIR, LOG_LEVEL
 import litellm
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, List
 from tqdm import tqdm
 import ast
 
@@ -27,8 +21,9 @@ label_mapping = {
     "Direction_Constant": {"0": 0, "1": 1},
     "Past_Price": {"0": 0, "1": 1},
     "Future_Price": {"0": 0, "1": 1},
-    "Past_News": {"0": 0, "1": 1}
+    "Past_News": {"0": 0, "1": 1},
 }
+
 
 def preprocess_llm_response(raw_response: str):
     """Preprocess the raw LLM response to extract JSON content."""
@@ -42,6 +37,7 @@ def preprocess_llm_response(raw_response: str):
     except Exception as e:
         logger.error(f"Error preprocessing LLM response: {e}")
         return None
+
 
 def extraction_prompt(llm_response: str):
     """Generate a prompt to extract the relevant information from the LLM response."""
@@ -58,18 +54,22 @@ def extraction_prompt(llm_response: str):
     "{llm_response}" """
     return prompt
 
+
 def map_label_to_number(label: str, category: str):
     """Map extracted labels to numeric values."""
     return label_mapping[category].get(label.strip(), -1)
+
 
 def save_progress(df, path):
     """Save progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
+
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """Process a batch with litellm's retry mechanism."""
@@ -83,14 +83,15 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
+
 
 def headlines_evaluate(file_name, args):
     task = args.dataset.strip('“”"')
@@ -104,7 +105,7 @@ def headlines_evaluate(file_name, args):
     if "extracted_labels" not in df.columns:
         df["extracted_labels"] = None
 
-    actual_labels = df['actual_labels'].tolist()
+    actual_labels = df["actual_labels"].tolist()
     actual_predictions = [ast.literal_eval(labels) for labels in actual_labels]
     extracted_labels = []
 
@@ -119,32 +120,52 @@ def headlines_evaluate(file_name, args):
             for response in batch_content
         ]
         try:
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in range(len(batch_content)):
                 extracted_labels.append([-1] * 7)
 
         for response in batch_responses:
-            try: 
+            try:
                 raw_response = response.choices[0].message.content.strip()
                 preprocessed_response = preprocess_llm_response(raw_response)
                 if not preprocessed_response:
-                    raise ValueError(f"Preprocessing failed for response: {raw_response}")
+                    raise ValueError(
+                        f"Preprocessing failed for response: {raw_response}"
+                    )
                 extracted_label_json = json.loads(preprocessed_response)
             except Exception as e:
                 logger.error(f"Error extracting response: {e}")
                 extracted_labels.append([-1] * 7)
                 continue
-                
+
             mapped_labels = [
-                map_label_to_number(str(extracted_label_json.get("Price_or_Not", "")), "Price_or_Not"),
-                map_label_to_number(str(extracted_label_json.get("Direction_Up", "")), "Direction_Up"),
-                map_label_to_number(str(extracted_label_json.get("Direction_Down", "")), "Direction_Down"),
-                map_label_to_number(str(extracted_label_json.get("Direction_Constant", "")), "Direction_Constant"),
-                map_label_to_number(str(extracted_label_json.get("Past_Price", "")), "Past_Price"),
-                map_label_to_number(str(extracted_label_json.get("Future_Price", "")), "Future_Price"),
-                map_label_to_number(str(extracted_label_json.get("Past_News", "")), "Past_News"),
+                map_label_to_number(
+                    str(extracted_label_json.get("Price_or_Not", "")), "Price_or_Not"
+                ),
+                map_label_to_number(
+                    str(extracted_label_json.get("Direction_Up", "")), "Direction_Up"
+                ),
+                map_label_to_number(
+                    str(extracted_label_json.get("Direction_Down", "")),
+                    "Direction_Down",
+                ),
+                map_label_to_number(
+                    str(extracted_label_json.get("Direction_Constant", "")),
+                    "Direction_Constant",
+                ),
+                map_label_to_number(
+                    str(extracted_label_json.get("Past_Price", "")), "Past_Price"
+                ),
+                map_label_to_number(
+                    str(extracted_label_json.get("Future_Price", "")), "Future_Price"
+                ),
+                map_label_to_number(
+                    str(extracted_label_json.get("Past_News", "")), "Past_News"
+                ),
             ]
             extracted_labels.append(mapped_labels)
 
@@ -160,13 +181,10 @@ def headlines_evaluate(file_name, args):
             if e == a:
                 acc += 1
         accuracies.append(acc / len(actual))
-    
+
     accuracy = sum(accuracies) / len(accuracies)
 
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy"],
-        "Value": [accuracy]
-    })
+    metrics_df = pd.DataFrame({"Metric": ["Accuracy"], "Value": [accuracy]})
 
     logger.info(f"Accuracy: {accuracy:.4f}")
 

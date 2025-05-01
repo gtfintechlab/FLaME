@@ -1,14 +1,11 @@
-import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
 import litellm
-from typing import Dict, Any, List, Optional, Tuple
-from litellm import completion
+from typing import Any, List
 from superflue.code.prompts_zeroshot import refind_zeroshot_prompt
 from superflue.code.prompts_fewshot import refind_fewshot_prompt
-from superflue.code.tokens import tokens
 
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -21,9 +18,11 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """Process a batch with litellm's retry mechanism."""
@@ -37,17 +36,17 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             # top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             # repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
 
+
 def refind_inference(args):
-    
     today = date.today()
     logger.info(f"Starting ReFinD inference on {today}")
 
@@ -56,14 +55,23 @@ def refind_inference(args):
     dataset = load_dataset("gtfintechlab/ReFinD", trust_remote_code=True)
 
     results_path = (
-        RESULTS_DIR
-        / "refind"
-        / f"refind_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+        RESULTS_DIR / "refind" / f"refind_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)
 
     test_data = dataset["test"]  # type: ignore
-    all_sentences = [' '.join(['[ENT1]'] + sample['token'][sample['e1_start']:sample['e1_end']] + ['[/ENT1]'] + sample['token'][sample['e1_end']+1:sample['e2_start']] + ['[ENT2]'] + sample['token'][sample['e2_start']:sample['e2_end']] + ['[/ENT2]']) for sample in test_data]  # type: ignore
+    all_sentences = [
+        " ".join(
+            ["[ENT1]"]
+            + sample["token"][sample["e1_start"] : sample["e1_end"]]
+            + ["[/ENT1]"]
+            + sample["token"][sample["e1_end"] + 1 : sample["e2_start"]]
+            + ["[ENT2]"]
+            + sample["token"][sample["e2_start"] : sample["e2_end"]]
+            + ["[/ENT2]"]
+        )
+        for sample in test_data
+    ]  # type: ignore
     all_actual_labels = [sample["rel_group"] for sample in test_data]  # type: ignore
 
     sentence_batches = chunk_list(all_sentences, args.batch_size)
@@ -117,7 +125,7 @@ def refind_inference(args):
             llm_responses.append(response_label)
             actual_labels.append(all_actual_labels[len(llm_responses) - 1])
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-        
+
     # Create the final DataFrame after the loop
     df = pd.DataFrame(
         {
@@ -132,7 +140,7 @@ def refind_inference(args):
     df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")
 
-    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

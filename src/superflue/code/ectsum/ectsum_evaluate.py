@@ -1,7 +1,5 @@
 import pandas as pd
-import logging
 from datetime import date
-from pathlib import Path
 from evaluate import load
 import numpy as np
 from superflue.utils.logging_utils import setup_logger
@@ -17,6 +15,7 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+
 def summarization_prompt(input_text: str):
     """Generate a summarization prompt for ECT data."""
     prompt = f'''Generate a financial summary in about 50 words in line-by-line format based on the following input. The summary should include key financial information such as earnings per share, revenue, and other significant figures.
@@ -25,10 +24,12 @@ def summarization_prompt(input_text: str):
                 "{input_text}"'''
     return prompt
 
+
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
+
 
 def ectsum_evaluate(file_name, args):
     """Evaluate ECTSum summaries and return results and metrics DataFrames."""
@@ -54,9 +55,9 @@ def ectsum_evaluate(file_name, args):
     # Compute BERTScore
     logger.info("Computing BERTScore metrics...")
     bert_scores = bertscore.compute(
-        predictions=llm_responses, 
-        references=correct_summaries, 
-        model_type="distilbert-base-uncased"
+        predictions=llm_responses,
+        references=correct_summaries,
+        model_type="distilbert-base-uncased",
     )
 
     # Add BERTScore metrics to DataFrame
@@ -74,17 +75,19 @@ def ectsum_evaluate(file_name, args):
     logger.info(f"BERTScore F1: {avg_f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-    "Metric": ["Precision", "Recall", "F1 Score"],
-    "Value": [avg_precision, avg_recall, avg_f1]
-})
-
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Precision", "Recall", "F1 Score"],
+            "Value": [avg_precision, avg_recall, avg_f1],
+        }
+    )
 
     # Continual saving of progress and metrics
     save_progress(df, evaluation_results_path)
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df
-

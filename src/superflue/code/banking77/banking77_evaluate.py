@@ -1,13 +1,9 @@
-import os
 import pandas as pd
 from datetime import date
-from pathlib import Path
-from litellm import completion
 import litellm
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, List
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.utils.logging_utils import setup_logger
-from superflue.code.tokens import tokens
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
@@ -100,6 +96,7 @@ banking77_list = [
 ]
 banking77_label_map = {category: index for index, category in enumerate(banking77_list)}
 
+
 # Define the prompt for LLM response extraction
 def extraction_prompt(llm_response: str):
     prompt = f"""Based on the following list of banking intents: {banking77_list}, extract the most relevant category from the following response:
@@ -107,20 +104,26 @@ def extraction_prompt(llm_response: str):
                 Provide only the label that best matches the response, exactly as it appears in the initial list of intents, with an underscore (_) between words. Only output alphanumeric characters and underscores. Do not include any special characters or punctuation. Only output the label. Do not list an explanation or multiple labels."""
     return prompt
 
+
 def map_extracted_label_to_number(extracted_label: str):
     """Map the extracted label to its corresponding numerical value."""
     if extracted_label not in banking77_label_map:
         logger.error(f"Label not found: {extracted_label}")
-    return banking77_label_map.get(extracted_label, -1)  # Return -1 if the label is not found
+    return banking77_label_map.get(
+        extracted_label, -1
+    )  # Return -1 if the label is not found
+
 
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
+
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """Process a batch with litellm's retry mechanism."""
@@ -134,14 +137,15 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
+
 
 def banking77_evaluate(file_name, args):
     """Evaluate Banking 77 results and return results and metrics DataFrames."""
@@ -161,8 +165,8 @@ def banking77_evaluate(file_name, args):
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize extracted_labels column if it doesn't exist
-    if 'extracted_labels' not in df.columns:
-        df['extracted_labels'] = None
+    if "extracted_labels" not in df.columns:
+        df["extracted_labels"] = None
 
     extracted_labels = []
     all_responses = df["llm_responses"].tolist()
@@ -190,7 +194,7 @@ def banking77_evaluate(file_name, args):
             # Add None values for failed batch
             for _ in batch:
                 extracted_labels.append(-1)
-        
+
         # Process responses
         for response in batch_responses:
             try:
@@ -206,13 +210,15 @@ def banking77_evaluate(file_name, args):
 
             extracted_labels.append(mapped_label)
             logger.debug(f"Processed {len(extracted_labels)}/{len(df)} responses.")
-        
+
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     df["extracted_labels"] = extracted_labels
     # Evaluate performance
     accuracy = accuracy_score(correct_labels, extracted_labels)
-    precision, recall, f1, _ = precision_recall_fscore_support(correct_labels, extracted_labels, average="weighted")
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        correct_labels, extracted_labels, average="weighted"
+    )
 
     logger.info(f"Accuracy: {accuracy:.4f}")
     logger.info(f"Precision: {precision:.4f}")
@@ -220,15 +226,19 @@ def banking77_evaluate(file_name, args):
     logger.info(f"F1 Score: {f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Accuracy": [accuracy],
-        "Precision": [precision],
-        "Recall": [recall],
-        "F1 Score": [f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Accuracy": [accuracy],
+            "Precision": [precision],
+            "Recall": [recall],
+            "F1 Score": [f1],
+        }
+    )
 
     # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
 

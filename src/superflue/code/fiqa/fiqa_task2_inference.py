@@ -1,15 +1,11 @@
-import time
 import pandas as pd
-from datetime import date
 from datasets import load_dataset
-from litellm import completion 
 from superflue.code.prompts_zeroshot import fiqa_task2_zeroshot_prompt
 from superflue.code.prompts_fewshot import fiqa_task2_fewshot_prompt
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 import litellm
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, List
 from tqdm import tqdm
 
 # Set up logger
@@ -19,9 +15,11 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """Process a batch with litellm's retry mechanism."""
@@ -35,22 +33,23 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             # top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             # repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
+
 
 def fiqa_task2_inference(args):
     # Load dataset and initialize lists for results
     dataset = load_dataset("gtfintechlab/FiQA_Task2", trust_remote_code=True)
 
-    test_data = dataset["test"] # type: ignore
-    all_questions = [data["question"] for data in test_data] # type: ignore
-    all_answers = [data["answer"] for data in test_data] # type: ignore
+    test_data = dataset["test"]  # type: ignore
+    all_questions = [data["question"] for data in test_data]  # type: ignore
+    all_answers = [data["answer"] for data in test_data]  # type: ignore
 
     question_batches = chunk_list(all_questions, args.batch_size)
     total_batches = len(question_batches)
@@ -84,7 +83,7 @@ def fiqa_task2_inference(args):
                 complete_responses.append(None)
                 llm_responses.append(None)
                 actual_answers.append(None)
-        
+
         for question, response in zip(question_batch, batch_responses):
             context.append(question)
             complete_responses.append(response)
@@ -107,7 +106,7 @@ def fiqa_task2_inference(args):
         }
     )
 
-    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
-    
+
     return df

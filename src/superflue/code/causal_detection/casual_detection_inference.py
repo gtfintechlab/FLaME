@@ -1,26 +1,22 @@
-import time
-from datetime import date
-from pathlib import Path
 import pandas as pd
 from datasets import load_dataset
-import together
 from superflue.code.prompts_zeroshot import causal_detection_zeroshot_prompt
 from superflue.code.prompts_fewshot import causal_detection_fewshot_prompt
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-from litellm import completion
+from superflue.config import LOG_DIR, LOG_LEVEL
 import litellm
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, List
 from tqdm import tqdm
 
 logger = setup_logger(
     name="cd_inference", log_file=LOG_DIR / "cd_inference.log", level=LOG_LEVEL
 )
 
+
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """Process a batch with litellm's retry mechanism."""
@@ -34,17 +30,17 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             # top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             # repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
 
+
 def casual_detection_inference(args):
-    today = date.today()
     dataset = load_dataset("gtfintechlab/CausalDetection", trust_remote_code=True)
 
     test_data = dataset["test"]  # type: ignore
@@ -87,10 +83,10 @@ def casual_detection_inference(args):
                 actual_tags.append(None)
                 complete_responses.append(None)
                 llm_responses.append(None)
-        
+
         for token, response in zip(token_batch, batch_responses):
             complete_responses.append(response)
-            try: 
+            try:
                 response_label = response.choices[0].message.content
                 response_tags = response_label.split()
             except Exception as e:
@@ -121,7 +117,7 @@ def casual_detection_inference(args):
 
     # logger.info(f"Inference completed. Results saved to {results_path}")
 
-    success_rate = (df['predicted_tags'].notna().sum() / len(df)) * 100
+    success_rate = (df["predicted_tags"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

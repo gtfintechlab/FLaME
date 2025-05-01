@@ -1,13 +1,12 @@
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from litellm import batch_completion
 from superflue.code.prompts_zeroshot import causal_classification_zeroshot_prompt
 from superflue.code.prompts_fewshot import causal_classification_fewshot_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
-import time
+import litellm
 
 logger = setup_logger(
     name="causal_classification_inference",
@@ -15,8 +14,8 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
-import litellm
 litellm.drop_params = True
+
 
 def causal_classification_inference(args):
     today = date.today()
@@ -43,7 +42,6 @@ def causal_classification_inference(args):
 
     # Create batches
     text_batches = chunk_list(texts, batch_size)
-    label_batches = chunk_list(actual_labels, batch_size)
 
     for batch_idx, text_batch in enumerate(text_batches):
         # Create prompt messages for the batch
@@ -54,7 +52,9 @@ def causal_classification_inference(args):
 
         try:
             # Process the batch
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
             # time.sleep(1)
 
             for response in batch_responses:

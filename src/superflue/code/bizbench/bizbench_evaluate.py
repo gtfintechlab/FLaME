@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+
 def calculate_accuracy_and_stats(file_path, tolerance=0.01):
     df = pd.read_csv(file_path)
 
@@ -8,7 +9,7 @@ def calculate_accuracy_and_stats(file_path, tolerance=0.01):
     def to_float(value):
         try:
             # Remove commas and convert to float
-            return float(str(value).replace(',', ''))
+            return float(str(value).replace(",", ""))
         except ValueError:
             # Return NaN for non-numeric values
             return np.nan
@@ -32,7 +33,7 @@ def calculate_accuracy_and_stats(file_path, tolerance=0.01):
 
     # Calculate Mean Absolute Error (MAE) and Mean Squared Error (MSE)
     mae = differences.mean()
-    mse = (differences ** 2).mean()
+    mse = (differences**2).mean()
 
     # Percentage of predictions within the specified tolerance
     within_tolerance = (differences <= tolerance).sum()
@@ -45,7 +46,7 @@ def calculate_accuracy_and_stats(file_path, tolerance=0.01):
         "Tolerance Accuracy": tolerance_accuracy,
     }
 
-# file_path = "/home/thans/Documents/Study/fall24/cs7643/superflue_cs7643/output/results/bizbench/bizbench_meta-llama/Meta-Llama-3-70B-Instruct-Turbo_02_12_2024.csv"
-stats = calculate_accuracy_and_stats(file_path)
+
+stats = calculate_accuracy_and_stats("path_to_your_file.csv")
 for metric, value in stats.items():
     print(f"{metric}: {value:.4f}")

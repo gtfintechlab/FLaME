@@ -1,23 +1,32 @@
-import os
 import pandas as pd
 from datetime import date
-from pathlib import Path
-from litellm import completion
 import litellm
-from typing import Dict, Any, List, Optional, Tuple
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report
+from typing import Any, List
+from sklearn.metrics import (
+    accuracy_score,
+    precision_recall_fscore_support,
+    classification_report,
+)
 from superflue.utils.logging_utils import setup_logger
-from superflue.code.tokens import tokens
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
-from litellm.types.utils import ModelResponse, Choices, Message, Usage, CompletionTokensDetailsWrapper, PromptTokensDetailsWrapper
+from litellm.types.utils import (
+    ModelResponse,
+    Choices,
+    Message,
+    Usage,
+    CompletionTokensDetailsWrapper,
+    PromptTokensDetailsWrapper,
+)
 import ast
+
 # Configure logging
 logger = setup_logger(
     name="causal_detection_evaluate",
     log_file=LOG_DIR / "causal_detection_evaluate.log",
     level=LOG_LEVEL,
 )
+
 
 # Define the prompt for LLM response extraction
 def extraction_prompt(llm_response: str):
@@ -28,9 +37,11 @@ def extraction_prompt(llm_response: str):
                 Response: {llm_response}"""
     return prompt
 
+
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """Process a batch with litellm's retry mechanism."""
@@ -39,29 +50,31 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
         batch_responses = litellm.batch_completion(
             model=args.model,
             messages=messages_batch,
-            max_tokens=args.max_tokens*2,
+            max_tokens=args.max_tokens * 2,
             temperature=args.temperature,
             top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
+
 
 def adjust_tags(row):
     actual = row["actual_tags"]
     predicted = row["extracted_tags"]
     if len(predicted) > len(actual):
-        return predicted[:len(actual)]
+        return predicted[: len(actual)]
     elif len(predicted) < len(actual):
-        return predicted + ["NA"] * (len(actual) - len(predicted))  
+        return predicted + ["NA"] * (len(actual) - len(predicted))
     else:
         return predicted
+
 
 def causal_detection_evaluate(file_name, args):
     """Evaluate causal detection results and return results and metrics DataFrames."""
@@ -81,16 +94,29 @@ def causal_detection_evaluate(file_name, args):
     evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize extracted_labels column if it doesn't exist
-    if 'extracted_labels' not in df.columns:
-        df['extracted_labels'] = None
+    if "extracted_labels" not in df.columns:
+        df["extracted_labels"] = None
 
     extracted_tags = []
 
-    type_dict = {"ModelResponse": ModelResponse, "Choices": Choices, "Message": Message, "Usage": Usage, "CompletionTokensDetailsWrapper": CompletionTokensDetailsWrapper, "PromptTokensDetailsWrapper": PromptTokensDetailsWrapper}
-    df['complete_responses'] = df['complete_responses'].apply(lambda x : eval(x, type_dict))
-    df["llm_responses"] = df['complete_responses'].apply(lambda x: x.choices[0].message.content)
+    type_dict = {
+        "ModelResponse": ModelResponse,
+        "Choices": Choices,
+        "Message": Message,
+        "Usage": Usage,
+        "CompletionTokensDetailsWrapper": CompletionTokensDetailsWrapper,
+        "PromptTokensDetailsWrapper": PromptTokensDetailsWrapper,
+    }
+    df["complete_responses"] = df["complete_responses"].apply(
+        lambda x: eval(x, type_dict)
+    )
+    df["llm_responses"] = df["complete_responses"].apply(
+        lambda x: x.choices[0].message.content
+    )
 
-    df['llm_responses'] = df['llm_responses'].apply(lambda x : x[(x.find('</think>') + 8):])
+    df["llm_responses"] = df["llm_responses"].apply(
+        lambda x: x[(x.find("</think>") + 8) :]
+    )
 
     all_responses = df["llm_responses"].tolist()
 
@@ -116,76 +142,94 @@ def causal_detection_evaluate(file_name, args):
             # Add None values for failed batch
             for _ in batch:
                 extracted_tags.append([])
-        
+
         # Process responses
         for response in batch_responses:
             try:
                 extracted_list = response.choices[0].message.content.strip()  # type: ignore
                 extracted_list.replace("‘", "'").replace("’", "'")
-                extracted_list = extracted_list[extracted_list.find("["):max(extracted_list.rfind("]"), len(extracted_list) - 1)+1]
+                extracted_list = extracted_list[
+                    extracted_list.find("[") : max(
+                        extracted_list.rfind("]"), len(extracted_list) - 1
+                    )
+                    + 1
+                ]
                 try:
                     eval(extracted_list)
-                    if (extracted_list.count('[') > 1):
-                        extracted_list = '[]'
-                except Exception as e:
+                    if extracted_list.count("[") > 1:
+                        extracted_list = "[]"
+                except Exception:
                     extracted_list = "[]"
             except Exception as e:
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 extracted_list = "[]"
             extracted_tags.append(extracted_list)
             logger.debug(f"Processed {len(extracted_tags)}/{len(df)} responses.")
-        
+
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     df["extracted_tags"] = extracted_tags
     # Evaluate performance
-    
-    df["extracted_tags"] = df['extracted_tags'].apply(ast.literal_eval)
-    df['actual_tags'] = df['actual_tags'].apply(ast.literal_eval)
-    
+
+    df["extracted_tags"] = df["extracted_tags"].apply(ast.literal_eval)
+    df["actual_tags"] = df["actual_tags"].apply(ast.literal_eval)
+
     df["adjusted_extracted_tags"] = df.apply(adjust_tags, axis=1)
-   
+
     df["length_match"] = df["adjusted_extracted_tags"].notnull()
- 
+
     df["row_accuracy"] = df.apply(
-        lambda row: accuracy_score(row["actual_tags"], row["adjusted_extracted_tags"])
-        if row["length_match"] else 0.0, # type: ignore
-        axis=1
-    ) # type: ignore
- 
+        lambda row: (
+            accuracy_score(row["actual_tags"], row["adjusted_extracted_tags"])
+            if row["length_match"]
+            else 0.0
+        ),  # type: ignore
+        axis=1,
+    )  # type: ignore
+
     valid_rows = df[df["length_match"]]
- 
+
     flat_actual = [tag for tags in valid_rows["actual_tags"] for tag in tags]
-    flat_predicted = [tag for tags in valid_rows["adjusted_extracted_tags"] for tag in tags]
- 
+    flat_predicted = [
+        tag for tags in valid_rows["adjusted_extracted_tags"] for tag in tags
+    ]
+
     labels = ["B-CAUSE", "I-CAUSE", "B-EFFECT", "I-EFFECT", "O"]
     print("Token Classification Report:")
     print(classification_report(flat_actual, flat_predicted, labels=labels))
- 
+
     accuracy = accuracy_score(flat_actual, flat_predicted)
     print(f"Overall Token-Level Accuracy: {accuracy:.4f}")
- 
-    precision, recall, f1, _ = precision_recall_fscore_support(flat_actual, flat_predicted, average="weighted")
- 
-    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}")
+
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        flat_actual, flat_predicted, average="weighted"
+    )
+
+    logger.info(
+        f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}"
+    )
     df.to_csv(evaluation_results_path, index=False)
- 
+
     logger.info(f"Accuracy: {accuracy:.4f}")
     logger.info(f"Precision: {precision:.4f}")
     logger.info(f"Recall: {recall:.4f}")
     logger.info(f"F1 Score: {f1:.4f}")
- 
+
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Accuracy": [accuracy],
-        "Precision": [precision],
-        "Recall": [recall],
-        "F1 Score": [f1],
-    })
- 
+    metrics_df = pd.DataFrame(
+        {
+            "Accuracy": [accuracy],
+            "Precision": [precision],
+            "Recall": [recall],
+            "F1 Score": [f1],
+        }
+    )
+
     # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
- 
+
     return df, metrics_df

@@ -1,15 +1,11 @@
 import pandas as pd
-import logging
 from datetime import date
-from pathlib import Path
-from litellm import completion
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 import litellm
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any, List
 
 # Configure logging
 logger = setup_logger(
@@ -20,34 +16,61 @@ logger = setup_logger(
 
 # Define possible relationships
 possible_relationships = [
-    'subsidiary', 'owned_by', 'employer', 'product_or_material_produced', 'industry',
-    'manufacturer', 'developer', 'legal_form', 'parent_organization', 'distribution_format',
-    'chairperson', 'location_of_formation', 'headquarters_location', 'operator', 'creator',
-    'currency', 'founded_by', 'original_broadcaster', 'owner_of', 'director_/_manager',
-    'business_division', 'chief_executive_officer', 'position_held', 'platform', 'brand',
-    'distributed_by', 'publisher', 'stock_exchange', 'member_of'
+    "subsidiary",
+    "owned_by",
+    "employer",
+    "product_or_material_produced",
+    "industry",
+    "manufacturer",
+    "developer",
+    "legal_form",
+    "parent_organization",
+    "distribution_format",
+    "chairperson",
+    "location_of_formation",
+    "headquarters_location",
+    "operator",
+    "creator",
+    "currency",
+    "founded_by",
+    "original_broadcaster",
+    "owner_of",
+    "director_/_manager",
+    "business_division",
+    "chief_executive_officer",
+    "position_held",
+    "platform",
+    "brand",
+    "distributed_by",
+    "publisher",
+    "stock_exchange",
+    "member_of",
 ]
+
 
 def extraction_prompt(llm_response: str):
     """Generate a prompt to extract the classification label from the LLM response."""
-    relationship_choices = ', '.join(possible_relationships)
-    prompt = f'''Extract the classification label from the following LLM response. The label should be one of the following {relationship_choices}. 
+    relationship_choices = ", ".join(possible_relationships)
+    prompt = f"""Extract the classification label from the following LLM response. The label should be one of the following {relationship_choices}. 
     
                 Pick the label out of the list that is the closest to the LLM response, but list ‘NO-REL’ if the LLM did not output a clear answer.
                 
                 Here is the LLM response to analyze:
                 "{llm_response}"
-                Provide only the label that best matches the response, exactly as it is listed in the approved label list, with an underscore (_) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, asterisks, or punctuation, etc. Only output the label. Do not list an explanation or multiple labels.'''
+                Provide only the label that best matches the response, exactly as it is listed in the approved label list, with an underscore (_) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, asterisks, or punctuation, etc. Only output the label. Do not list an explanation or multiple labels."""
     return prompt
+
 
 def save_progress(df, path):
     """Save the current progress to a CSV file."""
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
+
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
     """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
     """Process a batch with litellm's retry mechanism."""
@@ -61,14 +84,15 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             top_k=args.top_k if args.top_k else None,
             top_p=args.top_p,
             repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
+            num_retries=3,  # Using litellm's retry mechanism
         )
         logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
         return batch_responses
-            
+
     except Exception as e:
         logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
         raise
+
 
 def finred_evaluate(file_name, args):
     """Evaluate FinRED dataset and return results and metrics DataFrames."""
@@ -96,7 +120,7 @@ def finred_evaluate(file_name, args):
 
     batches = chunk_list(all_responses, args.batch_size)
     total_batches = len(batches)
-    
+
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, sentence_batch in enumerate(pbar):
         # Prepare messages for batch
@@ -112,26 +136,26 @@ def finred_evaluate(file_name, args):
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in sentence_batch:
-                extracted_labels.append('NO-REL')
+                extracted_labels.append("NO-REL")
 
         # Process responses
         for response in batch_responses:
             try:
-                extracted_label = response.choices[0].message.content.strip() # type: ignore
+                extracted_label = response.choices[0].message.content.strip()  # type: ignore
             except Exception as e:
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
-                extracted_label = 'NO-REL'
-                
+                extracted_label = "NO-REL"
+
             # Normalize and validate extracted label
-            extracted_label = extracted_label.replace(' ', '')
+            extracted_label = extracted_label.replace(" ", "")
             if extracted_label not in possible_relationships:
                 logger.error(f"Invalid label: {extracted_label}")
-                extracted_label = 'NO-REL'
+                extracted_label = "NO-REL"
 
             extracted_labels.append(extracted_label)
 
-    df['extracted_labels'] = extracted_labels
-    
+    df["extracted_labels"] = extracted_labels
+
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, extracted_labels)
     precision, recall, f1, _ = precision_recall_fscore_support(
@@ -145,13 +169,17 @@ def finred_evaluate(file_name, args):
     logger.info(f"F1 Score: {f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
     # Save metrics
-    metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
     metrics_df.to_csv(metrics_path, index=False)
     logger.info(f"Metrics saved to {metrics_path}")
 

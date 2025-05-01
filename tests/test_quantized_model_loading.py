@@ -4,15 +4,14 @@ from pathlib import Path
 import pytest
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from superflue.utils.logging_utils import setup_logger
+from superflue.utils.hf_model import get_hf_model
 
 ROOT_DIRECTORY = Path(__file__).resolve().parent.parent.parent
 if str(ROOT_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(ROOT_DIRECTORY))
 
-from superflue.utils.logging_utils import setup_logger
-
 logger = setup_logger(__name__)
-from superflue.utils.hf_model import get_hf_model
 
 
 @pytest.mark.parametrize(
