@@ -2,7 +2,8 @@ import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from superflue.code.prompts_zeroshot import convfinqa_prompt
+from superflue.code.prompts_zeroshot import convfinqa_zeroshot_prompt
+from superflue.code.prompts_fewshot import convfinqa_fewshot_prompt
 from superflue.code.tokens import tokens
 from litellm import completion 
 from superflue.utils.logging_utils import setup_logger
@@ -20,6 +21,11 @@ def convfinqa_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        convfinqa_prompt = convfinqa_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        convfinqa_prompt = convfinqa_zeroshot_prompt
 
     for entry in dataset["train"]:  # type: ignore
         pre_text = " ".join(entry["pre_text"])  # type: ignore

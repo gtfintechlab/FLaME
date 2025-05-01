@@ -5,7 +5,8 @@ from datasets import load_dataset
 from litellm import batch_completion
 import json
 
-from superflue.code.prompts_zeroshot import fnxl_prompt
+from superflue.code.prompts_zeroshot import fnxl_zeroshot_prompt
+from superflue.code.prompts_fewshot import fnxl_fewshot_prompt
 # from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -154,6 +155,11 @@ def fnxl_inference(args):
     actual_labels = []      # The ground truth dictionary from 'numerals-tags'
     llm_responses = []      # Raw JSON strings from the LLM
     complete_responses = [] # Full response objects (for debugging, optional)
+
+    if args.prompt_format == "fewshot":
+        fnxl_prompt = fnxl_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        fnxl_prompt = fnxl_zeroshot_prompt
 
     # 2) Iterate over the rows
     for row in test_data:

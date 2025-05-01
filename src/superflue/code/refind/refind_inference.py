@@ -5,8 +5,9 @@ from datasets import load_dataset
 
 import litellm
 from typing import Dict, Any, List, Optional, Tuple
-from litellm import completion 
-from superflue.code.prompts_zeroshot import refind_prompt
+from litellm import completion
+from superflue.code.prompts_zeroshot import refind_zeroshot_prompt
+from superflue.code.prompts_fewshot import refind_fewshot_prompt
 from superflue.code.tokens import tokens
 
 from superflue.utils.logging_utils import setup_logger
@@ -73,6 +74,11 @@ def refind_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        refind_prompt = refind_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        refind_prompt = refind_zeroshot_prompt
 
     logger.info(f"Starting inference on ReFinD with model {args.model}...")
 

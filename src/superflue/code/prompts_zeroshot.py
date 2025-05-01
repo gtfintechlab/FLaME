@@ -1,4 +1,4 @@
-def headlines_prompt(sentence: str):
+def headlines_zeroshot_prompt(sentence: str):
 
         prompt = f'''Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
                     Give a score of 0 for each of the following attributes if the news headline does not contain the following information or 1 if it does.
@@ -20,7 +20,7 @@ def fiqa_prompt(sentence: str):
     return prompt
 
 
-def fiqa_task1_prompt(sentence: str):
+def fiqa_task1_zeroshot_prompt(sentence: str):
     prompt = f"""You are a financial sentiment analysis expert. Analyze the provided sentence, identify relevant target aspects (such as companies, products, or strategies), and assign a sentiment score for each target. 
                 The sentiment score should be between -1 (highly negative) and 1 (highly positive), using up to three decimal places to capture nuances in sentiment.
 
@@ -30,7 +30,7 @@ def fiqa_task1_prompt(sentence: str):
 
 
 
-def fiqa_task2_prompt(question: str):
+def fiqa_task2_zeroshot_prompt(question: str):
     prompt = f"""
     You are a financial analysis expert tasked with answering opinion-based financial questions. Your answer should be drawn from a broad corpus of structured and unstructured financial data sources, such as microblogs, reports, and news articles. 
 
@@ -48,7 +48,7 @@ def fiqa_task2_prompt(question: str):
     return prompt
 
 
-def edtsum_prompt(document: str):
+def edtsum_zeroshot_prompt(document: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert at summarization tasks.	
         You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization 
         on this text. Use your understanding of the content to express the main ideas and crucial details in a shorter, coherent, and natural sounding text.
@@ -66,7 +66,7 @@ def numclaim_prompt(sentence: str):
     return prompt
 
 
-def fomc_prompt(sentence: str):
+def fomc_zeroshot_prompt(sentence: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
                 sifier. Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
                 TRAL’ class. Label ‘HAWKISH’ if it is corresponding to tightening of the monetary policy,
@@ -77,7 +77,7 @@ def fomc_prompt(sentence: str):
     return prompt
 
 
-def finer_prompt(sentence: str):
+def finer_zeroshot_prompt(sentence: str):
     system_prompt = """Discard all the previous instructions. Behave like you are an expert named entity
                     identifier. """
     user_msg = f"""Below a sentence is tokenized and each list item contains a word token from the
@@ -94,7 +94,7 @@ def finer_prompt(sentence: str):
     return prompt
 
 
-def fpb_prompt(sentence: str, prompt_format: str):
+def fpb_zeroshot_prompt(sentence: str, prompt_format: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
                     sifier. Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
                     class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
@@ -152,7 +152,7 @@ def fpb_prompt(sentence: str, prompt_format: str):
 
     return prompt
 
-def finentity_prompt(sentence: str):
+def finentity_zeroshot_prompt(sentence: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert entity recognizer and sentiment classifier. Identify the entities which are companies or organizations from the following content and classify the sentiment of the corresponding entities into ‘Neutral’ ‘Positive’ or ‘Negative’ classes. Considering every paragraph as a String in Python, provide the entities with the start and end index to mark the boundaries of it including spaces and punctuation using zero-based indexing. In the output, 
     Tag means sentiment; value means entity name. If no entity is found in the paragraph, 
     the response should be empty. Only give the output, not python code. The output should be a list that looks like:
@@ -179,7 +179,7 @@ def finentity_prompt(sentence: str):
 
 
 
-def finbench_prompt(profile: str):
+def finbench_zeroshot_prompt(profile: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expect risk assessor.
                 Classify the following individual as either ‘LOW RISK’ or ‘HIGH RISK’ for approving a loan for. 
                 Categorize the person as ‘HIGH RISK’ if their profile indicates that they will likely default on 
@@ -190,7 +190,7 @@ def finbench_prompt(profile: str):
     return prompt
 
 
-def ectsum_prompt(document: str):
+def ectsum_zeroshot_prompt(document: str):
     prompt = f"""Discard all the previous instructions.
         Behave like you are an expert at summarization tasks.
         Below an earnings call transcript of a Russell 3000 Index company
@@ -293,7 +293,7 @@ def banking77_zeroshot_prompt(sentence: str):
     return prompt
 
 
-def finqa_prompt(document: str):
+def finqa_zeroshot_prompt(document: str):
     prompt = f"""Discard all the previous instructions. Behave like you are a financial expert in question answering. 
                 Your task is to answer a financial question based on the  provided context.\n\n The context:
                 {document}. Repeat you final answer at the end of your response. """
@@ -301,7 +301,7 @@ def finqa_prompt(document: str):
     return prompt
 
 
-def convfinqa_prompt(document: str):
+def convfinqa_zeroshot_prompt(document: str):
     prompt = f"""
     Discard all previous instructions. You are a financial expert specializing in answering questions.
     The context provided includes a previous question and its answer, followed by a new question that you need to answer.
@@ -312,7 +312,7 @@ def convfinqa_prompt(document: str):
     return prompt
 
 
-def tatqa_prompt(document: str):
+def tatqa_zeroshot_prompt(document: str):
     prompt = f"""Discard all previous instructions. Behave like an expert in table-and-text-based financial question answering.
                 Your task is to answer a question by extracting relevant information from both tables and text 
                 provided in the context. Ensure that you use both sources comprehensively to generate an accurate response. Repeat your final answer at the
@@ -324,7 +324,7 @@ def tatqa_prompt(document: str):
 
 
 
-def causal_classification_prompt(text: str):
+def causal_classification_zeroshot_prompt(text: str):
     
     prompt = f"""Discard all the previous instructions. Behave like you are an expert causal classification model.
     Below is a sentence. Classify it into one of the following categories: 
@@ -338,7 +338,7 @@ def causal_classification_prompt(text: str):
 
 possible_relationships = ['product or material produced', 'manufacturer', 'distributed by', 'industry', 'position held', 'original broadcaster', 'owned by', 'founded by', 'distribution format', 'headquarters location', 'stock exchange', 'currency', 'parent organization', 'chief executive officer', 'director/manager', 'owner of', 'operator', 'member of', 'employer', 'chairperson', 'platform', 'subsidiary', 'legal form', 'publisher', 'developer', 'brand', 'business division', 'location of formation', 'creator']
 
-def finred_prompt(sentence: str, entity1: str, entity2: str):
+def finred_zeroshot_prompt(sentence: str, entity1: str, entity2: str):
     prompt = f"""Classify what relationship {entity2} (the head) has to {entity1} (the tail) within the following sentence:
     "{sentence}"
     
@@ -349,7 +349,7 @@ def finred_prompt(sentence: str, entity1: str, entity2: str):
     """
     return prompt
 
-def causal_detection_prompt(tokens: list):
+def causal_detection_zeroshot_prompt(tokens: list):
     prompt = f"""You are an expert in detecting cause and effect phrases in text.
     You are given the following tokenized sentence. For each token, assign one of these labels:
         - 'B-CAUSE': The first token of a cause phrase.
@@ -364,7 +364,7 @@ def causal_detection_prompt(tokens: list):
     
     return prompt
 
-def subjectiveqa_prompt(feature, definition, question, answer):
+def subjectiveqa_zeroshot_prompt(feature, definition, question, answer):
     system_prompt = """Discard all the previous instructions. Behave like you are an expert named entity
                     identifier. """
     user_msg = f"""Given the following feature: {feature} and its corresponding definition: {definition}\n
@@ -379,7 +379,7 @@ def subjectiveqa_prompt(feature, definition, question, answer):
     return prompt
 
 
-def fnxl_prompt(sentence, company, doc_type):
+def fnxl_zeroshot_prompt(sentence, company, doc_type):
     """
     Prompt that instructs the LLM to:
       - Extract ALL numerals from the sentence
@@ -410,29 +410,29 @@ def fnxl_prompt(sentence, company, doc_type):
     
     return prompt
 
-def refind_prompt(entities):
+def refind_zeroshot_prompt(entities):
     relations = "PERSON/TITLE - person subject, title object, relation title\nPERSON/GOV_AGY - person subject, government agency object, relation member_of\nPERSON/UNIV - person subject, university object, relation employee_of, member_of, attended\nPERSON/ORG - person subject, organization object, relation employee_of, member_of, founder_of\nORG/DATE - organization subject, date object, relation formed_on, acquired_on\nORG/MONEY - organization subject, money object, relation revenue_of, profit_of, loss_of, cost_of\nORG/GPE - organization subject, geopolitical entity object, relation headquartered_in, operations_in, formed_in\nORG/ORG - organization subject, organization object, relation shares_of, subsidiary_of, acquired_by, agreement_with"
     prompt = f"Classify the following relationship between ENT1 (the subject) and ENT2 (the object). The entities are marked by being enclosed in [ENT1] and [/EN1] and [ENT2] and [/ENT2] respectively. The subject entity will either be a person (PER) or an organization (ORG). The possible relationships are as follows, with the subject listed first and object listed second:\n{relations}\nText about entities: {entities}"
     return prompt
 
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
-    "fiqa_task1_prompt":fiqa_task1_prompt,
-    "fiqa_task2_prompt":fiqa_task2_prompt,
-    "fomc_prompt": fomc_prompt,
-    "finer_prompt": finer_prompt,
-    "fpb_prompt": fpb_prompt,
-    "finentity_prompt": finentity_prompt,
-    "ectsum_prompt": ectsum_prompt,
-    "edtsum_prompt": edtsum_prompt,
-    "banking77_prompt": banking77_zeroshot_prompt,
-    "finqa_prompt": finqa_prompt,
-    "convfinqa_prompt": convfinqa_prompt,
-    "tatqa_prompt": tatqa_prompt,
-    "finred_prompt": finred_prompt,
-    "causal_detection_prompt": causal_detection_prompt,
-    'finbench_prompt': finbench_prompt,
-    'refind_prompt': refind_prompt
+    "fiqa_task1_zeroshot_prompt": fiqa_task1_zeroshot_prompt,
+    "fiqa_task2_zeroshot_prompt": fiqa_task2_zeroshot_prompt,
+    "fomc_zeroshot_prompt": fomc_zeroshot_prompt,
+    "finer_zeroshot_prompt": finer_zeroshot_prompt,
+    "fpb_zeroshot_prompt": fpb_zeroshot_prompt,
+    "finentity_zeroshot_prompt": finentity_zeroshot_prompt,
+    "ectsum_zeroshot_prompt": ectsum_zeroshot_prompt,
+    "edtsum_zeroshot_prompt": edtsum_zeroshot_prompt,
+    "banking77_zeroshot_prompt": banking77_zeroshot_prompt,
+    "finqa_zeroshot_prompt": finqa_zeroshot_prompt,
+    "convfinqa_zeroshot_prompt": convfinqa_zeroshot_prompt,
+    "tatqa_zeroshot_prompt": tatqa_zeroshot_prompt,
+    "finred_zeroshot_prompt": finred_zeroshot_prompt,
+    "causal_detection_zeroshot_prompt": causal_detection_zeroshot_prompt,
+    'finbench_zeroshot_prompt': finbench_zeroshot_prompt,
+    'refind_zeroshot_prompt': refind_zeroshot_prompt
 }
 
 

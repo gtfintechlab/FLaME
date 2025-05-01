@@ -4,7 +4,8 @@ from pathlib import Path
 import pandas as pd
 from datasets import load_dataset
 import together
-from superflue.code.prompts_zeroshot import causal_detection_prompt
+from superflue.code.prompts_zeroshot import causal_detection_zeroshot_prompt
+from superflue.code.prompts_fewshot import causal_detection_fewshot_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -55,6 +56,11 @@ def casual_detection_inference(args):
     actual_tags = []
     llm_responses = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        causal_detection_prompt = causal_detection_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        causal_detection_prompt = causal_detection_zeroshot_prompt
 
     batches = chunk_list(all_tokens, args.batch_size)
     total_batches = len(batches)

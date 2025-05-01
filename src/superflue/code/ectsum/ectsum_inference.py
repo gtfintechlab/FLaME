@@ -4,7 +4,8 @@ import pandas as pd
 from datasets import load_dataset
 
 from litellm import completion 
-from superflue.code.prompts_zeroshot import ectsum_prompt
+from superflue.code.prompts_zeroshot import ectsum_zeroshot_prompt
+from superflue.code.prompts_fewshot import ectsum_fewshot_prompt
 # from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -37,6 +38,11 @@ def ectsum_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        ectsum_prompt = ectsum_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        ectsum_prompt = ectsum_zeroshot_prompt
 
     logger.info(f"Starting inference on ECTSum with model {args.model}...")
 

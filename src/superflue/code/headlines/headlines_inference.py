@@ -4,7 +4,8 @@ import pandas as pd
 from datasets import load_dataset
 from litellm import completion 
 
-from superflue.code.prompts_zeroshot import headlines_prompt
+from superflue.code.prompts_zeroshot import headlines_zeroshot_prompt
+from superflue.code.prompts_fewshot import headlines_fewshot_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -57,6 +58,11 @@ def headlines_inference(args):
     llm_responses = []
     complete_responses = []
     actual_labels = []  # List to store actual labels
+
+    if args.prompt_format == "fewshot":
+        headlines_prompt = headlines_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        headlines_prompt = headlines_zeroshot_prompt
 
     test_data = dataset["test"]  # type: ignore
     all_sentences = [data["News"] for data in test_data]  # type: ignore

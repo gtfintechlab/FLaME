@@ -2,7 +2,8 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 from litellm import batch_completion
-from superflue.code.prompts_zeroshot import causal_classification_prompt
+from superflue.code.prompts_zeroshot import causal_classification_zeroshot_prompt
+from superflue.code.prompts_fewshot import causal_classification_fewshot_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -30,6 +31,11 @@ def causal_classification_inference(args):
     actual_labels = [row["label"] for row in dataset["test"]]  # type: ignore
     llm_responses = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        causal_classification_prompt = causal_classification_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        causal_classification_prompt = causal_classification_zeroshot_prompt
 
     batch_size = args.batch_size
     total_batches = len(texts) // batch_size + int(len(texts) % batch_size > 0)

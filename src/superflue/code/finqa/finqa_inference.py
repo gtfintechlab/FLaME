@@ -4,7 +4,8 @@ import pandas as pd
 from datasets import load_dataset
 from litellm import completion 
 from datetime import date
-from superflue.code.prompts_zeroshot import finqa_prompt
+from superflue.code.prompts_zeroshot import finqa_zeroshot_prompt
+from superflue.code.prompts_fewshot import finqa_fewshot_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -55,6 +56,11 @@ def finqa_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        finqa_prompt = finqa_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        finqa_prompt = finqa_zeroshot_prompt
     
     pbar = tqdm(text_batches, desc="Processing batches")
     for batch_idx, text_batch in enumerate(pbar):

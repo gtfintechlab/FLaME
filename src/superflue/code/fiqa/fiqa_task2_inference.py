@@ -3,7 +3,8 @@ import pandas as pd
 from datetime import date
 from datasets import load_dataset
 from litellm import completion 
-from superflue.code.prompts_zeroshot import fiqa_task2_prompt
+from superflue.code.prompts_zeroshot import fiqa_task2_zeroshot_prompt
+from superflue.code.prompts_fewshot import fiqa_task2_fewshot_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -58,6 +59,11 @@ def fiqa_task2_inference(args):
     llm_responses = []
     actual_answers = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        fiqa_task2_prompt = fiqa_task2_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        fiqa_task2_prompt = fiqa_task2_zeroshot_prompt
 
     pbar = tqdm(question_batches, desc="Processing batches")
     for batch_idx, question_batch in enumerate(pbar):

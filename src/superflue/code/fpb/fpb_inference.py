@@ -3,7 +3,8 @@ import time
 from tqdm import tqdm
 from datasets import load_dataset
 from datetime import date
-from superflue.code.prompts_zeroshot import fpb_prompt
+from superflue.code.prompts_zeroshot import fpb_zeroshot_prompt
+from superflue.code.prompts_fewshot import fpb_fewshot_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from litellm import completion 
@@ -53,6 +54,11 @@ def fpb_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        fpb_prompt = fpb_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        fpb_prompt = fpb_zeroshot_prompt
 
     test_data = dataset['test'] # type: ignore
     all_sentences = [data["sentence"] for data in test_data] # type: ignore

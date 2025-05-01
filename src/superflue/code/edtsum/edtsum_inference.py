@@ -2,7 +2,8 @@ import time
 import pandas as pd
 from datasets import load_dataset
 from litellm import completion 
-from superflue.code.prompts_zeroshot import edtsum_prompt
+from superflue.code.prompts_zeroshot import edtsum_zeroshot_prompt
+from superflue.code.prompts_fewshot import edtsum_fewshot_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.code.tokens import tokens
 from superflue.config import LOG_DIR, LOG_LEVEL
@@ -56,6 +57,11 @@ def edtsum_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        edtsum_prompt = edtsum_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        edtsum_prompt = edtsum_zeroshot_prompt
 
     pbar = tqdm(sentence_batches, desc="Processing batches")
     for batch_idx, batch_content in enumerate(pbar):

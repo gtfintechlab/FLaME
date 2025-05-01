@@ -7,7 +7,8 @@ from datasets import load_dataset
 from litellm import completion 
 import litellm
 from typing import Dict, Any, List, Optional, Tuple
-from superflue.code.prompts_zeroshot import finred_prompt
+from superflue.code.prompts_zeroshot import finred_zeroshot_prompt
+from superflue.code.prompts_fewshot import finred_fewshot_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -57,6 +58,11 @@ def finred_inference(args):
     actual_labels = []
     complete_responses = []
     entities_list = []  # To store entity pairs
+
+    if args.prompt_format == "fewshot":
+        finred_prompt = finred_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        finred_prompt = finred_zeroshot_prompt
 
     test_data = dataset["test"]  # type: ignore
     all_inputs = [(data["sentence"], data["entities"]) for data in test_data]  # type: ignore

@@ -4,7 +4,8 @@ import nltk
 import pandas as pd
 from datasets import load_dataset
 from litellm import batch_completion
-from superflue.code.prompts_zeroshot import finentity_prompt
+from superflue.code.prompts_zeroshot import finentity_zeroshot_prompt
+from superflue.code.prompts_fewshot import finentity_fewshot_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -32,6 +33,11 @@ def finentity_inference(args):
 
     llm_responses = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        finentity_prompt = finentity_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        finentity_prompt = finentity_zeroshot_prompt
 
     batch_size = args.batch_size
     total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)

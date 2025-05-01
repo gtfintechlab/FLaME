@@ -6,6 +6,7 @@ import pandas as pd
 from datasets import load_dataset
 from datetime import date
 from superflue.code.prompts_zeroshot import tatqa_prompt
+from superflue.code.prompts_fewshot import tatqa_fewshot_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL

@@ -15,7 +15,8 @@ from datasets import load_dataset
 import litellm
 from pathlib import Path
 
-from superflue.code.prompts_zeroshot import fomc_prompt
+from superflue.code.prompts_zeroshot import fomc_zeroshot_prompt
+from superflue.code.prompts_fewshot import fomc_fewshot_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
@@ -145,6 +146,11 @@ def fomc_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        fomc_prompt = fomc_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        fomc_prompt = fomc_zeroshot_prompt
     
     # Get all sentences and labels
     all_sentences = [item["sentence"] for item in test_data] # type: ignore

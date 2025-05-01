@@ -5,7 +5,8 @@ import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
 
-from superflue.code.prompts_zeroshot import finbench_prompt
+from superflue.code.prompts_zeroshot import finbench_zeroshot_prompt
+from superflue.code.prompts_fewshot import finbench_fewshot_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -70,6 +71,11 @@ def finbench_inference(args):
 
     logger.info("Starting inference on dataset...")
     # start_t = time.time()
+
+    if args.prompt_format == "fewshot":
+        finbench_prompt = finbench_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        finbench_prompt = finbench_zeroshot_prompt
 
     pbar = tqdm(sentence_batches, desc="Processing batches")
     for batch_idx, sentence_batch in enumerate(pbar):
