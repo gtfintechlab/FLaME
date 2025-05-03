@@ -9,12 +9,12 @@ packages = find_packages(where="src")
 print("Found packages:", packages)
 
 setup(
-    name="superflue",  # Replace with your actual project name
+    name="flame",  # Replace with your actual project name
     version="0.1.0",
-    description="SuperFLUE",
+    description="FLaME",
     author="Glenn Matlin",
     author_email="gmatlin3@gatech.edu",
-    url="https://github.com/gtfintechlab/superflue",  # Replace with your project's URL
+    url="https://github.com/gtfintechlab/flame",  # Replace with your project's URL
     packages=packages,
     package_dir={"": "src"},
     include_package_data=True,
@@ -26,7 +26,7 @@ setup(
     python_requires=">=3.8",
     # entry_points={
     #     'console_scripts': [
-    #         'superflue=superflue.together_code.inference:main',
+    #         'flame=flame.together_code.inference:main',
     #     ],
     # },
 )
