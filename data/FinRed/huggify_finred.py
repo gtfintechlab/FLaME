@@ -2,7 +2,7 @@ import os
 from huggingface_hub import login
 from datasets import Dataset, DatasetDict
 import logging
-from superflue.config import DATA_DIR, LOG_LEVEL
+from flame.config import DATA_DIR, LOG_LEVEL
 
 HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 HF_ORGANIZATION = "gtfintechlab"

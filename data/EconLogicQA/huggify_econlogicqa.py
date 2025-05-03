@@ -3,7 +3,7 @@ import argparse
 
 from datasets import DatasetDict, load_dataset
 from dotenv import dotenv_values
-from superflue.config import DATA_DIR, LOG_LEVEL
+from flame.config import DATA_DIR, LOG_LEVEL
 from huggingface_hub import login
 
 HF_ORGANIZATION = "gtfintechlab"
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def huggify_econlogicqa(push_to_hub=False):
     """
     Process EconLogicQA dataset and optionally push to HuggingFace Hub.
-    
+
     Args:
         push_to_hub (bool): Whether to push the dataset to HuggingFace Hub
     """
@@ -25,9 +25,9 @@ def huggify_econlogicqa(push_to_hub=False):
     token = config.get("HUGGINGFACEHUB_API_TOKEN")
     if not token:
         raise ValueError("HUGGINGFACEHUB_API_TOKEN not found in .env file")
-    
+
     login(token)
-    
+
     try:
         directory_path = DATA_DIR / "EconLogicQA"
         logger.debug(f"Directory path: {directory_path}")
@@ -40,11 +40,7 @@ def huggify_econlogicqa(push_to_hub=False):
         hf_dataset = DatasetDict()
 
         # Process each split
-        splits = {
-            "train": "train",
-            "validation": "val",
-            "test": "test"
-        }
+        splits = {"train": "train", "validation": "val", "test": "test"}
 
         for target_split, source_split in splits.items():
             if source_split in dataset:
@@ -55,7 +51,9 @@ def huggify_econlogicqa(push_to_hub=False):
 
         # Push to HF Hub
         if push_to_hub:
-            logger.info(f"Pushing dataset to HuggingFace Hub at {HF_ORGANIZATION}/{DATASET}")
+            logger.info(
+                f"Pushing dataset to HuggingFace Hub at {HF_ORGANIZATION}/{DATASET}"
+            )
             hf_dataset.push_to_hub(
                 f"{HF_ORGANIZATION}/{DATASET}",
                 config_name="main",
@@ -72,8 +70,10 @@ def huggify_econlogicqa(push_to_hub=False):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Process EconLogicQA dataset')
-    parser.add_argument('--push-to-hub', action='store_true', help='Push dataset to HuggingFace Hub')
+    parser = argparse.ArgumentParser(description="Process EconLogicQA dataset")
+    parser.add_argument(
+        "--push-to-hub", action="store_true", help="Push dataset to HuggingFace Hub"
+    )
     args = parser.parse_args()
-    
+
     huggify_econlogicqa(push_to_hub=args.push_to_hub)

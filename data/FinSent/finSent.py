@@ -2,7 +2,7 @@ import os
 from huggingface_hub import login
 from datasets import DatasetDict
 import logging
-from superflue.config import DATA_DIR, LOG_LEVEL
+from flame.config import DATA_DIR, LOG_LEVEL
 
 os.environ["HF_HOME"] = ""
 HUGGINGFACEHUB_API_TOKEN = ""
