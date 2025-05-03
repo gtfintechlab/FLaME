@@ -1,9 +1,7 @@
 import time
-from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from litellm import batch_completion 
-from superflue.code.prompts_oldsuperflue import subjectiveqa_prompt
+from superflue.code.inference_prompts import subjectiveqa_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -14,9 +12,7 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 import traceback
-import litellm
-litellm.drop_params = True
-# litellm.set_verbose = True
+
 def subjectiveqa_inference(args):
     definition_map = {
         "RELEVANT": "The speaker has answered the question entirely and appropriately.",
@@ -26,11 +22,10 @@ def subjectiveqa_inference(args):
         "CLEAR": "The speaker is transparent in the answer and about the message to be conveyed.",
         "OPTIMISTIC": "The speaker answers with a positive tone regarding outcomes.",
     }
- 
-    today = date.today()
-    logger.info(f"Starting SubjectiveQA inference on {today}")
+    
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting inference for {task} using model {args.model}.")
     try:
-        # Dataset Loading
         dataset = load_dataset("gtfintechlab/subjectiveqa", "5768", split="test", trust_remote_code=True)
     except Exception as e:
         logger.error(f"Dataset loading failed: {e}")
@@ -66,7 +61,7 @@ def subjectiveqa_inference(args):
                     {"role": "system", "content": "You are an expert sentence classifier."},
                     {"role": "user", "content": subjectiveqa_prompt(feature, definition_map[feature], q, a)},
                 ])
-                time.sleep(random.uniform(0.5, 1.5))  # Add a short randomized delay between features
+                time.sleep(random.uniform(0.5, 1.5))
         try:
             batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
         except Exception as e:

@@ -1,29 +1,20 @@
-import time
-from datetime import date
-import nltk
 import pandas as pd
 from datasets import load_dataset
-from litellm import batch_completion
-from superflue.code.prompts_oldsuperflue import finentity_prompt
+from superflue.code.inference_prompts import finentity_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
-
-nltk.download("punkt")
+from tqdm import tqdm
 
 logger = setup_logger(
     name="finentity_inference",
     log_file=LOG_DIR / "finentity_inference.log",
     level=LOG_LEVEL,
 )
-import litellm
-litellm.drop_params = True
 
 def finentity_inference(args):
-    today = date.today()
-    logger.info(f"Starting FinEntity inference on {today}")
-
-    logger.info("Loading dataset...")
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting inference for {task} using model {args.model}.")
     dataset = load_dataset("gtfintechlab/finentity", "5768", trust_remote_code=True)
 
     # Extract sentences and actual labels
@@ -36,37 +27,39 @@ def finentity_inference(args):
     batch_size = args.batch_size
     total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)
     logger.info(f"Processing {len(sentences)} sentences in {total_batches} batches.")
-
-    # Create batches
+    
     sentence_batches = chunk_list(sentences, batch_size)
-    label_batches = chunk_list(actual_labels, batch_size)
 
-    for batch_idx, sentence_batch in enumerate(sentence_batches):
-        # Create prompt messages for the batch
+    pbar = tqdm(sentence_batches, desc="Processing batches")
+    for batch_idx, batch in enumerate(pbar):
         messages_batch = [
             [{"role": "user", "content": finentity_prompt(sentence)}]
-            for sentence in sentence_batch
+            for sentence in batch
         ]
 
         try:
-            # Process the batch
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
-
-            for response in batch_responses:
-                try:
-                    response_label = response.choices[0].message.content.strip()  # type: ignore
-                    llm_responses.append(response_label)
-                    complete_responses.append(response)
-                except (KeyError, IndexError, AttributeError) as e:
-                    logger.error(f"Error extracting response: {e}")
-                    llm_responses.append("error")
-                    complete_responses.append(None)
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
 
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {e}")
-            llm_responses.extend(["error"] * len(sentence_batch))
-            complete_responses.extend([None] * len(sentence_batch))
+            for _ in batch:
+                llm_responses.append("Error")
+                complete_responses.append(None)
             continue
+
+        for response in batch_responses:
+            complete_responses.append(response)
+            try:
+                response_label = response.choices[0].message.content.strip()  # type: ignore
+                llm_responses.append(response_label)
+            except (KeyError, IndexError, AttributeError) as e:
+                logger.error(f"Error extracting response: {e}")
+                llm_responses.append("Error")
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
     # Create the final DataFrame
     df = pd.DataFrame(
@@ -78,14 +71,7 @@ def finentity_inference(args):
         }
     )
 
-    # Save results to a CSV file
-    results_path = (
-        RESULTS_DIR
-        / "finentity"
-        / f"finentity_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
+    success_rate = df["llm_responses"].notnull().sum() / len(df) * 100
+    logger.info(f"Success rate: {success_rate}")
 
     return df

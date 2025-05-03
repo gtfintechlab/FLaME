@@ -1,90 +1,64 @@
-import time
-from datetime import date
 import pandas as pd
 from datasets import load_dataset
-
-from litellm import completion 
-from superflue.code.prompts_oldsuperflue import ectsum_prompt
-# from superflue.code.tokens import tokens
+from superflue.code.inference_prompts import ectsum_prompt
 from superflue.utils.logging_utils import setup_logger
+from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from tqdm import tqdm
 
 # Setup logger for ectsum inference
 logger = setup_logger(
     name="ectsum_inference", log_file=LOG_DIR / "ectsum_inference.log", level=LOG_LEVEL
 )
-import litellm
-litellm.drop_params = True
 
 def ectsum_inference(args):
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting inference for {task} using model {args.model}.")
 
-    today = date.today()
-    logger.info(f"Starting ECTSum inference on {today}")
-
-    # Load the ECTSum dataset (test split)
-    logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/ECTSum", trust_remote_code=True)
-    
-    results_path = (
-            RESULTS_DIR
-            / "ectsum"
-            / f"ectsum_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-        )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Initialize lists to store documents, actual labels, model responses, and complete responses
-    documents = []
+    documents = [row["context"] for row in dataset["test"]]  # type: ignore
+    actual_labels = [row["response"] for row in dataset["test"]]  # type: ignore
     llm_responses = []
-    actual_labels = []
     complete_responses = []
+    
+    total_batches = len(documents) // args.batch_size + int(len(documents) % args.batch_size > 0)
 
-    logger.info(f"Starting inference on ECTSum with model {args.model}...")
+    logger.info(f"Processing {len(documents)} documents in {total_batches} batches.")
 
-    # Iterate through the test split of the dataset
-    for i in range(len(dataset["test"])):  # type: ignore
-        document = dataset["test"][i]["context"]  # Extract document (context) # type: ignore
-        actual_label = dataset["test"][i]["response"]  # Extract the actual label (response) # type: ignore
-        # documents.append(document)
-        # actual_labels.append(actual_label)
-        
+    document_batches = chunk_list(documents, args.batch_size)
+    
+    pbar = tqdm(document_batches, desc="Processing batches")
+    for batch_idx, batch in enumerate(pbar):
+        # Prepare messages for batch processing
+        messages_batch = [
+            [{"role": "user", "content": ectsum_prompt(doc)}] for doc in batch
+        ]
+
         try:
-            logger.info(f"Processing document {i+1}/{len(dataset['test'])}")  # type: ignore
-            # Generate the model's response using Together API
-            model_response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": ectsum_prompt(document)}],
-                # tokens=args.max_tokens,
-                temperature=args.temperature,
-                # top_k=args.top_k,
-                # top_p=args.top_p,
-                # repetition_penalty=args.repetition_penalty,
-                # stop=tokens(args.model),
+            # Use batch processing with retry mechanism
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
             )
-            
-            # Append the model response and complete response for the document
-            # complete_responses.append(model_response)
-            response_text = model_response.choices[0].message.content.strip()  # type: ignore
-            # llm_responses.append(response_text)
-
-            logger.info(f"Model response for document {i+1}: {response_text}")
-
         except Exception as e:
-            # Log the error and retry the same document after a delay
-            logger.error(f"Error processing document {i+1}: {e}")
-            # documents.append(document if 'document' in locals() else None)
-            # actual_labels.append(actual_label if 'actual_label' in locals() else None)
-            # complete_responses.append("Error")
-            # llm_responses.append("Error")
-            response_text = "Error"
-            model_response = "Error"
+            logger.error(f"Batch {batch_idx + 1} failed: {e}")
+            for _ in batch:
+                llm_responses.append("Error")
+                complete_responses.append(None)
+            continue
+
+        for response in batch_responses:
+            complete_responses.append(response)
+            try:
+                response_text = response.choices[0].message.content.strip()  # type: ignore
+                llm_responses.append(response_text)
+            except (KeyError, IndexError, AttributeError) as e:
+                logger.error(f"Error extracting response: {e}")
+                llm_responses.append("Error")
         
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
         
-        documents.append(document)
-        actual_labels.append(actual_label)
-        llm_responses.append(response_text)
-        complete_responses.append(model_response)
-        
-    # Create the final DataFrame after the loop
     df = pd.DataFrame(
         {
             "documents": documents,
@@ -94,6 +68,7 @@ def ectsum_inference(args):
         }
     )
 
-    logger.info(f"Inference completed. Returning DataFrame with {len(df)} rows.")
+    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

@@ -1,15 +1,10 @@
-import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from litellm import completion 
-
-from superflue.code.prompts_oldsuperflue import headlines_prompt
-from superflue.code.tokens import tokens
+from superflue.code.inference_prompts import headlines_prompt
+from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
 from superflue.utils.logging_utils import setup_logger
 from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-import litellm
-from typing import Dict, Any, List, Optional, Tuple
 from tqdm import tqdm
 
 # Setup logger for Headlines inference
@@ -19,44 +14,13 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            # top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            # repetition_penalty=args.repetition_penalty,
-            num_retries=3  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-            
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
-
 def headlines_inference(args):
-    today = date.today()
-    logger.info(f"Starting Headlines inference on {today}")
-
-    # Load the Headlines dataset (test split with specific config)
-    logger.info("Loading dataset...")
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting inference for {task} using model {args.model}.")
     dataset = load_dataset("gtfintechlab/Headlines", '5768', trust_remote_code=True)
 
-    # Initialize lists to store news, model responses, labels, and actual labels
-    news = []
     llm_responses = []
     complete_responses = []
-    actual_labels = []  # List to store actual labels
 
     test_data = dataset["test"]  # type: ignore
     all_sentences = [data["News"] for data in test_data]  # type: ignore
@@ -72,35 +36,35 @@ def headlines_inference(args):
             for sentence in batch_content
         ]
         try:
-            batch_responses = process_batch_with_retry(args, messages_batch, batch_idx, total_batches)
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
+            )
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in batch_content:
-                news.append(None)
                 llm_responses.append(None)
-                actual_labels.append(None)
                 complete_responses.append(None)
+            continue
 
-        for (sentence, response) in zip(batch_content, batch_responses):
-            news.append(sentence)
+        for response in batch_responses:
             try:
                 response_text = response.choices[0].message.content.strip()  # type: ignore
             except Exception as e:
                 logger.error(f"Error processing sentence: {e}")
                 response_text = None
             llm_responses.append(response_text)
-            actual_labels.append(all_actual_labels[len(llm_responses) - 1])
             complete_responses.append(response)
 
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+        logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
     # Create the final DataFrame after the loop
     df = pd.DataFrame(
         {
-            "news": news,
+            "news": all_sentences,
             "llm_responses": llm_responses,
             "complete_responses": complete_responses,
-            "actual_labels": actual_labels
+            "actual_labels": all_actual_labels
         }
     )
 

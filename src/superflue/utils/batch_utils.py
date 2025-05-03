@@ -45,9 +45,10 @@ def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
             temperature=args.temperature,
             max_tokens=args.max_tokens,
             # top_k=args.top_k,
-            # top_p=args.top_p,
+            top_p=args.top_p,
             # repetition_penalty=args.repetition_penalty,
             num_retries=3,
+            drop_params=True
             # stop=tokens(args.model),
         )
         logger.info(f"Completed batch {batch_idx + 1}/{total_batches}")
