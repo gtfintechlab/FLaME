@@ -4,6 +4,7 @@ from datetime import date
 # from flame.code.fpb.fpb_inference import fpb_inference
 from flame.code.numclaim.numclaim_inference import numclaim_inference
 from flame.code.fnxl.fnxl_inference import fnxl_inference
+from flame.code.fomc.fomc_inference import fomc_inference
 
 # from flame.code.fomc.fomc_inference import fomc_inference
 # from flame.code.finbench.finbench_inference import finbench_inference
@@ -56,7 +57,7 @@ def main(args):
     task_inference_map = {
         "numclaim": numclaim_inference,
         # "fpb": fpb_inference,
-        # "fomc": fomc_inference,
+        "fomc": fomc_inference,
         # "finbench": finbench_inference,
         # "finqa": finqa_inference,
         "finer": finer_inference,
