@@ -2,9 +2,9 @@ from huggingface_hub import hf_hub_upload
 import pandas as pd
 from datasets import Dataset
 import logging
-from superflue.utils.process_qa import process_qa_pairs
-from superflue.utils.zip_to_csv import zip_to_csv
-from superflue.config import DATA_DIR, LOG_LEVEL
+from flame.utils.process_qa import process_qa_pairs
+from flame.utils.zip_to_csv import zip_to_csv
+from flame.config import DATA_DIR, LOG_LEVEL
 
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "finqa"

@@ -3,7 +3,7 @@ import argparse
 
 from datasets import DatasetDict, load_dataset
 from dotenv import dotenv_values
-from superflue.config import DATA_DIR, LOG_LEVEL
+from flame.config import DATA_DIR, LOG_LEVEL
 from huggingface_hub import login
 
 HF_ORGANIZATION = "gtfintechlab"
