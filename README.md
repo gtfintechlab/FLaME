@@ -1,4 +1,4 @@
-# SuperFLUE (Financial Language Understanding Evaluation)
+# FLaME (Financial Language Understanding Evaluation)
 Corresponding Authors: `glennmatlin[at]gatech[dot]edu` `huzaifa[at]gatech[dot]edu`
 ***ASSUME ALL THE TESTS ARE OBSOLETE DONT WORRY ABOUT THEM RIGHT NOW***
 
@@ -28,13 +28,13 @@ To create the virtual environment in the project root and install the required p
     pip install -r requirements.txt
     ```
 
-### Installing SuperFLUE
+### Installing FLaME
 
-From the root directory you can run `pip install -e .` -- this uses `setup.py` to install SuperFLUE to your activate Python environment.
+From the root directory you can run `pip install -e .` -- this uses `setup.py` to install FLaME to your activate Python environment.
 
-You can re-install superflue if something goes wrong:
+You can re-install flame if something goes wrong:
 ```bash
-pip uninstall superflue
+pip uninstall flame
 pip install -e .
 ```
 
@@ -46,11 +46,11 @@ find . -name '*.pyc' -delete
 find . -name '__pycache__' -delete
 ```
 
-Test the installation of SuperFLUE worked:
+Test the installation of FLaME worked:
 ```bash
 python
->>> import superflue
->>> print(superflue.__file__)
+>>> import flame
+>>> print(flame.__file__)
 ```
 
 ### API keys

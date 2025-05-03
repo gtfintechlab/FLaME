@@ -1,4 +1,4 @@
-"""Prompts for all Superflue tasks."""
+"""Prompts for all FLaME tasks."""
 
 
 def fiqa_task1_prompt(sentence: str) -> str:

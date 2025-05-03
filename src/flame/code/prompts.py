@@ -1,4 +1,4 @@
-"""Prompts for all Superflue tasks, merged and updated."""
+"""Prompts for all FLaME tasks, merged and updated."""
 
 
 # Original Functions from Code File 1

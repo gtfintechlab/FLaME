@@ -1,6 +1,6 @@
 from litellm import batch_completion
 
-# from superflue.code.tokens import tokens
+# from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
 from flame.config import LOG_LEVEL, LOG_DIR
 

@@ -1,4 +1,4 @@
-# TODO: (Glenn) superflue.utils.label_utils is one function, it doesnt need to exist
+# TODO: (Glenn) flame.utils.label_utils is one function, it doesnt need to exist
 def encode(label_word):
     if label_word == "positive":
         return 0

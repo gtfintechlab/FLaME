@@ -77,7 +77,7 @@ def fpb_inference(args):
             [
                 {
                     "role": "user",
-                    "content": fpb_prompt(sentence, prompt_format="superflue"),
+                    "content": fpb_prompt(sentence, prompt_format="flame"),
                 }
             ]
             for sentence in batch_content

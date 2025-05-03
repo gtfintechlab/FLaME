@@ -14,9 +14,9 @@ from flame.code.finqa.finqa_evaluate import finqa_evaluate
 from flame.code.tatqa.tatqa_evaluate import tatqa_evaluate
 from pathlib import Path
 
-# from superflue.code.mmlu.mmlu_evaluate import mmlu_evaluate
-# from superflue.code.bizbench.bizbench_evaluate import bizbench_evaluate
-# from superflue.code.econlogicqa.econlogicqa_evaluate import econlogicqa_evaluate
+# from flame.code.mmlu.mmlu_evaluate import mmlu_evaluate
+# from flame.code.bizbench.bizbench_evaluate import bizbench_evaluate
+# from flame.code.econlogicqa.econlogicqa_evaluate import econlogicqa_evaluate
 from flame.code.causal_detection.casual_detection_evaluate_llm import (
     causal_detection_evaluate,
 )

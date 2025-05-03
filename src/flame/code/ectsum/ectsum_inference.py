@@ -7,7 +7,7 @@ from litellm import completion
 from flame.code.prompts_zeroshot import ectsum_zeroshot_prompt
 from flame.code.prompts_fewshot import ectsum_fewshot_prompt
 
-# from superflue.code.tokens import tokens
+# from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
 from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 

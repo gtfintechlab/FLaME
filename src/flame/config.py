@@ -1,11 +1,11 @@
-"""Configuration settings for the Superflue project."""
+"""Configuration settings for the FLaME project."""
 
 import logging
 from pathlib import Path
 
 # Base directories
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-PACKAGE_DIR = ROOT_DIR / "src" / "superflue"
+PACKAGE_DIR = ROOT_DIR / "src" / "flame"
 DATA_DIR = ROOT_DIR / "data"
 
 # Output directories

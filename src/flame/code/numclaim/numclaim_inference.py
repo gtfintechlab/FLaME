@@ -6,7 +6,7 @@ from datasets import load_dataset
 
 from flame.code.prompts import numclaim_prompt
 
-# from superflue.code.tokens import tokens
+# from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
 from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry

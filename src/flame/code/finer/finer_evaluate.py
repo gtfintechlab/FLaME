@@ -5,7 +5,7 @@ import re
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 
-# from superflue.code.tokens import tokens
+# from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
 from flame.config import LOG_DIR, LOG_LEVEL
 

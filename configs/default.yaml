@@ -19,4 +19,4 @@ seeds: [42, 123, 456]
 splits: [5768, 78516, 944601]
 
 # Other parameters
-prompt_format: "superflue"
+prompt_format: "flame"

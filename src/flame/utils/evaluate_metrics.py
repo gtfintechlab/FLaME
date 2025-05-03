@@ -1,4 +1,4 @@
-"""Evaluation metrics utilities for Superflue project."""
+"""Evaluation metrics utilities for FLaME project."""
 
 # TODO: (Glenn) Evaluate code will need to be moved into its own folder not utils.
 # pip install bert_score

@@ -8,9 +8,7 @@ from flame.config import (
 )
 from flame.utils.logging_utils import setup_logger
 
-logger = setup_logger(
-    name=__name__, log_file=LOG_DIR / "superflue.log", level=LOG_LEVEL
-)
+logger = setup_logger(name=__name__, log_file=LOG_DIR / "flame.log", level=LOG_LEVEL)
 
 
 logger.debug(f"ROOT_DIR = {ROOT_DIR}")

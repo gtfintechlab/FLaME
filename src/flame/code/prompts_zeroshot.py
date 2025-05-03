@@ -101,7 +101,7 @@ def fpb_zeroshot_prompt(sentence: str, prompt_format: str):
 
     return prompt
 
-    if prompt_format == "superflue":
+    if prompt_format == "flame":
         system_prompt = """ Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier"""
 
         user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
@@ -122,7 +122,7 @@ def fpb_zeroshot_prompt(sentence: str, prompt_format: str):
                         Provide your answer as either NEGATIVE, POSITIVE or NEUTRAL.
                         This is the sentence: {sentence}"""
 
-    elif prompt_format == "superflue_icl":
+    elif prompt_format == "flame_icl":
         system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier """
         user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
                         class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
@@ -137,7 +137,7 @@ def fpb_zeroshot_prompt(sentence: str, prompt_format: str):
                         "The low capacity utilisation rate in steel production considerably increases the fixed costs per unit of steel produced" would be classified as 'NEGATIVE'.
                         This is the sentence: {sentence}"""
 
-    elif prompt_format == "superflue_cot":  # TODO modify this prompt text
+    elif prompt_format == "flame_cot":  # TODO modify this prompt text
         system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier """
         user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
                         class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is

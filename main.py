@@ -8,7 +8,7 @@ from flame.code.evaluate import main as evaluate
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="SuperFLUE")
+    parser = argparse.ArgumentParser(description="FLaME")
     parser.add_argument("--config", type=str, help="Path to the YAML config file.")
     parser.add_argument("--dataset", type=str, help="Name of the dataset to use.")
     parser.add_argument(
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         "repetition_penalty": 1.0,
         "max_tokens": 128,
         "batch_size": 10,
-        "prompt_format": "superflue",
+        "prompt_format": "flame",
     }
 
     args2 = parse_arguments()

@@ -1,4 +1,4 @@
-# TODO: (Glenn) I do not think we are using this file in SuperFLUE so it can be deleted/moved -- please double check before deleting!!
+# TODO: (Glenn) I do not think we are using this file in FLaME so it can be deleted/moved -- please double check before deleting!!
 import os
 
 import numpy as np
