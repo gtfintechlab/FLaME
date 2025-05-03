@@ -23,7 +23,6 @@ def fnxl_inference(args):
     today = date.today()
     logger.info(f"Starting FNXL inference (extraction+classification) on {today}")
 
-    # 1) Load the FNXL dataset (test split)
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/fnxl", trust_remote_code=True)
     test_data = dataset["test"]  # type: ignore
@@ -32,6 +31,8 @@ def fnxl_inference(args):
     companies = []
     doc_types = []
     actual_labels = []
+    llm_responses = []
+    complete_responses = []
 
     if args.prompt_format == "fewshot":
         fnxl_prompt = fnxl_fewshot_prompt
@@ -44,13 +45,13 @@ def fnxl_inference(args):
         company = row["company"]  # type: ignore
         doc_type = row["docType"]  # type: ignore
 
-        # Ground truth: parse "numerals-tags" into a dict, e.g.:
-        #   "{'us-gaap:SomeTag': ['7.2', '9.0']}" => {"us-gaap:SomeTag": ["7.2", "9.0"]}
-        # We'll store the string version in the DF for now, or parse fully for later.
         try:
             numerals_tags_str = row["numerals-tags"]  # type: ignore
             numerals_tags_dict = json.loads(numerals_tags_str.replace("'", '"'))
-        except Exception:
+        except json.JSONDecodeError as e:
+            logger.warning(
+                f"Failed to parse numerals-tags JSON string: {numerals_tags_str}. Error: {e}"
+            )
             numerals_tags_dict = {}
 
         sentences.append(sentence)
@@ -58,7 +59,6 @@ def fnxl_inference(args):
         doc_types.append(doc_type)
         actual_labels.append(numerals_tags_dict)
 
-    # 3) Prepare for LLM calls in batches
     batch_size = args.batch_size  # or 10, or whatever you like
     total_samples = len(sentences)
     total_batches = (total_samples // batch_size) + int(total_samples % batch_size > 0)
@@ -67,7 +67,6 @@ def fnxl_inference(args):
     company_batches = chunk_list(companies, batch_size)
     doc_batches = chunk_list(doc_types, batch_size)
 
-    # We'll store results in parallel lists
     batched_llm_responses = []
     batched_complete_responses = []
 
@@ -78,23 +77,19 @@ def fnxl_inference(args):
         messages_batch = []
         for snt, cpy, dtyp in zip(sent_batch, comp_batch, doc_batch):
             user_content = fnxl_prompt(snt, cpy, dtyp)
-            # Each request to the LLM is a list of role-content dicts
             messages_batch.append([{"role": "user", "content": user_content}])
 
-        # 5) Call the LLM
         try:
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches
             )
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {e}")
-            # Put placeholders
             for _ in messages_batch:
                 batched_llm_responses.append("error")
                 batched_complete_responses.append(None)
             continue
 
-        # 6) Parse out the text
         for response in batch_responses:
             try:
                 llm_text = response.choices[0].message.content.strip()  # type: ignore
@@ -105,7 +100,6 @@ def fnxl_inference(args):
                 batched_llm_responses.append("error")
                 batched_complete_responses.append(None)
 
-    # 7) Combine all results into a DataFrame
     df = pd.DataFrame(
         {
             "sentence": sentences,
@@ -117,7 +111,6 @@ def fnxl_inference(args):
         }
     )
 
-    # 8) Save
     results_path = (
         RESULTS_DIR
         / "fnxl"

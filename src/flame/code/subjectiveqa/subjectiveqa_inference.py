@@ -1,5 +1,4 @@
 import time
-from datetime import date
 import pandas as pd
 from datasets import load_dataset
 from flame.code.prompts_zeroshot import subjectiveqa_zeroshot_prompt
@@ -10,6 +9,8 @@ from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 import random
 import traceback
 import litellm
+
+from datetime import date
 
 logger = setup_logger(
     name="subjectiveqa_inference",
@@ -31,10 +32,9 @@ def subjectiveqa_inference(args):
         "OPTIMISTIC": "The speaker answers with a positive tone regarding outcomes.",
     }
 
-    today = date.today()
-    logger.info(f"Starting SubjectiveQA inference on {today}")
+    task = args.dataset.strip('“”"')
+    logger.info(f"Starting inference for {task} using model {args.model}.")
     try:
-        # Dataset Loading
         dataset = load_dataset(
             "gtfintechlab/subjectiveqa", "5768", split="test", trust_remote_code=True
         )
@@ -139,6 +139,7 @@ def subjectiveqa_inference(args):
         logger.error(traceback.format_exc())
         return None
     try:
+        today = date.today()
         results_path = (
             RESULTS_DIR
             / "subjectiveqa"

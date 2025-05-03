@@ -9,7 +9,7 @@ print("Found packages:", packages)
 
 setup(
     name="flame",
-    version="0.2.0",
+    version="0.1.0",
     description="FLaME",
     author="Glenn Matlin",
     author_email="gmatlin3@gatech.edu",
