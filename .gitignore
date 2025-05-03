@@ -1,6 +1,8 @@
 src/superflue.bak
 
 .ruff_cache
+.vscode
+
 
 # Secrets
 .env
