@@ -14,17 +14,19 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+
 def sanitize_json_string(json_str):
     """Sanitize JSON strings by fixing common formatting issues."""
-    
+
     json_str = json_str.strip()
-    json_str = json_str.replace(", }", "}").replace(", ]", "]") 
-    json_str = json_str.replace("'", "\"") 
-    json_str = json_str.replace("\\\"", "\"")  
-    json_str = json_str.replace("“", "\"").replace("”", "\"") 
+    json_str = json_str.replace(", }", "}").replace(", ]", "]")
+    json_str = json_str.replace("'", '"')
+    json_str = json_str.replace('\\"', '"')
+    json_str = json_str.replace("“", '"').replace("”", '"')
     json_str = re.sub(r'(?<!\\)"(s)', "'s", json_str)
-    
+
     return json_str
+
 
 def parse_json_content(content):
     """Parse JSON content with error handling."""
@@ -38,17 +40,19 @@ def parse_json_content(content):
             logger.error(f"Failed content: {content}")
             return []
 
+
 def normalize_entities(entities):
     """Normalize entities for comparison."""
     return [
         {
             "value": entity["value"].strip().lower(),
             "tag": entity["tag"].strip().lower(),
-            "label": entity["label"].strip().lower()
+            "label": entity["label"].strip().lower(),
         }
         for entity in entities
         if "value" in entity and "tag" in entity and "label" in entity
     ]
+
 
 def evaluate_entities(pred_entities, true_entities):
     """Evaluate entity extraction by comparing predicted and true entities."""
@@ -59,12 +63,21 @@ def evaluate_entities(pred_entities, true_entities):
     unmatched_pred = len(normalized_pred) - matched
     unmatched_true = len(normalized_true) - matched
 
-    precision = matched / (matched + unmatched_pred) if (matched + unmatched_pred) > 0 else 0
-    recall = matched / (matched + unmatched_true) if (matched + unmatched_true) > 0 else 0
-    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+    precision = (
+        matched / (matched + unmatched_pred) if (matched + unmatched_pred) > 0 else 0
+    )
+    recall = (
+        matched / (matched + unmatched_true) if (matched + unmatched_true) > 0 else 0
+    )
+    f1 = (
+        2 * (precision * recall) / (precision + recall)
+        if (precision + recall) > 0
+        else 0
+    )
     accuracy = matched / len(normalized_true) if len(normalized_true) > 0 else 0
 
     return {"precision": precision, "recall": recall, "f1": f1, "accuracy": accuracy}
+
 
 def finentity_evaluate(file_name, args):
     """Evaluate FinEntity dataset with batching."""
@@ -128,15 +141,17 @@ def finentity_evaluate(file_name, args):
 
     # Aggregate metrics
     aggregated_metrics = pd.DataFrame(evaluation_results).mean()
-    metrics_df = pd.DataFrame({
-        "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
-        "Value": [
-            aggregated_metrics["precision"],
-            aggregated_metrics["recall"],
-            aggregated_metrics["f1"],
-            aggregated_metrics["accuracy"]
-        ]
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
+            "Value": [
+                aggregated_metrics["precision"],
+                aggregated_metrics["recall"],
+                aggregated_metrics["f1"],
+                aggregated_metrics["accuracy"],
+            ],
+        }
+    )
 
     success_rate = df["extracted_labels"].notnull().sum() / len(df) * 100
     logger.info(f"Success rate: {success_rate}")

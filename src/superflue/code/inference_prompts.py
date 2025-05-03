@@ -1,6 +1,5 @@
 def headlines_prompt(sentence: str):
-
-        prompt = f'''Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
                     Give a score of 0 for each of the following attributes if the news headline does not contain the following information or 1 if it does.
                     Price or Not: Does the news item talk about price or not.
                     Direction Up: Does the news headline talk about price going up or not?
@@ -10,9 +9,9 @@ def headlines_prompt(sentence: str):
                     Future Price: Does the news headline talk about an event in the future?
                     Past News: Does the news headline talk about a general event (apart from prices) in the past?
                     The news headline is:
-                    {sentence}'''
+                    {sentence}"""
 
-        return prompt
+    return prompt
 
 
 def fiqa_prompt(sentence: str):
@@ -27,7 +26,6 @@ def fiqa_task1_prompt(sentence: str):
                 Financial sentence:
                 {sentence}"""
     return prompt
-
 
 
 def fiqa_task2_prompt(question: str):
@@ -118,7 +116,6 @@ def finentity_prompt(sentence: str):
    The paragraph:
                 {sentence}"""
     return prompt
-
 
 
 def finbench_prompt(profile: str):
@@ -226,6 +223,7 @@ banking77_list = [
     "wrong_exchange_rate_for_cash_withdrawal",
 ]
 
+
 def banking77_prompt(sentence: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert at
                 fine-grained single-domain intent detection. From the following list: {banking77_list}, identify
@@ -261,13 +259,11 @@ def tatqa_prompt(document: str):
                 end of your response. 
                 
                 The context: {document}"""
-    
+
     return prompt
 
 
-
 def causal_classification_prompt(text: str):
-    
     prompt = f"""Discard all the previous instructions. Behave like you are an expert causal classification model.
     Below is a sentence. Classify it into one of the following categories: 
                     0 - Non-causal
@@ -275,21 +271,53 @@ def causal_classification_prompt(text: str):
                     2 - Indirect causal
                     Only return the label number without any additional text. \n\n {text}"""
 
-
     return prompt
 
-possible_relationships = ['product or material produced', 'manufacturer', 'distributed by', 'industry', 'position held', 'original broadcaster', 'owned by', 'founded by', 'distribution format', 'headquarters location', 'stock exchange', 'currency', 'parent organization', 'chief executive officer', 'director/manager', 'owner of', 'operator', 'member of', 'employer', 'chairperson', 'platform', 'subsidiary', 'legal form', 'publisher', 'developer', 'brand', 'business division', 'location of formation', 'creator']
+
+possible_relationships = [
+    "product or material produced",
+    "manufacturer",
+    "distributed by",
+    "industry",
+    "position held",
+    "original broadcaster",
+    "owned by",
+    "founded by",
+    "distribution format",
+    "headquarters location",
+    "stock exchange",
+    "currency",
+    "parent organization",
+    "chief executive officer",
+    "director/manager",
+    "owner of",
+    "operator",
+    "member of",
+    "employer",
+    "chairperson",
+    "platform",
+    "subsidiary",
+    "legal form",
+    "publisher",
+    "developer",
+    "brand",
+    "business division",
+    "location of formation",
+    "creator",
+]
+
 
 def finred_prompt(sentence: str, entity1: str, entity2: str):
     prompt = f"""Classify what relationship {entity2} (the head) has to {entity1} (the tail) within the following sentence:
     "{sentence}"
     
     The relationship should match one of the following categories, where the relationship is what the head entity is to the tail entity:
-    {', '.join(possible_relationships)}.
+    {", ".join(possible_relationships)}.
 
     You must output one, and only one, relationship out of the previous list that connects the head entity {entity2} to the tail entity {entity1}. Find what relationship best fits {entity2} 'RELATIONSHIP' {entity1} for this sentence.
     """
     return prompt
+
 
 def causal_detection_prompt(tokens: list):
     prompt = f"""You are an expert in detecting cause and effect phrases in text.
@@ -302,9 +330,10 @@ def causal_detection_prompt(tokens: list):
         
     Return only the list of labels in the same order as the tokens, without additional commentary or repeating the tokens themselves. 
 
-    Tokens: {', '.join(tokens)}"""
-    
+    Tokens: {", ".join(tokens)}"""
+
     return prompt
+
 
 def subjectiveqa_prompt(feature, definition, question, answer):
     system_prompt = """Discard all the previous instructions. Behave like you are an expert named entity
@@ -315,7 +344,7 @@ def subjectiveqa_prompt(feature, definition, question, answer):
               1: If there is no evident/neutral correlation between the question and the answer for the feature.\n
               0: If the answer negatively correlates to the question on the chosen feature.\n
               Provide the rating only. No explanations. This is the question: {question} and this is the answer: {answer}."""
-              
+
     prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
 
     return prompt
@@ -349,13 +378,15 @@ def fnxl_prompt(sentence, company, doc_type):
     "100.0": "other"
     }}```
     The sentnce is: {sentence}"""
-    
+
     return prompt
+
 
 def refind_prompt(entities):
     relations = "PERSON/TITLE - person subject, title object, relation title\nPERSON/GOV_AGY - person subject, government agency object, relation member_of\nPERSON/UNIV - person subject, university object, relation employee_of, member_of, attended\nPERSON/ORG - person subject, organization object, relation employee_of, member_of, founder_of\nORG/DATE - organization subject, date object, relation formed_on, acquired_on\nORG/MONEY - organization subject, money object, relation revenue_of, profit_of, loss_of, cost_of\nORG/GPE - organization subject, geopolitical entity object, relation headquartered_in, operations_in, formed_in\nORG/ORG - organization subject, organization object, relation shares_of, subsidiary_of, acquired_by, agreement_with"
     prompt = f"Classify the following relationship between ENT1 (the subject) and ENT2 (the object). The entities are marked by being enclosed in [ENT1] and [/EN1] and [ENT2] and [/ENT2] respectively. The subject entity will either be a person (PER) or an organization (ORG). The possible relationships are as follows, with the subject listed first and object listed second:\n{relations}\nText about entities: {entities}"
     return prompt
+
 
 def numclaim_prompt(sentence: str) -> str:
     """Prompt for sentence claim classification."""
@@ -367,10 +398,11 @@ def numclaim_prompt(sentence: str) -> str:
 
     return prompt
 
+
 prompt_map = {
     "numclaim_prompt": numclaim_prompt,
-    "fiqa_task1_prompt":fiqa_task1_prompt,
-    "fiqa_task2_prompt":fiqa_task2_prompt,
+    "fiqa_task1_prompt": fiqa_task1_prompt,
+    "fiqa_task2_prompt": fiqa_task2_prompt,
     "fomc_prompt": fomc_prompt,
     "finer_prompt": finer_prompt,
     "fpb_prompt": fpb_prompt,
@@ -383,8 +415,8 @@ prompt_map = {
     "tatqa_prompt": tatqa_prompt,
     "finred_prompt": finred_prompt,
     "causal_detection_prompt": causal_detection_prompt,
-    'finbench_prompt': finbench_prompt,
-    'refind_prompt': refind_prompt
+    "finbench_prompt": finbench_prompt,
+    "refind_prompt": refind_prompt,
 }
 
 

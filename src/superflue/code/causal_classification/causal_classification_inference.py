@@ -2,7 +2,7 @@ import pandas as pd
 from datasets import load_dataset
 from superflue.code.inference_prompts import causal_classification_prompt
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
+from superflue.config import LOG_LEVEL, LOG_DIR
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from tqdm import tqdm
 
@@ -11,6 +11,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "causal_classification_inference.log",
     level=LOG_LEVEL,
 )
+
 
 def causal_classification_inference(args):
     task = args.dataset.strip('“”"')
@@ -45,7 +46,7 @@ def causal_classification_inference(args):
             llm_responses.extend(["error"] * len(text_batch))
             complete_responses.extend([None] * len(text_batch))
             continue
-            
+
         for response in batch_responses:
             complete_responses.append(response)
             try:
@@ -67,7 +68,7 @@ def causal_classification_inference(args):
         }
     )
 
-    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

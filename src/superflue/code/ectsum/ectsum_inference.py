@@ -3,13 +3,14 @@ from datasets import load_dataset
 from superflue.code.inference_prompts import ectsum_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
 # Setup logger for ectsum inference
 logger = setup_logger(
     name="ectsum_inference", log_file=LOG_DIR / "ectsum_inference.log", level=LOG_LEVEL
 )
+
 
 def ectsum_inference(args):
     task = args.dataset.strip('“”"')
@@ -21,13 +22,15 @@ def ectsum_inference(args):
     actual_labels = [row["response"] for row in dataset["test"]]  # type: ignore
     llm_responses = []
     complete_responses = []
-    
-    total_batches = len(documents) // args.batch_size + int(len(documents) % args.batch_size > 0)
+
+    total_batches = len(documents) // args.batch_size + int(
+        len(documents) % args.batch_size > 0
+    )
 
     logger.info(f"Processing {len(documents)} documents in {total_batches} batches.")
 
     document_batches = chunk_list(documents, args.batch_size)
-    
+
     pbar = tqdm(document_batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
         # Prepare messages for batch processing
@@ -55,10 +58,10 @@ def ectsum_inference(args):
             except (KeyError, IndexError, AttributeError) as e:
                 logger.error(f"Error extracting response: {e}")
                 llm_responses.append("Error")
-        
+
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         logger.info(f"Processed responses for batch {batch_idx + 1}.")
-        
+
     df = pd.DataFrame(
         {
             "documents": documents,
@@ -68,7 +71,7 @@ def ectsum_inference(args):
         }
     )
 
-    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

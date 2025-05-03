@@ -2,7 +2,6 @@ import pandas as pd
 from datasets import load_dataset
 from superflue.code.inference_prompts import edtsum_prompt
 from superflue.utils.logging_utils import setup_logger
-from superflue.code.tokens import tokens
 from superflue.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -18,9 +17,9 @@ def edtsum_inference(args):
 
     dataset = load_dataset("gtfintechlab/EDTSum", trust_remote_code=True)
 
-    test_data = dataset["test"] # type: ignore
-    all_documents = [data["text"] for data in test_data] # type: ignore
-    all_actual_labels = [data["answer"] for data in test_data] # type: ignore
+    test_data = dataset["test"]  # type: ignore
+    all_documents = [data["text"] for data in test_data]  # type: ignore
+    all_actual_labels = [data["answer"] for data in test_data]  # type: ignore
 
     sentence_batches = chunk_list(all_documents, args.batch_size)
     total_batches = len(sentence_batches)
@@ -39,7 +38,7 @@ def edtsum_inference(args):
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches
             )
-        
+
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in range(len(batch_content)):
@@ -49,7 +48,7 @@ def edtsum_inference(args):
 
         for document, response in zip(batch_content, batch_responses):
             try:
-                response_label = response.choices[0].message.content # type: ignore
+                response_label = response.choices[0].message.content  # type: ignore
             except Exception as e:
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 response_label = None
@@ -68,7 +67,7 @@ def edtsum_inference(args):
         }
     )
 
-    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

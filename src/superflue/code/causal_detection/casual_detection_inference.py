@@ -2,13 +2,14 @@ import pandas as pd
 from datasets import load_dataset
 from superflue.code.inference_prompts import causal_detection_prompt
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from tqdm import tqdm
 
 logger = setup_logger(
     name="cd_inference", log_file=LOG_DIR / "cd_inference.log", level=LOG_LEVEL
 )
+
 
 def casual_detection_inference(args):
     task = args.dataset.strip('“”"')
@@ -47,10 +48,10 @@ def casual_detection_inference(args):
                 complete_responses.append(None)
                 llm_responses.append(None)
             continue
-        
+
         for token, response in zip(token_batch, batch_responses):
             complete_responses.append(response)
-            try: 
+            try:
                 response_tags = response.choices[0].message.content
             except Exception as e:
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
@@ -69,7 +70,7 @@ def casual_detection_inference(args):
         }
     )
 
-    success_rate = (df['predicted_tags'].notna().sum() / len(df)) * 100
+    success_rate = (df["predicted_tags"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

@@ -4,13 +4,14 @@ from tqdm import tqdm
 from superflue.code.inference_prompts import finbench_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 
 logger = setup_logger(
     name="finbench_inference",
     log_file=LOG_DIR / "finbench_inference.log",
     level=LOG_LEVEL,
 )
+
 
 def finbench_inference(args):
     task = args.dataset.strip('“”"')
@@ -21,9 +22,9 @@ def finbench_inference(args):
     llm_responses = []
     complete_responses = []
 
-    test_data = dataset["test"] # type: ignore
-    all_profiles = [data["X_profile"] for data in test_data] # type: ignore
-    all_actual_labels = [data["y"] for data in test_data] # type: ignore
+    test_data = dataset["test"]  # type: ignore
+    all_profiles = [data["X_profile"] for data in test_data]  # type: ignore
+    all_actual_labels = [data["y"] for data in test_data]  # type: ignore
 
     sentence_batches = chunk_list(all_profiles, args.batch_size)
     total_batches = len(sentence_batches)
@@ -44,12 +45,12 @@ def finbench_inference(args):
 
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-            
+
             for _ in sentence_batch:
                 complete_responses.append(None)
                 llm_responses.append(None)
             continue
-    
+
         # Process responses
         for response in batch_responses:
             complete_responses.append(response)
@@ -59,7 +60,7 @@ def finbench_inference(args):
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 response_label = None
             llm_responses.append(response_label)
-        
+
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
@@ -72,7 +73,7 @@ def finbench_inference(args):
         }
     )
 
-    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
-    
+
     return df

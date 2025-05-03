@@ -1,16 +1,16 @@
-from datetime import date
 import pandas as pd
 from datasets import load_dataset
 from superflue.code.inference_prompts import finred_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
 # Setup logger for FinRED inference
 logger = setup_logger(
     name="finred_inference", log_file=LOG_DIR / "finred_inference.log", level=LOG_LEVEL
 )
+
 
 def finred_inference(args):
     task = args.dataset.strip('“”"')
@@ -23,7 +23,9 @@ def finred_inference(args):
 
     test_data = dataset["test"]  # type: ignore
     all_inputs = [(data["sentence"], data["entities"]) for data in test_data]  # type: ignore
-    all_inputs = [(input[0], entity_pair) for input in all_inputs for entity_pair in input[1]]
+    all_inputs = [
+        (input[0], entity_pair) for input in all_inputs for entity_pair in input[1]
+    ]
     all_actual_labels = [data["relations"] for data in test_data]  # type: ignore
     all_actual_labels = [label for labels in all_actual_labels for label in labels]
 
@@ -36,7 +38,12 @@ def finred_inference(args):
     for batch_idx, batch in enumerate(pbar):
         # Prepare messages for batch
         messages_batch = [
-            [{"role": "user", "content": finred_prompt(input[0], input[1][0], input[1][1])}]
+            [
+                {
+                    "role": "user",
+                    "content": finred_prompt(input[0], input[1][0], input[1][1]),
+                }
+            ]
             for input in batch
         ]
 
@@ -78,7 +85,7 @@ def finred_inference(args):
         }
     )
 
-    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

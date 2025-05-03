@@ -2,7 +2,7 @@ import pandas as pd
 from datasets import load_dataset
 from superflue.code.inference_prompts import finentity_prompt
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from tqdm import tqdm
 
@@ -11,6 +11,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "finentity_inference.log",
     level=LOG_LEVEL,
 )
+
 
 def finentity_inference(args):
     task = args.dataset.strip('“”"')
@@ -27,7 +28,7 @@ def finentity_inference(args):
     batch_size = args.batch_size
     total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)
     logger.info(f"Processing {len(sentences)} sentences in {total_batches} batches.")
-    
+
     sentence_batches = chunk_list(sentences, batch_size)
 
     pbar = tqdm(sentence_batches, desc="Processing batches")

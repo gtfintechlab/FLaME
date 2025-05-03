@@ -2,7 +2,7 @@ import pandas as pd
 from evaluate import load
 import numpy as np
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 
 bertscore = load("bertscore")
 
@@ -11,6 +11,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "ectsum_evaluation.log",
     level=LOG_LEVEL,
 )
+
 
 def ectsum_evaluate(file_name, args):
     """Evaluate ECTSum summaries and return results and metrics DataFrames."""
@@ -25,9 +26,9 @@ def ectsum_evaluate(file_name, args):
 
     logger.info("Computing BERTScore metrics...")
     bert_scores = bertscore.compute(
-        predictions=llm_responses, 
-        references=correct_summaries, 
-        model_type="distilbert-base-uncased"
+        predictions=llm_responses,
+        references=correct_summaries,
+        model_type="distilbert-base-uncased",
     )
 
     df["precision"] = bert_scores["precision"]  # type: ignore
@@ -42,10 +43,11 @@ def ectsum_evaluate(file_name, args):
     logger.info(f"BERTScore Recall: {avg_recall:.4f}")
     logger.info(f"BERTScore F1: {avg_f1:.4f}")
 
-    metrics_df = pd.DataFrame({
-        "Metric": ["Precision", "Recall", "F1 Score"],
-        "Value": [avg_precision, avg_recall, avg_f1]
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Precision", "Recall", "F1 Score"],
+            "Value": [avg_precision, avg_recall, avg_f1],
+        }
+    )
 
     return df, metrics_df
-

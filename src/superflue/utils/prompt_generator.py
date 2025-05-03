@@ -1,12 +1,13 @@
 """Utility functions for generating prompts."""
 
+
 def generate_prompt(task: str, text: str) -> str:
     """Generate a prompt for a given task.
-    
+
     Args:
         task: The task name
         text: The input text
-        
+
     Returns:
         Formatted prompt string
     """

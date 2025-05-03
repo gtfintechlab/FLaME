@@ -3,10 +3,10 @@
 
 def fiqa_task1_prompt(sentence: str) -> str:
     """Generate prompt for FiQA Task 1 sentiment analysis.
-    
+
     Args:
         sentence: The sentence to analyze
-        
+
     Returns:
         Formatted prompt string
     """
@@ -20,10 +20,10 @@ def fiqa_task1_prompt(sentence: str) -> str:
 
 def fiqa_task2_prompt(question: str) -> str:
     """Generate prompt for FiQA Task 2 opinion QA.
-    
+
     Args:
         question: The financial question to answer
-        
+
     Returns:
         Formatted prompt string
     """
@@ -46,10 +46,10 @@ def fiqa_task2_prompt(question: str) -> str:
 
 def fomc_prompt(sentence: str) -> str:
     """Generate prompt for FOMC sentiment classification.
-    
+
     Args:
         sentence: The sentence to classify
-        
+
     Returns:
         Formatted prompt string
     """
@@ -63,11 +63,11 @@ Provide only one word as your answer: HAWKISH, DOVISH, or NEUTRAL."""
 
 def bizbench_prompt(question: str, context: str) -> str:
     """Generate prompt for BizBench QA task.
-    
+
     Args:
         question: The question to answer
         context: The SEC filing context
-        
+
     Returns:
         Formatted prompt string
     """
@@ -82,14 +82,14 @@ def bizbench_prompt(question: str, context: str) -> str:
 
 def econlogicqa_prompt(question: str, A: str, B: str, C: str, D: str) -> str:
     """Generate prompt for EconLogicQA task.
-    
+
     Args:
         question: The ordering question
         A: First event
         B: Second event
         C: Third event
         D: Fourth event
-        
+
     Returns:
         Formatted prompt string
     """

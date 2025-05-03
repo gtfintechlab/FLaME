@@ -5,16 +5,17 @@ import re
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 from superflue.code.extraction_prompts import finer_extraction_prompt
 from tqdm import tqdm
- 
+
 logger = setup_logger(
     name="finer_evaluation",
     log_file=LOG_DIR / "finer_evaluation.log",
     level=LOG_LEVEL,
 )
- 
+
+
 def clean_extracted_list(response: str) -> str:
     """Clean and format the extracted response into a valid JSON list."""
     cleaned_response = re.sub(r"[^\d,]", "", response)
@@ -22,6 +23,7 @@ def clean_extracted_list(response: str) -> str:
     if not (cleaned_response.startswith("[") and cleaned_response.endswith("]")):
         cleaned_response = f"[{cleaned_response}]"
     return cleaned_response
+
 
 def finer_evaluate(file_name, args):
     """
@@ -35,8 +37,10 @@ def finer_evaluate(file_name, args):
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    correct_labels = df["actual_labels"].apply(lambda x: json.loads(x) if pd.notna(x) else [])
-    
+    correct_labels = df["actual_labels"].apply(
+        lambda x: json.loads(x) if pd.notna(x) else []
+    )
+
     extracted_labels = []
 
     all_responses = df["llm_responses"].tolist()
@@ -69,15 +73,15 @@ def finer_evaluate(file_name, args):
                 extracted_tokens = json.loads(cleaned_response)
                 extracted_labels.append(extracted_tokens)
 
-            except:
-                logger.error(f"Error in response: {response}")
+            except json.JSONDecodeError as e:
+                logger.error(f"Error parsing JSON response: {llm_response}. Error: {e}")
                 extracted_labels.append([])
 
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
-    df['extracted_labels'] = extracted_labels
-        
+    df["extracted_labels"] = extracted_labels
+
     row_precisions = []
     row_recalls = []
     row_f1s = []
@@ -86,7 +90,9 @@ def finer_evaluate(file_name, args):
         y_true = correct_labels[i]
         y_pred = extracted_labels[i]
         if len(y_true) != len(y_pred):
-            logger.debug(f"Skipping row {i} because lengths differ (true={len(y_true)}, pred={len(y_pred)}).")
+            logger.debug(
+                f"Skipping row {i} because lengths differ (true={len(y_true)}, pred={len(y_pred)})."
+            )
             continue
 
         try:
@@ -112,10 +118,12 @@ def finer_evaluate(file_name, args):
     logger.info(f"Macro Recall: {macro_recall:.4f}")
     logger.info(f"Macro F1: {macro_f1:.4f}")
     logger.info(f"Macro Accuracy: {macro_accuracy:.4f}")
-    metrics_df = pd.DataFrame({
-        "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
-        "Value": [macro_precision, macro_recall, macro_f1, macro_accuracy]
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
+            "Value": [macro_precision, macro_recall, macro_f1, macro_accuracy],
+        }
+    )
 
     success_rate = df["extracted_labels"].notnull().sum() / len(df) * 100
     logger.info(f"Success rate: {success_rate}")

@@ -12,6 +12,7 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+
 def normalize_response(response):
     """Normalize the LLM response to extract the predicted label."""
     try:
@@ -29,6 +30,7 @@ def normalize_response(response):
     except Exception as e:
         logger.error(f"Error normalizing response: {e}")
         return None
+
 
 def causal_classification_evaluate(file_name, args):
     """Evaluate causal classification results with label extraction and comparison."""
@@ -49,7 +51,12 @@ def causal_classification_evaluate(file_name, args):
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": causal_classifciation_extraction_prompt(response)}]
+            [
+                {
+                    "role": "user",
+                    "content": causal_classifciation_extraction_prompt(response),
+                }
+            ]
             for response in batch
         ]
         logger.info(f"Generated messages for batch {messages_batch}.")
@@ -63,7 +70,7 @@ def causal_classification_evaluate(file_name, args):
             for _ in batch:
                 extracted_labels.append(None)
             continue
-        
+
         for response in batch_responses:
             try:
                 llm_response = response.choices[0].message.content.strip()  # type: ignore
@@ -83,7 +90,9 @@ def causal_classification_evaluate(file_name, args):
 
     df["extracted_labels"] = extracted_labels
 
-    valid_indices = [i for i in range(len(extracted_labels)) if extracted_labels[i] is not None]
+    valid_indices = [
+        i for i in range(len(extracted_labels)) if extracted_labels[i] is not None
+    ]
     filtered_predicted = [extracted_labels[i] for i in valid_indices]
     filtered_actual = [df.at[i, "actual_labels"] for i in valid_indices]
 
@@ -92,10 +101,12 @@ def causal_classification_evaluate(file_name, args):
     f1 = f1_score(filtered_actual, filtered_predicted, average="macro")
     accuracy = accuracy_score(filtered_actual, filtered_predicted)
 
-    metrics_df = pd.DataFrame({
-        "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
-        "Value": [precision, recall, f1, accuracy],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
+            "Value": [precision, recall, f1, accuracy],
+        }
+    )
 
     logger.info(f"Precision: {precision:.4f}")
     logger.info(f"Recall: {recall:.4f}")

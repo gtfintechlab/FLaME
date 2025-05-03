@@ -39,9 +39,9 @@ def bizbench_inference(args):
     client = Together()
 
     # Iterating through the test split of the dataset
-    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"): # type: ignore
-        instance = dataset["test"][i] # type: ignore
-        '''
+    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"):  # type: ignore
+        instance = dataset["test"][i]  # type: ignore
+        """
         instance = {
             'question': __,
             'answer': __,
@@ -51,38 +51,40 @@ def bizbench_inference(args):
             'options': __, (all rows are null)
             'program': __
         }
-        '''
+        """
         question = instance["question"]
         answer = instance["answer"]
         context = instance["context"]
-        
+
         # ignore all instances where context is None
         if not context:
             continue
 
         try:
-            logger.info(f"Processing instance {i+1}/{len(dataset['test'])}") # type: ignore
+            logger.info(f"Processing instance {i + 1}/{len(dataset['test'])}")  # type: ignore
             X_question.append(question)
             X_context.append(context)
             y_answer.append(answer)
 
             model_response = client.chat.completions.create(
                 model=args.model,
-                messages=[{"role": "user", "content": bizbench_prompt(question, context)}],
+                messages=[
+                    {"role": "user", "content": bizbench_prompt(question, context)}
+                ],
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model)
+                stop=tokens(args.model),
             )
             logger.debug(f"Model response: {model_response}")
             complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content # type: ignore
+            response_label = model_response.choices[0].message.content  # type: ignore
             llm_responses.append(response_label)
 
         except Exception as e:
-            logger.error(f"Error processing instance {i+1}: {e}")
+            logger.error(f"Error processing instance {i + 1}: {e}")
             time.sleep(20.0)
             continue
 
@@ -98,7 +100,7 @@ def bizbench_inference(args):
 
     results_path = (
         RESULTS_DIR
-        / 'bizbench/bizbench_meta-llama-3.1-8b/'
+        / "bizbench/bizbench_meta-llama-3.1-8b/"
         / f"{'bizbench'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
     )
     results_path.parent.mkdir(parents=True, exist_ok=True)

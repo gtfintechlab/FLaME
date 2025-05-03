@@ -3,7 +3,7 @@ import pandas as pd
 from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
 from superflue.code.extraction_prompts import headlines_extraction_prompt
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 import ast
 
@@ -13,6 +13,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "headlines_evaluation.log",
     level=LOG_LEVEL,
 )
+
 
 def preprocess_llm_response(raw_response: str):
     """Preprocess the raw LLM response to extract JSON content."""
@@ -27,6 +28,7 @@ def preprocess_llm_response(raw_response: str):
         logger.error(f"Error preprocessing LLM response: {e}")
         return None
 
+
 def headlines_evaluate(file_name, args):
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
@@ -35,7 +37,7 @@ def headlines_evaluate(file_name, args):
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    actual_labels = df['actual_labels'].tolist()
+    actual_labels = df["actual_labels"].tolist()
     actual_predictions = [ast.literal_eval(labels) for labels in actual_labels]
     extracted_labels = []
 
@@ -60,17 +62,19 @@ def headlines_evaluate(file_name, args):
             continue
 
         for response in batch_responses:
-            try: 
+            try:
                 raw_response = response.choices[0].message.content.strip()
                 preprocessed_response = preprocess_llm_response(raw_response)
                 if not preprocessed_response:
-                    raise ValueError(f"Preprocessing failed for response: {raw_response}")
+                    raise ValueError(
+                        f"Preprocessing failed for response: {raw_response}"
+                    )
                 extracted_label_json = json.loads(preprocessed_response)
             except Exception as e:
                 logger.error(f"Error extracting response: {e}")
                 extracted_labels.append([-1] * 7)
                 continue
-                
+
             mapped_labels = [
                 int(extracted_label_json.get("Price_or_Not", "")),
                 int(extracted_label_json.get("Direction_Up", "")),
@@ -78,10 +82,10 @@ def headlines_evaluate(file_name, args):
                 int(extracted_label_json.get("Direction_Constant", "")),
                 int(extracted_label_json.get("Past_Price", "")),
                 int(extracted_label_json.get("Future_Price", "")),
-                int(extracted_label_json.get("Past_News", ""))
+                int(extracted_label_json.get("Past_News", "")),
             ]
             extracted_labels.append(mapped_labels)
-        
+
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
@@ -97,13 +101,10 @@ def headlines_evaluate(file_name, args):
             if e == a:
                 acc += 1
         accuracies.append(acc / len(actual))
-    
+
     accuracy = sum(accuracies) / len(accuracies)
 
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy"],
-        "Value": [accuracy]
-    })
+    metrics_df = pd.DataFrame({"Metric": ["Accuracy"], "Value": [accuracy]})
 
     logger.info(f"Accuracy: {accuracy:.4f}")
 

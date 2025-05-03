@@ -88,7 +88,7 @@ def fnxl_prompt(sentence: str) -> str:
 
 def headlines_prompt(sentence: str) -> str:
     """Prompt for headline attribute scoring."""
-    prompt = f'''Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
                 Give a score of 0 for each of the following attributes if the news headline does not contain the following information or 1 if it does.
                 Price or Not: Does the news item talk about price or not.
                 Direction Up: Does the news headline talk about price going up or not?
@@ -98,7 +98,7 @@ def headlines_prompt(sentence: str) -> str:
                 Future Price: Does the news headline talk about an event in the future?
                 Past News: Does the news headline talk about a general event (apart from prices) in the past?
                 The news headline is:
-                {sentence}'''
+                {sentence}"""
     return prompt
 
 

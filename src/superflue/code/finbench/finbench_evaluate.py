@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.utils.logging_utils import setup_logger
 from superflue.code.extraction_prompts import finbench_extraction_prompt
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from tqdm import tqdm
 
@@ -19,10 +19,14 @@ label_mapping = {
     "HIGH RISK": 1,
 }
 
+
 def map_label_to_number(label: str):
     """Map the extracted label to its corresponding numerical value."""
     normalized_label = label.strip().upper()  # Normalize label to uppercase
-    return label_mapping.get(normalized_label, -1)  # Return -1 if the label is not found
+    return label_mapping.get(
+        normalized_label, -1
+    )  # Return -1 if the label is not found
+
 
 def finbench_evaluate(file_name, args):
     """Evaluate the FinBench dataset and return results and metrics DataFrames."""
@@ -60,7 +64,7 @@ def finbench_evaluate(file_name, args):
             for _ in batch:
                 extracted_labels.append(-1)
             continue
-        
+
         # Process responses
         for response in batch_responses:
             try:
@@ -74,7 +78,7 @@ def finbench_evaluate(file_name, args):
                 logger.error(f"Invalid label for response {batch_idx}: {response}")
 
             extracted_labels.append(mapped_label)
-        
+
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
@@ -82,17 +86,23 @@ def finbench_evaluate(file_name, args):
 
     # Evaluate metrics
     accuracy = accuracy_score(correct_labels, extracted_labels)
-    precision, recall, f1, _ = precision_recall_fscore_support(correct_labels, extracted_labels, average="weighted")
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        correct_labels, extracted_labels, average="weighted"
+    )
 
-    logger.info(f"Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}")
+    logger.info(
+        f"Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}"
+    )
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Accuracy": [accuracy],
-        "Precision": [precision],
-        "Recall": [recall],
-        "F1 Score": [f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Accuracy": [accuracy],
+            "Precision": [precision],
+            "Recall": [recall],
+            "F1 Score": [f1],
+        }
+    )
 
     success_rate = df["extracted_labels"].notnull().sum() / len(df) * 100
     logger.info(f"Success rate: {success_rate}")

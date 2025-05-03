@@ -5,8 +5,8 @@ def subjectiveqa_extraction_prompt(llm_response, feature):
     If the rating is missing or the format is invalid, return 'error'.
 
     LLM Response: "{llm_response}" """
-    
-    
+
+
 def numclaim_extraction_prompt(llm_response: str):
     prompt = f"""Based on the provided response, extract the following information:
                 - Label the response as 'INCLAIM' if it contains the word INCLAIM or any numeric value or quantitative assertion.
@@ -14,6 +14,7 @@ def numclaim_extraction_prompt(llm_response: str):
                 ONLY PROVIDE THE LABEL WITHOUT ANY ADDITIONAL TEXT.
                 The response: "{llm_response}"."""
     return prompt
+
 
 def fnxl_extraction_prompt(raw_response: str):
     """
@@ -58,6 +59,7 @@ def finentity_extraction_prompt(model_response: str):
                 Please ensure the format is valid JSON with all required fields. Make sure it does not throw a JSON decoding error."""
     return prompt
 
+
 def finer_extraction_prompt(llm_response: str):
     """Generate a prompt to extract numeric labels for named entity recognition."""
     prompt = f"""For each token in the following response, map the named entity labels to these numeric values:
@@ -78,11 +80,13 @@ def finer_extraction_prompt(llm_response: str):
                 "{llm_response}"."""
     return prompt
 
+
 def causal_classifciation_extraction_prompt(llm_response: str):
     """Generate a prompt to extract the label from the LLM response."""
     return f"""The LLM output provided below contains the predicted label. Extract the label as a single number (0, 1, or 2) without any explanation or additional text. If the label is missing, return 'error'.
 
     LLM Response: "{llm_response}" """
+
 
 def causal_detection_extraction_prompt(llm_response: str):
     prompt = f"""Given the following output from a language model, extract the entire list of tokens. The allowed tokens are 'O', 'I-CAUSE', 'B-CAUSE', 'I-EFFECT', and 'B-EFFECT'.
@@ -91,88 +95,89 @@ def causal_detection_extraction_prompt(llm_response: str):
                 Only output a list of tokens enclosed in brackets, do not include any additional text or formatting.
                 Response: {llm_response}"""
     return prompt
-    
-    
+
+
 banking77_list = [
-"activate_my_card",
-"age_limit",
-"apple_pay_or_google_pay",
-"atm_support",
-"automatic_top_up",
-"balance_not_updated_after_bank_transfer",
-"balance_not_updated_after_cheque_or_cash_deposit",
-"beneficiary_not_allowed",
-"cancel_transfer",
-"card_about_to_expire",
-"card_acceptance",
-"card_arrival",
-"card_delivery_estimate",
-"card_linking",
-"card_not_working",
-"card_payment_fee_charged",
-"card_payment_not_recognised",
-"card_payment_wrong_exchange_rate",
-"card_swallowed",
-"cash_withdrawal_charge",
-"cash_withdrawal_not_recognised",
-"change_pin",
-"compromised_card",
-"contactless_not_working",
-"country_support",
-"declined_card_payment",
-"declined_cash_withdrawal",
-"declined_transfer",
-"direct_debit_payment_not_recognised",
-"disposable_card_limits",
-"edit_personal_details",
-"exchange_charge",
-"exchange_rate",
-"exchange_via_app",
-"extra_charge_on_statement",
-"failed_transfer",
-"fiat_currency_support",
-"get_disposable_virtual_card",
-"get_physical_card",
-"getting_spare_card",
-"getting_virtual_card",
-"lost_or_stolen_card",
-"lost_or_stolen_phone",
-"order_physical_card",
-"passcode_forgotten",
-"pending_card_payment",
-"pending_cash_withdrawal",
-"pending_top_up",
-"pending_transfer",
-"pin_blocked",
-"receiving_money",
-"Refund_not_showing_up",
-"request_refund",
-"reverted_card_payment",
-"supported_cards_and_currencies",
-"terminate_account",
-"top_up_by_bank_transfer_charge",
-"top_up_by_card_charge",
-"top_up_by_cash_or_cheque",
-"top_up_failed",
-"top_up_limits",
-"top_up_reverted",
-"topping_up_by_card",
-"transaction_charged_twice",
-"transfer_fee_charged",
-"transfer_into_account",
-"transfer_not_received_by_recipient",
-"transfer_timing",
-"unable_to_verify_identity",
-"verify_my_identity",
-"verify_source_of_funds",
-"verify_top_up",
-"virtual_card_not_working",
-"visa_or_mastercard",
-"why_verify_identity",
-"wrong_amount_of_cash_received",
-"wrong_exchange_rate_for_cash_withdrawal",
+    "activate_my_card",
+    "age_limit",
+    "apple_pay_or_google_pay",
+    "atm_support",
+    "automatic_top_up",
+    "balance_not_updated_after_bank_transfer",
+    "balance_not_updated_after_cheque_or_cash_deposit",
+    "beneficiary_not_allowed",
+    "cancel_transfer",
+    "card_about_to_expire",
+    "card_acceptance",
+    "card_arrival",
+    "card_delivery_estimate",
+    "card_linking",
+    "card_not_working",
+    "card_payment_fee_charged",
+    "card_payment_not_recognised",
+    "card_payment_wrong_exchange_rate",
+    "card_swallowed",
+    "cash_withdrawal_charge",
+    "cash_withdrawal_not_recognised",
+    "change_pin",
+    "compromised_card",
+    "contactless_not_working",
+    "country_support",
+    "declined_card_payment",
+    "declined_cash_withdrawal",
+    "declined_transfer",
+    "direct_debit_payment_not_recognised",
+    "disposable_card_limits",
+    "edit_personal_details",
+    "exchange_charge",
+    "exchange_rate",
+    "exchange_via_app",
+    "extra_charge_on_statement",
+    "failed_transfer",
+    "fiat_currency_support",
+    "get_disposable_virtual_card",
+    "get_physical_card",
+    "getting_spare_card",
+    "getting_virtual_card",
+    "lost_or_stolen_card",
+    "lost_or_stolen_phone",
+    "order_physical_card",
+    "passcode_forgotten",
+    "pending_card_payment",
+    "pending_cash_withdrawal",
+    "pending_top_up",
+    "pending_transfer",
+    "pin_blocked",
+    "receiving_money",
+    "Refund_not_showing_up",
+    "request_refund",
+    "reverted_card_payment",
+    "supported_cards_and_currencies",
+    "terminate_account",
+    "top_up_by_bank_transfer_charge",
+    "top_up_by_card_charge",
+    "top_up_by_cash_or_cheque",
+    "top_up_failed",
+    "top_up_limits",
+    "top_up_reverted",
+    "topping_up_by_card",
+    "transaction_charged_twice",
+    "transfer_fee_charged",
+    "transfer_into_account",
+    "transfer_not_received_by_recipient",
+    "transfer_timing",
+    "unable_to_verify_identity",
+    "verify_my_identity",
+    "verify_source_of_funds",
+    "verify_top_up",
+    "virtual_card_not_working",
+    "visa_or_mastercard",
+    "why_verify_identity",
+    "wrong_amount_of_cash_received",
+    "wrong_exchange_rate_for_cash_withdrawal",
 ]
 banking77_label_map = {category: index for index, category in enumerate(banking77_list)}
+
 
 # Define the prompt for LLM response extraction
 def banking_77_extraction_prompt(llm_response: str):
@@ -203,6 +208,7 @@ def qa_extraction_prompt(llm_response: str):
     """
     return prompt
 
+
 def qa_evaluate_answer(predicted_answer: str, correct_answer: str):
     prompt = f"""
     You will receive two answers. Your job is to evaluate if they are exactly the same, with some caveats. 
@@ -218,44 +224,68 @@ def qa_evaluate_answer(predicted_answer: str, correct_answer: str):
     """
     return prompt
 
+
 finred_possible_relationships = [
-    'subsidiary', 'owned_by', 'employer', 'product_or_material_produced', 'industry',
-    'manufacturer', 'developer', 'legal_form', 'parent_organization', 'distribution_format',
-    'chairperson', 'location_of_formation', 'headquarters_location', 'operator', 'creator',
-    'currency', 'founded_by', 'original_broadcaster', 'owner_of', 'director_/_manager',
-    'business_division', 'chief_executive_officer', 'position_held', 'platform', 'brand',
-    'distributed_by', 'publisher', 'stock_exchange', 'member_of'
+    "subsidiary",
+    "owned_by",
+    "employer",
+    "product_or_material_produced",
+    "industry",
+    "manufacturer",
+    "developer",
+    "legal_form",
+    "parent_organization",
+    "distribution_format",
+    "chairperson",
+    "location_of_formation",
+    "headquarters_location",
+    "operator",
+    "creator",
+    "currency",
+    "founded_by",
+    "original_broadcaster",
+    "owner_of",
+    "director_/_manager",
+    "business_division",
+    "chief_executive_officer",
+    "position_held",
+    "platform",
+    "brand",
+    "distributed_by",
+    "publisher",
+    "stock_exchange",
+    "member_of",
 ]
+
 
 def finred_extraction_prompt(llm_response: str):
     """Generate a prompt to extract the classification label from the LLM response."""
-    relationship_choices = ', '.join(possible_relationships)
-    prompt = f'''Extract the classification label from the following LLM response. The label should be one of the following {relationship_choices}. 
-    
-                Pick the label out of the list that is the closest to the LLM response, but list ‘NO-REL’ if the LLM did not output a clear answer.
-                
-                Here is the LLM response to analyze:
-                "{llm_response}"
-                Provide only the label that best matches the response, exactly as it is listed in the approved label list, with an underscore (_) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, asterisks, or punctuation, etc. Only output the label. Do not list an explanation or multiple labels.'''
-    return prompt
+    relationship_choices = ", ".join(finred_possible_relationships)
+    prompt = f"""Extract the classification label from the following LLM response. The label should be one of the following {relationship_choices}.
+                If the model response does not contain any label or if it does not match any labels from the list, output "No Relationship".
+                Only output the label. Do not include any additional text.
 
+                {llm_response}
+             """
+    return prompt
 
 
 def fomc_extraction_prompt(llm_response: str) -> str:
     """Generate a prompt to extract the classification label from the LLM response.
-    
+
     Args:
         llm_response: The raw response from the language model
-        
+
     Returns:
         A formatted prompt string for label extraction
     """
-    prompt = f'''Extract the classification label from the following LLM response. The label should be one of the following: 'HAWKISH', 'DOVISH', or 'NEUTRAL'.
+    prompt = f"""Extract the classification label from the following LLM response. The label should be one of the following: 'HAWKISH', 'DOVISH', or 'NEUTRAL'.
                 
                 Here is the LLM response to analyze:
                 "{llm_response}"
-                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation.'''
+                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
     return prompt
+
 
 def fpb_extraction_prompt(llm_response: str):
     """Generate a prompt to extract the most relevant label from the LLM response."""
@@ -279,6 +309,7 @@ def headlines_extraction_prompt(llm_response: str):
     LLM Response:
     "{llm_response}" """
     return prompt
+
 
 def refind_extraction_prompt(llm_response: str):
     """Construct the extraction prompt."""

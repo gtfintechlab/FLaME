@@ -1,4 +1,3 @@
-import time
 from datetime import date
 
 import pandas as pd
@@ -6,7 +5,7 @@ from datasets import load_dataset
 from together import Together
 from tqdm import tqdm
 
-from superflue.config import LOG_DIR, LOG_LEVEL, RESULTS_DIR
+from superflue.config import LOG_DIR, LOG_LEVEL
 from superflue.code.prompts_fromferrari import econlogicqa_prompt
 from superflue.code.tokens import tokens
 from superflue.utils.logging_utils import setup_logger

@@ -1,10 +1,9 @@
-from datetime import date
 import pandas as pd
 from datasets import load_dataset
 from superflue.code.inference_prompts import headlines_prompt
 from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
 # Setup logger for Headlines inference
@@ -14,17 +13,29 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+
 def headlines_inference(args):
     task = args.dataset.strip('“”"')
     logger.info(f"Starting inference for {task} using model {args.model}.")
-    dataset = load_dataset("gtfintechlab/Headlines", '5768', trust_remote_code=True)
+    dataset = load_dataset("gtfintechlab/Headlines", "5768", trust_remote_code=True)
 
     llm_responses = []
     complete_responses = []
 
     test_data = dataset["test"]  # type: ignore
     all_sentences = [data["News"] for data in test_data]  # type: ignore
-    all_actual_labels = [[data['PriceOrNot'], data['DirectionUp'], data['DirectionDown'], data['DirectionConstant'], data['PastPrice'], data['FuturePrice'], data['PastNews']] for data in test_data]  # type: ignore
+    all_actual_labels = [
+        [
+            data["PriceOrNot"],
+            data["DirectionUp"],
+            data["DirectionDown"],
+            data["DirectionConstant"],
+            data["PastPrice"],
+            data["FuturePrice"],
+            data["PastNews"],
+        ]
+        for data in test_data
+    ]  # type: ignore
 
     batches = chunk_list(all_sentences, args.batch_size)
     total_batches = len(batches)
@@ -64,11 +75,11 @@ def headlines_inference(args):
             "news": all_sentences,
             "llm_responses": llm_responses,
             "complete_responses": complete_responses,
-            "actual_labels": all_actual_labels
+            "actual_labels": all_actual_labels,
         }
     )
 
-    success_rate = (df['llm_responses'].notna().sum() / len(df)) * 100
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

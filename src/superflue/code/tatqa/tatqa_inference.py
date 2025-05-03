@@ -2,7 +2,7 @@ import pandas as pd
 from datasets import load_dataset
 from superflue.code.inference_prompts import tatqa_prompt
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
+from superflue.config import LOG_LEVEL, LOG_DIR
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from tqdm import tqdm
 
@@ -10,11 +10,12 @@ logger = setup_logger(
     name="tatqa_inference", log_file=LOG_DIR / "tatqa_inference.log", level=LOG_LEVEL
 )
 
+
 def tatqa_inference(args):
     task = args.dataset.strip('“”"')
-    logger.info(f"Starting inference for {task} using model {args.model}.")    
+    logger.info(f"Starting inference for {task} using model {args.model}.")
     dataset = load_dataset("gtfintechlab/TATQA", trust_remote_code=True)
-    
+
     test_data = dataset["test"]  # type: ignore
     all_texts = [f"{data['text']} {data['query']}" for data in test_data]  # type: ignore
     all_actual_labels = [entry["answer"] for entry in test_data]  # type: ignore
@@ -52,7 +53,7 @@ def tatqa_inference(args):
 
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         logger.info(f"Processed responses for batch {batch_idx + 1}.")
-    
+
     df = pd.DataFrame(
         {
             "context": all_texts,
@@ -61,8 +62,8 @@ def tatqa_inference(args):
             "complete_responses": complete_responses,
         }
     )
-    
-    success_rate = (df['response'].notna().sum() / len(df)) * 100
+
+    success_rate = (df["response"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

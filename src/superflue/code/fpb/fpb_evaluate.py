@@ -1,10 +1,9 @@
 import pandas as pd
-from datetime import date
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from superflue.utils.batch_utils import process_batch_with_retry, chunk_list
 from superflue.utils.logging_utils import setup_logger
 from superflue.code.extraction_prompts import fpb_extraction_prompt
-from superflue.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
 # Configure logging
@@ -21,10 +20,14 @@ label_mapping = {
     "POSITIVE": 2,
 }
 
+
 def map_label_to_number(label: str):
     """Map the extracted label to its corresponding numerical value after normalizing."""
     normalized_label = label.strip().upper()  # Normalize label to uppercase
-    return label_mapping.get(normalized_label, -1)  # Return -1 if the label is not found
+    return label_mapping.get(
+        normalized_label, -1
+    )  # Return -1 if the label is not found
+
 
 def fpb_evaluate(file_name, args):
     """Evaluate FPB dataset and return results and metrics DataFrames."""
@@ -57,15 +60,15 @@ def fpb_evaluate(file_name, args):
             for _ in range(len(batch_content)):
                 extracted_labels.append(-1)
             continue
-        
+
         for response in batch_responses:
-            try: 
+            try:
                 extracted_label = response.choices[0].message.content.strip()
                 mapped_label = map_label_to_number(extracted_label)
 
                 if mapped_label == -1:
                     logger.error(f"Invalid label for response: {extracted_label}")
-            
+
             except Exception as e:
                 logger.error(f"Error extracting response: {e}")
                 mapped_label = -1
@@ -75,7 +78,7 @@ def fpb_evaluate(file_name, args):
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
-    df['extracted_labels'] = extracted_labels
+    df["extracted_labels"] = extracted_labels
 
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, extracted_labels)
@@ -90,10 +93,12 @@ def fpb_evaluate(file_name, args):
     logger.info(f"F1 Score: {f1:.4f}")
 
     # Create metrics DataFrame
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1],
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
     success_rate = df["extracted_labels"].notnull().sum() / len(df) * 100
     logger.info(f"Success rate: {success_rate}")

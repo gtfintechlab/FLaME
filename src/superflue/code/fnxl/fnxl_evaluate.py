@@ -12,6 +12,7 @@ logger = setup_logger(
     level=LOG_LEVEL,
 )
 
+
 def normalize_taglist_json(json_input):
     """
     Convert the JSON string (or dict) into:
@@ -23,7 +24,8 @@ def normalize_taglist_json(json_input):
         json_str = json_str.replace("'", '"')
         try:
             data = json.loads(json_str)
-        except:
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse JSON string: {json_str}. Error: {e}")
             return {}
     elif isinstance(json_input, dict):
         data = json_input
@@ -53,7 +55,7 @@ def compare_taglist_dicts(actual, predicted):
     Returns (tp, fp, fn, total_actual, total_predicted).
     """
     actual_dict = normalize_taglist_json(actual)
-    pred_dict   = normalize_taglist_json(predicted)
+    pred_dict = normalize_taglist_json(predicted)
 
     tp = 0
     fp = 0
@@ -62,7 +64,7 @@ def compare_taglist_dicts(actual, predicted):
     all_tags = set(actual_dict.keys()).union(set(pred_dict.keys()))
     for tag in all_tags:
         actual_vals = actual_dict.get(tag, set())
-        pred_vals   = pred_dict.get(tag, set())
+        pred_vals = pred_dict.get(tag, set())
 
         overlap = actual_vals.intersection(pred_vals)
         tp += len(overlap)
@@ -112,38 +114,37 @@ def fnxl_evaluate(file_name, args):
         try:
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches
-                )
+            )
         except Exception as e:
-            logger.error(f"Batch {batch_idx+1} second-pass extraction failed: {e}")
+            logger.error(f"Batch {batch_idx + 1} second-pass extraction failed: {e}")
             for _ in messages_batch:
-                row_metrics.append({
-                    "tp": 0, "fp": 0, "fn": 0,
-                    "total_actual": 0, "total_predicted": 0
-                })
+                row_metrics.append(
+                    {"tp": 0, "fp": 0, "fn": 0, "total_actual": 0, "total_predicted": 0}
+                )
             continue
-        
+
         actual_labels_batch = actual_labels_batches[batch_idx]
         for i, response in enumerate(batch_responses):
             try:
                 cleaned_json_str = response.choices[0].message.content.strip()  # type: ignore
                 tp, fp, fn, total_act, total_pred = compare_taglist_dicts(
-                    actual_labels_batch[i], 
-                    cleaned_json_str
+                    actual_labels_batch[i], cleaned_json_str
                 )
-                row_metrics.append({
-                    "tp": tp,
-                    "fp": fp,
-                    "fn": fn,
-                    "total_actual": total_act,
-                    "total_predicted": total_pred
-                })
+                row_metrics.append(
+                    {
+                        "tp": tp,
+                        "fp": fp,
+                        "fn": fn,
+                        "total_actual": total_act,
+                        "total_predicted": total_pred,
+                    }
+                )
                 extracted_labels.append(cleaned_json_str)
             except Exception as e:
                 logger.error(f"Error processing: {e}")
-                row_metrics.append({
-                    "tp": 0, "fp": 0, "fn": 0,
-                    "total_actual": 0, "total_predicted": 0
-                })
+                row_metrics.append(
+                    {"tp": 0, "fp": 0, "fn": 0, "total_actual": 0, "total_predicted": 0}
+                )
                 extracted_labels.append(None)
 
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
@@ -169,15 +170,17 @@ def fnxl_evaluate(file_name, args):
     else:
         accuracy = 0.0
 
-    logger.info(f"Final micro-average metrics:")
+    logger.info("Final micro-average metrics:")
     logger.info(f"  Precision: {precision:.4f}")
     logger.info(f"  Recall:    {recall:.4f}")
     logger.info(f"  F1 Score:  {f1:.4f}")
     logger.info(f"  Accuracy (Jaccard): {accuracy:.4f}")
 
-    metrics_df = pd.DataFrame({
-        "Metric": ["Accuracy (Jaccard)", "Precision", "Recall", "F1 Score"],
-        "Value": [accuracy, precision, recall, f1]
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Metric": ["Accuracy (Jaccard)", "Precision", "Recall", "F1 Score"],
+            "Value": [accuracy, precision, recall, f1],
+        }
+    )
 
     return df, metrics_df

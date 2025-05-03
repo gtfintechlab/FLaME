@@ -1,16 +1,15 @@
-import time
-from datetime import date
 import pandas as pd
 from datasets import load_dataset
 from superflue.code.inference_prompts import finer_prompt
 from superflue.utils.logging_utils import setup_logger
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
- 
+
 logger = setup_logger(
     name="finer_inference", log_file=LOG_DIR / "finer_inference.log", level=LOG_LEVEL
 )
+
 
 def finer_inference(args):
     task = args.dataset.strip('“”"')
@@ -30,8 +29,7 @@ def finer_inference(args):
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": finer_prompt(sentence)}]
-            for sentence in batch
+            [{"role": "user", "content": finer_prompt(sentence)}] for sentence in batch
         ]
 
         try:
@@ -44,7 +42,7 @@ def finer_inference(args):
                 llm_responses.append("Error")
                 complete_responses.append(None)
             continue
-            
+
         for response in batch_responses:
             try:
                 response_label = response.choices[0].message.content.strip()  # type: ignore
@@ -56,7 +54,7 @@ def finer_inference(args):
 
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         logger.info(f"Processed responses for batch {batch_idx + 1}.")
-        
+
     df = pd.DataFrame(
         {
             "sentences": sentences,
@@ -68,5 +66,5 @@ def finer_inference(args):
 
     success_rate = df["llm_responses"].notnull().sum() / len(df) * 100
     logger.info(f"Success rate: {success_rate}")
- 
+
     return df

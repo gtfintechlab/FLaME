@@ -1,9 +1,8 @@
-from datetime import date
 import pandas as pd
-from datasets import load_dataset 
+from datasets import load_dataset
 from superflue.code.inference_prompts import numclaim_prompt
 from superflue.utils.logging_utils import setup_logger
-from superflue.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from superflue.config import LOG_DIR, LOG_LEVEL
 from superflue.utils.batch_utils import chunk_list, process_batch_with_retry
 from tqdm import tqdm
 
@@ -12,6 +11,7 @@ logger = setup_logger(
     log_file=LOG_DIR / "numclaim_inference.log",
     level=LOG_LEVEL,
 )
+
 
 def numclaim_inference(args):
     task = args.dataset.strip('“”"')
@@ -23,8 +23,8 @@ def numclaim_inference(args):
 
     logger.info(f"Starting inference on Numclaim with model {args.model}...")
 
-    sentences = [row['context'] for row in dataset['test']]  # type: ignore
-    actual_labels = [row['response'] for row in dataset['test']]  # type: ignore
+    sentences = [row["context"] for row in dataset["test"]]  # type: ignore
+    actual_labels = [row["response"] for row in dataset["test"]]  # type: ignore
 
     batches = chunk_list(sentences, args.batch_size)
     total_batches = len(batches)
@@ -32,7 +32,7 @@ def numclaim_inference(args):
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch_content in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": numclaim_prompt(sentence)}] # type: ignore
+            [{"role": "user", "content": numclaim_prompt(sentence)}]  # type: ignore
             for sentence in batch_content
         ]
 
