@@ -4,13 +4,13 @@ mode: inference  # inference or evaluate
 file_name: null  # Required for evaluate mode
 
 # Model parameters
-model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+model: "together_ai/meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"
 max_tokens: 128
 temperature: 0.0
 top_p: 0.9
 top_k: null
 repetition_penalty: 1.0
-batch_size: 10
+batch_size: 1
 
 # Dataset parameters
 sample_size: 10

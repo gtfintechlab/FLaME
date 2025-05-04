@@ -13,18 +13,16 @@ from datasets import load_dataset
 import litellm
 from pathlib import Path
 
-from flame.code.prompts_zeroshot import fomc_zeroshot_prompt
-from flame.code.prompts_fewshot import fomc_fewshot_prompt
 from flame.utils.logging_utils import setup_logger
+from flame.code.inference_prompts import fomc_prompt
+
 from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
 # Configure litellm to be less verbose
 logging.getLogger("litellm").setLevel(logging.WARNING)
 logging.getLogger("openai").setLevel(logging.WARNING)
 
-logger = setup_logger(
-    name="fomc_inference", log_file=LOG_DIR / "fomc_inference.log", level=LOG_LEVEL
-)
+logger = setup_logger(name="fomc_inference", log_file=LOG_DIR / "fomc_inference.log", level=LOG_LEVEL)
 
 
 @dataclass
@@ -157,11 +155,6 @@ def fomc_inference(args):
     llm_responses = []
     actual_labels = []
     complete_responses = []
-
-    if args.prompt_format == "fewshot":
-        fomc_prompt = fomc_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        fomc_prompt = fomc_zeroshot_prompt
 
     # Get all sentences and labels
     all_sentences = [item["sentence"] for item in test_data]  # type: ignore
