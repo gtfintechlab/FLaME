@@ -137,17 +137,25 @@ def _patch_external(monkeypatch, tmp_path_factory):
 
     # 6. Redirect output dirs
     temp_root: Path = tmp_path_factory.mktemp("flame_artifacts")
-    # Redirect results, logs, and evaluation outputs to temporary dirs
+    # Redirect ALL outputs (results, logs, evaluation, test files) to temporary dirs
     results_dir = temp_root / "results"
     logs_dir = temp_root / "logs"
-    eval_dir = temp_root / "evaluation_test_artifacts"
+    eval_dir = temp_root / "evaluation"
+    test_output_dir = temp_root / "test_outputs"  # New dedicated dir for test outputs
+    
     for d in (results_dir, logs_dir, eval_dir):
         d.mkdir(parents=True, exist_ok=True)
+    # Ensure test output dir exists
+    test_output_dir.mkdir(parents=True, exist_ok=True)
+    
     try:
         import flame.config as _cfg
         monkeypatch.setattr(_cfg, "RESULTS_DIR", results_dir, raising=False)
         monkeypatch.setattr(_cfg, "LOG_DIR", logs_dir, raising=False)
         monkeypatch.setattr(_cfg, "EVALUATION_DIR", eval_dir, raising=False)
+        # Add TEST_OUTPUT_DIR to config if not already there
+        if not hasattr(_cfg, "TEST_OUTPUT_DIR"):
+            monkeypatch.setattr(_cfg, "TEST_OUTPUT_DIR", test_output_dir, raising=False)
     except ModuleNotFoundError:
         pass
 

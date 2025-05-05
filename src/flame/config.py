@@ -13,6 +13,7 @@ OUTPUT_DIR = ROOT_DIR / "output"  # Parent directory for all outputs
 RESULTS_DIR = ROOT_DIR / "results"
 EVALUATION_DIR = ROOT_DIR / "evaluation"
 LOG_DIR = ROOT_DIR / "logs"
+TEST_OUTPUT_DIR = ROOT_DIR / "test_outputs"  # Dedicated directory for test artifacts
 
 # Create directories if they don't exist
 for directory in [DATA_DIR, OUTPUT_DIR, RESULTS_DIR, EVALUATION_DIR, LOG_DIR]:

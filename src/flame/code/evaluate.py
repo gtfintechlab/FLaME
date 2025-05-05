@@ -20,7 +20,12 @@ def main(args):
             - file_name: Path to inference results
             - Other task-specific parameters
     """
-    task = args.task
+    # support legacy args.dataset for tests, prefer args.task
+    raw = getattr(args, 'task', None) or getattr(args, 'dataset', None)
+    if not raw:
+        logger.error("No task specified in args")
+        return
+    task = raw
 
     # Map of tasks to their evaluation functions
     task_evaluate_map = EVALUATE_MAP

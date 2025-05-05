@@ -1,10 +1,6 @@
 from time import time
 from datetime import date
 
-from flame.code.fomc.fomc_inference import fomc_inference
-from flame.code.finer.finer_inference import finer_inference
-from flame.code.finentity.finentity_inference import finentity_inference
-from flame.code.subjectiveqa.subjectiveqa_inference import subjectiveqa_inference
 from flame.task_registry import INFERENCE_MAP
 from flame.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL
 from flame.utils.logging_utils import setup_logger
@@ -25,7 +21,12 @@ def main(args):
             - model: Model to use
             - Other task-specific parameters
     """
-    task = args.task.strip('"""')
+    # support legacy args.dataset for tests, prefer args.task
+    raw = getattr(args, 'task', None) or getattr(args, 'dataset', None)
+    if not raw:
+        logger.error("No task specified in args")
+        return
+    task = raw.strip('"""')
 
     task_inference_map = INFERENCE_MAP
 
