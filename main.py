@@ -5,12 +5,12 @@ import os
 from flame.code.inference import main as inference
 from huggingface_hub import login
 from flame.code.evaluate import main as evaluate
+from flame.task_registry import supported as supported_tasks
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="FLaME")
     parser.add_argument("--config", type=str, help="Path to the YAML config file.")
-    parser.add_argument("--dataset", type=str, help="Name of the dataset to use.")
     parser.add_argument(
         "--mode",
         type=str,
@@ -45,7 +45,18 @@ def parse_arguments():
         choices=["zero_shot", "few_shot"],
         help="Version of the prompt to use",
     )
+    parser.add_argument("--tasks", type=str, nargs="+", help="List of task names to run (e.g. numclaim fpb)")
     return parser.parse_args()
+
+
+def run_tasks(tasks: list[str], mode: str, args):
+    """Sequentially run each task by setting args.task and invoking the correct mode."""
+    for t in tasks:
+        args.task = t
+        if mode == "inference":
+            inference(args)
+        else:
+            evaluate(args)
 
 
 if __name__ == "__main__":
@@ -86,7 +97,10 @@ if __name__ == "__main__":
     if args.mode == "evaluate" and not args.file_name:
         raise ValueError("File name is required for evaluation mode.")
 
-    if args.mode == "inference":
-        inference(args)
-    elif args.mode == "evaluate":
-        evaluate(args)
+    tasks = args.tasks
+    if not tasks:
+        raise ValueError("No tasks specified; use --tasks option")
+    for t in tasks:
+        if t not in supported_tasks(args.mode):
+            raise ValueError(f"Task '{t}' not supported for mode {args.mode}")
+    run_tasks(tasks, args.mode, args)
