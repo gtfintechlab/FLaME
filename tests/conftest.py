@@ -4,8 +4,9 @@ Patched automatically for every test:
 • litellm.completion / batch_completion -> static mock responses
 • datasets.load_dataset -> small in-memory dataset
 • time.sleep -> no-op
-• RESULTS_DIR / LOG_DIR redirected to temp folder
+• RESULTS_DIR / LOG_DIR / EVALUATION_DIR redirected to temp folder
 """
+
 from __future__ import annotations
 
 import time as _time
@@ -18,11 +19,13 @@ import litellm
 
 # Silence deprecation warnings (Pydantic, litellm deprecations)
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # ---------------------------------------------------------------------------
 # Mock LiteLLM helpers
 # ---------------------------------------------------------------------------
+
 
 class _FakeCompletion:
     def __init__(self, content: str = "mock reply"):
@@ -47,9 +50,11 @@ def _fake_batch_completion(*_args, **_kwargs):  # type: ignore
     messages = messages or []
     return [_FakeCompletion() for _ in messages]
 
+
 # ---------------------------------------------------------------------------
 # Mock datasets helper
 # ---------------------------------------------------------------------------
+
 
 class _DummyRow(dict):
     _DEFAULTS = {
@@ -84,9 +89,11 @@ class _DummyDataset(list):
             return self
         return super().__getitem__(item)
 
+
 # ---------------------------------------------------------------------------
 # Autouse fixture applying patches
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(autouse=True)
 def _patch_external(monkeypatch, tmp_path_factory):
@@ -104,6 +111,7 @@ def _patch_external(monkeypatch, tmp_path_factory):
     # 3b. flame.code.tokens.tokens -> returns empty list to avoid DeprecationError
     try:
         import flame.code.tokens as _tokens_mod
+
         monkeypatch.setattr(_tokens_mod, "tokens", lambda *_a, **_k: [])
     except ModuleNotFoundError:
         pass
@@ -131,6 +139,7 @@ def _patch_external(monkeypatch, tmp_path_factory):
     # 5. nltk.download – prevent network download
     try:
         import nltk
+
         monkeypatch.setattr(nltk, "download", lambda *_a, **_k: None)
     except ModuleNotFoundError:
         pass
@@ -142,20 +151,26 @@ def _patch_external(monkeypatch, tmp_path_factory):
     logs_dir = temp_root / "logs"
     eval_dir = temp_root / "evaluation"
     test_output_dir = temp_root / "test_outputs"  # New dedicated dir for test outputs
-    
-    for d in (results_dir, logs_dir, eval_dir):
+
+    # Create all output directories
+    for d in (results_dir, logs_dir, eval_dir, test_output_dir):
         d.mkdir(parents=True, exist_ok=True)
-    # Ensure test output dir exists
-    test_output_dir.mkdir(parents=True, exist_ok=True)
-    
+
+    # Set environment variable to indicate we're in test mode
+    # This is a reliable way for code to detect it's running in a test
+    monkeypatch.setenv("PYTEST_RUNNING", "1")
+
     try:
+        # Import and patch config BEFORE any other imports that might use it
         import flame.config as _cfg
-        monkeypatch.setattr(_cfg, "RESULTS_DIR", results_dir, raising=False)
-        monkeypatch.setattr(_cfg, "LOG_DIR", logs_dir, raising=False)
-        monkeypatch.setattr(_cfg, "EVALUATION_DIR", eval_dir, raising=False)
-        # Add TEST_OUTPUT_DIR to config if not already there
-        if not hasattr(_cfg, "TEST_OUTPUT_DIR"):
-            monkeypatch.setattr(_cfg, "TEST_OUTPUT_DIR", test_output_dir, raising=False)
+
+        # Update all directory paths to point to temp locations
+        monkeypatch.setattr(_cfg, "RESULTS_DIR", results_dir)
+        monkeypatch.setattr(_cfg, "LOG_DIR", logs_dir)
+        monkeypatch.setattr(_cfg, "EVALUATION_DIR", eval_dir)
+        monkeypatch.setattr(_cfg, "TEST_OUTPUT_DIR", test_output_dir)
+        # Explicitly update ROOT_DIR to ensure no absolute paths break
+        monkeypatch.setattr(_cfg, "ROOT_DIR", temp_root.parent)
     except ModuleNotFoundError:
         pass
 
@@ -170,7 +185,9 @@ def _patch_external(monkeypatch, tmp_path_factory):
                 self.num_few_shot = num_few_shot
 
             def load_few_shot_examples(self):
-                return [{"question": "q", "choices": ["a", "b", "c", "d"], "answer": "A"}]
+                return [
+                    {"question": "q", "choices": ["a", "b", "c", "d"], "answer": "A"}
+                ]
 
             def load(self):
                 import pandas as _pd
@@ -195,6 +212,7 @@ def _patch_external(monkeypatch, tmp_path_factory):
     # 7. Alias missing prompt names
     try:
         import flame.code.prompts_zeroshot as _pz
+
         if not hasattr(_pz, "tatqa_prompt") and hasattr(_pz, "tatqa_zeroshot_prompt"):
             _pz.tatqa_prompt = _pz.tatqa_zeroshot_prompt  # type: ignore
     except ModuleNotFoundError:
@@ -202,9 +220,11 @@ def _patch_external(monkeypatch, tmp_path_factory):
 
     yield
 
+
 # ---------------------------------------------------------------------------
 # Generic args fixture
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def dummy_args():

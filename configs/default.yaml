@@ -1,10 +1,14 @@
 # Core settings
 dataset: fomc
+tasks:  # Multi-task list
+  - fomc
+  - numclaim
+  - finer
 mode: inference  # inference or evaluate
 file_name: null  # Required for evaluate mode
 
 # Model parameters
-model: "together_ai/meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"
+model: "together_ai/meta-llama/Llama-4-Scout-17B-16E-Instruct"
 max_tokens: 128
 temperature: 0.0
 top_p: 0.9
