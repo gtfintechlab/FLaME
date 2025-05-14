@@ -3,7 +3,7 @@ import pandas as pd
 from datasets import Dataset
 import logging
 from flame.utils.process_qa import process_qa_pairs
-from flame.utils.zip_to_csv import zip_to_csv
+from flame.utils.miscellaneous import zip_to_csv
 from flame.config import DATA_DIR, LOG_LEVEL
 
 HF_ORGANIZATION = "gtfintechlab"

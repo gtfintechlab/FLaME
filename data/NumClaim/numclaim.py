@@ -3,7 +3,6 @@ import logging
 from huggingface_hub import login
 import pandas as pd
 from datasets import Dataset, DatasetDict
-from flame.utils.LabelMapper import LabelMapper
 from flame.config import DATA_DIR, LOG_LEVEL
 
 HUGGINGFACEHUB_API_TOKEN = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
@@ -12,8 +11,15 @@ DATASET = "Numclaim"
 
 login(HUGGINGFACEHUB_API_TOKEN)
 
-# Include the LabelMapper instantiation for 'numclaim_detection' task
-label_mapper = LabelMapper(task="numclaim_detection")
+# NumClaim label mapping - moved from LabelMapper class
+NUMCLAIM_LABEL_MAP = {0: "outofclaim", 1: "inclaim"}
+
+
+# Function to decode numeric labels into text labels
+def decode_numclaim_label(label_number):
+    """Convert a numeric NumClaim label to its uppercase text representation."""
+    return NUMCLAIM_LABEL_MAP.get(label_number, "undefined").upper()
+
 
 # Configure logging
 logging.basicConfig(level=LOG_LEVEL)
@@ -39,13 +45,13 @@ def huggify_numclaim(push_to_hub=False):
                 "train": Dataset.from_dict(
                     {
                         "context": train_texts,
-                        "response": list(map(label_mapper.decode, train_labels)),
+                        "response": list(map(decode_numclaim_label, train_labels)),
                     }
                 ),
                 "test": Dataset.from_dict(
                     {
                         "context": test_texts,
-                        "response": list(map(label_mapper.decode, test_labels)),
+                        "response": list(map(decode_numclaim_label, test_labels)),
                     }
                 ),
             }
