@@ -1,5 +1,3 @@
-"""MMLU inference module."""
-
 import json
 import uuid
 from datetime import datetime
@@ -8,10 +6,10 @@ from typing import Dict, List, Tuple
 
 import pandas as pd
 from tqdm import tqdm
-import litellm
 
 from flame.code.mmlu.mmlu_loader import MMLULoader
 from flame.utils.logging_utils import setup_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
 logger = setup_logger(
@@ -75,32 +73,6 @@ def generate_inference_filename(task: str, model: str) -> Tuple[str, Path]:
     full_path = RESULTS_DIR / task / f"inference_{base_filename}.csv"
     full_path.parent.mkdir(parents=True, exist_ok=True)
     return base_filename, full_path
-
-
-def chunk_list(lst: List, chunk_size: int) -> List[List]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3,
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 
 def save_inference_results(df: pd.DataFrame, path: Path, metadata: Dict) -> None:

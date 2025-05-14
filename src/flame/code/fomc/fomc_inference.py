@@ -4,23 +4,18 @@ import json
 import uuid
 from datetime import datetime
 from dataclasses import dataclass
-from typing import Dict, Any, List, Optional, Tuple
-import logging
+from typing import Dict, Any, Optional, Tuple
 
 import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
-import litellm
 from pathlib import Path
 from flame.code.prompts_fewshot import fomc_fewshot_prompt
 from flame.code.prompts_zeroshot import fomc_zeroshot_prompt
 from flame.utils.logging_utils import setup_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 
 from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-
-# Configure litellm to be less verbose
-logging.getLogger("litellm").setLevel(logging.WARNING)
-logging.getLogger("openai").setLevel(logging.WARNING)
 
 logger = setup_logger(
     name="fomc_inference", log_file=LOG_DIR / "fomc_inference.log", level=LOG_LEVEL
@@ -70,11 +65,6 @@ def generate_inference_filename(task: str, model: str) -> Tuple[str, Path]:
     return base_filename, full_path
 
 
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
 def validate_sample(response: str) -> bool:
     """Validate model response format."""
     valid_labels = {"DOVISH", "HAWKISH", "NEUTRAL"}
@@ -106,28 +96,6 @@ def save_inference_results(
         json.dump(metadata, f, indent=2)
     df.to_csv(path, index=False)
     logger.debug(f"Results and metadata saved to {path.parent}")
-
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            # top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            # repetition_penalty=args.repetition_penalty,
-            num_retries=3,  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 
 def fomc_inference(args):
@@ -226,19 +194,5 @@ def fomc_inference(args):
     # Log final statistics
     success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
-
-    # # Save results with metadata
-    # metadata = {
-    #     "model": args.model,
-    #     "provider": provider,
-    #     "model_name": model_name,
-    #     "temperature": args.temperature,
-    #     "top_p": args.top_p,
-    #     "top_k": args.top_k,
-    #     "max_tokens": args.max_tokens,
-    #     "batch_size": args.batch_size,
-    #     "repetition_penalty": args.repetition_penalty
-    # }
-    # save_inference_results(df, results_path, metadata)
 
     return df
