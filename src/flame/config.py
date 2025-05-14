@@ -10,9 +10,8 @@ PACKAGE_DIR = ROOT_DIR / "src" / "flame"
 DATA_DIR = ROOT_DIR / "data"
 
 # Output directories
-OUTPUT_DIR = ROOT_DIR / "output"  # Parent directory for all outputs
 RESULTS_DIR = ROOT_DIR / "results"
-EVALUATION_DIR = ROOT_DIR / "evaluation"
+EVALUATION_DIR = ROOT_DIR / "evaluations"  # Changed to match existing directory name
 LOG_DIR = ROOT_DIR / "logs"
 TEST_OUTPUT_DIR = (
     ROOT_DIR / "tests" / "test_outputs"
@@ -21,7 +20,6 @@ TEST_OUTPUT_DIR = (
 # Create directories if they don't exist
 for directory in [
     DATA_DIR,
-    OUTPUT_DIR,
     RESULTS_DIR,
     EVALUATION_DIR,
     LOG_DIR,
