@@ -5,13 +5,11 @@ import yaml
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
-
+from flame.utils.label_utils import encode
 from flame.utils.logging_utils import setup_logger
 from flame.config import SEEDS
 
 logger = setup_logger(__name__)
-
-from flame.utils.label_utils import encode
 
 
 def get_FPB_dataset():
@@ -55,13 +53,13 @@ if __name__ == "__main__":
     ROOT_DIRECTORY = Path(__file__).resolve().parent.parent
     if str(ROOT_DIRECTORY) not in sys.path:
         sys.path.insert(0, str(ROOT_DIRECTORY))
-with open("config.yaml", "r") as file:
-    config = yaml.safe_load(file)
+    with open("config.yaml", "r") as file:
+        config = yaml.safe_load(file)
 
-    DATA_DIR = Path(config["fpb"]["DATA_DIR"])
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    logger.info(
-        f"Building the FinancialPhraseBank dataset in data directory {DATA_DIR}"
-    )
-    get_FPB_dataset()
-    process_data()
+        DATA_DIR = Path(config["fpb"]["DATA_DIR"])
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        logger.info(
+            f"Building the FinancialPhraseBank dataset in data directory {DATA_DIR}"
+        )
+        get_FPB_dataset()
+        process_data()

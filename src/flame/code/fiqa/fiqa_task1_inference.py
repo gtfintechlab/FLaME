@@ -1,9 +1,11 @@
 import pandas as pd
 from datasets import load_dataset
-from flame.utils.batch_utils import process_batch_with_retry, chunk_list
-from flame.code.inference_prompts import fiqa_task1_prompt
+from flame.code.prompts_zeroshot import fiqa_task1_zeroshot_prompt
+from flame.code.prompts_fewshot import fiqa_task1_fewshot_prompt
 from flame.utils.logging_utils import setup_logger
 from flame.config import LOG_DIR, LOG_LEVEL
+import litellm
+from typing import Any, List
 from tqdm import tqdm
 
 # Set up logger
@@ -14,9 +16,35 @@ logger = setup_logger(
 )
 
 
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into chunks of specified size."""
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with litellm's retry mechanism."""
+    try:
+        # Using litellm's built-in retry mechanism
+        batch_responses = litellm.batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            # top_k=args.top_k if args.top_k else None,
+            top_p=args.top_p,
+            # repetition_penalty=args.repetition_penalty,
+            num_retries=3,  # Using litellm's retry mechanism
+        )
+        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
+
+
 def fiqa_task1_inference(args):
-    task = args.dataset.strip('“”"')
-    logger.info(f"Starting inference for {task} using model {args.model}.")
+    # Load dataset and initialize storage for results
     dataset = load_dataset("gtfintechlab/FiQA_Task1", trust_remote_code=True)
 
     test_data = dataset["test"]  # type: ignore
@@ -29,8 +57,16 @@ def fiqa_task1_inference(args):
 
     sentence_batches = chunk_list(all_texts, args.batch_size)
     total_batches = len(sentence_batches)
+    context = []
     llm_responses = []
+    actual_targets = []
+    actual_sentiments = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        fiqa_task1_prompt = fiqa_task1_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        fiqa_task1_prompt = fiqa_task1_zeroshot_prompt
 
     pbar = tqdm(sentence_batches, desc="Processing batches")
     for batch_idx, sentence_batch in enumerate(pbar):
@@ -50,9 +86,11 @@ def fiqa_task1_inference(args):
             for _ in range(len(sentence_batch)):
                 llm_responses.append(None)
                 complete_responses.append(None)
-            continue
+                context.append(None)
+                actual_targets.append(None)
+                actual_sentiments.append(None)
 
-        for response in batch_responses:
+        for sentence, response in zip(sentence_batch, batch_responses):
             try:
                 response_label = response.choices[0].message.content
             except Exception as e:
@@ -60,17 +98,18 @@ def fiqa_task1_inference(args):
                 response_label = None
             llm_responses.append(response_label)
             complete_responses.append(response)
-
-        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-        logger.info(f"Processed responses for batch {batch_idx + 1}.")
+            context.append(sentence)
+            actual_targets.append(all_targets[len(llm_responses) - 1])
+            actual_sentiments.append(all_sentiments[len(llm_responses) - 1])
+        pbar.set_description(f"Completed batch {batch_idx + 1}/{total_batches}")
 
     # Create DataFrame with results
     df = pd.DataFrame(
         {
-            "context": all_texts,
+            "context": context,
             "llm_responses": llm_responses,
-            "actual_target": all_targets,
-            "actual_sentiment": all_sentiments,
+            "actual_target": actual_targets,
+            "actual_sentiment": actual_sentiments,
             "complete_responses": complete_responses,
         }
     )

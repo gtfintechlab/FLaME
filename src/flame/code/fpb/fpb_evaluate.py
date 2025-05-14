@@ -1,9 +1,10 @@
 import pandas as pd
+from datetime import date
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from flame.utils.batch_utils import process_batch_with_retry, chunk_list
 from flame.utils.logging_utils import setup_logger
-from flame.code.extraction_prompts import fpb_extraction_prompt
-from flame.config import LOG_DIR, LOG_LEVEL
+from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+import litellm
+from typing import Any, List
 from tqdm import tqdm
 
 # Configure logging
@@ -21,12 +22,53 @@ label_mapping = {
 }
 
 
+def extraction_prompt(llm_response: str):
+    """Generate a prompt to extract the most relevant label from the LLM response."""
+    prompt = f"""Based on the following list of labels: ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’, extract the most relevant label from the following response:
+                "{llm_response}"
+                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
+    return prompt
+
+
 def map_label_to_number(label: str):
     """Map the extracted label to its corresponding numerical value after normalizing."""
     normalized_label = label.strip().upper()  # Normalize label to uppercase
     return label_mapping.get(
         normalized_label, -1
     )  # Return -1 if the label is not found
+
+
+def save_progress(df, path):
+    """Save the current progress to a CSV file."""
+    df.to_csv(path, index=False)
+    logger.info(f"Progress saved to {path}")
+
+
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into chunks of specified size."""
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with litellm's retry mechanism."""
+    try:
+        # Using litellm's built-in retry mechanism
+        batch_responses = litellm.batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            top_k=args.top_k if args.top_k else None,
+            top_p=args.top_p,
+            repetition_penalty=args.repetition_penalty,
+            num_retries=3,  # Using litellm's retry mechanism
+        )
+        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
 
 
 def fpb_evaluate(file_name, args):
@@ -38,6 +80,18 @@ def fpb_evaluate(file_name, args):
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
+    # Define paths for saving results
+    evaluation_results_path = (
+        EVALUATION_DIR
+        / task
+        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+    )
+    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Initialize extracted labels if not present
+    if "extracted_labels" not in df.columns:
+        df["extracted_labels"] = None
+
     correct_labels = df["actual_labels"].tolist()
     extracted_labels = []
     all_responses = df["llm_responses"].tolist()
@@ -48,7 +102,7 @@ def fpb_evaluate(file_name, args):
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch_content in enumerate(pbar):
         messages_batch = [
-            [{"role": "user", "content": fpb_extraction_prompt(response)}]
+            [{"role": "user", "content": extraction_prompt(response)}]
             for response in batch_content
         ]
         try:
@@ -59,7 +113,6 @@ def fpb_evaluate(file_name, args):
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             for _ in range(len(batch_content)):
                 extracted_labels.append(-1)
-            continue
 
         for response in batch_responses:
             try:
@@ -74,11 +127,6 @@ def fpb_evaluate(file_name, args):
                 mapped_label = -1
 
             extracted_labels.append(mapped_label)
-
-        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-        logger.info(f"Processed responses for batch {batch_idx + 1}.")
-
-    df["extracted_labels"] = extracted_labels
 
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, extracted_labels)
@@ -100,7 +148,9 @@ def fpb_evaluate(file_name, args):
         }
     )
 
-    success_rate = df["extracted_labels"].notnull().sum() / len(df) * 100
-    logger.info(f"Success rate: {success_rate}")
+    # # Save metrics DataFrame
+    # metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
+    # metrics_df.to_csv(metrics_path, index=False)
+    # logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df

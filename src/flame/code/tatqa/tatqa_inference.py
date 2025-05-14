@@ -1,10 +1,14 @@
+import time
+
+# from pathlib import Path
+from litellm import completion
 import pandas as pd
 from datasets import load_dataset
-from flame.code.inference_prompts import tatqa_prompt
+from datetime import date
+from flame.code.prompts_zeroshot import tatqa_prompt
+from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
-from flame.config import LOG_LEVEL, LOG_DIR
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from tqdm import tqdm
+from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
 logger = setup_logger(
     name="tatqa_inference", log_file=LOG_DIR / "tatqa_inference.log", level=LOG_LEVEL
@@ -12,58 +16,65 @@ logger = setup_logger(
 
 
 def tatqa_inference(args):
-    task = args.dataset.strip('“”"')
-    logger.info(f"Starting inference for {task} using model {args.model}.")
+    today = date.today()
     dataset = load_dataset("gtfintechlab/TATQA", trust_remote_code=True)
 
-    test_data = dataset["test"]  # type: ignore
-    all_texts = [f"{data['text']} {data['query']}" for data in test_data]  # type: ignore
-    all_actual_labels = [entry["answer"] for entry in test_data]  # type: ignore
-    text_batches = chunk_list(all_texts, args.batch_size)
-    total_batches = len(text_batches)
-
+    # Initialize lists to store context, model responses, actual answers, and complete responses
+    context = []
     llm_responses = []
+    actual_answers = []
     complete_responses = []
 
-    pbar = tqdm(text_batches, desc="Processing batches")
-    for batch_idx, text_batch in enumerate(pbar):
-        messages_batch = [
-            [{"role": "user", "content": tatqa_prompt(context)}]
-            for context in text_batch
-        ]
+    for i, entry in enumerate(dataset["test"]):  # type: ignore
+        question = entry["query"]  # type: ignore
+        context_text = entry["text"]  # type: ignore
+        combined_text = f"{context_text} {question}"  # Combine context and question
+        context.append(combined_text)
+
+        actual_answer = entry["answer"]  # type: ignore
+        actual_answers.append(actual_answer)
+
         try:
-            batch_responses = process_batch_with_retry(
-                args, messages_batch, batch_idx, total_batches
+            logger.info(f"Processing question {i + 1}/{len(dataset['test'])}")  # type: ignore
+            # TAT-QA-specific prompt logic, create the prompt for table and text-based QA
+            model_response = completion(
+                messages=[{"role": "user", "content": tatqa_prompt(combined_text)}],
+                model=args.model,
+                max_tokens=args.max_tokens,
+                temperature=args.temperature,
+                top_k=args.top_k,
+                top_p=args.top_p,
+                repetition_penalty=args.repetition_penalty,
+                stop=tokens(args.model),
             )
-        except Exception as e:
-            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-            for _ in text_batch:
-                llm_responses.append(None)
-                complete_responses.append(None)
-            continue
 
-        for response in batch_responses:
-            try:
-                response_label = response.choices[0].message.content  # type: ignore
-            except Exception as e:
-                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
-                response_label = None
+            complete_responses.append(model_response)
+            response_label = model_response.choices[0].message.content  # type: ignore
             llm_responses.append(response_label)
-            complete_responses.append(response)
 
-        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-        logger.info(f"Processed responses for batch {batch_idx + 1}.")
+        except Exception as e:
+            logger.error(f"Error processing entry {len(context)}: {e}")
+            llm_responses.append(None)
+            complete_responses.append(None)
+            time.sleep(20.0)
 
     df = pd.DataFrame(
         {
-            "context": all_texts,
+            "context": context,
             "response": llm_responses,
-            "actual_answer": all_actual_labels,
+            "actual_answer": actual_answers,
             "complete_responses": complete_responses,
         }
     )
 
-    success_rate = (df["response"].notna().sum() / len(df)) * 100
-    logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
+    time.sleep(10)
+    results_path = (
+        RESULTS_DIR
+        / "tatqa"
+        / f"{args.dataset}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(results_path, index=False)
 
+    logger.info(f"Inference completed. Results saved to {results_path}")
     return df

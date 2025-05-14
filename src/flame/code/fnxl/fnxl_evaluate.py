@@ -13,6 +13,31 @@ logger = setup_logger(
 )
 
 
+def extraction_prompt(raw_response: str):
+    """
+    Prompt to transform the raw LLM output into a standard JSON dict:
+      {
+        "us-gaap:SomeTag": [1.0, 2.0],
+        "other": [3.0]
+      }
+    The LLM might have used a different format or extra text, so we
+    ask it to re-extract in a consistent way.
+    """
+    prompt = f"""An LLM previously gave the following response about numerals and XBRL tags:
+    ---
+    {raw_response}
+
+    Please convert that into valid JSON of the form:
+    {{
+      "xbrl_tag": [list_of_numerical_values],
+      "other_tag": [list_of_numerical_values]
+    }}
+    If you have no numerals for a certain tag, omit that tag.
+    Only return the JSON. Do not include any extra text.
+    """
+    return prompt
+
+
 def normalize_taglist_json(json_input):
     """
     Convert the JSON string (or dict) into:
@@ -115,6 +140,7 @@ def fnxl_evaluate(file_name, args):
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches
             )
+
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} second-pass extraction failed: {e}")
             for _ in messages_batch:
@@ -139,7 +165,7 @@ def fnxl_evaluate(file_name, args):
                         "total_predicted": total_pred,
                     }
                 )
-                extracted_labels.append(cleaned_json_str)
+                df.at[batch_indices[i], "extracted_labels"] = cleaned_json_str
             except Exception as e:
                 logger.error(f"Error processing: {e}")
                 row_metrics.append(

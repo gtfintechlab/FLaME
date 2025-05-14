@@ -1,8 +1,12 @@
+from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from flame.code.inference_prompts import finred_prompt
+
+import litellm
+from typing import Any, List
+from flame.code.prompts_zeroshot import finred_zeroshot_prompt
+from flame.code.prompts_fewshot import finred_fewshot_prompt
 from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import process_batch_with_retry, chunk_list
 from flame.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
@@ -12,14 +16,52 @@ logger = setup_logger(
 )
 
 
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into chunks of specified size."""
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with litellm's retry mechanism."""
+    try:
+        # Using litellm's built-in retry mechanism
+        batch_responses = litellm.batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            # top_k=args.top_k if args.top_k else None,
+            top_p=args.top_p,
+            # repetition_penalty=args.repetition_penalty,
+            num_retries=3,  # Using litellm's retry mechanism
+        )
+        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
+
+
 def finred_inference(args):
-    task = args.dataset.strip('“”"')
-    logger.info(f"Starting inference for {task} using model {args.model}.")
+    today = date.today()
+    logger.info(f"Starting FinRED inference on {today}")
+
+    # Load the FinRED dataset (test split)
+    logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/FinRed", trust_remote_code=True)
 
     # Initialize lists to store sentences, actual labels, model responses, and complete responses
+    sentences = []
     llm_responses = []
+    actual_labels = []
     complete_responses = []
+    entities_list = []  # To store entity pairs
+
+    if args.prompt_format == "fewshot":
+        finred_prompt = finred_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        finred_prompt = finred_zeroshot_prompt
 
     test_data = dataset["test"]  # type: ignore
     all_inputs = [(data["sentence"], data["entities"]) for data in test_data]  # type: ignore
@@ -57,29 +99,34 @@ def finred_inference(args):
             logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
             # Add None values for failed batch
             for _ in batch:
+                sentences.append(None)
+                entities_list.append(None)
                 complete_responses.append(None)
                 llm_responses.append(None)
+                actual_labels.append(None)
             continue
 
         # Process responses
-        for response in batch_responses:
+        for (sentence, entity_pair), response in zip(batch, batch_responses):
+            sentences.append(sentence)
+            entities_list.append(entity_pair)
+            complete_responses.append(response)
             try:
                 response_label = response.choices[0].message.content
             except Exception as e:
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 response_label = None
             llm_responses.append(response_label)
-            complete_responses.append(response)
+            actual_labels.append(all_actual_labels[len(llm_responses) - 1])
 
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-        logger.info(f"Processed responses for batch {batch_idx + 1}.")
 
     # Create the final DataFrame after the loop
     df = pd.DataFrame(
         {
-            "sentence": [input[0] for input in all_inputs],
-            "entity_pairs": [input[1] for input in all_inputs],
-            "actual_labels": all_actual_labels,
+            "sentence": sentences,
+            "entity_pairs": entities_list,
+            "actual_labels": actual_labels,
             "llm_responses": llm_responses,
             "complete_responses": complete_responses,
         }

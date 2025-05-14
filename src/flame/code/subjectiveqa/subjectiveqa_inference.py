@@ -1,11 +1,15 @@
 import time
 import pandas as pd
 from datasets import load_dataset
-from flame.code.inference_prompts import subjectiveqa_prompt
+from flame.code.prompts_zeroshot import subjectiveqa_zeroshot_prompt
+from flame.code.prompts_fewshot import subjectiveqa_fewshot_prompt
 from flame.utils.logging_utils import setup_logger
 from flame.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 import random
+import traceback
+import litellm
+
 from datetime import date
 
 logger = setup_logger(
@@ -13,9 +17,11 @@ logger = setup_logger(
     log_file=LOG_DIR / "subjectiveqa_inference.log",
     level=LOG_LEVEL,
 )
-import traceback
+
+litellm.drop_params = True
 
 
+# litellm.set_verbose = True
 def subjectiveqa_inference(args):
     definition_map = {
         "RELEVANT": "The speaker has answered the question entirely and appropriately.",
@@ -53,6 +59,11 @@ def subjectiveqa_inference(args):
 
     feature_responses = {feature: [] for feature in definition_map.keys()}
 
+    if args.prompt_format == "fewshot":
+        subjectiveqa_prompt = subjectiveqa_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        subjectiveqa_prompt = subjectiveqa_zeroshot_prompt
+
     batch_size = args.batch_size
     total_batches = len(questions) // batch_size + int(len(questions) % batch_size > 0)
     logger.info(f"Processing {len(questions)} rows in {total_batches} batches.")
@@ -80,7 +91,9 @@ def subjectiveqa_inference(args):
                         },
                     ]
                 )
-                time.sleep(random.uniform(0.5, 1.5))
+                time.sleep(
+                    random.uniform(0.5, 1.5)
+                )  # Add a short randomized delay between features
         try:
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches

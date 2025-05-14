@@ -1,9 +1,11 @@
 import pandas as pd
 from datasets import load_dataset
-from flame.utils.batch_utils import process_batch_with_retry, chunk_list
-from flame.code.inference_prompts import fiqa_task2_prompt
+from flame.code.prompts_zeroshot import fiqa_task2_zeroshot_prompt
+from flame.code.prompts_fewshot import fiqa_task2_fewshot_prompt
 from flame.utils.logging_utils import setup_logger
 from flame.config import LOG_DIR, LOG_LEVEL
+import litellm
+from typing import Any, List
 from tqdm import tqdm
 
 # Set up logger
@@ -12,6 +14,33 @@ logger = setup_logger(
     log_file=LOG_DIR / "fiqa_task2_inference.log",
     level=LOG_LEVEL,
 )
+
+
+def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
+    """Split a list into chunks of specified size."""
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
+
+def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
+    """Process a batch with litellm's retry mechanism."""
+    try:
+        # Using litellm's built-in retry mechanism
+        batch_responses = litellm.batch_completion(
+            model=args.model,
+            messages=messages_batch,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            # top_k=args.top_k if args.top_k else None,
+            top_p=args.top_p,
+            # repetition_penalty=args.repetition_penalty,
+            num_retries=3,  # Using litellm's retry mechanism
+        )
+        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
+        return batch_responses
+
+    except Exception as e:
+        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+        raise
 
 
 def fiqa_task2_inference(args):
@@ -29,6 +58,11 @@ def fiqa_task2_inference(args):
     llm_responses = []
     actual_answers = []
     complete_responses = []
+
+    if args.prompt_format == "fewshot":
+        fiqa_task2_prompt = fiqa_task2_fewshot_prompt
+    elif args.prompt_format == "zeroshot":
+        fiqa_task2_prompt = fiqa_task2_zeroshot_prompt
 
     pbar = tqdm(question_batches, desc="Processing batches")
     for batch_idx, question_batch in enumerate(pbar):

@@ -1,6 +1,8 @@
 src/flame.bak
 
 .ruff_cache
+.vscode
+
 
 # Secrets
 .env

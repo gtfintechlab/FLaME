@@ -1,6 +1,5 @@
 # FLaME (Financial Language Understanding Evaluation)
-Corresponding Authors: `glennmatlin[at]gatech[dot]edu` `huzaifa[at]gatech[dot]edu`
-***ASSUME ALL THE TESTS ARE OBSOLETE DONT WORRY ABOUT THEM RIGHT NOW***
+Corresponding Author: `glenn[at]gatech[dot]edu`
 
 ## Project Setup
 

@@ -41,21 +41,16 @@ def parse_arguments():
     parser.add_argument(
         "--prompt_format",
         type=str,
-        default="flame",
+        default="zero_shot",
+        choices=["zero_shot", "few_shot"],
         help="Version of the prompt to use",
     )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
-    # Load environment variables first
     load_dotenv()
-
-    # Optional: Verify that environment variables are loaded
-    print(f"TOGETHER_API_KEY: {os.getenv('TOGETHERAI_API_KEY')}")
-    print(f"HUGGINGFACEHUB_API_TOKEN: {os.getenv('HUGGINGFACEHUB_API_TOKEN')}")
     HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-    # Log in to Hugging Face if the token is set
     if HUGGINGFACEHUB_API_TOKEN:
         login(token=HUGGINGFACEHUB_API_TOKEN)
     else:
@@ -63,7 +58,6 @@ if __name__ == "__main__":
             "Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in the environment."
         )
 
-    # Now import the inference function
     args = parse_arguments()
 
     with open(args.config, "r") as file:

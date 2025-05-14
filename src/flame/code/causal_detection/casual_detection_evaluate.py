@@ -1,3 +1,5 @@
+import re
+import json
 import pandas as pd
 from sklearn.metrics import (
     accuracy_score,
@@ -5,113 +7,123 @@ from sklearn.metrics import (
     classification_report,
 )
 from flame.utils.logging_utils import setup_logger
-from flame.config import LOG_DIR, LOG_LEVEL
-from tqdm import tqdm
-from flame.code.extraction_prompts import causal_detection_extraction_prompt
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-import ast
-
-logger = setup_logger(
-    name="causal_detection_evaluate",
-    log_file=LOG_DIR / "causal_detection_evaluate.log",
-    level=LOG_LEVEL,
+from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from litellm.types.utils import (
+    ModelResponse,
+    Choices,
+    Message,
+    Usage,
+    CompletionTokensDetailsWrapper,
+    PromptTokensDetailsWrapper,
 )
+from datetime import date
+
+
+def parse_label_list(raw_string: str):
+    """
+    Safely parse a string that may contain bracketed label lists with extra commas,
+    single quotes, or additional text. Returns a clean list of tags or an empty list.
+    """
+    if not isinstance(raw_string, str):
+        return []
+
+    start = raw_string.find("[")
+    end = raw_string.rfind("]")
+    if start == -1 or end == -1 or end < start:
+        return []
+
+    bracketed = raw_string[start : end + 1]
+
+    bracketed = bracketed.replace("'", '"')
+
+    bracketed = re.sub(r'(".*?"),\s*', r"\1,", bracketed)  # handle embedded strings
+    bracketed = re.sub(r",\s*\]", "]", bracketed)  # remove trailing commas before the ]
+
+    try:
+        parsed = json.loads(bracketed)
+        cleaned = [
+            re.sub(r",$", "", item.strip()) for item in parsed if isinstance(item, str)
+        ]
+        return cleaned
+    except Exception as e:
+        print(f"Exception parsing label list: {e}")
+        print(f"Error parsing label list: {raw_string}")
+        return []
 
 
 def adjust_tags(row):
     actual = row["actual_tags"]
-    predicted = row["extracted_tags"]
+    predicted = row["predicted_tags"]
     if len(predicted) > len(actual):
         return predicted[: len(actual)]
     elif len(predicted) < len(actual):
-        return predicted + ["NA"] * (len(actual) - len(predicted))
+        return None
     else:
         return predicted
 
 
-def causal_detection_evaluate(file_name, args):
-    """Evaluate causal detection results and return results and metrics DataFrames."""
+def casual_detection_evaluate(file_name, args):
+    logger = setup_logger(
+        name="causal_detection_evaluation",
+        log_file=LOG_DIR / "causal_detection_evaluation.log",
+        level=LOG_LEVEL,
+    )
     task = args.dataset.strip('“”"')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
-    # Load the CSV file
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    extracted_tags = []
+    evaluation_results_path = (
+        EVALUATION_DIR
+        / task
+        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
+    )
+    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
 
-    all_responses = df["llm_responses"].tolist()
+    type_dict = {
+        "ModelResponse": ModelResponse,
+        "Choices": Choices,
+        "Message": Message,
+        "Usage": Usage,
+        "CompletionTokensDetailsWrapper": CompletionTokensDetailsWrapper,
+        "PromptTokensDetailsWrapper": PromptTokensDetailsWrapper,
+    }
+    df["complete_responses"] = df["complete_responses"].apply(
+        lambda x: eval(x, type_dict)
+    )
+    df["llm_responses"] = df["complete_responses"].apply(
+        lambda x: x.choices[0].message.content
+    )
+    df["llm_responses"] = df["llm_responses"].apply(
+        lambda x: x[(x.find("</think>") + 8) :]
+    )
 
-    batches = chunk_list(all_responses, args.batch_size)
-    total_batches = len(batches)
+    df["predicted_tags"] = df["llm_responses"].apply(lambda x: x.strip())
 
-    pbar = tqdm(batches, desc="Processing batches")
-    for batch_idx, batch in enumerate(pbar):
-        # Prepare messages for batch
-        messages_batch = [
-            [{"role": "user", "content": causal_detection_extraction_prompt(response)}]
-            for response in batch
-        ]
+    df["actual_tags"] = df["actual_tags"].apply(parse_label_list)
+    df["predicted_tags"] = df["predicted_tags"].apply(parse_label_list)
 
-        try:
-            # Process batch with retry logic
-            batch_responses = process_batch_with_retry(
-                args, messages_batch, batch_idx, total_batches
-            )
+    print(df["predicted_tags"][0])
 
-        except Exception as e:
-            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-            # Add None values for failed batch
-            for _ in batch:
-                extracted_tags.append([])
+    df["adjusted_predicted_tags"] = df.apply(adjust_tags, axis=1)  # type: ignore
 
-        # Process responses
-        for response in batch_responses:
-            try:
-                extracted_list = response.choices[0].message.content.strip()  # type: ignore
-                extracted_list = extracted_list.replace("‘", "'").replace("’", "'")
-                extracted_list = extracted_list[
-                    extracted_list.find("[") : max(
-                        extracted_list.rfind("]"), len(extracted_list) - 1
-                    )
-                    + 1
-                ]
-                try:
-                    eval(extracted_list)
-                    if extracted_list.count("[") > 1:
-                        extracted_list = "[]"
-                except Exception:
-                    extracted_list = "[]"
-            except Exception as e:
-                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
-                extracted_list = "[]"
-            extracted_tags.append(extracted_list)
-
-        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
-        logger.info(f"Processed responses for batch {batch_idx + 1}.")
-
-    df["extracted_tags"] = extracted_tags
-    # Evaluate performance
-
-    df["extracted_tags"] = df["extracted_tags"].apply(ast.literal_eval)
-    df["actual_tags"] = df["actual_tags"].apply(ast.literal_eval)
-
-    df["adjusted_extracted_tags"] = df.apply(adjust_tags, axis=1)
-
-    df["length_match"] = df["adjusted_extracted_tags"].notnull()
+    df["length_match"] = df["adjusted_predicted_tags"].notnull()
 
     df["row_accuracy"] = df.apply(
-        lambda row: accuracy_score(row["actual_tags"], row["adjusted_extracted_tags"])
-        if row["length_match"]
-        else 0.0,
+        lambda row: (
+            accuracy_score(row["actual_tags"], row["adjusted_predicted_tags"])
+            if row["length_match"]
+            else 0.0
+        ),  # type: ignore
         axis=1,
-    )
+    )  # type: ignore
 
     valid_rows = df[df["length_match"]]
 
     flat_actual = [tag for tags in valid_rows["actual_tags"] for tag in tags]
     flat_predicted = [
-        tag for tags in valid_rows["adjusted_extracted_tags"] for tag in tags
+        tag for tags in valid_rows["adjusted_predicted_tags"] for tag in tags
     ]
 
     labels = ["B-CAUSE", "I-CAUSE", "B-EFFECT", "I-EFFECT", "O"]
@@ -124,6 +136,11 @@ def causal_detection_evaluate(file_name, args):
     precision, recall, f1, _ = precision_recall_fscore_support(
         flat_actual, flat_predicted, average="weighted"
     )
+
+    logger.info(
+        f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}"
+    )
+    df.to_csv(evaluation_results_path, index=False)
 
     logger.info(f"Accuracy: {accuracy:.4f}")
     logger.info(f"Precision: {precision:.4f}")
@@ -140,7 +157,11 @@ def causal_detection_evaluate(file_name, args):
         }
     )
 
-    success_rate = df["extracted_tags"].notnull().sum() / len(df) * 100
-    logger.info(f"Success rate: {success_rate}")
+    # Save metrics DataFrame
+    metrics_path = evaluation_results_path.with_name(
+        f"{evaluation_results_path.stem}_metrics.csv"
+    )
+    metrics_df.to_csv(metrics_path, index=False)
+    logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df

@@ -47,7 +47,6 @@ def calculate_accuracy_and_stats(file_path, tolerance=0.01):
     }
 
 
-file_path = "/home/thans/Documents/Study/fall24/cs7643/flame_cs7643/output/results/bizbench/bizbench_meta-llama/Meta-Llama-3-70B-Instruct_03_05_2025.csv"
-stats = calculate_accuracy_and_stats(file_path)
+stats = calculate_accuracy_and_stats("path_to_your_file.csv")
 for metric, value in stats.items():
     print(f"{metric}: {value:.4f}")
