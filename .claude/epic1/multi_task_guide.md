@@ -1,5 +1,7 @@
 # Multi-Task Execution Guide for FLaME
 
+Updated: 2025-05-14
+
 This guide covers the multi-task functionality in FLaME, which allows running multiple tasks (inference or evaluation) with a single command. This is especially useful for benchmarking models across multiple financial language tasks or running comprehensive evaluations.
 
 ## 1. Introduction

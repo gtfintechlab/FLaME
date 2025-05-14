@@ -3,7 +3,8 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 # Additional Instructions
-- @~/.claude/my-project-instructions.md
+- @~/.claude/epic1/epic1_plan.md
+- @~/.claude/epic1/multi_task_guide.md
 
 ## Project Overview
 
