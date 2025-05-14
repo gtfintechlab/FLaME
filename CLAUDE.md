@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+# Additional Instructions
+- @~/.claude/my-project-instructions.md
+
 ## Project Overview
 
 FLaME (Financial Language Understanding Evaluation) is a framework for evaluating Large Language Models (LLMs) on financial tasks. The repository contains multiple datasets for evaluating model performance on tasks like sentiment analysis, causal classification, summarization, and more in the financial domain.
