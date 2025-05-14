@@ -7,15 +7,17 @@ from dataclasses import dataclass
 from typing import Dict, Any, List, Optional, Tuple
 import logging
 
+"""FOMC inference module."""
+
+
 import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
 import litellm
 from pathlib import Path
 
-from flame.code.prompts_zeroshot import fomc_zeroshot_prompt
-from flame.code.prompts_fewshot import fomc_fewshot_prompt
 from flame.utils.logging_utils import setup_logger
+
 from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
 # Configure litellm to be less verbose

@@ -7,7 +7,7 @@ from flame.code.causal_classification.causal_classification_evaluate import (
     causal_classification_evaluate,
 )
 from flame.code.subjectiveqa.subjectiveqa_evaluate import subjectiveqa_evaluate
-from flame.code.ectsum.ectsum_evaluate import ectsum_evaluate
+# from flame.code.ectsum.ectsum_evaluate import ectsum_evaluate
 from flame.code.refind.refind_evaluate import refind_evaluate
 from flame.code.convfinqa.convfinqa_evaluate import convfinqa_evaluate
 from flame.code.finqa.finqa_evaluate import finqa_evaluate

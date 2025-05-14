@@ -1,5 +1,4 @@
 # FLaME (Financial Language Understanding Evaluation)
-Corresponding Author: `glenn[at]gatech[dot]edu`
 
 ## Project Setup
 
@@ -8,36 +7,39 @@ Corresponding Author: `glenn[at]gatech[dot]edu`
 To create the virtual environment in the project root and install the required packages, follow these steps:
 
 1. **Create the virtual environment**:
-    ```sh
-    python -m venv .venv
-    ```
 
+   ```sh
+   python -m venv .venv
+   ```
 2. **Activate the virtual environment**:
-    - On Windows:
-        ```sh
-        .\.venv\Scripts\activate
-        ```
-    - On macOS and Linux:
-        ```sh
-        source .venv/bin/activate
-        ```
 
+   - On Windows:
+     ```sh
+     .\.venv\Scripts\activate
+     ```
+   - On macOS and Linux:
+     ```sh
+     source .venv/bin/activate
+     ```
 3. **Install the required packages**:
-    ```sh
-    pip install -r requirements.txt
-    ```
+
+   ```sh
+   pip install -r requirements.txt
+   ```
 
 ### Installing FLaME
 
 From the root directory you can run `pip install -e .` -- this uses `setup.py` to install FLaME to your activate Python environment.
 
 You can re-install flame if something goes wrong:
+
 ```bash
 pip uninstall flame
 pip install -e .
 ```
 
 (unsure if needed) Clean-up files after install:
+
 ```bash
 python setup.py clean --all
 rm -rf build/ dist/ *.egg-info
@@ -46,6 +48,7 @@ find . -name '__pycache__' -delete
 ```
 
 Test the installation of FLaME worked:
+
 ```bash
 python
 >>> import flame
@@ -53,24 +56,27 @@ python
 ```
 
 ### API keys
+
 To configure your API keys, follow these steps:
 
 1. **Create a `.env` file**:
-    - You can create a new `.env` file in the project root directory **OR** copy the provided `.env.sample` file and rename it to `.env`.
 
+   - You can create a new `.env` file in the project root directory **OR** copy the provided `.env.sample` file and rename it to `.env`.
 2. **Modify the `.env` file**:
-    - Open the `.env` file in a text editor.
-    - Add your API keys in the following format:
-      ```
-      API_KEY_NAME=your_api_key_value
-      ```
-    - Replace `API_KEY_NAME` with the actual name of the API key and `your_api_key_value` with your actual API key.
-    - Make sure to add all API keys relevant to the models you want to call.
 
+   - Open the `.env` file in a text editor.
+   - Add your API keys in the following format:
+     ```
+     API_KEY_NAME=your_api_key_value
+     ```
+   - Replace `API_KEY_NAME` with the actual name of the API key and `your_api_key_value` with your actual API key.
+   - Make sure to add all API keys relevant to the models you want to call.
 3. **Save the `.env` file**:
-    - Ensure the file is saved in the project root directory.
+
+   - Ensure the file is saved in the project root directory.
 
 Example:
+
 ```
 HUGGINGFACEHUB_API_TOKEN=foo
 TOGETHER_API_KEY=bar
@@ -86,13 +92,14 @@ This repository is organized into three primary components: Data Management, Inf
 
 ### 1. Data Management
 
-The `data` folder in this repository contains multiple subfolders, each representing a different dataset. For each dataset, there is a corresponding script named `huggify_{dataset}.py`. These scripts are designed to upload the raw data for each dataset to the [gtfintech lab's repository on Hugging Face](https://huggingface.co/gtfintechlab).
+The `data` folder in this repository contains multiple subfolders, each representing a different dataset. For each dataset, there is a corresponding script named `huggify_{dataset}.py`. These scripts are designed to upload the raw data for each dataset to the [gtfintech lab&#39;s repository on Hugging Face](https://huggingface.co/gtfintechlab).
 
 #### How to Use the Data Upload Script
 
 For each dataset, you can find its respective script inside its corresponding folder. The script reads raw data files (in CSV/JSON/other formats), processes them, and uploads them to Hugging Face using the Hugging Face API.
 
 - Example directory structure:
+
 ```bash
 data/ 
     ├── DatasetA/ 
@@ -101,12 +108,9 @@ data/
     │ └── huggify_DatasetB.py
 ```
 
-
 To upload a dataset, simply run the respective script:
 
-
 python3 data/{dataset_name}/huggify_{dataset_name}.py
-
 
 ### 2. Inference Pipeline
 
@@ -132,13 +136,15 @@ To run inference on any dataset using this repository, you can use the following
 
 `python3 src/together/inference.py --model "{model_name}" --task "{dataset_name}" --max_tokens {max_tokens} --temperature {temperature} --top_p {top_p} --top_k {top_k} --repetition_penalty {repetition_penalty} --prompt_format "{prompt_format}"`
 
-
 #### Command Options:
+
 - `--model`: The name of the model you want to use for inference (e.g., GPT-3, T5, etc.).
 - `--task`: The name of the dataset task for which you are running inference.
 - `--max_tokens`: The maximum number of tokens to generate for each inference.
 - `--temperature`: The sampling temperature (controls randomness in predictions).
 - `--top_p`: Controls nucleus sampling.
+
 <!-- - `--top_k`: Controls top-k sampling. -->
+
 - `--repetition_penalty`: Penalty for repeated tokens during inference.
 - `--prompt_format`: Specify the format of the prompt you want to use (from `prompts.py`).
