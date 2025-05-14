@@ -1,4 +1,3 @@
-import yaml
 import argparse
 from dotenv import load_dotenv
 import os
@@ -32,22 +31,26 @@ def parse_arguments():
         type=float,
         help="Repetition penalty to use",
     )
-    parser.add_argument(
-        "--batch_size", type=int, help="Inference batch size"
-    )
+    parser.add_argument("--batch_size", type=int, help="Inference batch size")
     parser.add_argument(
         "--prompt_format",
         type=str,
         choices=["zero_shot", "few_shot"],
         help="Version of the prompt to use",
     )
-    parser.add_argument("--tasks", type=str, nargs="+", help="List of task names to run (e.g. numclaim fpb)")
+    parser.add_argument(
+        "--tasks",
+        type=str,
+        nargs="+",
+        help="List of task names to run (e.g. numclaim fpb)",
+    )
     args = parser.parse_args()
 
     # Load and merge config
     config = {}
     if args.config:
         import yaml
+
         with open(args.config, "r") as f:
             config = yaml.safe_load(f) or {}
     # CLI overrides config; fill missing from config
@@ -75,6 +78,7 @@ def parse_arguments():
 
 class MultiTaskError(Exception):
     """Raised when one or more tasks fail during multi-task execution."""
+
     def __init__(self, errors: dict[str, Exception]):
         self.errors = errors
         super().__init__(f"Errors in tasks: {', '.join(errors.keys())}")

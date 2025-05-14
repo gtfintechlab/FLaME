@@ -41,15 +41,6 @@ Provide only one word as your answer: HAWKISH, DOVISH, or NEUTRAL."""
     return prompt
 
 
-# Renamed Function from Code File 2 to avoid collision
-def fomc_prompt__dunder(sentence: str) -> str:
-    """Generate prompt for FOMC sentiment classification with explanation."""
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence classifier. Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEUTRAL’ class. 
-Label ‘HAWKISH’ if it corresponds to tightening of the monetary policy, ‘DOVISH’ for easing of monetary policy, or ‘NEUTRAL’ for balance. Provide the label in the first line and a short explanation in the second line. 
-Sentence: {sentence}"""
-    return prompt
-
-
 def bizbench_prompt(question: str, context: str) -> str:
     """Generate prompt for BizBench QA task."""
     prompt = f"""Discard all previous instructions. You are an expert financial data extractor. 
