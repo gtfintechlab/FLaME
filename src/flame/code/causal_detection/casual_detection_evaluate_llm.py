@@ -1,13 +1,12 @@
 import pandas as pd
 from datetime import date
-import litellm
-from typing import Any, List
 from sklearn.metrics import (
     accuracy_score,
     precision_recall_fscore_support,
     classification_report,
 )
 from flame.utils.logging_utils import setup_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 from litellm.types.utils import (
@@ -36,33 +35,6 @@ def extraction_prompt(llm_response: str):
                 Only output a list of tokens enclosed in brackets, do not include any additional text or formatting.
                 Response: {llm_response}"""
     return prompt
-
-
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens * 2,
-            temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3,  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 
 def adjust_tags(row):
@@ -120,6 +92,7 @@ def causal_detection_evaluate(file_name, args):
 
     all_responses = df["llm_responses"].tolist()
 
+    # Create batches for processing
     batches = chunk_list(all_responses, args.batch_size)
     total_batches = len(batches)
 
@@ -133,6 +106,7 @@ def causal_detection_evaluate(file_name, args):
 
         try:
             # Process batch with retry logic
+            # Using the process_batch_with_retry function from batch_utils
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches
             )
