@@ -1,27 +1,59 @@
-import pandas as pd
+#!/usr/bin/env python3
+"""
+Command-line tool to remove <think> tags from model responses in CSV files.
+
+This script is now a wrapper around the utility function in flame.utils.miscellaneous.
+"""
+
+import argparse
+import glob
+from pathlib import Path
+
+from flame.utils.miscellaneous import remove_think_tokens
 
 
-def remove_think_tokens(file_path):
-    df = pd.read_csv(file_path)
-    df["llm_responses"] = df["llm_responses"].apply(
-        lambda x: x[(x.find("</think>") + 8) :]
+def main():
+    """Process command line arguments and execute the remove_think_tokens function."""
+    parser = argparse.ArgumentParser(
+        description="Remove <think> tags from model responses in CSV files."
     )
-    df.to_csv(file_path[:-4] + "_no_think.csv", index=False)
+    parser.add_argument(
+        "paths",
+        nargs="+",
+        help="Path(s) to CSV file(s) containing model responses. Supports glob patterns.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help="Optional output directory for processed files. Default: same as input files.",
+    )
+
+    args = parser.parse_args()
+
+    # Expand glob patterns and process each file
+    processed_files = []
+    for pattern in args.paths:
+        for file_path in glob.glob(pattern):
+            file_path = Path(file_path)
+            if args.output_dir:
+                output_path = (
+                    args.output_dir / f"{file_path.stem}_no_think{file_path.suffix}"
+                )
+            else:
+                output_path = None  # Let the function determine the default
+
+            try:
+                output = remove_think_tokens(file_path, output_path)
+                print(f"Processed: {file_path} -> {output}")
+                processed_files.append(output)
+            except Exception as e:
+                print(f"Error processing {file_path}: {e}")
+
+    print(f"Successfully processed {len(processed_files)} file(s)")
 
 
 if __name__ == "__main__":
-    remove_think_tokens(
-        "results/finer/finer_together_ai/deepseek-ai/DeepSeek-r1_09_02_2025.csv"
-    )
-    # remove_think_tokens('results/banking77/banking77_together_ai/deepseek-ai/DeepSeek-r1_08_02_2025.csv')
-    # remove_think_tokens('results/causal_detection/causal_detection_together_ai/deepseek-ai/DeepSeek-r1_08_02_2025.csv')
-    # remove_think_tokens('results/edtsum/edtsum_together_ai/deepseek-ai/DeepSeek-r1_08_02_2025.csv')
-    # remove_think_tokens('results/finbench/finbench_together_ai/deepseek-ai/DeepSeek-r1_09_02_2025.csv')
-    # remove_think_tokens('results/finred/finred_together_ai/deepseek-ai/DeepSeek-r1_09_02_2025.csv')
-
-    # remove_think_tokens('results/fiqa_task1/fiqa_task1_together_ai/deepseek-ai/DeepSeek-r1_08_02_2025.csv')
-    # remove_think_tokens('results/fiqa_task2/fiqa_task2_together_ai/deepseek-ai/DeepSeek-r1_08_02_2025.csv')
-    # remove_think_tokens('results/fpb/fpb_together_ai/deepseek-ai/DeepSeek-r1_08_02_2025.csv')
-    # remove_think_tokens('results/refind/refind_together_ai/deepseek-ai/DeepSeek-r1_09_02_2025.csv')
-    # remove_think_tokens('results/headlines/headlines_together_ai/deepseek-ai/DeepSeek-r1_08_02_2025.csv')
-    # remove_think_tokens('results/finqa/finqa_together_ai/deepseek-ai/DeepSeek-r1_09_02_2025.csv')
+    # Usage examples:
+    # python -m flame.code.remove_think_tokens "results/**/*DeepSeek*.csv"
+    # python -m flame.code.remove_think_tokens results/finer/finer_together_ai/deepseek-ai/DeepSeek-r1_09_02_2025.csv
+    main()
