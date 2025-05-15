@@ -14,11 +14,6 @@ def headlines_prompt(sentence: str):
     return prompt
 
 
-def fiqa_prompt(sentence: str):
-    prompt = f"""Lorem ipsum: {sentence}"""
-    return prompt
-
-
 def fiqa_task1_prompt(sentence: str):
     prompt = f"""You are a financial sentiment analysis expert. Analyze the provided sentence, identify relevant target aspects (such as companies, products, or strategies), and assign a sentiment score for each target. 
                 The sentiment score should be between -1 (highly negative) and 1 (highly positive), using up to three decimal places to capture nuances in sentiment.
