@@ -1,17 +1,37 @@
-def headlines_zeroshot_prompt(sentence: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
-                    Give a score of 0 for each of the following attributes if the news headline does not contain the following information or 1 if it does.
-                    Price or Not: Does the news item talk about price or not.
-                    Direction Up: Does the news headline talk about price going up or not?
-                    Direction Down: Does the news headline talk about price going down or not?
-                    Direction Constant: Does the news headline talk about price remaining constant or not?
-                    Past Price: Does the news headline talk about an event in the past?
-                    Future Price: Does the news headline talk about an event in the future?
-                    Past News: Does the news headline talk about a general event (apart from prices) in the past?
-                    The news headline is:
-                    {sentence}"""
+"""
+Backward compatibility module for zero-shot prompts.
 
-    return prompt
+This module provides backward compatibility with the original prompts_zeroshot.py module.
+All prompt functions are now imported from the new prompts package.
+
+DEPRECATED: This module will be removed in a future version.
+Use flame.code.prompts package instead.
+"""
+
+import warnings
+
+# Issue deprecation warning immediately
+warnings.filterwarnings("always", category=DeprecationWarning)
+warnings.warn(
+    "prompts_zeroshot.py is deprecated and will be removed in a future version. "
+    "Use flame.code.prompts package instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+# Import from new prompt package
+from flame.code.prompts.zeroshot import (
+    headlines_zeroshot_prompt,
+    fpb_zeroshot_prompt,
+    numclaim_zeroshot_prompt,
+    fomc_zeroshot_prompt,
+    banking77_zeroshot_prompt,
+)
+
+# Define aliases for functions with different names in the original module
+headlines_prompt = headlines_zeroshot_prompt
+
+# ---- Keep original functions that haven't been migrated yet ----
 
 
 def fiqa_prompt(sentence: str):
@@ -54,36 +74,15 @@ def edtsum_zeroshot_prompt(document: str):
     return prompt
 
 
-def numclaim_prompt(sentence: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence senti-
-            ment classifier. Classify the following sentence into ‘INCLAIM’, or ‘OUTOFCLAIM’ class.
-            Label ‘INCLAIM’ if consist of a claim and not just factual past or present information, or
-            ‘OUTOFCLAIM’ if it has just factual past or present information. Provide the label in the
-            first line and provide a short explanation in the second line. The sentence:{sentence}"""
-
-    return prompt
-
-
-def fomc_zeroshot_prompt(sentence: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
-                sifier. Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
-                TRAL’ class. Label ‘HAWKISH’ if it is corresponding to tightening of the monetary policy,
-                ‘DOVISH’ if it is corresponding to easing of the monetary policy, or ‘NEUTRAL’ if the
-                stance is neutral. Provide the label in the first line and provide a short explanation in the
-                second line. This is the sentence: {sentence}"""
-
-    return prompt
-
-
 def finer_zeroshot_prompt(sentence: str):
     system_prompt = """Discard all the previous instructions. Behave like you are an expert named entity
                     identifier. """
     user_msg = f"""Below a sentence is tokenized and each list item contains a word token from the
-                    sentence. Identify ‘Person’, ‘Location’, and ‘Organisation’ from them and label them. If the
+                    sentence. Identify 'Person', 'Location', and 'Organisation' from them and label them. If the
                     entity is multi token use post-fix_B for the first label and _I for the remaining token labels
                     for that particular entity. The start of the separate entity should always use _B post-fix for
-                    the label. If the token doesn’t fit in any of those three categories or is not a named entity
-                    label it ‘Other’. Do not combine words yourself. Use a colon to separate token and label.
+                    the label. If the token doesn't fit in any of those three categories or is not a named entity
+                    label it 'Other'. Do not combine words yourself. Use a colon to separate token and label.
                     So the format should be token:label. \n\n + {sentence} """
 
     # prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
@@ -92,67 +91,8 @@ def finer_zeroshot_prompt(sentence: str):
     return prompt
 
 
-def fpb_zeroshot_prompt(sentence: str, prompt_format: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
-                    sifier. Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
-                    class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
-                    the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}"""
-
-    return prompt
-
-    if prompt_format == "flame":
-        system_prompt = """ Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier"""
-
-        user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
-                    class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. 
-                    Provide the label in the first line and provide a short explanation in the second line.
-                    Explain how you came to your classification decision. This is the sentence: {sentence}."""
-
-    elif prompt_format == "finben_icl":
-        system_prompt = """"""
-        user_msg = f""" Analyze the sentiment of this statement extracted from a financial news article.
-                        Provide your answer as either NEGATIVE, POSITIVE or NEUTRAL.
-                        For instance, ’The company’s stocks plummeted following the scandal.’ would be classified as negative. This is the sentence: {sentence}"""
-
-    elif prompt_format == "finben_noicl":
-        system_prompt = """"""
-        user_msg = f""" Analyze the sentiment of this statement extracted from a financial news article.
-                        Provide your answer as either NEGATIVE, POSITIVE or NEUTRAL.
-                        This is the sentence: {sentence}"""
-
-    elif prompt_format == "flame_icl":
-        system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier """
-        user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
-                        class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                        corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
-                        the label in the first line and provide a short explanation in the second line.
-                        For instance: 
-                        "According to Gran , the company has no plans to move all production to Russia , although that is where the company is growing" would be classified as 'NEUTRAL.
-                        "When this investment is in place , Atria plans to expand into the Moscow market" would be classified as 'NEUTRAL'.
-                        "With the new production plant the company would increase its capacity to meet the expected increase in demand and would improve the use of raw materials and therefore increase the production profitability" would be classified as 'POSITIVE'.
-                        "For the last quarter of 2010 , Componenta's net sales doubled to EUR131m from EUR76m for the same period a year earlier , while it moved to a zero pre-tax profit from a pre-tax loss of EUR7m" would be classified as 'POSITIVE'.
-                        "Aspocomp has a large factory in China and a factory building project in India that was halted due to financing problems" would be classified as 'NEGATIVE'.
-                        "The low capacity utilisation rate in steel production considerably increases the fixed costs per unit of steel produced" would be classified as 'NEGATIVE'.
-                        This is the sentence: {sentence}"""
-
-    elif prompt_format == "flame_cot":  # TODO modify this prompt text
-        system_prompt = """Discard all the previous instructions. Behave like you are an expert sentence sentiment classifier """
-        user_msg = f""" Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
-                        class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                        corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Let's think about this sentiment classification task step by step.
-                        First, generate your reasoning steps for the classification. After your reasoning, end the response with the label that fits your reasoning.
-                        This is the sentence: {sentence}"""
-
-    prompt = f"""{system_prompt}\n{user_msg}"""
-    print(prompt)
-
-    return prompt
-
-
 def finentity_zeroshot_prompt(sentence: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert entity recognizer and sentiment classifier. Identify the entities which are companies or organizations from the following content and classify the sentiment of the corresponding entities into ‘Neutral’ ‘Positive’ or ‘Negative’ classes. Considering every paragraph as a String in Python, provide the entities with the start and end index to mark the boundaries of it including spaces and punctuation using zero-based indexing. In the output, 
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert entity recognizer and sentiment classifier. Identify the entities which are companies or organizations from the following content and classify the sentiment of the corresponding entities into 'Neutral' 'Positive' or 'Negative' classes. Considering every paragraph as a String in Python, provide the entities with the start and end index to mark the boundaries of it including spaces and punctuation using zero-based indexing. In the output, 
     Tag means sentiment; value means entity name. If no entity is found in the paragraph, 
     the response should be empty. Only give the output, not python code. The output should be a list that looks like:
     [{{'end': 210,
@@ -179,9 +119,9 @@ def finentity_zeroshot_prompt(sentence: str):
 
 def finbench_zeroshot_prompt(profile: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expect risk assessor.
-                Classify the following individual as either ‘LOW RISK’ or ‘HIGH RISK’ for approving a loan for. 
-                Categorize the person as ‘HIGH RISK’ if their profile indicates that they will likely default on 
-                the loan and not pay it back, and ‘LOW RISK’ if it is unlikely that they will fail to pay the loan back in full.
+                Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan for. 
+                Categorize the person as 'HIGH RISK' if their profile indicates that they will likely default on 
+                the loan and not pay it back, and 'LOW RISK' if it is unlikely that they will fail to pay the loan back in full.
                 Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision.
                 Here is the information about the person:\nProfile data: {profile}\nPredict the risk category of this person:
                 """
@@ -281,15 +221,6 @@ banking77_list = [
     "wrong_amount_of_cash_received",
     "wrong_exchange_rate_for_cash_withdrawal",
 ]
-
-
-def banking77_zeroshot_prompt(sentence: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert at
-                fine-grained single-domain intent detection. From the following list: {banking77_list}, identify
-                which category the following sentence belongs to.
-                {sentence}"""
-
-    return prompt
 
 
 def finqa_zeroshot_prompt(document: str):
@@ -448,7 +379,7 @@ def refind_zeroshot_prompt(entities):
 
 
 prompt_map = {
-    "numclaim_prompt": numclaim_prompt,
+    "numclaim_prompt": numclaim_zeroshot_prompt,  # Updated to use the renamed function
     "fiqa_task1_zeroshot_prompt": fiqa_task1_zeroshot_prompt,
     "fiqa_task2_zeroshot_prompt": fiqa_task2_zeroshot_prompt,
     "fomc_zeroshot_prompt": fomc_zeroshot_prompt,
@@ -470,3 +401,7 @@ prompt_map = {
 
 def prompt_function(prompt_name):
     return prompt_map.get(prompt_name, None)
+
+
+# Add backwards compatibility for the renamed function
+numclaim_prompt = numclaim_zeroshot_prompt

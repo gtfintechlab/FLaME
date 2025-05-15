@@ -1,19 +1,25 @@
-def headlines_prompt(sentence: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
-                    Give a score of 0 for each of the following attributes if the news headline does not contain the following information or 1 if it does.
-                    Price or Not: Does the news item talk about price or not.
-                    Direction Up: Does the news headline talk about price going up or not?
-                    Direction Down: Does the news headline talk about price going down or not?
-                    Direction Constant: Does the news headline talk about price remaining constant or not?
-                    Past Price: Does the news headline talk about an event in the past?
-                    Future Price: Does the news headline talk about an event in the future?
-                    Past News: Does the news headline talk about a general event (apart from prices) in the past?
-                    The news headline is:
-                    {sentence}"""
+"""Legacy prompt functions for inference.
 
-    return prompt
+This module is deprecated and will be removed in a future version.
+Use prompts.py, prompts_zeroshot.py, or the prompt_registry instead.
+"""
+
+import warnings
+
+# Import canonical prompt implementations to maintain backward compatibility
+from flame.code.prompts import edtsum_prompt, numclaim_prompt
+from flame.code.prompts_fromferrari import fomc_prompt
+
+# Warn about using this deprecated module
+warnings.warn(
+    "inference_prompts.py is deprecated and will be removed in a future version. "
+    "Use prompts.py, prompts_zeroshot.py, or the prompt_registry instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
+# Keep non-duplicated definitions
 def fiqa_task1_prompt(sentence: str):
     prompt = f"""You are a financial sentiment analysis expert. Analyze the provided sentence, identify relevant target aspects (such as companies, products, or strategies), and assign a sentiment score for each target. 
                 The sentiment score should be between -1 (highly negative) and 1 (highly positive), using up to three decimal places to capture nuances in sentiment.
@@ -41,34 +47,15 @@ def fiqa_task2_prompt(question: str):
     return prompt
 
 
-def edtsum_prompt(document: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert at summarization tasks.	
-        You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization 
-        on this text. Use your understanding of the content to express the main ideas and crucial details in a shorter, coherent, and natural sounding text.
-        \nThe text:\n{document}.\nOutput your concise summary below. Try to keep your summary to one sentence and a maximum of 50 words, preferably around 25 words."""
-    return prompt
-
-
-def fomc_prompt(sentence: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
-                sifier. Classify the following sentence from FOMC into ‘HAWKISH’, ‘DOVISH’, or ‘NEU-
-                TRAL’ class. Label ‘HAWKISH’ if it is corresponding to tightening of the monetary policy,
-                ‘DOVISH’ if it is corresponding to easing of the monetary policy, or ‘NEUTRAL’ if the
-                stance is neutral. Provide the label in the first line and provide a short explanation in the
-                second line. This is the sentence: {sentence}"""
-
-    return prompt
-
-
 def finer_prompt(sentence: str):
     system_prompt = """Discard all the previous instructions. Behave like you are an expert named entity
                     identifier. """
     user_msg = f"""Below a sentence is tokenized and each list item contains a word token from the
-                    sentence. Identify ‘Person’, ‘Location’, and ‘Organisation’ from them and label them. If the
+                    sentence. Identify 'Person', 'Location', and 'Organisation' from them and label them. If the
                     entity is multi token use post-fix_B for the first label and _I for the remaining token labels
                     for that particular entity. The start of the separate entity should always use _B post-fix for
-                    the label. If the token doesn’t fit in any of those three categories or is not a named entity
-                    label it ‘Other’. Do not combine words yourself. Use a colon to separate token and label.
+                    the label. If the token doesn't fit in any of those three categories or is not a named entity
+                    label it 'Other'. Do not combine words yourself. Use a colon to separate token and label.
                     So the format should be token:label. \n\n + {sentence} """
 
     # prompt = f"""<s>[INST] <<SYS>> {system_prompt} <</SYS>> {user_msg} [/INST]"""
@@ -79,16 +66,16 @@ def finer_prompt(sentence: str):
 
 def fpb_prompt(sentence: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
-                    sifier. Classify the following sentence into ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’
-                    class. Label ‘NEGATIVE’ if it is corresponding to negative sentiment, ‘POSITIVE’ if it is
-                    corresponding to positive sentiment, or ‘NEUTRAL’ if the sentiment is neutral. Provide
+                    sifier. Classify the following sentence into 'NEGATIVE', 'POSITIVE', or 'NEUTRAL'
+                    class. Label 'NEGATIVE' if it is corresponding to negative sentiment, 'POSITIVE' if it is
+                    corresponding to positive sentiment, or 'NEUTRAL' if the sentiment is neutral. Provide
                     the label in the first line and provide a short explanation in the second line. This is the sentence: {sentence}"""
 
     return prompt
 
 
 def finentity_prompt(sentence: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert entity recognizer and sentiment classifier. Identify the entities which are companies or organizations from the following content and classify the sentiment of the corresponding entities into ‘Neutral’ ‘Positive’ or ‘Negative’ classes. Considering every paragraph as a String in Python, provide the entities with the start and end index to mark the boundaries of it including spaces and punctuation using zero-based indexing. In the output, 
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert entity recognizer and sentiment classifier. Identify the entities which are companies or organizations from the following content and classify the sentiment of the corresponding entities into 'Neutral' 'Positive' or 'Negative' classes. Considering every paragraph as a String in Python, provide the entities with the start and end index to mark the boundaries of it including spaces and punctuation using zero-based indexing. In the output, 
     Tag means sentiment; value means entity name. If no entity is found in the paragraph, 
     the response should be empty. Only give the output, not python code. The output should be a list that looks like:
     [{{'end': 210,
@@ -115,9 +102,9 @@ def finentity_prompt(sentence: str):
 
 def finbench_prompt(profile: str):
     prompt = f"""Discard all the previous instructions. Behave like you are an expect risk assessor.
-                Classify the following individual as either ‘LOW RISK’ or ‘HIGH RISK’ for approving a loan for. 
-                Categorize the person as ‘HIGH RISK’ if their profile indicates that they will likely default on 
-                the loan and not pay it back, and ‘LOW RISK’ if it is unlikely that they will fail to pay the loan back in full.
+                Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan for. 
+                Categorize the person as 'HIGH RISK' if their profile indicates that they will likely default on 
+                the loan and not pay it back, and 'LOW RISK' if it is unlikely that they will fail to pay the loan back in full.
                 Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision.
                 Here is the information about the person:\nProfile data: {profile}\nPredict the risk category of this person:
                 """
@@ -380,17 +367,6 @@ def fnxl_prompt(sentence, company, doc_type):
 def refind_prompt(entities):
     relations = "PERSON/TITLE - person subject, title object, relation title\nPERSON/GOV_AGY - person subject, government agency object, relation member_of\nPERSON/UNIV - person subject, university object, relation employee_of, member_of, attended\nPERSON/ORG - person subject, organization object, relation employee_of, member_of, founder_of\nORG/DATE - organization subject, date object, relation formed_on, acquired_on\nORG/MONEY - organization subject, money object, relation revenue_of, profit_of, loss_of, cost_of\nORG/GPE - organization subject, geopolitical entity object, relation headquartered_in, operations_in, formed_in\nORG/ORG - organization subject, organization object, relation shares_of, subsidiary_of, acquired_by, agreement_with"
     prompt = f"Classify the following relationship between ENT1 (the subject) and ENT2 (the object). The entities are marked by being enclosed in [ENT1] and [/EN1] and [ENT2] and [/ENT2] respectively. The subject entity will either be a person (PER) or an organization (ORG). The possible relationships are as follows, with the subject listed first and object listed second:\n{relations}\nText about entities: {entities}"
-    return prompt
-
-
-def numclaim_prompt(sentence: str) -> str:
-    """Prompt for sentence claim classification."""
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence senti-
-            ment classifier. Classify the following sentence into ‘INCLAIM’, or ‘OUTOFCLAIM’ class.
-            Label ‘INCLAIM’ if consist of a claim and not just factual past or present information, or
-            ‘OUTOFCLAIM’ if it has just factual past or present information. Provide the label in the
-            first line and provide a short explanation in the second line. The sentence:{sentence}"""
-
     return prompt
 
 

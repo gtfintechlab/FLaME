@@ -1,61 +1,78 @@
+"""
+Backward compatibility module for few-shot prompts.
+
+This module provides backward compatibility with the original prompts_fewshot.py module.
+All prompt functions are now imported from the new prompts package.
+
+DEPRECATED: This module will be removed in a future version.
+Use flame.code.prompts package instead.
+"""
+
+import warnings
+
+# Issue deprecation warning immediately
+warnings.filterwarnings("always", category=DeprecationWarning)
+warnings.warn(
+    "prompts_fewshot.py is deprecated and will be removed in a future version. "
+    "Use flame.code.prompts package instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+# Import from new prompt package
+from flame.code.prompts.fewshot import (
+    banking77_fewshot_prompt,
+    numclaim_fewshot_prompt,
+    fpb_fewshot_prompt,
+    fomc_fewshot_prompt,
+)
+
+# ---- Keep original stubs that haven't been migrated yet ----
+
+
 def headlines_fewshot_prompt(sentence: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 def fiqa_fewshot_prompt(sentence: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 def fiqa_task1_fewshot_prompt(sentence: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 def fiqa_task2_fewshot_prompt(question: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 def edtsum_fewshot_prompt(document: str):
     # placeholder for the prompt
-    return
-
-
-def numclaim_fewshot_prompt(sentence: str):
-    # placeholder for the prompt
-    return
-
-
-def fomc_fewshot_prompt(sentence: str):
-    # placeholder for the prompt
-    return
+    return None
 
 
 def finer_fewshot_prompt(sentence: str):
     # placeholder for the prompt
-    return
-
-
-def fpb_fewshot_prompt(sentence: str, prompt_format: str):
-    # placeholder for the prompt
-    return
+    return None
 
 
 def finentity_fewshot_prompt(sentence: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 def finbench_fewshot_prompt(profile: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 def ectsum_fewshot_prompt(document: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 banking77_list = [
@@ -139,57 +156,49 @@ banking77_list = [
 ]
 
 
-def banking77_fewshot_prompt(sentence: str):
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert at
-                fine-grained single-domain intent detection. From the following list: {banking77_list}, identify
-                which category the following sentence belongs to.
-                {sentence}"""
-    return prompt
-
-
 def finqa_fewshot_prompt(document: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 def convfinqa_fewshot_prompt(document: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 def tatqa_fewshot_prompt(document: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 def causal_classification_fewshot_prompt(text: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 def finred_fewshot_prompt(sentence: str, entity1: str, entity2: str):
     # placeholder for the prompt
-    return
+    return None
 
 
 def causal_detection_fewshot_prompt(tokens: list):
     # placeholder for the prompt
-    return
+    return None
 
 
 def subjectiveqa_fewshot_prompt(feature, definition, question, answer):
     # placeholder for the prompt
-    return
+    return None
 
 
 def fnxl_fewshot_prompt(sentence, company, doc_type):
     # placeholder for the prompt
-    return
+    return None
 
 
 def refind_fewshot_prompt(entities):
     # placeholder for the prompt
-    return
+    return None
 
 
 prompt_map = {
@@ -219,4 +228,5 @@ prompt_map = {
 
 
 def prompt_function(prompt_name):
+    """Backward compatibility function to get a prompt by name."""
     return prompt_map.get(prompt_name, None)

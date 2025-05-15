@@ -7,7 +7,12 @@
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(gh issue view:*)",
-      "Bash(uv run pytest:*)"
+      "Bash(uv run pytest:*)",
+      "Bash(for func in \"fpb\" \"edtsum\" \"headlines\")",
+      "Bash(do)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(for file in /home/gmatlin/Codespace/FLaME/src/flame/code/prompts.py /home/gmatlin/Codespace/FLaME/src/flame/code/inference_prompts.py)"
     ],
     "deny": []
   }
