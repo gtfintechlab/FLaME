@@ -70,13 +70,21 @@ def fomc_zeroshot_prompt(sentence: str) -> str:
     Returns:
         Formatted prompt string
     """
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert sentence clas-
-                sifier. Classify the following sentence from FOMC into 'HAWKISH', 'DOVISH', or 'NEU-
-                TRAL' class. Label 'HAWKISH' if it is corresponding to tightening of the monetary policy,
-                'DOVISH' if it is corresponding to easing of the monetary policy, or 'NEUTRAL' if the
-                stance is neutral. Provide the label in the first line and provide a short explanation in the
-                second line. This is the sentence: {sentence}"""
+    prompt = f"""Classify the following Federal Reserve statement as HAWKISH (indicating a restrictive monetary policy stance), DOVISH (indicating an accommodative monetary policy stance), or NEUTRAL (indicating a balanced monetary policy stance).
+    Statement: {sentence}
+    Provide only one word as your answer: HAWKISH, DOVISH, or NEUTRAL."""
+    return prompt
 
+
+@register_prompt("bizbench", PromptFormat.ZERO_SHOT)
+def bizbench_zeroshot_prompt(question: str, context: str) -> str:
+    """Generate a zero-shot prompt for the BizBench task."""
+    prompt = f"""Discard all previous instructions. You are an expert financial data extractor. 
+                Extract the answer to the following question from the provided SEC filing context.
+                Provide the answer with just the number without any units or other text.
+
+                Question: {question}
+                Context: {context}"""
     return prompt
 
 
@@ -95,6 +103,7 @@ def fpb_zeroshot_prompt(sentence: str, prompt_format: str = None) -> str:
         Formatted prompt string
     """
     # Default prompt format if none is specified
+    # TODO: Decompose this prompt into different registered prompts
     if prompt_format is None or prompt_format not in [
         "flame",
         "finben_icl",
@@ -272,6 +281,33 @@ def finer_zeroshot_prompt(sentence: str) -> str:
                     So the format should be token:label. \n\n + {sentence} """
 
     prompt = system_prompt + user_msg
+    return prompt
+
+
+@register_prompt("econlogicqa", PromptFormat.ZERO_SHOT)
+def econlogicqa_prompt(question: str, A: str, B: str, C: str, D: str) -> str:
+    """Generate prompt for EconLogicQA task.
+
+    Args:
+        question: The ordering question
+        A: First event
+        B: Second event
+        C: Third event
+        D: Fourth event
+
+    Returns:
+        Formatted prompt string
+    """
+    prompt = f"""Discard all previous instructions. You are a Financial Event Analyst.
+                You are given a question and 4 events, labeled A,B,C,D.
+                You need to return an order of events as requested by the question. It could be a chronological order, order of importance, or a logical sequence.
+                Question: {question}
+                Events:
+                A: {A}
+                B: {B}
+                C: {C}
+                D: {D}
+                Please provide the order of events, followed by a short explanation of the reasoning for the ordering. Output only the four labels (e.g., "C, B, A, D") in the expected order on the first line, and then briefly explain your reasoning in the next lines"""
     return prompt
 
 
