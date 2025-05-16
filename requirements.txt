@@ -127,7 +127,7 @@ jsonschema-specifications==2025.4.1
     # via jsonschema
 kiwisolver==1.4.8
     # via matplotlib
-litellm==1.67.5
+litellm==1.67.1
     # via flame (pyproject.toml)
 markdown-it-py==3.0.0
     # via rich
@@ -336,6 +336,8 @@ sympy==1.14.0
     # via torch
 tabulate==0.9.0
     # via together
+tenacity==9.1.2
+    # via flame (pyproject.toml)
 threadpoolctl==3.6.0
     # via scikit-learn
 tiktoken==0.9.0
