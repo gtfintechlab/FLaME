@@ -1,7 +1,6 @@
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts_zeroshot import finqa_zeroshot_prompt
-from flame.code.prompts_fewshot import finqa_fewshot_prompt
+from flame.code.prompts import finqa_zeroshot_prompt, finqa_fewshot_prompt
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL

@@ -37,3 +37,6 @@ filterwarnings = [
   "ignore::DeprecationWarning",
   "ignore::sklearn.exceptions.UndefinedMetricWarning",
 ]
+
+[tool.ruff]
+exclude = ["**/*.ipynb"]

@@ -1,8 +1,7 @@
 import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
-from flame.code.prompts_zeroshot import fpb_zeroshot_prompt
-from flame.code.prompts_fewshot import fpb_fewshot_prompt
+from flame.code.prompts import fpb_zeroshot_prompt, fpb_fewshot_prompt
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL

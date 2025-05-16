@@ -4,8 +4,9 @@ from datasets import load_dataset
 import litellm
 
 from litellm import completion
-from flame.code.prompts_zeroshot import ectsum_zeroshot_prompt
-from flame.code.prompts_fewshot import ectsum_fewshot_prompt
+
+# Import prompts from the unified prompt package
+from flame.code.prompts import ectsum_zeroshot_prompt, ectsum_fewshot_prompt
 
 # from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger

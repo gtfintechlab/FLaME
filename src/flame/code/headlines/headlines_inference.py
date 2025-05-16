@@ -2,8 +2,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-from flame.code.prompts_zeroshot import headlines_zeroshot_prompt
-from flame.code.prompts_fewshot import headlines_fewshot_prompt
+from flame.code.prompts import headlines_zeroshot_prompt, headlines_fewshot_prompt
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL

@@ -96,9 +96,69 @@ def list_tasks() -> Dict[str, list]:
     return result
 
 
-# Add automatic import and registration for all prompt modules
-# This functionality will be activated once we have migrated all prompt functions
+def get_prompt_by_name(prompt_name: str) -> Optional[Callable]:
+    """Get a prompt function by its name.
 
-# Import all prompt modules to populate the registry
-# Will be uncommented once we have completed the migration
-# from . import base, zeroshot, fewshot
+    This function provides backward compatibility with the old prompt_function
+    mechanism from prompts_zeroshot.py.
+
+    Args:
+        prompt_name: The name of the prompt function
+
+    Returns:
+        The prompt function if found, None otherwise
+    """
+    # Map of old names to new task/format pairs
+    name_to_task_format = {
+        # Zero-shot prompts
+        "headlines_zeroshot_prompt": ("headlines", PromptFormat.ZERO_SHOT),
+        "numclaim_zeroshot_prompt": ("numclaim", PromptFormat.ZERO_SHOT),
+        "fomc_zeroshot_prompt": ("fomc", PromptFormat.ZERO_SHOT),
+        "fpb_zeroshot_prompt": ("fpb", PromptFormat.ZERO_SHOT),
+        "banking77_zeroshot_prompt": ("banking77", PromptFormat.ZERO_SHOT),
+        "fiqa_task1_zeroshot_prompt": ("fiqa_task1", PromptFormat.ZERO_SHOT),
+        "fiqa_task2_zeroshot_prompt": ("fiqa_task2", PromptFormat.ZERO_SHOT),
+        "finer_zeroshot_prompt": ("finer", PromptFormat.ZERO_SHOT),
+        "finentity_zeroshot_prompt": ("finentity", PromptFormat.ZERO_SHOT),
+        "finbench_zeroshot_prompt": ("finbench", PromptFormat.ZERO_SHOT),
+        "ectsum_zeroshot_prompt": ("ectsum", PromptFormat.ZERO_SHOT),
+        "finqa_zeroshot_prompt": ("finqa", PromptFormat.ZERO_SHOT),
+        "convfinqa_zeroshot_prompt": ("convfinqa", PromptFormat.ZERO_SHOT),
+        "tatqa_zeroshot_prompt": ("tatqa", PromptFormat.ZERO_SHOT),
+        "causal_classification_zeroshot_prompt": (
+            "causal_classification",
+            PromptFormat.ZERO_SHOT,
+        ),
+        "finred_zeroshot_prompt": ("finred", PromptFormat.ZERO_SHOT),
+        "causal_detection_zeroshot_prompt": (
+            "causal_detection",
+            PromptFormat.ZERO_SHOT,
+        ),
+        "subjectiveqa_zeroshot_prompt": ("subjectiveqa", PromptFormat.ZERO_SHOT),
+        "fnxl_zeroshot_prompt": ("fnxl", PromptFormat.ZERO_SHOT),
+        "refind_zeroshot_prompt": ("refind", PromptFormat.ZERO_SHOT),
+        # Aliases without "_zeroshot" suffix
+        "headlines_prompt": ("headlines", PromptFormat.ZERO_SHOT),
+        "numclaim_prompt": ("numclaim", PromptFormat.ZERO_SHOT),
+        "fomc_prompt": ("fomc", PromptFormat.ZERO_SHOT),
+        "fpb_prompt": ("fpb", PromptFormat.ZERO_SHOT),
+        "fiqa_prompt": ("fiqa_task1", PromptFormat.ZERO_SHOT),
+        "edtsum_prompt": ("edtsum", PromptFormat.ZERO_SHOT),
+        "ectsum_prompt": ("ectsum", PromptFormat.ZERO_SHOT),
+        "finqa_prompt": ("finqa", PromptFormat.ZERO_SHOT),
+        "causal_classification_prompt": (
+            "causal_classification",
+            PromptFormat.ZERO_SHOT,
+        ),
+        # Few-shot prompts
+        "banking77_fewshot_prompt": ("banking77", PromptFormat.FEW_SHOT),
+        "numclaim_fewshot_prompt": ("numclaim", PromptFormat.FEW_SHOT),
+        "fpb_fewshot_prompt": ("fpb", PromptFormat.FEW_SHOT),
+        "fomc_fewshot_prompt": ("fomc", PromptFormat.FEW_SHOT),
+    }
+
+    if prompt_name in name_to_task_format:
+        task, fmt = name_to_task_format[prompt_name]
+        return get_prompt(task, fmt)
+
+    return None

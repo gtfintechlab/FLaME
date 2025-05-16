@@ -5,7 +5,7 @@ from litellm import completion
 import pandas as pd
 from datasets import load_dataset
 from datetime import date
-from flame.code.prompts_zeroshot import tatqa_prompt
+from flame.code.prompts import tatqa_zeroshot_prompt as tatqa_prompt
 from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
 from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL

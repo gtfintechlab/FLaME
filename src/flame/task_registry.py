@@ -7,6 +7,7 @@ Any time you add a new task, register its callable here in *both* maps (if it ha
 both inference and evaluation), and update the skip lists in the offline test
 suite if necessary.
 """
+
 from __future__ import annotations
 
 # ------------------------------

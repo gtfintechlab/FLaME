@@ -2,8 +2,7 @@ import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts_zeroshot import convfinqa_zeroshot_prompt
-from flame.code.prompts_fewshot import convfinqa_fewshot_prompt
+from flame.code.prompts import convfinqa_zeroshot_prompt, convfinqa_fewshot_prompt
 from flame.code.tokens import tokens
 from litellm import completion
 from flame.utils.logging_utils import setup_logger

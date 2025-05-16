@@ -165,7 +165,11 @@ def fnxl_evaluate(file_name, args):
                         "total_predicted": total_pred,
                     }
                 )
-                df.at[batch_indices[i], "extracted_labels"] = cleaned_json_str
+                # [Glenn] the old code here was `df.at[batch_indices[i], "extracted_labels"] = cleaned_json_str`
+                # But batch_indices was never defined so I calculate the correct index in the original dataframe
+                # TODO: check with @Huzaifa about this
+                idx = batch_idx * args.batch_size + i
+                df.at[idx, "extracted_labels"] = cleaned_json_str
             except Exception as e:
                 logger.error(f"Error processing: {e}")
                 row_metrics.append(

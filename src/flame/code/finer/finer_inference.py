@@ -1,8 +1,7 @@
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts_zeroshot import finer_zeroshot_prompt
-from flame.code.prompts_fewshot import finer_fewshot_prompt
+from flame.code.prompts import finer_zeroshot_prompt, finer_fewshot_prompt
 import litellm
 
 # from flame.code.tokens import tokens

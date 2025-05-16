@@ -10,8 +10,7 @@ import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
 from pathlib import Path
-from flame.code.prompts_fewshot import fomc_fewshot_prompt
-from flame.code.prompts_zeroshot import fomc_zeroshot_prompt
+from flame.code.prompts import fomc_zeroshot_prompt, fomc_fewshot_prompt
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 

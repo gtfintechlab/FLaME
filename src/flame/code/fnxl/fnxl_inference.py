@@ -3,8 +3,7 @@ import pandas as pd
 from datasets import load_dataset
 import json
 
-from flame.code.prompts_zeroshot import fnxl_zeroshot_prompt
-from flame.code.prompts_fewshot import fnxl_fewshot_prompt
+from flame.code.prompts import fnxl_zeroshot_prompt, fnxl_fewshot_prompt
 
 # from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
@@ -31,8 +30,6 @@ def fnxl_inference(args):
     companies = []
     doc_types = []
     actual_labels = []
-    llm_responses = []
-    complete_responses = []
 
     if args.prompt_format == "fewshot":
         fnxl_prompt = fnxl_fewshot_prompt

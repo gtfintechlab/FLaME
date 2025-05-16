@@ -1,8 +1,7 @@
 import time
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts_zeroshot import subjectiveqa_zeroshot_prompt
-from flame.code.prompts_fewshot import subjectiveqa_fewshot_prompt
+from flame.code.prompts import subjectiveqa_zeroshot_prompt, subjectiveqa_fewshot_prompt
 from flame.utils.logging_utils import setup_logger
 from flame.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
