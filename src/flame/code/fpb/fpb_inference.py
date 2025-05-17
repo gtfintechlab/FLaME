@@ -32,7 +32,7 @@ def fpb_inference(args):
 
     if args.prompt_format == "fewshot":
         fpb_prompt = fpb_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
+    else:
         fpb_prompt = fpb_zeroshot_prompt
 
     test_data = dataset["test"]  # type: ignore
@@ -90,5 +90,4 @@ def fpb_inference(args):
     success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
-
-#     return df
+    return df
