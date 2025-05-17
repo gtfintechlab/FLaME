@@ -5,7 +5,7 @@ import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
 
-from flame.code.prompts import bizbench_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
 from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -37,6 +37,10 @@ def bizbench_inference(args):
     logger.info("Starting inference on dataset...")
     # start_t = time.time()
     client = Together()
+
+    bizbench_prompt = get_prompt("bizbench", PromptFormat.ZERO_SHOT)
+    if bizbench_prompt is None:
+        raise RuntimeError("BizBench prompt not found in registry")
 
     # Iterating through the test split of the dataset
     for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"):  # type: ignore
