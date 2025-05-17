@@ -4,7 +4,7 @@ import pandas as pd
 from datasets import load_dataset
 from tqdm import tqdm
 
-from flame.code.prompts import finbench_zeroshot_prompt, finbench_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
@@ -41,9 +41,11 @@ def finbench_inference(args):
     # start_t = time.time()
 
     if args.prompt_format == "fewshot":
-        finbench_prompt = finbench_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        finbench_prompt = finbench_zeroshot_prompt
+        finbench_prompt = get_prompt("finbench", PromptFormat.FEW_SHOT)
+    else:
+        finbench_prompt = get_prompt("finbench", PromptFormat.ZERO_SHOT)
+    if finbench_prompt is None:
+        raise RuntimeError("FinBench prompt not found in registry")
 
     pbar = tqdm(sentence_batches, desc="Processing batches")
     for batch_idx, sentence_batch in enumerate(pbar):

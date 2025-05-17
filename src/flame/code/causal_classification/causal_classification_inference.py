@@ -1,10 +1,7 @@
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import (
-    causal_classification_zeroshot_prompt,
-    causal_classification_fewshot_prompt,
-)
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -34,9 +31,15 @@ def causal_classification_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        causal_classification_prompt = causal_classification_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        causal_classification_prompt = causal_classification_zeroshot_prompt
+        causal_classification_prompt = get_prompt(
+            "causal_classification", PromptFormat.FEW_SHOT
+        )
+    else:
+        causal_classification_prompt = get_prompt(
+            "causal_classification", PromptFormat.ZERO_SHOT
+        )
+    if causal_classification_prompt is None:
+        raise RuntimeError("Causal Classification prompt not found in registry")
 
     batch_size = args.batch_size
     total_batches = len(texts) // batch_size + int(len(texts) % batch_size > 0)

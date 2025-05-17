@@ -6,7 +6,7 @@ import litellm
 from litellm import completion
 
 # Import prompts from the unified prompt package
-from flame.code.prompts import ectsum_zeroshot_prompt, ectsum_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 
 # from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
@@ -42,9 +42,11 @@ def ectsum_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        ectsum_prompt = ectsum_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        ectsum_prompt = ectsum_zeroshot_prompt
+        ectsum_prompt = get_prompt("ectsum", PromptFormat.FEW_SHOT)
+    else:
+        ectsum_prompt = get_prompt("ectsum", PromptFormat.ZERO_SHOT)
+    if ectsum_prompt is None:
+        raise RuntimeError("ECTSum prompt not found in registry")
 
     logger.info(f"Starting inference on ECTSum with model {args.model}...")
 

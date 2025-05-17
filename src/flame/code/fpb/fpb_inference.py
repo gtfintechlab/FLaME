@@ -1,7 +1,7 @@
 import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
-from flame.code.prompts import fpb_zeroshot_prompt, fpb_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
@@ -31,9 +31,11 @@ def fpb_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        fpb_prompt = fpb_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        fpb_prompt = fpb_zeroshot_prompt
+        fpb_prompt = get_prompt("fpb", PromptFormat.FEW_SHOT)
+    else:
+        fpb_prompt = get_prompt("fpb", PromptFormat.ZERO_SHOT)
+    if fpb_prompt is None:
+        raise RuntimeError("FPB prompt not found in registry")
 
     test_data = dataset["test"]  # type: ignore
     all_sentences = [data["sentence"] for data in test_data]  # type: ignore
@@ -90,5 +92,4 @@ def fpb_inference(args):
     success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
-
-#     return df
+    return df

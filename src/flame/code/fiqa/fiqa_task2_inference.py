@@ -1,6 +1,6 @@
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import fiqa_task2_zeroshot_prompt, fiqa_task2_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
@@ -31,9 +31,11 @@ def fiqa_task2_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        fiqa_task2_prompt = fiqa_task2_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        fiqa_task2_prompt = fiqa_task2_zeroshot_prompt
+        fiqa_task2_prompt = get_prompt("fiqa_task2", PromptFormat.FEW_SHOT)
+    else:
+        fiqa_task2_prompt = get_prompt("fiqa_task2", PromptFormat.ZERO_SHOT)
+    if fiqa_task2_prompt is None:
+        raise RuntimeError("FiQA Task2 prompt not found in registry")
 
     pbar = tqdm(question_batches, desc="Processing batches")
     for batch_idx, question_batch in enumerate(pbar):

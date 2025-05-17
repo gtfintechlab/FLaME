@@ -1,6 +1,6 @@
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import edtsum_zeroshot_prompt, edtsum_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
@@ -29,9 +29,11 @@ def edtsum_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        edtsum_prompt = edtsum_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        edtsum_prompt = edtsum_zeroshot_prompt
+        edtsum_prompt = get_prompt("edtsum", PromptFormat.FEW_SHOT)
+    else:
+        edtsum_prompt = get_prompt("edtsum", PromptFormat.ZERO_SHOT)
+    if edtsum_prompt is None:
+        raise RuntimeError("EDTSum prompt not found in registry")
 
     pbar = tqdm(sentence_batches, desc="Processing batches")
     for batch_idx, batch_content in enumerate(pbar):
