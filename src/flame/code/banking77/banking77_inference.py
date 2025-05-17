@@ -2,7 +2,7 @@ import pandas as pd
 from datasets import load_dataset
 
 # Import from new prompt package
-from flame.code.prompts import banking77_zeroshot_prompt, banking77_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
@@ -29,9 +29,11 @@ def banking77_inference(args):
     actual_labels = []
     complete_responses = []
     if args.prompt_format == "fewshot":
-        banking77_prompt = banking77_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        banking77_prompt = banking77_zeroshot_prompt
+        banking77_prompt = get_prompt("banking77", PromptFormat.FEW_SHOT)
+    else:
+        banking77_prompt = get_prompt("banking77", PromptFormat.ZERO_SHOT)
+    if banking77_prompt is None:
+        raise RuntimeError("Banking77 prompt not found in registry")
 
     pbar = tqdm(sentence_batches, desc="Processing batches")
     for batch_idx, sentence_batch in enumerate(pbar):

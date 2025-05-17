@@ -1,7 +1,7 @@
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import finred_zeroshot_prompt, finred_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
@@ -28,9 +28,11 @@ def finred_inference(args):
     entities_list = []  # To store entity pairs
 
     if args.prompt_format == "fewshot":
-        finred_prompt = finred_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        finred_prompt = finred_zeroshot_prompt
+        finred_prompt = get_prompt("finred", PromptFormat.FEW_SHOT)
+    else:
+        finred_prompt = get_prompt("finred", PromptFormat.ZERO_SHOT)
+    if finred_prompt is None:
+        raise RuntimeError("FinRED prompt not found in registry")
 
     test_data = dataset["test"]  # type: ignore
     all_inputs = [(data["sentence"], data["entities"]) for data in test_data]  # type: ignore

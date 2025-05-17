@@ -10,7 +10,7 @@ import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
 from pathlib import Path
-from flame.code.prompts import fomc_zeroshot_prompt, fomc_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 
@@ -126,9 +126,11 @@ def fomc_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        fomc_prompt = fomc_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        fomc_prompt = fomc_zeroshot_prompt
+        fomc_prompt = get_prompt("fomc", PromptFormat.FEW_SHOT)
+    else:
+        fomc_prompt = get_prompt("fomc", PromptFormat.ZERO_SHOT)
+    if fomc_prompt is None:
+        raise RuntimeError("FOMC prompt not found in registry")
 
     # Get all sentences and labels
     all_sentences = [item["sentence"] for item in test_data]  # type: ignore

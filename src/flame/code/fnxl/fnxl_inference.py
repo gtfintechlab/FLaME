@@ -3,7 +3,7 @@ import pandas as pd
 from datasets import load_dataset
 import json
 
-from flame.code.prompts import fnxl_zeroshot_prompt, fnxl_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 
 # from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
@@ -32,9 +32,11 @@ def fnxl_inference(args):
     actual_labels = []
 
     if args.prompt_format == "fewshot":
-        fnxl_prompt = fnxl_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        fnxl_prompt = fnxl_zeroshot_prompt
+        fnxl_prompt = get_prompt("fnxl", PromptFormat.FEW_SHOT)
+    else:
+        fnxl_prompt = get_prompt("fnxl", PromptFormat.ZERO_SHOT)
+    if fnxl_prompt is None:
+        raise RuntimeError("FNXL prompt not found in registry")
 
     # 2) Iterate over the rows
     for row in test_data:

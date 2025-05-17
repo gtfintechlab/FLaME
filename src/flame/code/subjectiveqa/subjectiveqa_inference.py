@@ -1,7 +1,7 @@
 import time
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import subjectiveqa_zeroshot_prompt, subjectiveqa_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -59,9 +59,11 @@ def subjectiveqa_inference(args):
     feature_responses = {feature: [] for feature in definition_map.keys()}
 
     if args.prompt_format == "fewshot":
-        subjectiveqa_prompt = subjectiveqa_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        subjectiveqa_prompt = subjectiveqa_zeroshot_prompt
+        subjectiveqa_prompt = get_prompt("subjectiveqa", PromptFormat.FEW_SHOT)
+    else:
+        subjectiveqa_prompt = get_prompt("subjectiveqa", PromptFormat.ZERO_SHOT)
+    if subjectiveqa_prompt is None:
+        raise RuntimeError("SubjectiveQA prompt not found in registry")
 
     batch_size = args.batch_size
     total_batches = len(questions) // batch_size + int(len(questions) % batch_size > 0)

@@ -2,7 +2,7 @@ import time
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import convfinqa_zeroshot_prompt, convfinqa_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.code.tokens import tokens
 from litellm import completion
 from flame.utils.logging_utils import setup_logger
@@ -25,9 +25,11 @@ def convfinqa_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        convfinqa_prompt = convfinqa_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        convfinqa_prompt = convfinqa_zeroshot_prompt
+        convfinqa_prompt = get_prompt("convfinqa", PromptFormat.FEW_SHOT)
+    else:
+        convfinqa_prompt = get_prompt("convfinqa", PromptFormat.ZERO_SHOT)
+    if convfinqa_prompt is None:
+        raise RuntimeError("ConvFinQA prompt not found in registry")
 
     for entry in dataset["train"]:  # type: ignore
         pre_text = " ".join(entry["pre_text"])  # type: ignore

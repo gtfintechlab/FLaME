@@ -1,7 +1,7 @@
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import finer_zeroshot_prompt, finer_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 import litellm
 
 # from flame.code.tokens import tokens
@@ -32,9 +32,11 @@ def finer_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        finer_prompt = finer_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        finer_prompt = finer_zeroshot_prompt
+        finer_prompt = get_prompt("finer", PromptFormat.FEW_SHOT)
+    else:
+        finer_prompt = get_prompt("finer", PromptFormat.ZERO_SHOT)
+    if finer_prompt is None:
+        raise RuntimeError("FinER prompt not found in registry")
 
     batch_size = args.batch_size
     total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)

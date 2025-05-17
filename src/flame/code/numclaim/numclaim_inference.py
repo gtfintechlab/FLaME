@@ -4,7 +4,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-from flame.code.prompts import numclaim_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 
 # from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
@@ -56,13 +56,17 @@ def numclaim_inference(args):
     sentence_batches = chunk_list(sentences, batch_size)
     response_batches = chunk_list(actual_labels, batch_size)
 
+    numclaim_prompt = get_prompt("numclaim", PromptFormat.ZERO_SHOT)
+    if numclaim_prompt is None:
+        raise RuntimeError("Numclaim prompt not found in registry")
+
     for batch_idx, (sentence_batch, response_batch) in enumerate(
         zip(sentence_batches, response_batches)
     ):
         # Create prompt messages for the batch
         messages_batch = [
             [{"role": "user", "content": numclaim_prompt(sentence)}]  # type: ignore
-            for sentence in zip(sentence_batch)
+            for sentence in sentence_batch
         ]
 
         try:
