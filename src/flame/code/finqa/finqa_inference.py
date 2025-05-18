@@ -1,6 +1,6 @@
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import finqa_zeroshot_prompt, finqa_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
@@ -28,9 +28,11 @@ def finqa_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        finqa_prompt = finqa_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        finqa_prompt = finqa_zeroshot_prompt
+        finqa_prompt = get_prompt("finqa", PromptFormat.FEW_SHOT)
+    else:
+        finqa_prompt = get_prompt("finqa", PromptFormat.ZERO_SHOT)
+    if finqa_prompt is None:
+        raise RuntimeError("FinQA prompt not found in registry")
 
     pbar = tqdm(text_batches, desc="Processing batches")
     for batch_idx, text_batch in enumerate(pbar):

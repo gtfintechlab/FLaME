@@ -5,7 +5,7 @@ from litellm import completion
 import pandas as pd
 from datasets import load_dataset
 from datetime import date
-from flame.code.prompts import tatqa_zeroshot_prompt as tatqa_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
 from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
@@ -24,6 +24,10 @@ def tatqa_inference(args):
     llm_responses = []
     actual_answers = []
     complete_responses = []
+
+    tatqa_prompt = get_prompt("tatqa", PromptFormat.ZERO_SHOT)
+    if tatqa_prompt is None:
+        raise RuntimeError("TATQA prompt not found in registry")
 
     for i, entry in enumerate(dataset["test"]):  # type: ignore
         question = entry["query"]  # type: ignore

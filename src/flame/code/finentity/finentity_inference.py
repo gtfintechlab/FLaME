@@ -2,7 +2,7 @@ from datetime import date
 import nltk
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import finentity_zeroshot_prompt, finentity_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -34,9 +34,11 @@ def finentity_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        finentity_prompt = finentity_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        finentity_prompt = finentity_zeroshot_prompt
+        finentity_prompt = get_prompt("finentity", PromptFormat.FEW_SHOT)
+    else:
+        finentity_prompt = get_prompt("finentity", PromptFormat.ZERO_SHOT)
+    if finentity_prompt is None:
+        raise RuntimeError("FinEntity prompt not found in registry")
 
     batch_size = args.batch_size
     total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)

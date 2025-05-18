@@ -2,7 +2,7 @@ from datetime import date
 import pandas as pd
 from datasets import load_dataset
 
-from flame.code.prompts import headlines_zeroshot_prompt, headlines_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
@@ -31,9 +31,11 @@ def headlines_inference(args):
     actual_labels = []  # List to store actual labels
 
     if args.prompt_format == "fewshot":
-        headlines_prompt = headlines_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        headlines_prompt = headlines_zeroshot_prompt
+        headlines_prompt = get_prompt("headlines", PromptFormat.FEW_SHOT)
+    else:
+        headlines_prompt = get_prompt("headlines", PromptFormat.ZERO_SHOT)
+    if headlines_prompt is None:
+        raise RuntimeError("Headlines prompt not found in registry")
 
     test_data = dataset["test"]  # type: ignore
     all_sentences = [data["News"] for data in test_data]  # type: ignore

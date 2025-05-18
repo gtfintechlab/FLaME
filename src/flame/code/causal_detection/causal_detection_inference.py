@@ -1,9 +1,6 @@
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import (
-    causal_detection_zeroshot_prompt,
-    causal_detection_fewshot_prompt,
-)
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
@@ -14,7 +11,7 @@ logger = setup_logger(
 )
 
 
-def casual_detection_inference(args):
+def causal_detection_inference(args):
     dataset = load_dataset("gtfintechlab/CausalDetection", trust_remote_code=True)
 
     test_data = dataset["test"]  # type: ignore
@@ -28,9 +25,15 @@ def casual_detection_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        causal_detection_prompt = causal_detection_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        causal_detection_prompt = causal_detection_zeroshot_prompt
+        causal_detection_prompt = get_prompt(
+            "causal_detection", PromptFormat.FEW_SHOT
+        )
+    else:
+        causal_detection_prompt = get_prompt(
+            "causal_detection", PromptFormat.ZERO_SHOT
+        )
+    if causal_detection_prompt is None:
+        raise RuntimeError("Causal Detection prompt not found in registry")
 
     batches = chunk_list(all_tokens, args.batch_size)
     total_batches = len(batches)

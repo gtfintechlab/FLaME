@@ -6,7 +6,7 @@ from together import Together
 from tqdm import tqdm
 
 from flame.config import LOG_DIR, LOG_LEVEL
-from flame.code.prompts_fromferrari import econlogicqa_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
 
@@ -27,6 +27,12 @@ def econlogicqa_inference(args):
 
     # Initialize Together API client
     client = Together()
+
+    # Retrieve the zero-shot prompt from the registry
+    econlogicqa_prompt = get_prompt("econlogicqa", PromptFormat.ZERO_SHOT)
+
+    if econlogicqa_prompt is None:
+        raise RuntimeError("EconLogicQA prompt not found in registry")
 
     responses_ordered_importance = []
     for i in tqdm(range(len(dataset)), desc="Accessing EconLogicQA"):

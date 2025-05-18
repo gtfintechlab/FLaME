@@ -1,7 +1,7 @@
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import refind_zeroshot_prompt, refind_fewshot_prompt
+from flame.code.prompts import get_prompt, PromptFormat
 
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -53,9 +53,11 @@ def refind_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        refind_prompt = refind_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        refind_prompt = refind_zeroshot_prompt
+        refind_prompt = get_prompt("refind", PromptFormat.FEW_SHOT)
+    else:
+        refind_prompt = get_prompt("refind", PromptFormat.ZERO_SHOT)
+    if refind_prompt is None:
+        raise RuntimeError("ReFinD prompt not found in registry")
 
     logger.info(f"Starting inference on ReFinD with model {args.model}...")
 
