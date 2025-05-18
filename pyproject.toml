@@ -29,3 +29,8 @@ dependencies = [
     "together>=1.5.5",
     "transformers>=4.51.3",
 ]
+
+[dependency-groups]
+dev = [
+    "huggingface-hub>=0.30.2",
+]
