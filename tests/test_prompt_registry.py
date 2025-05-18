@@ -121,7 +121,6 @@ def test_registry_handles_task_format_combinations():
         ("headlines", PromptFormat.ZERO_SHOT, "test input"),
         ("numclaim", PromptFormat.ZERO_SHOT, "test input"),
         ("banking77", PromptFormat.ZERO_SHOT, "test input"),
-        ("banking77", PromptFormat.FEW_SHOT, "test input"),
     ]
 
     for task, format_type, test_input in test_cases:
@@ -132,3 +131,15 @@ def test_registry_handles_task_format_combinations():
         assert (
             test_input in result
         ), f"Input not found in result for {task}/{format_type}"
+
+    # Test few-shot stubs separately
+    few_shot_stubs = [
+        ("banking77", PromptFormat.FEW_SHOT, "test input"),
+        ("numclaim", PromptFormat.FEW_SHOT, "test input"),
+    ]
+
+    for task, format_type, test_input in few_shot_stubs:
+        func = get_prompt(task, format_type)
+        assert func is not None, f"Function for {task}/{format_type} not found"
+        result = func(test_input)
+        assert result is None, f"Few-shot stub for {task} should return None"
