@@ -144,7 +144,41 @@ from .fewshot import (
     finbench_fewshot_prompt,
 )
 
-# Define common aliases for backward compatibility with inference_prompts.py
+"""
+BACKWARD COMPATIBILITY ALIASES
+==============================
+
+Background:
+-----------
+The FLaME codebase has transitioned to using a registry-based prompt system
+where prompts are accessed via get_prompt(task_name, PromptFormat). However,
+for backward compatibility, aliases were created that map shorter names
+(e.g., 'numclaim_prompt') to their full names (e.g., 'numclaim_zeroshot_prompt').
+
+Purpose:
+--------
+These aliases ensure that existing code that imports the shorter prompt names
+will continue to work. This was necessary because:
+1. External projects might be importing these prompts directly
+2. Some scripts or tools might be hardcoded to use these shorter names
+3. Breaking these imports would cause downstream failures
+
+TODO:
+-----
+1. Monitor usage in external projects and determine when these aliases
+   can be safely removed
+2. Audit the codebase to find any remaining usage of these aliases:
+   - Currently, all inference files use the registry system
+   - But external projects might still depend on these exports
+3. Once confirmed safe, remove these aliases from this file
+4. When aliases are removed, also remove test_prompt_aliases.py
+5. Update all documentation to reflect the removal
+
+Note: All new code should use get_prompt(task_name, PromptFormat) instead
+of importing these aliases directly.
+"""
+
+# Define common aliases for backward compatibility
 headlines_prompt = headlines_zeroshot_prompt
 edtsum_prompt = edtsum_zeroshot_prompt
 numclaim_prompt = numclaim_zeroshot_prompt

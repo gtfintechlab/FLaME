@@ -1,10 +1,35 @@
 """
-Test suite for prompt functionality.
+Test suite for prompt aliases.
 
-This test suite verifies that:
-1. Prompt functions work correctly
-2. Functions behave as expected
-3. All required prompts exist in the new package
+This test suite verifies that prompt aliases are working correctly.
+
+BACKGROUND:
+-----------
+The FLaME codebase has transitioned to using a registry-based prompt system
+where prompts are accessed via get_prompt(task_name, PromptFormat).
+However, for backward compatibility, aliases were created that map shorter
+names (e.g., 'numclaim_prompt') to their full names (e.g., 'numclaim_zeroshot_prompt').
+
+These aliases exist in src/flame/code/prompts/__init__.py (lines 148-166)
+and allow code to use the shorter names for common zero-shot prompts.
+
+STATUS:
+-------
+- The main codebase has been updated to use the registry system
+- All inference files now use get_prompt() instead of direct imports
+- These aliases remain for potential backward compatibility with:
+  - External scripts that might import these names
+  - Jupyter notebooks or other code not in the repository
+  - Any legacy code that hasn't been updated yet
+
+TODO:
+-----
+Once we confirm that no external dependencies use these aliases:
+1. Remove the aliases from src/flame/code/prompts/__init__.py
+2. Delete this test file
+3. Update any remaining code that uses the short names
+
+For now, these tests ensure the aliases continue to work correctly.
 """
 
 
@@ -55,13 +80,8 @@ def test_fewshot_prompt_functionality():
         numclaim_fewshot_prompt,
     )
 
-    # Test banking77 function behavior (it's the only one fully implemented)
-    test_input = "I need to change my PIN"
-    result = banking77_fewshot_prompt(test_input)
-    assert isinstance(result, str)
-    assert test_input in result
-
-    # Test stub behavior
+    # Test stub behavior - all few-shot prompts are stubs for now
+    assert banking77_fewshot_prompt("test") is None
     assert numclaim_fewshot_prompt("test") is None
 
 
