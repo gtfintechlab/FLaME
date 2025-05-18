@@ -9,6 +9,7 @@ dependencies = [
     "bert-score>=0.3.13",
     "black>=25.1.0",
     "datasets>=3.5.1",
+    "dvc>=3.59.2",
     "evaluate>=0.4.3",
     "huggingface-hub>=0.30.2",
     "litellm==1.67.1",
