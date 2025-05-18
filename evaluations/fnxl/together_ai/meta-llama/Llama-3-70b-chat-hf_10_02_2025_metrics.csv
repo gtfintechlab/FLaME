@@ -1,0 +1,6 @@
+Metric,Value
+Accuracy (Jaccard),0.009911429776465626
+Precision,0.01453308596165739
+Recall,0.03022508038585209
+F1 Score,0.019628314888285654
+Dataset Organization,gtfintechlab
