@@ -859,7 +859,6 @@ version = "0.2.0"
 source = { virtual = "." }
 dependencies = [
     { name = "backoff" },
-    { name = "bert-score" },
     { name = "datasets" },
     { name = "dvc" },
     { name = "evaluate" },
@@ -868,6 +867,7 @@ dependencies = [
     { name = "nltk" },
     { name = "pandas" },
     { name = "pre-commit" },
+    { name = "pytest" },
     { name = "pyyaml" },
     { name = "scikit-learn" },
     { name = "setuptools" },
@@ -878,6 +878,7 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
+    { name = "bert-score" },
     { name = "black" },
     { name = "matplotlib" },
     { name = "openai" },
@@ -897,7 +898,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "backoff", specifier = ">=2.2.1" },
-    { name = "bert-score", specifier = ">=0.3.13" },
+    { name = "bert-score", marker = "extra == 'dev'", specifier = ">=0.3.13" },
     { name = "black", marker = "extra == 'dev'", specifier = ">=25.1.0" },
     { name = "datasets", specifier = ">=3.5.1" },
     { name = "dvc", specifier = ">=3.59.2" },
@@ -910,6 +911,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pre-commit", specifier = ">=4.2.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.2.0" },
+    { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3.5" },
     { name = "python-dotenv", marker = "extra == 'dev'", specifier = ">=1.1.0" },
     { name = "pyyaml", specifier = ">=6.0.2" },
