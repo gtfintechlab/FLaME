@@ -1,4 +1,0 @@
-[core]
-    remote = hf
-['remote "hf"']
-    url = https://huggingface.co/spaces/gtfintechlab/FLaME-Leaderboard/
