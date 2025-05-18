@@ -126,8 +126,6 @@ def fnxl_evaluate(file_name, args):
     actual_labels_batches = chunk_list(actual_labels, args.batch_size)
     total_batches = len(batches)
 
-    extracted_labels = []
-
     logger.info(f"Processing {len(df)} rows in {total_batches} batches.")
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
@@ -167,7 +165,7 @@ def fnxl_evaluate(file_name, args):
                 )
                 # [Glenn] the old code here was `df.at[batch_indices[i], "extracted_labels"] = cleaned_json_str`
                 # But batch_indices was never defined so I calculate the correct index in the original dataframe
-                # TODO: check with @Huzaifa about this
+                # TODO: check with @Huzaifa about this and ensure my patch is correct
                 idx = batch_idx * args.batch_size + i
                 df.at[idx, "extracted_labels"] = cleaned_json_str
             except Exception as e:
@@ -175,12 +173,11 @@ def fnxl_evaluate(file_name, args):
                 row_metrics.append(
                     {"tp": 0, "fp": 0, "fn": 0, "total_actual": 0, "total_predicted": 0}
                 )
-                extracted_labels.append(None)
+                idx = batch_idx * args.batch_size + i
+                df.at[idx, "extracted_labels"] = None
 
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         logger.info(f"Processed responses for batch {batch_idx + 1}.")
-
-    df["extracted_labels"] = extracted_labels
 
     total_tp = sum(m["tp"] for m in row_metrics)
     total_fp = sum(m["fp"] for m in row_metrics)
