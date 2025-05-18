@@ -860,24 +860,16 @@ source = { virtual = "." }
 dependencies = [
     { name = "backoff" },
     { name = "bert-score" },
-    { name = "black" },
     { name = "datasets" },
     { name = "dvc" },
     { name = "evaluate" },
     { name = "huggingface-hub" },
     { name = "litellm" },
-    { name = "matplotlib" },
     { name = "nltk" },
-    { name = "openai" },
     { name = "pandas" },
     { name = "pre-commit" },
-    { name = "pytest" },
-    { name = "python-dotenv" },
     { name = "pyyaml" },
-    { name = "requests-mock" },
-    { name = "ruff" },
     { name = "scikit-learn" },
-    { name = "seaborn" },
     { name = "setuptools" },
     { name = "tenacity" },
     { name = "tiktoken" },
@@ -885,34 +877,57 @@ dependencies = [
     { name = "transformers" },
 ]
 
+[package.optional-dependencies]
+dev = [
+    { name = "black" },
+    { name = "matplotlib" },
+    { name = "openai" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "python-dotenv" },
+    { name = "requests-mock" },
+    { name = "ruff" },
+    { name = "seaborn" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "huggingface-hub" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "backoff", specifier = ">=2.2.1" },
     { name = "bert-score", specifier = ">=0.3.13" },
-    { name = "black", specifier = ">=25.1.0" },
+    { name = "black", marker = "extra == 'dev'", specifier = ">=25.1.0" },
     { name = "datasets", specifier = ">=3.5.1" },
     { name = "dvc", specifier = ">=3.59.2" },
     { name = "evaluate", specifier = ">=0.4.3" },
     { name = "huggingface-hub", specifier = ">=0.30.2" },
     { name = "litellm", specifier = "==1.67.1" },
-    { name = "matplotlib", specifier = ">=3.10.1" },
+    { name = "matplotlib", marker = "extra == 'dev'", specifier = ">=3.10.1" },
     { name = "nltk", specifier = ">=3.9.1" },
-    { name = "openai", specifier = ">=1.76.2" },
+    { name = "openai", marker = "extra == 'dev'", specifier = ">=1.76.2" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "pre-commit", specifier = ">=4.2.0" },
-    { name = "pytest", specifier = ">=8.3.5" },
-    { name = "python-dotenv", specifier = ">=1.1.0" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.2.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3.5" },
+    { name = "python-dotenv", marker = "extra == 'dev'", specifier = ">=1.1.0" },
     { name = "pyyaml", specifier = ">=6.0.2" },
-    { name = "requests-mock", specifier = ">=1.12.1" },
-    { name = "ruff", specifier = ">=0.11.8" },
+    { name = "requests-mock", marker = "extra == 'dev'", specifier = ">=1.12.1" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.11.8" },
     { name = "scikit-learn", specifier = ">=1.6.1" },
-    { name = "seaborn", specifier = ">=0.13.2" },
+    { name = "seaborn", marker = "extra == 'dev'", specifier = ">=0.13.2" },
     { name = "setuptools", specifier = ">=80.1.0" },
     { name = "tenacity", specifier = ">=9.1.2" },
     { name = "tiktoken", specifier = ">=0.9.0" },
     { name = "together", specifier = ">=1.5.5" },
     { name = "transformers", specifier = ">=4.51.3" },
 ]
+provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "huggingface-hub", specifier = ">=0.30.2" }]
 
 [[package]]
 name = "flatten-dict"

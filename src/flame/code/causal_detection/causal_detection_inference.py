@@ -25,13 +25,9 @@ def causal_detection_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        causal_detection_prompt = get_prompt(
-            "causal_detection", PromptFormat.FEW_SHOT
-        )
+        causal_detection_prompt = get_prompt("causal_detection", PromptFormat.FEW_SHOT)
     else:
-        causal_detection_prompt = get_prompt(
-            "causal_detection", PromptFormat.ZERO_SHOT
-        )
+        causal_detection_prompt = get_prompt("causal_detection", PromptFormat.ZERO_SHOT)
     if causal_detection_prompt is None:
         raise RuntimeError("Causal Detection prompt not found in registry")
 
