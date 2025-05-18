@@ -25,20 +25,15 @@ backoff==2.2.1
     # via flame (pyproject.toml)
 bert-score==0.3.13
     # via flame (pyproject.toml)
-black==25.1.0
-    # via flame (pyproject.toml)
 certifi==2025.4.26
     # via
     #   httpcore
     #   httpx
     #   requests
-cfgv==3.4.0
-    # via pre-commit
 charset-normalizer==3.4.2
     # via requests
 click==8.1.8
     # via
-    #   black
     #   litellm
     #   nltk
     #   together
@@ -56,8 +51,6 @@ dill==0.3.8
     #   datasets
     #   evaluate
     #   multiprocess
-distlib==0.3.9
-    # via virtualenv
 distro==1.9.0
     # via openai
 eval-type-backport==0.2.2
@@ -71,7 +64,6 @@ filelock==3.18.0
     #   together
     #   torch
     #   transformers
-    #   virtualenv
 fonttools==4.57.0
     # via matplotlib
 frozenlist==1.6.0
@@ -99,8 +91,6 @@ huggingface-hub==0.30.2
     #   evaluate
     #   tokenizers
     #   transformers
-identify==2.6.10
-    # via pre-commit
 idna==3.10
     # via
     #   anyio
@@ -109,8 +99,6 @@ idna==3.10
     #   yarl
 importlib-metadata==8.7.0
     # via litellm
-iniconfig==2.1.0
-    # via pytest
 jinja2==3.1.6
     # via
     #   litellm
@@ -134,10 +122,7 @@ markdown-it-py==3.0.0
 markupsafe==3.0.2
     # via jinja2
 matplotlib==3.10.1
-    # via
-    #   flame (pyproject.toml)
-    #   bert-score
-    #   seaborn
+    # via bert-score
 mdurl==0.1.2
     # via markdown-it-py
 mpmath==1.3.0
@@ -150,14 +135,10 @@ multiprocess==0.70.16
     # via
     #   datasets
     #   evaluate
-mypy-extensions==1.1.0
-    # via black
 networkx==3.4.2
     # via torch
 nltk==3.9.1
     # via flame (pyproject.toml)
-nodeenv==1.9.1
-    # via pre-commit
 numpy==2.2.5
     # via
     #   bert-score
@@ -168,7 +149,6 @@ numpy==2.2.5
     #   pandas
     #   scikit-learn
     #   scipy
-    #   seaborn
     #   together
     #   transformers
 nvidia-cublas-cu12==12.6.4.1
@@ -209,18 +189,14 @@ nvidia-nvjitlink-cu12==12.6.85
 nvidia-nvtx-cu12==12.6.77
     # via torch
 openai==1.77.0
-    # via
-    #   flame (pyproject.toml)
-    #   litellm
+    # via litellm
 packaging==25.0
     # via
     #   bert-score
-    #   black
     #   datasets
     #   evaluate
     #   huggingface-hub
     #   matplotlib
-    #   pytest
     #   transformers
 pandas==2.2.3
     # via
@@ -228,21 +204,10 @@ pandas==2.2.3
     #   bert-score
     #   datasets
     #   evaluate
-    #   seaborn
-pathspec==0.12.1
-    # via black
 pillow==11.2.1
     # via
     #   matplotlib
     #   together
-platformdirs==4.3.7
-    # via
-    #   black
-    #   virtualenv
-pluggy==1.5.0
-    # via pytest
-pre-commit==4.2.0
-    # via flame (pyproject.toml)
 propcache==0.3.1
     # via
     #   aiohttp
@@ -262,16 +227,12 @@ pygments==2.19.1
     # via rich
 pyparsing==3.2.3
     # via matplotlib
-pytest==8.3.5
-    # via flame (pyproject.toml)
 python-dateutil==2.9.0.post0
     # via
     #   matplotlib
     #   pandas
 python-dotenv==1.1.0
-    # via
-    #   flame (pyproject.toml)
-    #   litellm
+    # via litellm
 pytz==2025.2
     # via pandas
 pyyaml==6.0.2
@@ -279,7 +240,6 @@ pyyaml==6.0.2
     #   flame (pyproject.toml)
     #   datasets
     #   huggingface-hub
-    #   pre-commit
     #   transformers
 referencing==0.36.2
     # via
@@ -296,12 +256,9 @@ requests==2.32.3
     #   datasets
     #   evaluate
     #   huggingface-hub
-    #   requests-mock
     #   tiktoken
     #   together
     #   transformers
-requests-mock==1.12.1
-    # via flame (pyproject.toml)
 rich==14.0.0
     # via
     #   together
@@ -310,16 +267,12 @@ rpds-py==0.24.0
     # via
     #   jsonschema
     #   referencing
-ruff==0.11.8
-    # via flame (pyproject.toml)
 safetensors==0.5.3
     # via transformers
 scikit-learn==1.6.1
     # via flame (pyproject.toml)
 scipy==1.15.2
     # via scikit-learn
-seaborn==0.13.2
-    # via flame (pyproject.toml)
 setuptools==80.3.0
     # via
     #   flame (pyproject.toml)
@@ -387,8 +340,6 @@ tzdata==2025.2
     # via pandas
 urllib3==2.4.0
     # via requests
-virtualenv==20.30.0
-    # via pre-commit
 xxhash==3.5.0
     # via
     #   datasets
