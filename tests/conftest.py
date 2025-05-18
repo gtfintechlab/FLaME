@@ -5,6 +5,15 @@ Patched automatically for every test:
 • datasets.load_dataset -> small in-memory dataset
 • time.sleep -> no-op
 • RESULTS_DIR / LOG_DIR / EVALUATION_DIR redirected to temp folder
+
+TEST OUTPUT PATTERN:
+All test artifacts are automatically redirected to tests/test_outputs/
+which is gitignored. This happens automatically through:
+1. Setting PYTEST_RUNNING environment variable
+2. Patching flame.config to use TEST_OUTPUT_DIR
+3. inference.py and evaluate.py check IN_PYTEST to choose output dir
+
+Important: Never commit test outputs. Always use the IN_PYTEST pattern.
 """
 
 from __future__ import annotations

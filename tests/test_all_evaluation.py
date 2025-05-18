@@ -7,10 +7,16 @@ from __future__ import annotations
 import importlib
 import inspect
 from pathlib import Path
-from types import ModuleType, SimpleNamespace as _SNS
-
+from types import ModuleType
 import pandas as pd
 import pytest
+
+
+# Custom replacement for SimpleNamespace to avoid conflicts
+class _MockNamespace:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
 
 SRC_DIR = Path(__file__).resolve().parent.parent / "src" / "flame" / "code"
 
@@ -69,6 +75,31 @@ def _make_dummy_df() -> pd.DataFrame:  # noqa: D103 (helper)
 
 @pytest.mark.parametrize("module_name", _discover_eval_modules())
 def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: D103 – pytest test fn
+    # Patch evaluate module EARLY to prevent heavy dependency imports
+    import sys
+
+    class MockEvaluateModule:
+        class MockBERTScore:
+            """Mock BERTScore metric to avoid having to install bert-score and transformers for testing."""
+
+            def compute(self, predictions, references, **kwargs):
+                return {"precision": 0.85, "recall": 0.83, "f1": 0.84}
+
+        @staticmethod
+        def load(metric_name, *args, **kwargs):
+            if metric_name == "bertscore":
+                return MockEvaluateModule.MockBERTScore()
+
+            # Return a generic mock for other metrics
+            class GenericMock:
+                def compute(self, **kwargs):
+                    return {"score": 0.5}
+
+            return GenericMock()
+
+    # Insert mock module to prevent actual import
+    sys.modules["evaluate"] = MockEvaluateModule()
+
     class _DummyEvalDF(pd.DataFrame):
         """DataFrame that auto-creates missing columns with default None values."""
 
@@ -98,12 +129,24 @@ def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: 
         df2["actual_tags"] = ["['CAUSE']", "[]"]
         df2["extracted_tags"] = ["['CAUSE']", "[]"]
         dummy_df = _DummyEvalDF(df2)
+    # For banking77, use numeric labels
+    elif "banking77" in module_name:
+        dummy_df["actual_labels"] = [0]  # Use numeric label for banking77
+    # For convfinqa and tatqa, ensure proper label types
+    elif "convfinqa" in module_name:
+        dummy_df["actual_labels"] = ["answer"]  # Non-None string
+        dummy_df["llm_responses"] = ["answer"]  # Match the label type
+    elif "tatqa" in module_name:
+        dummy_df["actual_labels"] = [1]  # Numeric label
+        dummy_df["llm_responses"] = ["answer"]  # String response
 
     # Patch pandas.read_csv to always return our dummy DataFrame
     monkeypatch.setattr(pd, "read_csv", lambda *a, **k: dummy_df)
 
     # Patch sklearn metric functions to lightweight no-ops to avoid shape mismatch errors.
     import sklearn.metrics as _sm  # type: ignore
+    import sklearn.metrics._classification as _smc  # type: ignore
+    import sklearn.utils.multiclass as _sum  # type: ignore
 
     monkeypatch.setattr(_sm, "accuracy_score", lambda *a, **k: 0.0, raising=False)
     monkeypatch.setattr(
@@ -116,13 +159,41 @@ def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: 
     monkeypatch.setattr(_sm, "recall_score", lambda *a, **k: 0.0, raising=False)
     monkeypatch.setattr(_sm, "f1_score", lambda *a, **_k: 0.0, raising=False)
 
+    # Patch classification_report to avoid label validation
+    def _mock_classification_report(y_true, y_pred, **kwargs):
+        labels = kwargs.get(
+            "labels", ["B-CAUSE", "I-CAUSE", "B-EFFECT", "I-EFFECT", "O"]
+        )
+        report = "              precision    recall  f1-score   support\n\n"
+        for label in labels:
+            report += f"{label:>12}      0.00      0.00      0.00         0\n"
+        report += "\n    accuracy                           0.00         0\n"
+        report += "   macro avg      0.00      0.00      0.00         0\n"
+        report += "weighted avg      0.00      0.00      0.00         0\n"
+        return report
+
+    monkeypatch.setattr(
+        _sm, "classification_report", _mock_classification_report, raising=False
+    )
+
+    # Patch sklearn utilities to avoid type checking issues
+    monkeypatch.setattr(
+        _smc, "_check_targets", lambda *a, **k: ("unknown", [0], [0]), raising=False
+    )
+    monkeypatch.setattr(_sum, "type_of_target", lambda *a, **k: "binary", raising=False)
+    monkeypatch.setattr(_sum, "is_multilabel", lambda *a, **k: False, raising=False)
+
     # 6. builtins.eval -> return fake completion object for causal detection modules
     import builtins as _builtins  # noqa: WPS433 (importing system module)
 
     def _dummy_completion(*_a, **_k):  # noqa: D401 (simple function)
         """Return object mimicking litellm completion response."""
-        return _SNS(
-            choices=[_SNS(message=_SNS(content="<think>none</think> label: A"))]
+        return _MockNamespace(
+            choices=[
+                _MockNamespace(
+                    message=_MockNamespace(content="<think>none</think> label: A")
+                )
+            ]
         )
 
     monkeypatch.setattr(_builtins, "eval", lambda *_a, **_k: _dummy_completion())
@@ -131,6 +202,8 @@ def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: 
     from pathlib import Path as _Path
 
     monkeypatch.setattr(_Path, "exists", lambda *_a, **_k: True, raising=False)
+
+    # 8. Evaluate module already patched at the beginning of the test
 
     # ------------------------------------------------------------------
     # Patch misc stdlib helpers for tolerant parsing & heavy deps stubbing

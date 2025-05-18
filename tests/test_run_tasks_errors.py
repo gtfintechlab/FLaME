@@ -1,8 +1,10 @@
 """Tests for error handling in multi-task execution."""
 
 import pytest
+from types import SimpleNamespace
 from main import run_tasks, MultiTaskError
 from unittest.mock import patch
+import pandas as pd
 
 
 def test_multitask_error_class():
@@ -94,3 +96,98 @@ def test_run_tasks_continues_after_error(dummy_args, mode):
 
             # All tasks should have been executed
             assert executed_tasks == ["task1", "fail_task", "task3"]
+
+
+def test_multitask_error_aggregation_detailed():
+    """Test that MultiTaskError correctly aggregates failures with details"""
+    # Keep track of calls
+    calls = []
+
+    # Create a mock that fails for specific tasks
+    def mock_inference(args):
+        calls.append(args.task)
+        if args.task == "numclaim":
+            raise ValueError("Simulated numclaim error")
+        elif args.task == "finer":
+            raise RuntimeError("Simulated finer error")
+        # fomc succeeds
+        return pd.DataFrame({"result": ["success"]})
+
+    # Create more complete args to avoid attribute errors
+    args = SimpleNamespace(
+        tasks=["fomc", "numclaim", "finer"],
+        mode="inference",
+        model="test-model",
+        prompt_format="zero_shot",
+        batch_size=10,
+        max_tokens=128,
+        temperature=0.0,
+        top_p=0.9,
+        top_k=None,
+        repetition_penalty=1.0,
+    )
+
+    # Mock the inference function at the main level
+    with patch("main.inference", mock_inference):
+        # Run tasks and expect MultiTaskError
+        with pytest.raises(MultiTaskError) as exc_info:
+            run_tasks(args.tasks, args.mode, args)
+
+        # Verify all tasks were attempted
+        assert calls == ["fomc", "numclaim", "finer"]
+
+        # Check that the error contains failures for the right tasks
+        error = exc_info.value
+        assert "numclaim" in error.errors
+        assert "finer" in error.errors
+        assert "fomc" not in error.errors  # This one succeeded
+        assert isinstance(error.errors["numclaim"], ValueError)
+        assert isinstance(error.errors["finer"], RuntimeError)
+
+
+def test_error_recovery_and_reporting():
+    """Test error recovery and reporting in multi-task execution"""
+    # Create mock functions with controlled failures
+    call_log = []
+
+    def mock_inference(args):
+        call_log.append(f"inference_{args.task}")
+        if args.task == "fomc":
+            # First task succeeds
+            return pd.DataFrame({"result": ["success"]})
+        elif args.task == "numclaim":
+            # Second task fails with specific error
+            raise ValueError("API rate limit exceeded")
+        elif args.task == "finer":
+            # Third task succeeds (to test recovery)
+            return pd.DataFrame({"result": ["success"]})
+
+    args = SimpleNamespace(
+        tasks=["fomc", "numclaim", "finer"],
+        mode="inference",
+        model="test-model",
+        batch_size=10,
+        prompt_format="zero_shot",
+        max_tokens=128,
+        temperature=0.0,
+        top_p=0.9,
+        top_k=None,
+        repetition_penalty=1.0,
+    )
+
+    with patch("main.inference", mock_inference):
+        with pytest.raises(MultiTaskError) as exc_info:
+            run_tasks(args.tasks, args.mode, args)
+
+    # Verify execution order and error handling
+    assert call_log == ["inference_fomc", "inference_numclaim", "inference_finer"]
+
+    # Check error details
+    error = exc_info.value
+    assert len(error.errors) == 1  # Only numclaim failed
+    assert "numclaim" in error.errors
+    assert "API rate limit exceeded" in str(error.errors["numclaim"])
+
+    # Verify fomc and finer succeeded (not in errors)
+    assert "fomc" not in error.errors
+    assert "finer" not in error.errors

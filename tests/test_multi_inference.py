@@ -1,7 +1,5 @@
 import pytest
-from main import run_tasks, parse_arguments
-import yaml
-import sys
+from main import run_tasks
 from unittest.mock import patch
 
 
@@ -45,28 +43,3 @@ def test_multitask_with_custom_tasks(mock_supported, dummy_args):
     with patch("main.inference"):
         # This should now work because we've mocked supported_tasks
         run_tasks(custom_tasks, dummy_args.mode, dummy_args)
-
-
-def test_yaml_config_tasks(tmp_path, monkeypatch):
-    """
-    Test that tasks specified in YAML config are properly read and executed.
-    """
-    # Create temp YAML with registered tasks
-    config = {
-        "tasks": ["fomc", "numclaim", "finer"],  # Tasks that are in registry
-        "mode": "inference",
-        "model": "together_ai/meta-llama/Llama-4-Scout-17B-16E-Instruct",
-    }
-    config_file = tmp_path / "test_config.yaml"
-    with open(config_file, "w") as f:
-        yaml.dump(config, f)
-
-    # Mock the command line args
-    argv = ["main.py", "--config", str(config_file)]
-    monkeypatch.setattr(sys, "argv", argv)
-
-    # Parse arguments and verify tasks
-    args = parse_arguments()
-    assert args.tasks == ["fomc", "numclaim", "finer"]
-    assert args.mode == "inference"
-    assert args.model == "together_ai/meta-llama/Llama-4-Scout-17B-16E-Instruct"

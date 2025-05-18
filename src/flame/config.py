@@ -1,4 +1,12 @@
-"""Configuration settings for the FLaME project."""
+"""Configuration settings for the FLaME project.
+
+TEST OUTPUT PATTERN:
+When IN_PYTEST is True (set by conftest.py), all outputs should use:
+- TEST_OUTPUT_DIR instead of RESULTS_DIR
+- TEST_OUTPUT_DIR instead of EVALUATION_DIR
+
+This ensures test artifacts are isolated and gitignored.
+"""
 
 import logging
 from pathlib import Path
