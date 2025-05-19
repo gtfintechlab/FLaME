@@ -164,10 +164,10 @@ def mmlu_inference(args) -> pd.DataFrame:
     logger.info(
         f"Loaded {len(df)} questions and {len(few_shot_examples)} few-shot examples"
     )
-    
+
     # Apply sample size limit if specified
-    if hasattr(args, 'sample_size') and args.sample_size is not None:
-        df = df.iloc[:args.sample_size]
+    if hasattr(args, "sample_size") and args.sample_size is not None:
+        df = df.iloc[: args.sample_size]
         logger.info(f"Limited dataset to {len(df)} samples")
 
     # Initialize result containers

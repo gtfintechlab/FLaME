@@ -27,11 +27,11 @@ def ectsum_inference(args):
     # Load the ECTSum dataset (test split)
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/ECTSum", trust_remote_code=True)
-    
+
     test_data = dataset["test"]  # type: ignore
-    
+
     # Apply sample size limit if specified
-    if hasattr(args, 'sample_size') and args.sample_size is not None:
+    if hasattr(args, "sample_size") and args.sample_size is not None:
         test_data = test_data.select(range(min(args.sample_size, len(test_data))))
         logger.info(f"Limited dataset to {len(test_data)} samples")
 
@@ -59,9 +59,7 @@ def ectsum_inference(args):
 
     # Iterate through the test split of the dataset
     for i in range(len(test_data)):  # type: ignore
-        document = test_data[i][
-            "context"
-        ]  # Extract document (context) # type: ignore
+        document = test_data[i]["context"]  # Extract document (context) # type: ignore
         actual_label = test_data[i][
             "response"
         ]  # Extract the actual label (response) # type: ignore

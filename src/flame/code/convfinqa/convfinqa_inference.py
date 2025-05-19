@@ -19,15 +19,15 @@ logger = setup_logger(
 def convfinqa_inference(args):
     today = date.today()
     dataset = load_dataset("gtfintechlab/convfinqa", trust_remote_code=True)
-    
+
     # Note: This dataset uses "train" split for inference - preserving original behavior
     data_split = dataset["train"]  # type: ignore
-    
+
     # Apply sample size limit if specified
-    if hasattr(args, 'sample_size') and args.sample_size is not None:
+    if hasattr(args, "sample_size") and args.sample_size is not None:
         data_split = data_split.select(range(min(args.sample_size, len(data_split))))
         logger.info(f"Limited dataset to {len(data_split)} samples")
-    
+
     context = []
     llm_responses = []
     actual_labels = []

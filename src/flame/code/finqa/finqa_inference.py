@@ -14,12 +14,12 @@ logger = setup_logger(
 def finqa_inference(args):
     dataset = load_dataset("gtfintechlab/finqa", trust_remote_code=True)
     test_data = dataset["test"]  # type: ignore
-    
+
     # Apply sample size limit if specified
-    if hasattr(args, 'sample_size') and args.sample_size is not None:
+    if hasattr(args, "sample_size") and args.sample_size is not None:
         test_data = test_data.select(range(min(args.sample_size, len(test_data))))
         logger.info(f"Limited dataset to {len(test_data)} samples")
-    
+
     all_texts = [
         f"{' '.join(data['pre_text'])} {' '.join(data['post_text'])} {' '.join([' '.join(row) for row in data['table_ori']])} {data['question']}"
         for data in test_data
