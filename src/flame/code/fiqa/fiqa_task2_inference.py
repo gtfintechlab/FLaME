@@ -19,6 +19,12 @@ def fiqa_task2_inference(args):
     dataset = load_dataset("gtfintechlab/FiQA_Task2", trust_remote_code=True)
 
     test_data = dataset["test"]  # type: ignore
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        test_data = test_data.select(range(min(args.sample_size, len(test_data))))
+        logger.info(f"Limited dataset to {len(test_data)} samples")
+    
     all_questions = [data["question"] for data in test_data]  # type: ignore
     all_answers = [data["answer"] for data in test_data]  # type: ignore
 

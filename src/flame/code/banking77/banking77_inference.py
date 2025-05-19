@@ -18,6 +18,12 @@ logger = setup_logger(
 def banking77_inference(args):
     dataset = load_dataset("gtfintechlab/banking77", trust_remote_code=True)
     test_data = dataset["test"]  # type: ignore
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        test_data = test_data.select(range(min(args.sample_size, len(test_data))))
+        logger.info(f"Limited dataset to {len(test_data)} samples")
+    
     all_documents = [data["text"] for data in test_data]  # type: ignore
     all_actual_labels = [data["label"] for data in test_data]  # type: ignore
 

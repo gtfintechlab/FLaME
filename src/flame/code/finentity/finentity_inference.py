@@ -25,10 +25,17 @@ def finentity_inference(args):
 
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/finentity", "5768", trust_remote_code=True)
+    
+    test_data = dataset["test"]  # type: ignore
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        test_data = test_data.select(range(min(args.sample_size, len(test_data))))
+        logger.info(f"Limited dataset to {len(test_data)} samples")
 
     # Extract sentences and actual labels
-    sentences = [row["content"] for row in dataset["test"]]  # type: ignore
-    actual_labels = [row["annotations"] for row in dataset["test"]]  # type: ignore
+    sentences = [row["content"] for row in test_data]  # type: ignore
+    actual_labels = [row["annotations"] for row in test_data]  # type: ignore
 
     llm_responses = []
     complete_responses = []

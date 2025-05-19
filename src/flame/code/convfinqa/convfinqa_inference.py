@@ -19,6 +19,15 @@ logger = setup_logger(
 def convfinqa_inference(args):
     today = date.today()
     dataset = load_dataset("gtfintechlab/convfinqa", trust_remote_code=True)
+    
+    # Note: This dataset uses "train" split for inference - preserving original behavior
+    data_split = dataset["train"]  # type: ignore
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        data_split = data_split.select(range(min(args.sample_size, len(data_split))))
+        logger.info(f"Limited dataset to {len(data_split)} samples")
+    
     context = []
     llm_responses = []
     actual_labels = []
@@ -31,7 +40,7 @@ def convfinqa_inference(args):
     if convfinqa_prompt is None:
         raise RuntimeError("ConvFinQA prompt not found in registry")
 
-    for entry in dataset["train"]:  # type: ignore
+    for entry in data_split:  # type: ignore
         pre_text = " ".join(entry["pre_text"])  # type: ignore
         post_text = " ".join(entry["post_text"])  # type: ignore
         table_text = " ".join([" ".join(map(str, row)) for row in entry["table_ori"]])  # type: ignore

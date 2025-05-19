@@ -27,6 +27,13 @@ def ectsum_inference(args):
     # Load the ECTSum dataset (test split)
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/ECTSum", trust_remote_code=True)
+    
+    test_data = dataset["test"]  # type: ignore
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        test_data = test_data.select(range(min(args.sample_size, len(test_data))))
+        logger.info(f"Limited dataset to {len(test_data)} samples")
 
     results_path = (
         RESULTS_DIR
@@ -51,18 +58,18 @@ def ectsum_inference(args):
     logger.info(f"Starting inference on ECTSum with model {args.model}...")
 
     # Iterate through the test split of the dataset
-    for i in range(len(dataset["test"])):  # type: ignore
-        document = dataset["test"][i][
+    for i in range(len(test_data)):  # type: ignore
+        document = test_data[i][
             "context"
         ]  # Extract document (context) # type: ignore
-        actual_label = dataset["test"][i][
+        actual_label = test_data[i][
             "response"
         ]  # Extract the actual label (response) # type: ignore
         # documents.append(document)
         # actual_labels.append(actual_label)
 
         try:
-            logger.info(f"Processing document {i + 1}/{len(dataset['test'])}")  # type: ignore
+            logger.info(f"Processing document {i + 1}/{len(test_data)}")  # type: ignore
             # Generate the model's response using Together API
             model_response = completion(
                 model=args.model,

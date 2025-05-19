@@ -30,6 +30,13 @@ def numclaim_inference(args):
     # Load the Numclaim dataset (test split)
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/Numclaim", trust_remote_code=True)
+    
+    test_data = dataset["test"]  # type: ignore
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        test_data = test_data.select(range(min(args.sample_size, len(test_data))))
+        logger.info(f"Limited dataset to {len(test_data)} samples")
 
     results_path = (
         RESULTS_DIR
@@ -46,8 +53,8 @@ def numclaim_inference(args):
 
     logger.info(f"Starting inference on Numclaim with model {args.model}...")
 
-    sentences = [row["context"] for row in dataset["test"]]  # type: ignore
-    actual_labels = [row["response"] for row in dataset["test"]]  # type: ignore
+    sentences = [row["context"] for row in test_data]  # type: ignore
+    actual_labels = [row["response"] for row in test_data]  # type: ignore
     batch_size = args.batch_size
     total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)
     logger.info(f"Processing {len(sentences)} rows in {total_batches} batches.")

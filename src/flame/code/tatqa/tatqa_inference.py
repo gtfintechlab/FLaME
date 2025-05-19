@@ -18,6 +18,13 @@ logger = setup_logger(
 def tatqa_inference(args):
     today = date.today()
     dataset = load_dataset("gtfintechlab/TATQA", trust_remote_code=True)
+    
+    test_data = dataset["test"]  # type: ignore
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        test_data = test_data.select(range(min(args.sample_size, len(test_data))))
+        logger.info(f"Limited dataset to {len(test_data)} samples")
 
     # Initialize lists to store context, model responses, actual answers, and complete responses
     context = []
@@ -29,7 +36,7 @@ def tatqa_inference(args):
     if tatqa_prompt is None:
         raise RuntimeError("TATQA prompt not found in registry")
 
-    for i, entry in enumerate(dataset["test"]):  # type: ignore
+    for i, entry in enumerate(test_data):  # type: ignore
         question = entry["query"]  # type: ignore
         context_text = entry["text"]  # type: ignore
         combined_text = f"{context_text} {question}"  # Combine context and question
@@ -39,7 +46,7 @@ def tatqa_inference(args):
         actual_answers.append(actual_answer)
 
         try:
-            logger.info(f"Processing question {i + 1}/{len(dataset['test'])}")  # type: ignore
+            logger.info(f"Processing question {i + 1}/{len(test_data)}")  # type: ignore
             # TAT-QA-specific prompt logic, create the prompt for table and text-based QA
             model_response = completion(
                 messages=[{"role": "user", "content": tatqa_prompt(combined_text)}],

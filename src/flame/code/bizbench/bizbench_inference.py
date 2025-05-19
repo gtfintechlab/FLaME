@@ -26,6 +26,13 @@ def bizbench_inference(args):
     # Load dataset
     logger.info("Loading dataset...")
     dataset = load_dataset("glennmatlin/bizbench", trust_remote_code=True)
+    
+    test_data = dataset["test"]  # type: ignore
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        test_data = test_data.select(range(min(args.sample_size, len(test_data))))
+        logger.info(f"Limited dataset to {len(test_data)} samples")
 
     # Initialize lists to store actual labels and model responses
     X_question = []
@@ -43,8 +50,8 @@ def bizbench_inference(args):
         raise RuntimeError("BizBench prompt not found in registry")
 
     # Iterating through the test split of the dataset
-    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"):  # type: ignore
-        instance = dataset["test"][i]  # type: ignore
+    for i in tqdm(range(len(test_data)), desc="Processing sentences"):  # type: ignore
+        instance = test_data[i]  # type: ignore
         """
         instance = {
             'question': __,
@@ -65,7 +72,7 @@ def bizbench_inference(args):
             continue
 
         try:
-            logger.info(f"Processing instance {i + 1}/{len(dataset['test'])}")  # type: ignore
+            logger.info(f"Processing instance {i + 1}/{len(test_data)}")  # type: ignore
             X_question.append(question)
             X_context.append(context)
             y_answer.append(answer)

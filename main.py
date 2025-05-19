@@ -44,6 +44,11 @@ def parse_arguments():
         nargs="+",
         help="List of task names to run (e.g. numclaim fpb)",
     )
+    parser.add_argument(
+        "--sample_size",
+        type=int,
+        help="Number of samples to use from each dataset (defaults to all samples)",
+    )
     args = parser.parse_args()
 
     # Load and merge config
@@ -68,6 +73,7 @@ def parse_arguments():
         "repetition_penalty": 1.0,
         "batch_size": 10,
         "prompt_format": "zero_shot",
+        "sample_size": None,  # None means use all samples
     }
     for key, default in defaults.items():
         if getattr(args, key, None) is None:

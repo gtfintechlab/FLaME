@@ -41,6 +41,12 @@ def subjectiveqa_inference(args):
         logger.error(f"Dataset loading failed: {e}")
         logger.error(traceback.format_exc())
         return None
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        dataset = dataset.select(range(min(args.sample_size, len(dataset))))
+        logger.info(f"Limited dataset to {len(dataset)} samples")
+    
     try:
         questions = [row["QUESTION"] for row in dataset]  # type: ignore
         answers = [row["ANSWER"] for row in dataset]  # type: ignore

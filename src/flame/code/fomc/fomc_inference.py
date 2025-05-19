@@ -118,6 +118,11 @@ def fomc_inference(args):
 
     # Load dataset
     test_data = load_fomc_dataset()
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        test_data = test_data.select(range(min(args.sample_size, len(test_data))))
+        logger.info(f"Limited dataset to {len(test_data)} samples")
 
     # Initialize result containers
     sentences = []

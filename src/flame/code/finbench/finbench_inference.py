@@ -31,6 +31,12 @@ def finbench_inference(args):
     complete_responses = []
 
     test_data = dataset["test"]  # type: ignore
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        test_data = test_data.select(range(min(args.sample_size, len(test_data))))
+        logger.info(f"Limited dataset to {len(test_data)} samples")
+    
     all_profiles = [data["X_profile"] for data in test_data]  # type: ignore
     all_actual_labels = [data["y"] for data in test_data]  # type: ignore
 

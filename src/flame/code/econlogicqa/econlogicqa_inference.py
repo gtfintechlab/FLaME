@@ -24,6 +24,11 @@ def econlogicqa_inference(args):
     # Load dataset
     logger.info("Loading dataset...")
     dataset = load_dataset("glennmatlin/econlogicqa", trust_remote_code=True)["test"]
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        dataset = dataset.select(range(min(args.sample_size, len(dataset))))
+        logger.info(f"Limited dataset to {len(dataset)} samples")
 
     # Initialize Together API client
     client = Together()

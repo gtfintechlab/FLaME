@@ -23,10 +23,17 @@ def finer_inference(args):
     # Load the dataset
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/finer-ord-bio", trust_remote_code=True)
+    
+    test_data = dataset["test"]  # type: ignore
+    
+    # Apply sample size limit if specified
+    if hasattr(args, 'sample_size') and args.sample_size is not None:
+        test_data = test_data.select(range(min(args.sample_size, len(test_data))))
+        logger.info(f"Limited dataset to {len(test_data)} samples")
 
     # Extract data
-    sentences = [row["tokens"] for row in dataset["test"]]  # type: ignore
-    actual_labels = [row["tags"] for row in dataset["test"]]  # type: ignore
+    sentences = [row["tokens"] for row in test_data]  # type: ignore
+    actual_labels = [row["tags"] for row in test_data]  # type: ignore
 
     llm_responses = []
     complete_responses = []
