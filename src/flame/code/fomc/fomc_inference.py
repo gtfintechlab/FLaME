@@ -1,24 +1,21 @@
 """FOMC inference module."""
 
 import json
-import uuid
 from datetime import datetime
 from dataclasses import dataclass
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 
 import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
 from pathlib import Path
 from flame.code.prompts import get_prompt, PromptFormat
-from flame.utils.logging_utils import setup_logger
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 
-logger = setup_logger(
-    name="fomc_inference", log_file=LOG_DIR / "fomc_inference.log", level=LOG_LEVEL
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "fomc")
 
 
 @dataclass
@@ -43,25 +40,8 @@ class InferenceConfig:
             raise ValueError("Batch size must be positive")
 
 
-def generate_inference_filename(task: str, model: str) -> Tuple[str, Path]:
-    """Generate a unique filename for inference results.
-
-    Args:
-        task: The task name (e.g., 'fomc')
-        model: The full model path
-
-    Returns:
-        Tuple of (base_filename, full_path)
-    """
-    model_parts = model.split("/")
-    provider = model_parts[0] if len(model_parts) > 1 else "unknown"
-    model_name = model_parts[-1].replace("-", "_")
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    uid = str(uuid.uuid4())[:8]
-    base_filename = f"{task}_{provider}_{model_name}_{timestamp}_{uid}"
-    full_path = RESULTS_DIR / task / f"inference_{base_filename}.csv"
-    full_path.parent.mkdir(parents=True, exist_ok=True)
-    return base_filename, full_path
+# Use the centralized inference filename generator
+from flame.utils.miscellaneous import generate_inference_filename
 
 
 def validate_sample(response: str) -> bool:
@@ -105,15 +85,13 @@ def fomc_inference(args):
     model_name = model_parts[-1]
 
     # Generate filename first
-    base_filename, results_path = generate_inference_filename("fomc", args.model)
+    results_path = generate_inference_filename("fomc", args.model)
 
     # Detailed startup logging - keep critical info at INFO level
     logger.info(f"Starting FOMC inference with {model_name}")
     logger.debug(f"Provider: {provider}")
     logger.debug(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    logger.debug(
-        f"Output directory: ./{results_path.relative_to(RESULTS_DIR.parent).parent}"
-    )
+    logger.debug(f"Output directory: {results_path.parent}")
     logger.debug(f"Output filename: {results_path.name}")
 
     # Load dataset

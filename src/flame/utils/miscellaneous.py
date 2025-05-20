@@ -1,91 +1,41 @@
-import io
-import zipfile
-from pathlib import Path
+"""Miscellaneous utility functions for the FLaME framework."""
 
-import pandas as pd
-import requests
+import uuid
+from datetime import datetime
 
-# Collection of file and data handling utilities
+from flame.config import RESULTS_DIR, TEST_OUTPUT_DIR, IN_PYTEST
 
 
-def download_zip_content(url):
-    """Download and create a ZipFile object from a URL.
+def generate_inference_filename(task: str, model: str, output_dir=None):
+    """Generate a unique filename for inference results.
+
+    This standardized function creates consistent filenames for all tasks
+    with built-in collision prevention using timestamps and UUIDs.
 
     Args:
-        url: URL to download from
+        task: The task name (e.g., 'fomc')
+        model: The full model path (e.g., 'together_ai/model_name')
+        output_dir: Optional output directory (defaults to RESULTS_DIR or TEST_OUTPUT_DIR)
 
     Returns:
-        A ZipFile object containing the downloaded content
+        Path object for the full output file path
     """
-    response = requests.get(url)
-    return zipfile.ZipFile(io.BytesIO(response.content))
+    # Use test output directory if running in pytest, or RESULTS_DIR by default
+    if output_dir is None:
+        output_dir = TEST_OUTPUT_DIR if IN_PYTEST else RESULTS_DIR
 
+    # Sanitize the model name for use in filenames
+    model_parts = model.split("/")
+    provider = model_parts[0] if len(model_parts) > 1 else "unknown"
+    model_name = model_parts[-1].replace("-", "_")
 
-def zip_to_csv(zip_file_path, json_file_name, csv_file_path):
-    """Extract a JSON file from a ZIP archive and convert it to CSV.
+    # Add timestamp and unique identifier to prevent collisions
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    uid = str(uuid.uuid4())[:8]  # Use first 8 chars of UUID for brevity
 
-    Args:
-        zip_file_path: Path to the ZIP file
-        json_file_name: Name of the JSON file inside the ZIP
-        csv_file_path: Output path for the CSV file
-    """
-    with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
-        zip_ref.extract(json_file_name, Path(zip_file_path).parent)
-    json_path = Path(zip_file_path).parent / json_file_name
-    df = pd.read_json(json_path)
-    df.to_csv(csv_file_path, index=False)
+    # Create the full path with unique identifiers
+    task_dir = output_dir / task
+    task_dir.mkdir(parents=True, exist_ok=True)
 
-
-def remove_think_tokens(file_path, output_path=None):
-    """Remove '<think>' tags and their content from model responses in a CSV file.
-
-    Processes model responses in a CSV file by removing everything before and including
-    the '</think>' tag, which is used in some models for showing intermediate thinking steps.
-
-    Args:
-        file_path (str or Path): Path to the CSV file containing model responses
-        output_path (str or Path, optional): Path for the output CSV file.
-            If not provided, defaults to the input path with '_no_think' appended
-            before the extension.
-
-    Returns:
-        Path: Path to the processed output file
-
-    Raises:
-        FileNotFoundError: If the input file doesn't exist
-        pd.errors.EmptyDataError: If the CSV file is empty or malformed
-    """
-    # Convert to Path object for easier path manipulation
-    file_path = Path(file_path)
-
-    # Validate input file
-    if not file_path.exists():
-        raise FileNotFoundError(f"Input file not found: {file_path}")
-
-    # Determine output path if not provided
-    if output_path is None:
-        output_path = file_path.parent / f"{file_path.stem}_no_think{file_path.suffix}"
-    else:
-        output_path = Path(output_path)
-
-    # Create parent directory for output if needed
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Process the file
-    df = pd.read_csv(file_path)
-
-    # Check if 'llm_responses' column exists
-    if "llm_responses" not in df.columns:
-        raise ValueError(f"Column 'llm_responses' not found in {file_path}")
-
-    # Process responses - safely handle missing </think> tags
-    df["llm_responses"] = df["llm_responses"].apply(
-        lambda x: x[(x.find("</think>") + 8) :]
-        if isinstance(x, str) and "</think>" in x
-        else x
-    )
-
-    # Save to output file
-    df.to_csv(output_path, index=False)
-
-    return output_path
+    filename = f"{task}_{provider}_{model_name}_{timestamp}_{uid}.csv"
+    return task_dir / filename

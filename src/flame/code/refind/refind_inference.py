@@ -1,18 +1,15 @@
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import get_prompt, PromptFormat
-
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
-logger = setup_logger(
-    name="refind_inference",
-    log_file=LOG_DIR / "refind_inference.log",
-    level=LOG_LEVEL,
-)
+from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.miscellaneous import generate_inference_filename
+
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "refind")
 
 
 def refind_inference(args):
@@ -23,10 +20,7 @@ def refind_inference(args):
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/ReFinD", trust_remote_code=True)
 
-    results_path = (
-        RESULTS_DIR / "refind" / f"refind_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
+    # We'll generate the filename at the end of the function
 
     test_data = dataset["test"]  # type: ignore
     all_sentences = [
@@ -106,6 +100,9 @@ def refind_inference(args):
             "complete_responses": complete_responses,
         }
     )
+
+    # Generate a unique results path with timestamp and UUID
+    results_path = generate_inference_filename("refind", args.model)
 
     # Save the results to a CSV file
     df.to_csv(results_path, index=False)

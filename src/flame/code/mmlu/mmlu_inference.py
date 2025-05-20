@@ -1,22 +1,18 @@
 import json
-import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import pandas as pd
 from tqdm import tqdm
 
 from flame.code.mmlu.mmlu_loader import MMLULoader
-from flame.utils.logging_utils import setup_logger
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from flame.config import RESULTS_DIR
 
-logger = setup_logger(
-    name="mmlu_inference",
-    log_file=LOG_DIR / "mmlu_inference.log",
-    level=LOG_LEVEL,
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "mmlu")
 
 
 def format_mmlu_prompt(
@@ -54,25 +50,8 @@ def format_mmlu_prompt(
     return f"{examples_text}{current_text}"
 
 
-def generate_inference_filename(task: str, model: str) -> Tuple[str, Path]:
-    """Generate a unique filename for inference results.
-
-    Args:
-        task: Task name (e.g., 'mmlu')
-        model: Full model path
-
-    Returns:
-        Tuple of (base_filename, full_path)
-    """
-    model_parts = model.split("/")
-    provider = model_parts[0] if len(model_parts) > 1 else "unknown"
-    model_name = model_parts[-1].replace("-", "_")
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    uid = str(uuid.uuid4())[:8]
-    base_filename = f"{task}_{provider}_{model_name}_{timestamp}_{uid}"
-    full_path = RESULTS_DIR / task / f"inference_{base_filename}.csv"
-    full_path.parent.mkdir(parents=True, exist_ok=True)
-    return base_filename, full_path
+# Use the centralized inference filename generator
+from flame.utils.miscellaneous import generate_inference_filename
 
 
 def save_inference_results(df: pd.DataFrame, path: Path, metadata: Dict) -> None:
@@ -141,7 +120,7 @@ def mmlu_inference(args) -> pd.DataFrame:
     model_name = model_parts[-1]
 
     # Generate filename
-    base_filename, results_path = generate_inference_filename("mmlu", args.model)
+    results_path = generate_inference_filename("mmlu", args.model)
 
     # Log startup information
     logger.info(

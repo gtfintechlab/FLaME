@@ -7,15 +7,12 @@ from litellm import completion
 
 # Import prompts from the unified prompt package
 from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
+from flame.config import RESULTS_DIR
+from flame.utils.miscellaneous import generate_inference_filename
 
-# from flame.code.tokens import tokens
-from flame.utils.logging_utils import setup_logger
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
-
-# Setup logger for ectsum inference
-logger = setup_logger(
-    name="ectsum_inference", log_file=LOG_DIR / "ectsum_inference.log", level=LOG_LEVEL
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "ectsum")
 
 litellm.drop_params = True
 
@@ -107,6 +104,11 @@ def ectsum_inference(args):
         }
     )
 
-    logger.info(f"Inference completed. Returning DataFrame with {len(df)} rows.")
+    # Generate a unique results path with timestamp and UUID
+    results_path = generate_inference_filename("ectsum", args.model)
+
+    # Save the results to a CSV file
+    df.to_csv(results_path, index=False)
+    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

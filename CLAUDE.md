@@ -261,3 +261,6 @@ For detailed guidance on the testing framework, refer to these resources:
 5. **Result Paths**:
    - Inference results: `results/<dataset>/<dataset>_<provider>_<model>_<date>.csv`
    - Evaluation results: `evaluations/<dataset>/evaluation_<dataset>_<model>_<date>.csv`
+
+## Project Specific Memories
+- do not use `uv run python main.py` ever on your own, let me run that command

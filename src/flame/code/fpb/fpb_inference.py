@@ -2,13 +2,11 @@ import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
 from flame.code.prompts import get_prompt, PromptFormat
-from flame.utils.logging_utils import setup_logger
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
 
-logger = setup_logger(
-    name="fpb_inference", log_file=LOG_DIR / "fpb_inference.log", level=LOG_LEVEL
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "fpb")
 
 # data_seed = '5768'
 
@@ -18,10 +16,10 @@ def fpb_inference(args):
     # data_splits = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
     logger.info("Starting FPB inference")
     logger.info("Loading dataset...")
-    # for data_split in data_splits:
+    # Specify a specific data split - using '5768' as default
     dataset = load_dataset(
         "gtfintechlab/financial_phrasebank_sentences_allagree",
-        None,
+        "5768",  # Explicitly specify a config name from available options
         trust_remote_code=True,
     )
 

@@ -1,15 +1,11 @@
 from time import time
-from datetime import date
 
 from flame.task_registry import INFERENCE_MAP
-from flame.config import LOG_DIR, RESULTS_DIR, LOG_LEVEL, TEST_OUTPUT_DIR, IN_PYTEST
-from flame.utils.logging_utils import setup_logger
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.miscellaneous import generate_inference_filename
 
-logger = setup_logger(
-    name="together_inference",
-    log_file=LOG_DIR / "together_inference.log",
-    level=LOG_LEVEL,
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference")
 
 
 def main(args):
@@ -37,17 +33,8 @@ def main(args):
         time_taken = time() - start_t
         logger.info(f"Time taken for inference: {time_taken}")
 
-        # Use test output directory if running in pytest
-        output_dir = TEST_OUTPUT_DIR if IN_PYTEST else RESULTS_DIR
-
-        # Create the task-specific subfolder
-        task_dir = output_dir / task
-        task_dir.mkdir(parents=True, exist_ok=True)
-
-        # Generate the output path
-        results_path = (
-            task_dir / f"{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-        )
+        # Generate a unique results path for this run
+        results_path = generate_inference_filename(task, args.model)
 
         df.to_csv(results_path, index=False)
         logger.info(f"Inference completed for {task}. Results saved to {results_path}")

@@ -1,13 +1,9 @@
 from typing import Any, List
 from litellm import batch_completion
-from flame.utils.logging_utils import setup_logger
-from flame.config import LOG_LEVEL, LOG_DIR
+from flame.utils.logging_utils import get_component_logger
 
-logger = setup_logger(
-    name="batch_utils",
-    log_file=LOG_DIR / "batch_utils.log",
-    level=LOG_LEVEL,
-)
+# Use the component logger with the component name matching the config
+logger = get_component_logger("batch_utils")
 
 
 def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:

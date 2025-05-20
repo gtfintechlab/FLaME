@@ -1,10 +1,14 @@
 import argparse
 from dotenv import load_dotenv
 import os
+import logging
 from flame.code.inference import main as inference
 from huggingface_hub import login
 from flame.code.evaluate import main as evaluate
 from flame.task_registry import supported as supported_tasks
+from flame.config import configure_logging, LOG_CONFIG
+from flame.utils.logging_utils import get_component_logger
+import litellm
 
 
 def parse_arguments():
@@ -44,6 +48,11 @@ def parse_arguments():
         nargs="+",
         help="List of task names to run (e.g. numclaim fpb)",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug logging for this run (overrides config)",
+    )
     args = parser.parse_args()
 
     # Load and merge config
@@ -53,9 +62,18 @@ def parse_arguments():
 
         with open(args.config, "r") as f:
             config = yaml.safe_load(f) or {}
+
+    # Configure logging from YAML config
+    configure_logging(config)
+
+    # Override logging level if --debug flag is used
+    if args.debug:
+        LOG_CONFIG["level"] = logging.DEBUG
+        LOG_CONFIG["console"]["level"] = logging.DEBUG
+
     # CLI overrides config; fill missing from config
     for key, value in config.items():
-        if getattr(args, key, None) is None:
+        if key != "logging" and getattr(args, key, None) is None:
             setattr(args, key, value)
 
     # Apply defaults
@@ -73,7 +91,7 @@ def parse_arguments():
         if getattr(args, key, None) is None:
             setattr(args, key, default)
 
-    return args
+    return args, config
 
 
 class MultiTaskError(Exception):
@@ -85,46 +103,141 @@ class MultiTaskError(Exception):
 
 
 def run_tasks(tasks: list[str], mode: str, args):
+    # Get the main logger
+    logger = get_component_logger("flame")
+
     # validate supported tasks
     supported = supported_tasks(mode)
     for t in tasks:
         if t not in supported:
+            logger.error(f"Task '{t}' not supported for mode {mode}")
             raise ValueError(f"Task '{t}' not supported for mode {mode}")
+
     """Sequentially run each task, collect errors, and raise MultiTaskError if any fail."""
     errors: dict[str, Exception] = {}
     for t in tasks:
         args.task = t
+        logger.info(f"Running task '{t}' in {mode} mode")
         try:
             if mode == "inference":
                 inference(args)
             else:
                 evaluate(args)
+            logger.info(f"Task '{t}' completed successfully")
         except Exception as e:
+            logger.error(f"Task '{t}' failed with error: {str(e)}", exc_info=True)
             errors[t] = e
     if errors:
+        logger.error(
+            f"Encountered errors in {len(errors)} tasks: {', '.join(errors.keys())}"
+        )
         raise MultiTaskError(errors)
+
+
+# Use the configure_litellm from config.py
 
 
 if __name__ == "__main__":
     load_dotenv()
+
+    # Pre-configure litellm with default settings to suppress early logging
+    import litellm
+
+    litellm.verbose = False
+    litellm.set_verbose = False
+    litellm.suppress_debug_info = True
+    litellm.drop_params = True
+
+    # Parse arguments and configure logging
+    args, config = parse_arguments()
+
+    # Set up main logger
+    main_logger = get_component_logger("flame.main")
+    main_logger.info("Starting FLaME framework")
+
+    # Set up root logger to be quiet by default
+    logging.basicConfig(level=logging.WARNING)
+
+    # Configure litellm
+    from flame.config import configure_litellm
+
+    litellm_logger = configure_litellm()
+    litellm_logger.debug("LiteLLM configured")
+
+    # Filter out HTTP request logs by monkey-patching the logging module
+    original_log = logging.Logger._log
+
+    def filtered_log(self, level, msg, args, **kwargs):
+        # Filter out HTTP request logs
+        if level < logging.WARNING and isinstance(msg, str) and "HTTP Request:" in msg:
+            # Don't log HTTP requests unless at WARNING level or higher
+            return
+
+        # Call the original logging function for everything else
+        original_log(self, level, msg, args, **kwargs)
+
+    # Apply the monkey patch
+    logging.Logger._log = filtered_log
+
+    # Additional suppression of HTTP request logs
+    for logger_name in logging.root.manager.loggerDict:
+        if any(
+            term in logger_name.lower() for term in ["http", "request", "api", "llm"]
+        ):
+            logging.getLogger(logger_name).setLevel(logging.WARNING)
+
+    # Explicitly handle known noisy loggers
+    for logger_name in [
+        "httpx",
+        "urllib3",
+        "requests",
+        "httpcore",
+        "litellm.llms",
+        "openai",
+    ]:
+        if logger_name in logging.root.manager.loggerDict:
+            logging.getLogger(logger_name).setLevel(logging.WARNING)
+
+    # Debug diagnostic to find the source of HTTP logs if --debug is used
+    if args.debug:
+        main_logger.debug("Active loggers:")
+        active_loggers = sorted(list(logging.root.manager.loggerDict.keys()))
+        for logger_name in active_loggers:
+            main_logger.debug(
+                f"  - {logger_name}: {logging.getLogger(logger_name).level}"
+            )
+
+    # Log HuggingFace status
     HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
     if HUGGINGFACEHUB_API_TOKEN:
         login(token=HUGGINGFACEHUB_API_TOKEN)
+        main_logger.info("Logged in to Hugging Face Hub")
     else:
+        main_logger.warning(
+            "Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in the environment."
+        )
         print(
             "Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in the environment."
         )
 
-    args = parse_arguments()
-
     if not args.mode or args.mode not in ["inference", "evaluate"]:
+        main_logger.error(
+            "Mode is required and must be either 'inference' or 'evaluate'."
+        )
         raise ValueError(
             "Mode is required and must be either 'inference' or 'evaluate'."
         )
     if args.mode == "evaluate" and not args.file_name:
+        main_logger.error("File name is required for evaluation mode.")
         raise ValueError("File name is required for evaluation mode.")
 
     tasks = args.tasks
     if not tasks:
+        main_logger.error("No tasks specified; use --tasks option")
         raise ValueError("No tasks specified; use --tasks option")
+
+    main_logger.info(
+        f"Running {len(tasks)} tasks in {args.mode} mode: {', '.join(tasks)}"
+    )
     run_tasks(tasks, args.mode, args)
+    main_logger.info("All tasks completed successfully")
