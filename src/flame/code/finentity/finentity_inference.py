@@ -3,18 +3,14 @@ import nltk
 import pandas as pd
 from datasets import load_dataset
 from flame.code.prompts import get_prompt, PromptFormat
-from flame.utils.logging_utils import setup_logger
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 import litellm
 
 nltk.download("punkt")
 
-logger = setup_logger(
-    name="finentity_inference",
-    log_file=LOG_DIR / "finentity_inference.log",
-    level=LOG_LEVEL,
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "finentity")
 
 litellm.drop_params = True
 
@@ -86,14 +82,10 @@ def finentity_inference(args):
         }
     )
 
-    # Save results to a CSV file
-    results_path = (
-        RESULTS_DIR
-        / "finentity"
-        / f"finentity_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
+    # Calculate success rate
+    success_rate = (
+        sum(1 for r in llm_responses if r != "error") / len(llm_responses)
+    ) * 100
+    logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

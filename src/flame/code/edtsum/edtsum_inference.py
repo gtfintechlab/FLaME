@@ -1,18 +1,20 @@
+from datetime import date
+
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import get_prompt, PromptFormat
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
-logger = setup_logger(
-    name="edtsum_inference", log_file=LOG_DIR / "edtsum_inference.log", level=LOG_LEVEL
-)
+from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "edtsum")
 
 
 def edtsum_inference(args):
-    # today = date.today()
+    today = date.today()
+    logger.info(f"Starting EDTSum inference on {today}")
 
     dataset = load_dataset("gtfintechlab/EDTSum", trust_remote_code=True)
 
@@ -78,6 +80,7 @@ def edtsum_inference(args):
         }
     )
 
+    # Calculate success rate
     success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 

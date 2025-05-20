@@ -1,21 +1,18 @@
+import random
 import time
+import traceback
+
+import litellm
 import pandas as pd
 from datasets import load_dataset
+from tqdm import tqdm
+
 from flame.code.prompts import get_prompt, PromptFormat
-from flame.utils.logging_utils import setup_logger
-from flame.config import LOG_LEVEL, LOG_DIR, RESULTS_DIR
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-import random
-import traceback
-import litellm
 
-from datetime import date
-
-logger = setup_logger(
-    name="subjectiveqa_inference",
-    log_file=LOG_DIR / "subjectiveqa_inference.log",
-    level=LOG_LEVEL,
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "subjectiveqa")
 
 litellm.drop_params = True
 
@@ -65,16 +62,18 @@ def subjectiveqa_inference(args):
     if subjectiveqa_prompt is None:
         raise RuntimeError("SubjectiveQA prompt not found in registry")
 
-    batch_size = args.batch_size
-    total_batches = len(questions) // batch_size + int(len(questions) % batch_size > 0)
+    # Create batches for processing
+    question_batches = chunk_list(questions, args.batch_size)
+    answer_batches = chunk_list(answers, args.batch_size)
+    total_batches = len(question_batches)
     logger.info(f"Processing {len(questions)} rows in {total_batches} batches.")
 
-    question_batches = chunk_list(questions, batch_size)
-    answer_batches = chunk_list(answers, batch_size)
-
-    for batch_idx, (question_batch, answer_batch) in enumerate(
-        zip(question_batches, answer_batches)
-    ):
+    pbar = tqdm(
+        enumerate(zip(question_batches, answer_batches)),
+        total=total_batches,
+        desc="Processing SubjectiveQA entries",
+    )
+    for batch_idx, (question_batch, answer_batch) in pbar:
         messages_batch = []
         for q, a in zip(question_batch, answer_batch):
             for feature in definition_map.keys():
@@ -140,17 +139,19 @@ def subjectiveqa_inference(args):
         logger.error(traceback.format_exc())
         return None
     try:
-        today = date.today()
-        results_path = (
-            RESULTS_DIR
-            / "subjectiveqa"
-            / f"subjectiveqa_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
+        # Calculate success metrics
+        success_count = 0
+        total_responses = 0
+        for feature in definition_map.keys():
+            success_count += sum(1 for r in feature_responses[feature] if r != "error")
+            total_responses += len(feature_responses[feature])
+
+        success_rate = (
+            (success_count / total_responses) * 100 if total_responses > 0 else 0
         )
-        results_path.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(results_path, index=False)
-        logger.info(f"Inference completed. Results saved to {results_path}")
+        logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
     except Exception as e:
-        logger.error(f"Error saving results to CSV: {e}")
+        logger.error(f"Error calculating success metrics: {e}")
         logger.error(traceback.format_exc())
         return None
 

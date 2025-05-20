@@ -1,21 +1,23 @@
+from datetime import date
+
 import pandas as pd
 from datasets import load_dataset
-
-# Import from new prompt package
-from flame.code.prompts import get_prompt, PromptFormat
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
-logger = setup_logger(
-    name="banking77_inference",
-    log_file=LOG_DIR / "banking77_inference.log",
-    level=LOG_LEVEL,
-)
+from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "banking77")
 
 
 def banking77_inference(args):
+    today = date.today()
+    logger.info(f"Starting Banking77 inference on {today}")
+
+    # Load dataset
+    logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/banking77", trust_remote_code=True)
     test_data = dataset["test"]  # type: ignore
     all_documents = [data["text"] for data in test_data]  # type: ignore
@@ -82,7 +84,8 @@ def banking77_inference(args):
         }
     )
 
-    success_rate = df["llm_responses"].notnull().sum() / len(df) * 100
-    logger.info(f"Success rate: {success_rate}")
+    # Calculate success rate
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
+    logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return df

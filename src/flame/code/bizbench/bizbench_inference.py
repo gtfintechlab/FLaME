@@ -1,4 +1,3 @@
-import time
 from datetime import date
 
 import pandas as pd
@@ -6,17 +5,11 @@ from datasets import load_dataset
 from tqdm import tqdm
 
 from flame.code.prompts import get_prompt, PromptFormat
-from flame.code.tokens import tokens
-from flame.utils.logging_utils import setup_logger
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 
-from together import Together
-
-logger = setup_logger(
-    name="bizbench_inference",
-    log_file=LOG_DIR / "bizbench_inference.log",
-    level=LOG_LEVEL,
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "bizbench")
 
 
 def bizbench_inference(args):
@@ -34,63 +27,80 @@ def bizbench_inference(args):
     llm_responses = []
     complete_responses = []
 
-    logger.info("Starting inference on dataset...")
-    # start_t = time.time()
-    client = Together()
+    # Extract test instances
+    test_data = dataset["test"]  # type: ignore
+    instances = []
 
-    bizbench_prompt = get_prompt("bizbench", PromptFormat.ZERO_SHOT)
-    if bizbench_prompt is None:
-        raise RuntimeError("BizBench prompt not found in registry")
-
-    # Iterating through the test split of the dataset
-    for i in tqdm(range(len(dataset["test"])), desc="Processing sentences"):  # type: ignore
-        instance = dataset["test"][i]  # type: ignore
-        """
-        instance = {
-            'question': __,
-            'answer': __,
-            'task': __,
-            'context': __,
-            'context_type': __,
-            'options': __, (all rows are null)
-            'program': __
-        }
-        """
+    # Preprocess to filter valid instances
+    for i in range(len(test_data)):
+        instance = test_data[i]
         question = instance["question"]
         answer = instance["answer"]
         context = instance["context"]
 
-        # ignore all instances where context is None
+        # Skip instances with no context
         if not context:
             continue
 
-        try:
-            logger.info(f"Processing instance {i + 1}/{len(dataset['test'])}")  # type: ignore
-            X_question.append(question)
-            X_context.append(context)
-            y_answer.append(answer)
+        instances.append((question, answer, context))
 
-            model_response = client.chat.completions.create(
-                model=args.model,
-                messages=[
-                    {"role": "user", "content": bizbench_prompt(question, context)}
-                ],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+    logger.info(f"Found {len(instances)} valid instances for processing")
+
+    # Set up prompt
+    if args.prompt_format == "fewshot":
+        bizbench_prompt = get_prompt("bizbench", PromptFormat.FEW_SHOT)
+    else:
+        bizbench_prompt = get_prompt("bizbench", PromptFormat.ZERO_SHOT)
+    if bizbench_prompt is None:
+        raise RuntimeError("BizBench prompt not found in registry")
+
+    # Create batches for processing
+    batches = chunk_list(instances, args.batch_size)
+    total_batches = len(batches)
+
+    pbar = tqdm(batches, desc="Processing BizBench entries")
+    for batch_idx, instance_batch in enumerate(pbar):
+        # Prepare messages for the batch
+        messages_batch = [
+            [{"role": "user", "content": bizbench_prompt(question, context)}]
+            for question, _, context in instance_batch
+        ]
+
+        try:
+            # Process batch with retry mechanism
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
             )
-            logger.debug(f"Model response: {model_response}")
-            complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content  # type: ignore
-            llm_responses.append(response_label)
+
+            # Process responses
+            for (question, answer, context), response in zip(
+                instance_batch, batch_responses
+            ):
+                X_question.append(question)
+                X_context.append(context)
+                y_answer.append(answer)
+                complete_responses.append(response)
+
+                try:
+                    response_label = response.choices[0].message.content
+                    llm_responses.append(response_label)
+                except Exception as e:
+                    logger.error(
+                        f"Error in response parsing: {str(e)}\nResponse: {response}"
+                    )
+                    llm_responses.append(None)
 
         except Exception as e:
-            logger.error(f"Error processing instance {i + 1}: {e}")
-            time.sleep(20.0)
-            continue
+            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+            # Add None values for the entire failed batch
+            for _ in instance_batch:
+                X_question.append(None)
+                X_context.append(None)
+                y_answer.append(None)
+                complete_responses.append(None)
+                llm_responses.append(None)
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     df = pd.DataFrame(
         {
@@ -102,13 +112,8 @@ def bizbench_inference(args):
         }
     )
 
-    results_path = (
-        RESULTS_DIR
-        / "bizbench/bizbench_meta-llama-3.1-8b/"
-        / f"{'bizbench'}_{'llama-3.1-8b'}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(results_path, index=False)
+    # Calculate success rate
+    success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
+    logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
-    logger.info(f"Inference completed. Results saved to {results_path}")
     return df

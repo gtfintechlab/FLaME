@@ -1,22 +1,30 @@
+from datetime import date
+
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import get_prompt, PromptFormat
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
-logger = setup_logger(
-    name="cd_inference", log_file=LOG_DIR / "cd_inference.log", level=LOG_LEVEL
-)
+from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "causal_detection")
 
 
 def causal_detection_inference(args):
+    today = date.today()
+    logger.info(f"Starting Causal Detection inference on {today}")
+
+    # Load dataset
+    logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/CausalDetection", trust_remote_code=True)
 
     test_data = dataset["test"]  # type: ignore
     all_tokens = [data["tokens"] for data in test_data]  # type: ignore
     all_actual_tags = [data["tags"] for data in test_data]  # type: ignore
+
+    logger.info(f"Found {len(all_tokens)} instances for processing")
 
     # Initialize lists to store tokens, actual tags, predicted tags, and complete responses
     tokens_list = []
@@ -80,15 +88,7 @@ def causal_detection_inference(args):
         }
     )
 
-    # results_path = (
-    #     RESULTS_DIR
-    #     / "causal_detection"
-    #     / f"{args.dataset}_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    # )
-    # results_path.parent.mkdir(parents=True, exist_ok=True)
-    # df.to_csv(results_path, index=False)
-
-    # logger.info(f"Inference completed. Results saved to {results_path}")
+    # Calculate success metrics
 
     success_rate = (df["predicted_tags"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")

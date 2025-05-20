@@ -2,19 +2,14 @@ from datetime import date
 
 import pandas as pd
 from datasets import load_dataset
-from together import Together
 from tqdm import tqdm
 
-from flame.config import LOG_DIR, LOG_LEVEL
 from flame.code.prompts import get_prompt, PromptFormat
-from flame.code.tokens import tokens
-from flame.utils.logging_utils import setup_logger
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 
-logger = setup_logger(
-    name="econlogicqa_inference",
-    log_file=LOG_DIR / "econlogicqa_inference.log",
-    level=LOG_LEVEL,
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "econlogicqa")
 
 
 def econlogicqa_inference(args):
@@ -25,50 +20,96 @@ def econlogicqa_inference(args):
     logger.info("Loading dataset...")
     dataset = load_dataset("glennmatlin/econlogicqa", trust_remote_code=True)["test"]
 
-    # Initialize Together API client
-    client = Together()
-
-    # Retrieve the zero-shot prompt from the registry
-    econlogicqa_prompt = get_prompt("econlogicqa", PromptFormat.ZERO_SHOT)
-
-    if econlogicqa_prompt is None:
-        raise RuntimeError("EconLogicQA prompt not found in registry")
-
-    responses_ordered_importance = []
-    for i in tqdm(range(len(dataset)), desc="Accessing EconLogicQA"):
+    # Prepare for batch processing
+    instances = []
+    for i in range(len(dataset)):
         row = dataset[i]
         question = row["Question"]
         event_a = row["A"]
         event_b = row["B"]
         event_c = row["C"]
         event_d = row["D"]
+        instances.append((row, question, event_a, event_b, event_c, event_d))
 
-        prompt = econlogicqa_prompt(question, event_a, event_b, event_c, event_d)
-        if i == 10:
-            print(prompt)
+    logger.info(f"Found {len(instances)} instances for processing")
+
+    # Set up prompt format
+    if args.prompt_format == "fewshot":
+        econlogicqa_prompt = get_prompt("econlogicqa", PromptFormat.FEW_SHOT)
+    else:
+        econlogicqa_prompt = get_prompt("econlogicqa", PromptFormat.ZERO_SHOT)
+
+    if econlogicqa_prompt is None:
+        raise RuntimeError("EconLogicQA prompt not found in registry")
+
+    # Create batches for processing
+    batches = chunk_list(instances, args.batch_size)
+    total_batches = len(batches)
+
+    responses_ordered_importance = []
+
+    pbar = tqdm(batches, desc="Processing EconLogicQA entries")
+    for batch_idx, instance_batch in enumerate(pbar):
+        # Prepare messages for the batch
+        messages_batch = [
+            [
+                {
+                    "role": "user",
+                    "content": econlogicqa_prompt(
+                        question, event_a, event_b, event_c, event_d
+                    ),
+                }
+            ]
+            for _, question, event_a, event_b, event_c, event_d in instance_batch
+        ]
+
         try:
-            model_response = client.chat.completions.create(
-                model=args.model,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+            # Process batch with retry mechanism
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
             )
-            llm_response = model_response.choices[0].message.content
-            ordered_response = llm_response.splitlines()[0]
-        except Exception as e:
-            if i == 10:
-                print("Error " + str(e))
-            ordered_response = "Error"
-            llm_response = f"Error: {str(e)}"
 
-        row["llm_responses"] = ordered_response
-        row["llm_complete_responses"] = llm_response
-        responses_ordered_importance.append(row)
+            # Process responses
+            for (row_data, _, _, _, _, _), response in zip(
+                instance_batch, batch_responses
+            ):
+                row = row_data.copy()
+
+                try:
+                    llm_response = response.choices[0].message.content
+                    ordered_response = (
+                        llm_response.splitlines()[0]
+                        if llm_response and "\n" in llm_response
+                        else llm_response
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"Error in response parsing: {str(e)}\nResponse: {response}"
+                    )
+                    ordered_response = "Error"
+                    llm_response = f"Error: {str(e)}"
+
+                row["llm_responses"] = ordered_response
+                row["llm_complete_responses"] = llm_response
+                responses_ordered_importance.append(row)
+
+        except Exception as e:
+            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+            # Add error values for the entire failed batch
+            for row_data, _, _, _, _, _ in instance_batch:
+                row = row_data.copy()
+                row["llm_responses"] = "Error"
+                row["llm_complete_responses"] = f"Error: {str(e)}"
+                responses_ordered_importance.append(row)
+
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
     output_df = pd.DataFrame(responses_ordered_importance)
+
+    # Calculate success rate
+    success_rate = (
+        sum(1 for r in output_df["llm_responses"] if r != "Error") / len(output_df)
+    ) * 100
+    logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
     return output_df

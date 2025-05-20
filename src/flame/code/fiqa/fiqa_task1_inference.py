@@ -1,21 +1,23 @@
+from datetime import date
+
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts import get_prompt, PromptFormat
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
-# Set up logger
-logger = setup_logger(
-    name="fiqa_task1_inference",
-    log_file=LOG_DIR / "fiqa_task1_inference.log",
-    level=LOG_LEVEL,
-)
+from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "fiqa_task1")
 
 
 def fiqa_task1_inference(args):
+    today = date.today()
+    logger.info(f"Starting FiQA Task 1 inference on {today}")
+
     # Load dataset and initialize storage for results
+    logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/FiQA_Task1", trust_remote_code=True)
 
     test_data = dataset["test"]  # type: ignore
