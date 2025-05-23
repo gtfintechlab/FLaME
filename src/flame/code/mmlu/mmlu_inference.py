@@ -10,8 +10,8 @@ from flame.code.mmlu.mmlu_loader import MMLULoader
 from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import RESULTS_DIR
+from flame.utils.miscellaneous import generate_inference_filename
 
-# Use component-based logger that follows the logging configuration
 logger = get_component_logger("inference", "mmlu")
 
 
@@ -48,10 +48,6 @@ def format_mmlu_prompt(
     current_text += "\n\nAnswer:"
 
     return f"{examples_text}{current_text}"
-
-
-# Use the centralized inference filename generator
-from flame.utils.miscellaneous import generate_inference_filename
 
 
 def save_inference_results(df: pd.DataFrame, path: Path, metadata: Dict) -> None:

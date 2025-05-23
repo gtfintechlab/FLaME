@@ -12,6 +12,7 @@ from pathlib import Path
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.miscellaneous import generate_inference_filename
 
 
 # Use component-based logger that follows the logging configuration
@@ -38,10 +39,6 @@ class InferenceConfig:
             raise ValueError("Top_p must be between 0 and 1")
         if self.batch_size < 1:
             raise ValueError("Batch size must be positive")
-
-
-# Use the centralized inference filename generator
-from flame.utils.miscellaneous import generate_inference_filename
 
 
 def validate_sample(response: str) -> bool:

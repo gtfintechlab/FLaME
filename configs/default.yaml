@@ -1,13 +1,15 @@
 model: "together_ai/meta-llama/Llama-4-Scout-17B-16E-Instruct"
 tasks:
   - fomc
-  - fpb
+  # - fpb
+  # - numclaim
+  # - finer
 max_tokens: 128
 temperature: 0.0
 top_p: 0.9
 top_k: null
 repetition_penalty: 1.0
-batch_size: 10
+batch_size: 50
 prompt_format: zero_shot
 
 # Logging configuration

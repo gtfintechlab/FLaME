@@ -2,7 +2,6 @@
 Ensures evaluation code executes offline with stubbed data and metrics.
 """
 
-
 from __future__ import annotations
 
 import importlib

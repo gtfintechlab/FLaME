@@ -1,7 +1,6 @@
 import time
 import pandas as pd
 from datasets import load_dataset
-from datetime import date
 from litellm import completion
 
 from flame.code.prompts import get_prompt, PromptFormat
@@ -13,7 +12,6 @@ logger = get_component_logger("inference", "tatqa")
 
 
 def tatqa_inference(args):
-    today = date.today()
     dataset = load_dataset("gtfintechlab/TATQA", trust_remote_code=True)
 
     # Initialize lists to store context, model responses, actual answers, and complete responses
@@ -46,7 +44,6 @@ def tatqa_inference(args):
                 top_k=args.top_k,
                 top_p=args.top_p,
                 repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
             )
 
             complete_responses.append(model_response)
