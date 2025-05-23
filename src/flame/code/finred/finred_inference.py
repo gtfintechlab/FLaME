@@ -1,46 +1,15 @@
 from datetime import date
+
 import pandas as pd
 from datasets import load_dataset
-
-import litellm
-from typing import Any, List
-from flame.code.prompts_zeroshot import finred_zeroshot_prompt
-from flame.code.prompts_fewshot import finred_fewshot_prompt
-from flame.utils.logging_utils import setup_logger
-from flame.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
-# Setup logger for FinRED inference
-logger = setup_logger(
-    name="finred_inference", log_file=LOG_DIR / "finred_inference.log", level=LOG_LEVEL
-)
+from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 
-
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            # top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            # repetition_penalty=args.repetition_penalty,
-            num_retries=3,  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "finred")
 
 
 def finred_inference(args):
@@ -59,9 +28,11 @@ def finred_inference(args):
     entities_list = []  # To store entity pairs
 
     if args.prompt_format == "fewshot":
-        finred_prompt = finred_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        finred_prompt = finred_zeroshot_prompt
+        finred_prompt = get_prompt("finred", PromptFormat.FEW_SHOT)
+    else:
+        finred_prompt = get_prompt("finred", PromptFormat.ZERO_SHOT)
+    if finred_prompt is None:
+        raise RuntimeError("FinRED prompt not found in registry")
 
     test_data = dataset["test"]  # type: ignore
     all_inputs = [(data["sentence"], data["entities"]) for data in test_data]  # type: ignore

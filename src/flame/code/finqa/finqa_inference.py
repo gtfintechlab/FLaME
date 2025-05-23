@@ -1,45 +1,14 @@
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts_zeroshot import finqa_zeroshot_prompt
-from flame.code.prompts_fewshot import finqa_fewshot_prompt
-from flame.utils.logging_utils import setup_logger
-from flame.config import LOG_DIR, LOG_LEVEL
-import litellm
-from typing import Any, List
 from tqdm import tqdm
 
-# TODO: (Glenn) Is FinQA saving results to a file properly?
+from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.miscellaneous import generate_inference_filename
 
-logger = setup_logger(
-    name="finqa_inference", log_file=LOG_DIR / "finqa_inference.log", level=LOG_LEVEL
-)
-
-
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            # top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            # repetition_penalty=args.repetition_penalty,
-            num_retries=3,  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "finqa")
 
 
 def finqa_inference(args):
@@ -59,9 +28,11 @@ def finqa_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        finqa_prompt = finqa_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        finqa_prompt = finqa_zeroshot_prompt
+        finqa_prompt = get_prompt("finqa", PromptFormat.FEW_SHOT)
+    else:
+        finqa_prompt = get_prompt("finqa", PromptFormat.ZERO_SHOT)
+    if finqa_prompt is None:
+        raise RuntimeError("FinQA prompt not found in registry")
 
     pbar = tqdm(text_batches, desc="Processing batches")
     for batch_idx, text_batch in enumerate(pbar):
@@ -105,5 +76,12 @@ def finqa_inference(args):
 
     success_rate = (df["response"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
+
+    # Generate a unique results path with timestamp and UUID
+    results_path = generate_inference_filename("finqa", args.model)
+
+    # Save the results to a CSV file
+    df.to_csv(results_path, index=False)
+    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

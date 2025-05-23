@@ -4,7 +4,16 @@ Patched automatically for every test:
 • litellm.completion / batch_completion -> static mock responses
 • datasets.load_dataset -> small in-memory dataset
 • time.sleep -> no-op
-• RESULTS_DIR / LOG_DIR redirected to temp folder
+• RESULTS_DIR / LOG_DIR / EVALUATION_DIR redirected to temp folder
+
+TEST OUTPUT PATTERN:
+All test artifacts are automatically redirected to tests/test_outputs/
+which is gitignored. This happens automatically through:
+1. Setting PYTEST_RUNNING environment variable
+2. Patching flame.config to use TEST_OUTPUT_DIR
+3. inference.py and evaluate.py check IN_PYTEST to choose output dir
+
+Important: Never commit test outputs. Always use the IN_PYTEST pattern.
 """
 
 from __future__ import annotations
@@ -146,18 +155,31 @@ def _patch_external(monkeypatch, tmp_path_factory):
 
     # 6. Redirect output dirs
     temp_root: Path = tmp_path_factory.mktemp("flame_artifacts")
-    # Redirect results, logs, and evaluation outputs to temporary dirs
+    # Redirect ALL outputs (results, logs, evaluation, test files) to temporary dirs
     results_dir = temp_root / "results"
     logs_dir = temp_root / "logs"
-    eval_dir = temp_root / "evaluation_test_artifacts"
-    for d in (results_dir, logs_dir, eval_dir):
+    eval_dir = temp_root / "evaluation"
+    test_output_dir = temp_root / "test_outputs"  # New dedicated dir for test outputs
+
+    # Create all output directories
+    for d in (results_dir, logs_dir, eval_dir, test_output_dir):
         d.mkdir(parents=True, exist_ok=True)
+
+    # Set environment variable to indicate we're in test mode
+    # This is a reliable way for code to detect it's running in a test
+    monkeypatch.setenv("PYTEST_RUNNING", "1")
+
     try:
+        # Import and patch config BEFORE any other imports that might use it
         import flame.config as _cfg
 
-        monkeypatch.setattr(_cfg, "RESULTS_DIR", results_dir, raising=False)
-        monkeypatch.setattr(_cfg, "LOG_DIR", logs_dir, raising=False)
-        monkeypatch.setattr(_cfg, "EVALUATION_DIR", eval_dir, raising=False)
+        # Update all directory paths to point to temp locations
+        monkeypatch.setattr(_cfg, "RESULTS_DIR", results_dir)
+        monkeypatch.setattr(_cfg, "LOG_DIR", logs_dir)
+        monkeypatch.setattr(_cfg, "EVALUATION_DIR", eval_dir)
+        monkeypatch.setattr(_cfg, "TEST_OUTPUT_DIR", test_output_dir)
+        # Explicitly update ROOT_DIR to ensure no absolute paths break
+        monkeypatch.setattr(_cfg, "ROOT_DIR", temp_root.parent)
     except ModuleNotFoundError:
         pass
 

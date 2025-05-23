@@ -1,18 +1,15 @@
 from datetime import date
 import pandas as pd
 from datasets import load_dataset
-from flame.code.prompts_zeroshot import finer_zeroshot_prompt
-from flame.code.prompts_fewshot import finer_fewshot_prompt
 import litellm
 
-# from flame.code.tokens import tokens
-from flame.utils.logging_utils import setup_logger
+from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from flame.utils.miscellaneous import generate_inference_filename
 
-logger = setup_logger(
-    name="finer_inference", log_file=LOG_DIR / "finer_inference.log", level=LOG_LEVEL
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "finer")
 
 litellm.drop_params = True
 
@@ -33,9 +30,11 @@ def finer_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        finer_prompt = finer_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        finer_prompt = finer_zeroshot_prompt
+        finer_prompt = get_prompt("finer", PromptFormat.FEW_SHOT)
+    else:
+        finer_prompt = get_prompt("finer", PromptFormat.ZERO_SHOT)
+    if finer_prompt is None:
+        raise RuntimeError("FinER prompt not found in registry")
 
     batch_size = args.batch_size
     total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)
@@ -80,11 +79,10 @@ def finer_inference(args):
             "complete_responses": complete_responses,
         }
     )
-    # Save results to a CSV file
-    results_path = (
-        RESULTS_DIR / "finer" / f"finer_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
+    # Generate a unique results path with timestamp and UUID
+    results_path = generate_inference_filename("finer", args.model)
+
+    # Save the results to a CSV file
     df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")
 

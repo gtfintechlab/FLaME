@@ -1,27 +1,25 @@
-from typing import Dict, Tuple, List, Any
+from typing import Dict, Tuple, List
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
 import uuid
-from litellm import batch_completion
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from flame.utils.logging_utils import setup_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-import time
 from tqdm import tqdm
+import time
 
-# Configure logging
 logger = setup_logger(
     name="fomc_evaluation",
     log_file=LOG_DIR / "fomc_evaluation.log",
     level=LOG_LEVEL,
 )
 
-# Mapping of FOMC sentiment labels to numerical values
 label_mapping: Dict[str, int] = {
-    "DOVISH": 0,  # Indicates accommodative monetary policy stance
-    "HAWKISH": 1,  # Indicates restrictive monetary policy stance
-    "NEUTRAL": 2,  # Indicates balanced monetary policy stance
+    "DOVISH": 0,
+    "HAWKISH": 1,
+    "NEUTRAL": 2,
 }
 
 
@@ -114,37 +112,6 @@ def generate_evaluation_filename(task: str, model: str) -> Tuple[str, Path]:
     return base_filename, full_path
 
 
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(
-    model: str,
-    messages_batch: List[List[Dict]],
-    args,
-    batch_idx: int,
-    total_batches: int,
-):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        batch_responses = batch_completion(
-            model=model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3,
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
-
-
 def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Evaluate FOMC dataset and return results and metrics DataFrames.
 
@@ -226,9 +193,21 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
             ]
 
             try:
-                # Process batch with retry logic
+                # Create a simple args-like object with required attributes
+                class ModelArgs:
+                    pass
+
+                model_args = ModelArgs()
+                model_args.model = args.model
+                model_args.max_tokens = args.max_tokens
+                model_args.temperature = args.temperature
+                model_args.top_p = args.top_p
+                if hasattr(args, "repetition_penalty"):
+                    model_args.repetition_penalty = args.repetition_penalty
+
+                # Process batch with retry logic using canonical implementation
                 batch_responses = process_batch_with_retry(
-                    args.model, messages_batch, args, batch_idx, total_batches
+                    model_args, messages_batch, batch_idx, total_batches
                 )
 
             except Exception as e:

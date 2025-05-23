@@ -1,29 +1,6 @@
-from flame.code.numclaim.numclaim_evaluate import numclaim_evaluate
-from flame.code.fnxl.fnxl_evaluate import fnxl_evaluate
-from flame.code.finer.finer_evaluate import finer_evaluate
-from flame.code.finentity.finentity_evaluate import finentity_evaluate
-from flame.code.banking77.banking77_evaluate import banking77_evaluate
-from flame.code.causal_classification.causal_classification_evaluate import (
-    causal_classification_evaluate,
-)
-from flame.code.subjectiveqa.subjectiveqa_evaluate import subjectiveqa_evaluate
-
-# from flame.code.ectsum.ectsum_evaluate import ectsum_evaluate
-from flame.code.refind.refind_evaluate import refind_evaluate
-from flame.code.convfinqa.convfinqa_evaluate import convfinqa_evaluate
-from flame.code.finqa.finqa_evaluate import finqa_evaluate
-from flame.code.tatqa.tatqa_evaluate import tatqa_evaluate
-from pathlib import Path
-
-# from flame.code.mmlu.mmlu_evaluate import mmlu_evaluate
-# from flame.code.bizbench.bizbench_evaluate import bizbench_evaluate
-# from flame.code.econlogicqa.econlogicqa_evaluate import econlogicqa_evaluate
-from flame.code.causal_detection.casual_detection_evaluate_llm import (
-    causal_detection_evaluate,
-)
-
+from flame.task_registry import EVALUATE_MAP
+from flame.config import LOG_DIR, LOG_LEVEL, EVALUATION_DIR, TEST_OUTPUT_DIR, IN_PYTEST
 from flame.utils.logging_utils import setup_logger
-from flame.config import LOG_DIR, LOG_LEVEL
 
 logger = setup_logger(
     name="together_evaluate",
@@ -37,37 +14,20 @@ def main(args):
 
     Args:
         args: Command line arguments containing:
-            - dataset: Name of the task/dataset
+            - task: Name of the task to run
             - model: Model to use
             - file_name: Path to inference results
             - Other task-specific parameters
     """
-    task = args.dataset.strip('"""')
+    # support legacy args.dataset for tests, prefer args.task
+    raw = getattr(args, "task", None) or getattr(args, "dataset", None)
+    if not raw:
+        logger.error("No task specified in args")
+        return
+    task = raw
 
     # Map of tasks to their evaluation functions
-    task_evaluate_map = {
-        "numclaim": numclaim_evaluate,
-        # "fpb": fpb_evaluate,
-        # "fomc": fomc_evaluate,
-        # "finbench": finbench_evaluate,
-        "finer": finer_evaluate,
-        "finentity": finentity_evaluate,
-        # "headlines": headlines_evaluate,
-        # "fiqa_task1": fiqa_task1_evaluate,
-        # "fiqa_task2": fiqa_task2_evaluate,
-        # "edtsum": edtsum_evaluate,
-        "fnxl": fnxl_evaluate,
-        # "finred": finred_evaluate,
-        "causal_classification": causal_classification_evaluate,
-        "subjectiveqa": subjectiveqa_evaluate,
-        "ectsum": ectsum_evaluate,
-        "refind": refind_evaluate,
-        "banking77": banking77_evaluate,
-        "convfinqa": convfinqa_evaluate,
-        "finqa": finqa_evaluate,
-        "tatqa": tatqa_evaluate,
-        "causal_detection": causal_detection_evaluate,
-    }
+    task_evaluate_map = EVALUATE_MAP
 
     if task in task_evaluate_map:
         evaluate_function = task_evaluate_map[task]
@@ -75,26 +35,21 @@ def main(args):
         # Run evaluation
         df, metrics_df = evaluate_function(args.file_name, args)
 
+        # Determine output base directory
+        output_dir = TEST_OUTPUT_DIR if IN_PYTEST else EVALUATION_DIR
+
+        # Create task-specific directory
+        task_dir = output_dir / task
+        task_dir.mkdir(parents=True, exist_ok=True)
+
         # Save evaluation results
-        results_path = f"evaluation_{args.file_name}"
-        results_path = Path(results_path)
-        # results_path = (
-        #     EVALUATION_DIR
-        #     / task
-        #     / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-        # )
-        results_path.parent.mkdir(parents=True, exist_ok=True)
+        results_filename = f"evaluation_{args.file_name.split('/')[-1]}"
+        results_path = task_dir / results_filename
         df.to_csv(results_path, index=False)
         logger.info(f"Evaluation completed for {task}. Results saved to {results_path}")
 
         # Save metrics
-        metrics_path = Path(f"{str(results_path)[:-4]}_metrics.csv")
-        # metrics_path = (
-        #     EVALUATION_DIR
-        #     / task
-        #     / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}_metrics.csv"
-        # )
-        metrics_path.parent.mkdir(parents=True, exist_ok=True)
+        metrics_path = task_dir / f"{results_filename[:-4]}_metrics.csv"
         metrics_df.to_csv(metrics_path, index=False)
         logger.info(f"Metrics saved to {metrics_path}")
     else:

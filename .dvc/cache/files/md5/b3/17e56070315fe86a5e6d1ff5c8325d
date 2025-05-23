@@ -1,0 +1,6 @@
+Metric,Average,Value
+Precision,0.5617799345074616,
+Recall,0.5236857307914501,
+F1 Score,0.5152346178364547,
+Accuracy,0.5236857307914501,
+Dataset Organization,,gtfintechlab

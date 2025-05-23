@@ -1,22 +1,16 @@
 import time
 import litellm
-from datetime import date
 import pandas as pd
 from datasets import load_dataset
+from datetime import date
 
-from flame.code.prompts import numclaim_prompt
-
-# from flame.code.tokens import tokens
-from flame.utils.logging_utils import setup_logger
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.miscellaneous import generate_inference_filename
 
-# Setup logger for Numclaim inference
-logger = setup_logger(
-    name="numclaim_inference",
-    log_file=LOG_DIR / "numclaim_inference.log",
-    level=LOG_LEVEL,
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "numclaim")
 
 litellm.drop_params = True
 
@@ -31,12 +25,7 @@ def numclaim_inference(args):
     logger.info("Loading dataset...")
     dataset = load_dataset("gtfintechlab/Numclaim", trust_remote_code=True)
 
-    results_path = (
-        RESULTS_DIR
-        / "numclaim"
-        / f"numclaim_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
+    # We'll generate the filename at the end of the function
 
     # Initialize lists to store sentences, actual labels, model responses, and complete responses
     sentences = []
@@ -56,13 +45,17 @@ def numclaim_inference(args):
     sentence_batches = chunk_list(sentences, batch_size)
     response_batches = chunk_list(actual_labels, batch_size)
 
+    numclaim_prompt = get_prompt("numclaim", PromptFormat.ZERO_SHOT)
+    if numclaim_prompt is None:
+        raise RuntimeError("Numclaim prompt not found in registry")
+
     for batch_idx, (sentence_batch, response_batch) in enumerate(
         zip(sentence_batches, response_batches)
     ):
         # Create prompt messages for the batch
         messages_batch = [
             [{"role": "user", "content": numclaim_prompt(sentence)}]  # type: ignore
-            for sentence in zip(sentence_batch)
+            for sentence in sentence_batch
         ]
 
         try:
@@ -98,14 +91,9 @@ def numclaim_inference(args):
             "complete_responses": complete_responses,
         }
     )
-    results_path = (
-        RESULTS_DIR
-        / "numclaim"
-        / f"numclaim_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
+
+    # Generate a unique results path with timestamp and UUID
+    results_path = generate_inference_filename("numclaim", args.model)
 
     # Save the results to a CSV file
     df.to_csv(results_path, index=False)

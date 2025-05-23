@@ -1,18 +1,15 @@
 import time
-
-# from pathlib import Path
-from litellm import completion
 import pandas as pd
 from datasets import load_dataset
 from datetime import date
-from flame.code.prompts_zeroshot import tatqa_prompt
-from flame.code.tokens import tokens
-from flame.utils.logging_utils import setup_logger
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from litellm import completion
 
-logger = setup_logger(
-    name="tatqa_inference", log_file=LOG_DIR / "tatqa_inference.log", level=LOG_LEVEL
-)
+from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.miscellaneous import generate_inference_filename
+
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "tatqa")
 
 
 def tatqa_inference(args):
@@ -24,6 +21,10 @@ def tatqa_inference(args):
     llm_responses = []
     actual_answers = []
     complete_responses = []
+
+    tatqa_prompt = get_prompt("tatqa", PromptFormat.ZERO_SHOT)
+    if tatqa_prompt is None:
+        raise RuntimeError("TATQA prompt not found in registry")
 
     for i, entry in enumerate(dataset["test"]):  # type: ignore
         question = entry["query"]  # type: ignore
@@ -67,14 +68,10 @@ def tatqa_inference(args):
         }
     )
 
-    time.sleep(10)
-    results_path = (
-        RESULTS_DIR
-        / "tatqa"
-        / f"{args.dataset}_{'llama-3.1-8b'}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(results_path, index=False)
+    # Generate a unique results path with timestamp and UUID
+    results_path = generate_inference_filename("tatqa", args.model)
 
+    # Save the results to a CSV file
+    df.to_csv(results_path, index=False)
     logger.info(f"Inference completed. Results saved to {results_path}")
     return df

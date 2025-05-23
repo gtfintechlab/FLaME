@@ -1,22 +1,30 @@
-# Core settings
-dataset: fomc
-mode: inference  # inference or evaluate
-file_name: null  # Required for evaluate mode
-
-# Model parameters
-model: "together_ai/meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"
+model: "together_ai/meta-llama/Llama-4-Scout-17B-16E-Instruct"
+tasks:
+  - fomc
+  - fpb
 max_tokens: 128
 temperature: 0.0
 top_p: 0.9
 top_k: null
 repetition_penalty: 1.0
-batch_size: 1
+batch_size: 10
+prompt_format: zero_shot
 
-# Dataset parameters
-sample_size: 10
-method: random
-seeds: [42, 123, 456]
-splits: [5768, 78516, 944601]
-
-# Other parameters
-prompt_format: "flame"
+# Logging configuration
+logging:
+  level: "INFO"            # Global logging level (Options: DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  console:
+    enabled: true
+    level: "INFO"          # Console output level
+  file:
+    enabled: true
+    level: "DEBUG"         # File output level
+    max_size_mb: 10        # Maximum file size in MB
+    backup_count: 5        # Number of backup files to keep
+  components:
+    litellm: "WARNING"     # Control litellm verbosity (WARNING suppresses most output)
+    batch_utils: "INFO"
+    inference: "INFO"      # Control inference module verbosity
+    evaluation: "INFO"     # Control evaluation module verbosity
+    # Optional subcomponents can be configured separately if needed:
+    # inference.fomc: "DEBUG"  # Example of overriding a specific subcomponent

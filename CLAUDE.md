@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+# Additional Instructions
+- @~/.claude/epic1/epic1_plan.md
+- @~/.claude/epic1/multi_task_guide.md
+
 ## Project Overview
 
 FLaME (Financial Language Understanding Evaluation) is a framework for evaluating Large Language Models (LLMs) on financial tasks. The repository contains multiple datasets for evaluating model performance on tasks like sentiment analysis, causal classification, summarization, and more in the financial domain.
@@ -257,3 +261,6 @@ For detailed guidance on the testing framework, refer to these resources:
 5. **Result Paths**:
    - Inference results: `results/<dataset>/<dataset>_<provider>_<model>_<date>.csv`
    - Evaluation results: `evaluations/<dataset>/evaluation_<dataset>_<model>_<date>.csv`
+
+## Project Specific Memories
+- do not use `uv run python main.py` ever on your own, let me run that command

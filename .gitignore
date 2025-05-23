@@ -1,3 +1,5 @@
+results/
+
 src/flame.bak
 
 .ruff_cache
@@ -24,6 +26,8 @@ wandb/
 .token
 .model_cache/
 .api_key
+test_outputs/
+tests/test_outputs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

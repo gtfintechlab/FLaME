@@ -4,17 +4,15 @@ from datasets import load_dataset
 import litellm
 
 from litellm import completion
-from flame.code.prompts_zeroshot import ectsum_zeroshot_prompt
-from flame.code.prompts_fewshot import ectsum_fewshot_prompt
 
-# from flame.code.tokens import tokens
-from flame.utils.logging_utils import setup_logger
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+# Import prompts from the unified prompt package
+from flame.code.prompts import get_prompt, PromptFormat
+from flame.utils.logging_utils import get_component_logger
+from flame.config import RESULTS_DIR
+from flame.utils.miscellaneous import generate_inference_filename
 
-# Setup logger for ectsum inference
-logger = setup_logger(
-    name="ectsum_inference", log_file=LOG_DIR / "ectsum_inference.log", level=LOG_LEVEL
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "ectsum")
 
 litellm.drop_params = True
 
@@ -41,9 +39,11 @@ def ectsum_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        ectsum_prompt = ectsum_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        ectsum_prompt = ectsum_zeroshot_prompt
+        ectsum_prompt = get_prompt("ectsum", PromptFormat.FEW_SHOT)
+    else:
+        ectsum_prompt = get_prompt("ectsum", PromptFormat.ZERO_SHOT)
+    if ectsum_prompt is None:
+        raise RuntimeError("ECTSum prompt not found in registry")
 
     logger.info(f"Starting inference on ECTSum with model {args.model}...")
 
@@ -104,6 +104,11 @@ def ectsum_inference(args):
         }
     )
 
-    logger.info(f"Inference completed. Returning DataFrame with {len(df)} rows.")
+    # Generate a unique results path with timestamp and UUID
+    results_path = generate_inference_filename("ectsum", args.model)
+
+    # Save the results to a CSV file
+    df.to_csv(results_path, index=False)
+    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

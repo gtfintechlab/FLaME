@@ -2,9 +2,19 @@ import pandas as pd
 from pathlib import Path
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import numpy as np
+import glob
+import os
 
 
 def evaluate_regression_metrics(file_path):
+    """Evaluate regression metrics for FiQA Task 1 results.
+
+    Args:
+        file_path: Path to the CSV file with results
+
+    Returns:
+        tuple: (DataFrame with results, metrics DataFrame)
+    """
     df = pd.read_csv(file_path)
 
     actual = df["actual_sentiment"].tolist()
@@ -23,7 +33,6 @@ def evaluate_regression_metrics(file_path):
     mae = mean_absolute_error(actual, predicted)
     r2 = r2_score(actual, predicted)
     answer_coverage = (len(actual) - count_missing) / len(actual)
-    print(answer_coverage)
 
     metrics_df = pd.DataFrame(
         {
@@ -37,80 +46,65 @@ def evaluate_regression_metrics(file_path):
         }
     )
 
-    metrics_results_path = Path(f"{str(file_path)[:-4]}_statistics.csv")
-    metrics_df.to_csv(metrics_results_path, index=False)
+    return df, metrics_df
+
+
+def fiqa_task1_evaluate_metrics(file_name, args):
+    """Evaluate FiQA Task 1 results using the standardized test interface.
+
+    Args:
+        file_name (str): Path to the results CSV file
+        args: Configuration parameters
+
+    Returns:
+        tuple: (DataFrame of results, DataFrame of metrics)
+    """
+    # Run regression metrics evaluation
+    df, metrics_df = evaluate_regression_metrics(file_name)
+
+    # Get output path from args if provided, otherwise derive from input path
+    output_path = getattr(args, "output_path", None)
+    if output_path is None:
+        output_path = Path(f"{str(file_name)[:-4]}_statistics.csv")
+    else:
+        output_path = Path(output_path)
+
+    # Create parent directory for output if needed
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Save metrics to CSV
+    metrics_df.to_csv(output_path, index=False)
+
+    return df, metrics_df
 
 
 if __name__ == "__main__":
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_ai21/jamba-1.5-large_29_01_2025.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_ai21/jamba-1.5-mini_29_01_2025.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_anthropic/claude-3-haiku-20240307_29_01_2025.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_anthropic/claude-3-5-sonnet-20240620_29_01_2025.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_cohere_chat/command-r-plus-08-2024_29_01_2025.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_cohere_chat/command-r7b-12-2024_29_01_2025.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_gemini/gemini-1.5-pro-latest_09_02_2025.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_openai/gpt-4o-2024-08-06_29_01_2025.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_openai/o1-mini_09_02_2025.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/databricks/dbrx-instruct_10_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/deepseek-ai/deepseek-llm-67b-chat_10_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/deepseek-ai/DeepSeek-r1_08_02_2025_no_think.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/deepseek-ai/DeepSeek-V3_30_01_2025.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/google/gemma-2-9b-it_10_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/google/gemma-2-27b-it_10_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/meta-llama/Llama-2-13b-chat-hf_10_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/meta-llama/Llama-3-8b-chat-hf_10_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/meta-llama/Llama-3-70b-chat-hf_10_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/microsoft/WizardLM-2-8x22B_12_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/mistralai/Mistral-7B-Instruct-v0.3_10_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/mistralai/Mixtral-8x7B-Instruct-v0.1_10_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/mistralai/Mixtral-8x22B-Instruct-v0.1_10_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/Qwen/Qwen2-72B-Instruct_10_12_2024.csv"
-    )
-    evaluate_regression_metrics(
-        "../../../../evaluation_results/fiqa_task1/fiqa_task1_together_ai/Qwen/QwQ-32B-Preview_30_01_2025.csv"
-    )
+    # Base evaluation results directory
+    base_results_dir = Path("../../../../evaluation_results/fiqa_task1")
+
+    # Dynamically collect CSV files that don't already have statistics files
+    csv_files = []
+    for csv_path in glob.glob(f"{base_results_dir}/**/*.csv", recursive=True):
+        # Skip files that end with _statistics.csv or already have a corresponding statistics file
+        if csv_path.endswith("_statistics.csv"):
+            continue
+
+        stats_path = f"{csv_path[:-4]}_statistics.csv"
+        if not os.path.exists(stats_path):
+            csv_files.append(csv_path)
+
+    print(f"Found {len(csv_files)} CSV files to process")
+
+    # Process each file
+    for file_path in csv_files:
+        try:
+            df, metrics_df = evaluate_regression_metrics(file_path)
+            metrics_results_path = Path(f"{str(file_path)[:-4]}_statistics.csv")
+            metrics_df.to_csv(metrics_results_path, index=False)
+            print(f"Processed {file_path}")
+            print(f"  - MSE: {metrics_df.iloc[0, 1]:.4f}")
+            print(f"  - MAE: {metrics_df.iloc[1, 1]:.4f}")
+            print(f"  - R2: {metrics_df.iloc[2, 1]:.4f}")
+            print(f"  - Coverage: {metrics_df.iloc[3, 1]:.2%}")
+        except Exception as e:
+            print(f"Error processing {file_path}: {str(e)}")

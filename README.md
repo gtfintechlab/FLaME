@@ -2,7 +2,7 @@
 
 ## Project Setup
 
-### Creating and Activating the Virtual Environment
+### [Basic] Creating and Activating the Virtual Environment
 
 To create the virtual environment in the project root and install the required packages, follow these steps:
 
@@ -27,32 +27,82 @@ To create the virtual environment in the project root and install the required p
    pip install -r requirements.txt
    ```
 
+### [Normal] Development Setup with `uv`
+
+For active development, you can use **uv (pip-tools)** to sync dependencies and install `flame` in editable mode:
+
+```sh
+pip install pip-tools uv
+uv pip compile pyproject.toml -o requirements.txt
+uv sync
+```
+
+This ensures all packages—including the local `flame` code—are installed in your venv and that code changes are picked up automatically.
+
+**(Recommended) Use uv (pip-tools) for seamless dependency sync and editable package install**:
+
+```sh
+pip install pip-tools uv
+uv pip compile pyproject.toml -o requirements.txt
+uv sync
+```
+
+This installs all dependencies and the local `flame` package in editable mode automatically.
+
 ### Installing FLaME
 
-From the root directory you can run `pip install -e .` -- this uses `setup.py` to install FLaME to your activate Python environment.
-
-You can re-install flame if something goes wrong:
+After activating your virtual environment, install FLaME in editable mode:
 
 ```bash
-pip uninstall flame
 pip install -e .
 ```
 
-(unsure if needed) Clean-up files after install:
+This creates a link to the local `src/` folder, so changes to the code are picked up automatically without re-installing.
+
+To re-install or upgrade after adding new dependencies:
 
 ```bash
-python setup.py clean --all
-rm -rf build/ dist/ *.egg-info
-find . -name '*.pyc' -delete
-find . -name '__pycache__' -delete
+pip install --upgrade -e .
 ```
 
-Test the installation of FLaME worked:
+You can also add the editable install to `requirements.txt` by adding `-e .` at the top, ensuring `pip install -r requirements.txt` will include it.
+
+### Using uv (pip-tools) for dependency sync
+
+If you use `uv` (pip-tools) to manage your environment, you can declare the local package as a path dependency in `pyproject.toml`:
+
+```toml
+[project]
+dependencies = [
+  "flame @ file://./",  # local editable install
+  # other deps...
+]
+```
+
+**Windows users**: relative paths may fail. Use an absolute file URI in `pyproject.toml`:
+
+```toml
+dependencies = [
+  "flame @ file:///C:/FLaME",  # adjust to your path
+  # other deps...
+]
+```
+
+Then `uv sync` will install the local package.
+
+Confirm by running tests inside the venv -- activate it and use:
+
+```sh
+python -m pytest -q
+```
+
+Then regenerate and install your lock file without a separate install step:
 
 ```bash
-python
->>> import flame
->>> print(flame.__file__)
+# Generate requirements.txt including local flame
+uv pip compile pyproject.toml -o requirements.txt
+# Sync the venv (installs local flame and all deps)
+uv sync
 ```
 
 ### API keys
@@ -130,21 +180,22 @@ src/together/
 Prompts
 The file src/together/prompts.py holds various zero-shot prompts that are used for each dataset during inference. These prompts guide the model during the prediction phase.
 
-### 3. Running the inference pipeline
+### 3. Running the FLaME pipeline
 
-To run inference on any dataset using this repository, you can use the following command:
+Use the unified `main.py` entrypoint to run one or more tasks:
 
-`python3 src/together/inference.py --model "{model_name}" --task "{dataset_name}" --max_tokens {max_tokens} --temperature {temperature} --top_p {top_p} --top_k {top_k} --repetition_penalty {repetition_penalty} --prompt_format "{prompt_format}"`
+```bash
+# Inference on multiple tasks
+python main.py --config config.yml --mode inference --tasks numclaim finer
+
+# Evaluation of multiple tasks (requires inference CSVs)
+python main.py --config config.yml --mode evaluate --tasks numclaim finer --file_name numclaim_results.csv
+```
 
 #### Command Options:
 
-- `--model`: The name of the model you want to use for inference (e.g., GPT-3, T5, etc.).
-- `--task`: The name of the dataset task for which you are running inference.
-- `--max_tokens`: The maximum number of tokens to generate for each inference.
-- `--temperature`: The sampling temperature (controls randomness in predictions).
-- `--top_p`: Controls nucleus sampling.
-
-<!-- - `--top_k`: Controls top-k sampling. -->
-
-- `--repetition_penalty`: Penalty for repeated tokens during inference.
-- `--prompt_format`: Specify the format of the prompt you want to use (from `prompts.py`).
+- `--config`: Path to your YAML config file (can include `tasks: [task1,task2]`).
+- `--mode`: `inference` or `evaluate`.
+- `--tasks`: Space-separated list of task names to run.
+- `--file_name`: (evaluate only) Path to the inference CSV file.
+- `--model`, `--max_tokens`, `--temperature`, `--top_p`, `--top_k`, `--repetition_penalty`, `--batch_size`, `--prompt_format`: Same as before.

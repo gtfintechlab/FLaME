@@ -1,24 +1,18 @@
-"""MMLU inference module."""
-
 import json
-import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import pandas as pd
 from tqdm import tqdm
-import litellm
 
 from flame.code.mmlu.mmlu_loader import MMLULoader
-from flame.utils.logging_utils import setup_logger
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.config import RESULTS_DIR
 
-logger = setup_logger(
-    name="mmlu_inference",
-    log_file=LOG_DIR / "mmlu_inference.log",
-    level=LOG_LEVEL,
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "mmlu")
 
 
 def format_mmlu_prompt(
@@ -56,51 +50,8 @@ def format_mmlu_prompt(
     return f"{examples_text}{current_text}"
 
 
-def generate_inference_filename(task: str, model: str) -> Tuple[str, Path]:
-    """Generate a unique filename for inference results.
-
-    Args:
-        task: Task name (e.g., 'mmlu')
-        model: Full model path
-
-    Returns:
-        Tuple of (base_filename, full_path)
-    """
-    model_parts = model.split("/")
-    provider = model_parts[0] if len(model_parts) > 1 else "unknown"
-    model_name = model_parts[-1].replace("-", "_")
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    uid = str(uuid.uuid4())[:8]
-    base_filename = f"{task}_{provider}_{model_name}_{timestamp}_{uid}"
-    full_path = RESULTS_DIR / task / f"inference_{base_filename}.csv"
-    full_path.parent.mkdir(parents=True, exist_ok=True)
-    return base_filename, full_path
-
-
-def chunk_list(lst: List, chunk_size: int) -> List[List]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3,
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
+# Use the centralized inference filename generator
+from flame.utils.miscellaneous import generate_inference_filename
 
 
 def save_inference_results(df: pd.DataFrame, path: Path, metadata: Dict) -> None:
@@ -169,7 +120,7 @@ def mmlu_inference(args) -> pd.DataFrame:
     model_name = model_parts[-1]
 
     # Generate filename
-    base_filename, results_path = generate_inference_filename("mmlu", args.model)
+    results_path = generate_inference_filename("mmlu", args.model)
 
     # Log startup information
     logger.info(
