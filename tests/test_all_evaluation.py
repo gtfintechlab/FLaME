@@ -1,6 +1,7 @@
 """Parametrised smoke-tests for every *_evaluate.py module.
 Ensures evaluation code executes offline with stubbed data and metrics.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -120,7 +121,9 @@ def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: 
 
     def _dummy_completion(*_a, **_k):  # noqa: D401 (simple function)
         """Return object mimicking litellm completion response."""
-        return _SNS(choices=[_SNS(message=_SNS(content="<think>none</think> label: A"))])
+        return _SNS(
+            choices=[_SNS(message=_SNS(content="<think>none</think> label: A"))]
+        )
 
     monkeypatch.setattr(_builtins, "eval", lambda *_a, **_k: _dummy_completion())
 
