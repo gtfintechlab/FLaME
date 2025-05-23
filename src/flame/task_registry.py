@@ -61,6 +61,16 @@ from flame.code.causal_detection.casual_detection_evaluate_llm import (
     causal_detection_evaluate,
 )
 
+# Additional evaluation functions that were missing
+from flame.code.bizbench.bizbench_evaluate import bizbench_evaluate
+from flame.code.edtsum.edtsum_evaluate import edtsum_evaluate
+from flame.code.finbench.finbench_evaluate import finbench_evaluate
+from flame.code.fiqa.fiqa_task1_evaluate import fiqa_task1_evaluate
+from flame.code.fiqa.fiqa_task2_evaluate import fiqa_task2_evaluate
+from flame.code.fomc.fomc_evaluate import fomc_evaluate
+from flame.code.headlines.headlines_evaluate import headlines_evaluate
+from flame.code.mmlu.mmlu_evaluate import mmlu_evaluate
+
 # Note: not every task has both an inference and an evaluation implementation.
 # When missing, simply omit it from the corresponding map.
 
@@ -106,6 +116,15 @@ EVALUATE_MAP: dict[str, callable] = {
     "finqa": finqa_evaluate,
     "tatqa": tatqa_evaluate,
     "causal_detection": causal_detection_evaluate,
+    # Additional evaluation mappings
+    "bizbench": bizbench_evaluate,
+    "edtsum": edtsum_evaluate,
+    "finbench": finbench_evaluate,
+    "fiqa_task1": fiqa_task1_evaluate,
+    "fiqa_task2": fiqa_task2_evaluate,
+    "fomc": fomc_evaluate,
+    "headlines": headlines_evaluate,
+    "mmlu": mmlu_evaluate,
 }
 
 

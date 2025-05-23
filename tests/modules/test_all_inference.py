@@ -10,7 +10,7 @@ from types import ModuleType
 
 import pytest
 
-SRC_DIR = Path(__file__).resolve().parent.parent / "src" / "flame" / "code"
+SRC_DIR = Path(__file__).resolve().parent.parent.parent / "src" / "flame" / "code"
 
 
 def _discover_inference_modules() -> list[str]:

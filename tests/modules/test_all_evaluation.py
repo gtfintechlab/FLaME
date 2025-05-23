@@ -18,7 +18,7 @@ class _MockNamespace:
         self.__dict__.update(kwargs)
 
 
-SRC_DIR = Path(__file__).resolve().parent.parent / "src" / "flame" / "code"
+SRC_DIR = Path(__file__).resolve().parent.parent.parent / "src" / "flame" / "code"
 
 
 def _discover_eval_modules() -> list[str]:
