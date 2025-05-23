@@ -453,6 +453,11 @@ dependencies = [
     { name = "transformers" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "huggingface-hub" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "backoff", specifier = ">=2.2.1" },
@@ -480,6 +485,9 @@ requires-dist = [
     { name = "together", specifier = ">=1.5.5" },
     { name = "transformers", specifier = ">=4.51.3" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "huggingface-hub", specifier = ">=0.30.2" }]
 
 [[package]]
 name = "fonttools"
