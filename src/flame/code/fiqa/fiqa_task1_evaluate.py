@@ -1,7 +1,6 @@
 import pandas as pd
-from datetime import date
 import re
-from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from sklearn.metrics import accuracy_score
@@ -40,13 +39,7 @@ def fiqa_task1_evaluate(file_name, args):
     df = pd.read_csv(file_name)
     logger.info(f"Loaded data from {file_name} for evaluation.")
 
-    # Output path for evaluation results
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
+    # Note: Path definition removed - evaluate.py handles saving
 
     extraction_response = []
     extraction_model_response = []
@@ -125,16 +118,7 @@ def fiqa_task1_evaluate(file_name, args):
     #     "Value": [accuracy, precision, recall, f1],
     # })
 
-    logger.info(
-        f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}"
-    )
-    df.to_csv(evaluation_results_path, index=False)
-
-    # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(
-        f"{evaluation_results_path.stem}_metrics.csv"
-    )
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}.")
+    # Note: File saving removed - evaluate.py handles saving
 
     return df, metrics_df

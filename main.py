@@ -100,7 +100,7 @@ def parse_arguments():
         if getattr(args, key, None) is None:
             setattr(args, key, default)
 
-    return args, config
+    return args
 
 
 class MultiTaskError(Exception):
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     litellm.drop_params = True
 
     # Parse arguments and configure logging
-    args, config = parse_arguments()
+    args = parse_arguments()
 
     # Handle list-tasks command
     if args.command == "list-tasks":

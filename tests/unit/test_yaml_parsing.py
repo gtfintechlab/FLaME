@@ -3,6 +3,8 @@ import sys
 import yaml
 from main import parse_arguments
 
+pytestmark = pytest.mark.unit
+
 
 def write_temp_yaml(tmp_path, data):
     file = tmp_path / "config.yml"

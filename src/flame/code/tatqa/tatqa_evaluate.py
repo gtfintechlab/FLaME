@@ -1,8 +1,7 @@
 import pandas as pd
-from datetime import date
 from flame.code.tokens import tokens
 from litellm import completion
-from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.logging_utils import setup_logger
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 import time
@@ -37,13 +36,7 @@ def tatqa_evaluate(file_name, args):
     df = pd.read_csv(file_name)
     logger.info(f"Loaded data from {file_name} for evaluation.")
 
-    # Output path for evaluation results
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
+    # Note: Path definition removed - evaluate.py handles saving
 
     # Initialize list for storing evaluation results
     evaluation_results = []
@@ -82,9 +75,8 @@ def tatqa_evaluate(file_name, args):
         # Update DataFrame with extracted results after each iteration
         df["extracted_labels"] = evaluation_results
 
-        # Save the updated DataFrame to CSV after each iteration
-        df.to_csv(evaluation_results_path, index=False)
-        logger.info(f"CSV updated at iteration {i + 1}/{len(df)}")
+        # Note: Progress saving removed - evaluate.py handles saving
+        logger.info(f"Processed iteration {i + 1}/{len(df)}")
 
     correct_labels = df["actual_answer"].tolist()
 
@@ -108,16 +100,7 @@ def tatqa_evaluate(file_name, args):
         }
     )
 
-    logger.info(
-        f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}"
-    )
-    df.to_csv(evaluation_results_path, index=False)
-
-    # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(
-        f"{evaluation_results_path.stem}_metrics.csv"
-    )
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}.")
+    # Note: File saving removed - evaluate.py handles saving
 
     return df, metrics_df

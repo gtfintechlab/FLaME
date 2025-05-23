@@ -11,6 +11,7 @@
       "Bash(do)",
       "Bash(echo:*)",
       "Bash(done)",
+      "Bash(cd /home/gmatlin/Codespace/FLaME && uv run pytest:*)",
     ],
     "deny": []
   }

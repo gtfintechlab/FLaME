@@ -3,8 +3,6 @@
 import uuid
 from datetime import datetime
 
-from flame.config import RESULTS_DIR, TEST_OUTPUT_DIR, IN_PYTEST
-
 
 def generate_inference_filename(task: str, model: str, output_dir=None):
     """Generate a unique filename for inference results.
@@ -22,6 +20,9 @@ def generate_inference_filename(task: str, model: str, output_dir=None):
     """
     # Use test output directory if running in pytest, or RESULTS_DIR by default
     if output_dir is None:
+        # Import at runtime to get patched values in tests
+        from flame.config import RESULTS_DIR, TEST_OUTPUT_DIR, IN_PYTEST
+
         output_dir = TEST_OUTPUT_DIR if IN_PYTEST else RESULTS_DIR
 
     # Sanitize the model name for use in filenames

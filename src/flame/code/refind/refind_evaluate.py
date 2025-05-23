@@ -1,11 +1,9 @@
-from datetime import date
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
-from pathlib import Path
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from flame.config import LOG_DIR, LOG_LEVEL
 
 logger = setup_logger(
     name="refind_evaluation",
@@ -58,13 +56,7 @@ def refind_evaluate(file_name, args):
     batches = chunk_list(all_responses, args.batch_size)
     total_batches = len(batches)
 
-    # Define paths
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
+    # Note: Path definition removed - evaluate.py handles saving
 
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
@@ -129,9 +121,6 @@ def refind_evaluate(file_name, args):
         }
     )
 
-    # Save metrics DataFrame
-    metrics_results_path = Path(f"{str(evaluation_results_path)[:-4]}_statistics.csv")
-    metrics_df.to_csv(metrics_results_path, index=False)
-    logger.info(f"Metrics saved to {metrics_results_path}")
+    # Note: Metrics saving removed - evaluate.py handles saving
 
     return df, metrics_df

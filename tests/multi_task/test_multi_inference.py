@@ -2,6 +2,8 @@ import pytest
 from main import run_tasks
 from unittest.mock import patch
 
+pytestmark = pytest.mark.multi_task
+
 
 @pytest.mark.parametrize(
     "tasks",

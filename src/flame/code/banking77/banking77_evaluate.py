@@ -1,9 +1,8 @@
 import pandas as pd
-from datetime import date
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from flame.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
 # Configure logging
@@ -128,13 +127,7 @@ def banking77_evaluate(file_name, args):
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    # Continual save path
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
+    # Note: Path definition removed - evaluate.py handles saving
 
     # Initialize extracted_labels column if it doesn't exist
     if "extracted_labels" not in df.columns:
@@ -207,11 +200,6 @@ def banking77_evaluate(file_name, args):
         }
     )
 
-    # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(
-        f"{evaluation_results_path.stem}_metrics.csv"
-    )
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    # Note: Metrics saving removed - evaluate.py handles saving
 
     return df, metrics_df

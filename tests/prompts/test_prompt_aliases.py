@@ -32,6 +32,10 @@ Once we confirm that no external dependencies use these aliases:
 For now, these tests ensure the aliases continue to work correctly.
 """
 
+import pytest
+
+pytestmark = pytest.mark.prompts
+
 
 def test_zeroshot_prompt_functionality():
     """Test that zero-shot prompt functions work correctly."""

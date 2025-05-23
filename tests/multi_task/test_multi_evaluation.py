@@ -1,6 +1,8 @@
 import pytest
 import main
 
+pytestmark = pytest.mark.multi_task
+
 
 @pytest.mark.parametrize(
     "tasks",

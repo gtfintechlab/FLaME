@@ -1,9 +1,8 @@
 import pandas as pd
-from datetime import date
 from evaluate import load
 import numpy as np
 from flame.utils.logging_utils import setup_logger
-from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from flame.config import LOG_DIR, LOG_LEVEL
 
 # Configure logging first so we can use it in get_bertscore
 logger = setup_logger(
@@ -63,13 +62,7 @@ def ectsum_evaluate(file_name, args):
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    # Define paths for results and metrics
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
+    # Note: Path definition removed - evaluate.py handles saving
 
     # Extract references and predictions
     correct_summaries = df["actual_labels"].tolist()
@@ -105,12 +98,6 @@ def ectsum_evaluate(file_name, args):
         }
     )
 
-    # Continual saving of progress and metrics
-    save_progress(df, evaluation_results_path)
-    metrics_path = evaluation_results_path.with_name(
-        f"{evaluation_results_path.stem}_metrics.csv"
-    )
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    # Note: Progress and metrics saving removed - evaluate.py handles saving
 
     return df, metrics_df

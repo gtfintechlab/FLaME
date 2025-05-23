@@ -6,6 +6,8 @@ from main import run_tasks, MultiTaskError
 from unittest.mock import patch
 import pandas as pd
 
+pytestmark = pytest.mark.unit
+
 
 def test_multitask_error_class():
     """Test that MultiTaskError correctly stores errors."""

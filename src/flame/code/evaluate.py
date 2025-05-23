@@ -1,5 +1,5 @@
 from flame.task_registry import EVALUATE_MAP
-from flame.config import LOG_DIR, LOG_LEVEL, EVALUATION_DIR, TEST_OUTPUT_DIR, IN_PYTEST
+from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.logging_utils import setup_logger
 
 logger = setup_logger(
@@ -35,7 +35,9 @@ def main(args):
         # Run evaluation
         df, metrics_df = evaluate_function(args.file_name, args)
 
-        # Determine output base directory
+        # Determine output base directory - import at runtime to get patched values
+        from flame.config import EVALUATION_DIR, TEST_OUTPUT_DIR, IN_PYTEST
+
         output_dir = TEST_OUTPUT_DIR if IN_PYTEST else EVALUATION_DIR
 
         # Create task-specific directory

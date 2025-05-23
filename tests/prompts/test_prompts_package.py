@@ -7,6 +7,8 @@ This test suite verifies that:
 3. Function registration is working correctly
 """
 
+import pytest
+
 from flame.code.prompts import (
     get_prompt,
     PromptFormat,
@@ -20,6 +22,8 @@ from flame.code.prompts import (
     finentity_zeroshot_prompt,
     finbench_zeroshot_prompt,
 )
+
+pytestmark = pytest.mark.prompts
 
 
 def test_registry_task_lookup():

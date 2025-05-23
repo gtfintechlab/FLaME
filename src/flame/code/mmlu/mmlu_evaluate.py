@@ -100,9 +100,8 @@ def generate_evaluation_filename(task: str, model: str) -> Tuple[str, Path]:
     # Construct filename
     base_filename = f"{task}_{provider}_{model_name}_{timestamp}_{uid}"
 
-    # Create full path
+    # Note: Path creation removed - evaluate.py handles saving
     full_path = EVALUATION_DIR / task / f"evaluation_{base_filename}.csv"
-    full_path.parent.mkdir(parents=True, exist_ok=True)
 
     return base_filename, full_path
 
@@ -257,11 +256,6 @@ def mmlu_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
             f"{row['Subject']}: {row['Value']:.4f} ({row['Questions']} questions)"
         )
 
-    # Save metrics
-    metrics_path = evaluation_results_path.with_name(
-        f"evaluation_{base_filename}_metrics.csv"
-    )
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    # Note: Metrics saving removed - evaluate.py handles saving
 
     return df, metrics_df

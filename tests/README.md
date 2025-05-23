@@ -105,11 +105,32 @@ This is implemented through:
 
 ## Running Tests
 
+### Recommended: Run Tests by Groups (Avoids Isolation Issues)
+
+Due to test isolation issues when running all tests together, we recommend running tests in groups:
+
 ```bash
-# Run all tests
+# RECOMMENDED: Run tests by directory (most reliable)
+uv run pytest tests/unit/ -v          # Unit tests
+uv run pytest tests/prompts/ -v       # Prompt system tests  
+uv run pytest tests/multi_task/ -v    # Multi-task tests
+uv run pytest tests/integration/ -v   # Integration tests
+uv run pytest tests/modules/test_all_inference.py -v   # Module inference tests
+uv run pytest tests/modules/test_all_evaluation.py -v  # Module evaluation tests
+
+# Alternative: Use the provided CI workflow
+# See .github/workflows/run_tests.yml for the exact commands used in CI
+```
+
+**Important**: Module tests (test_all_inference.py and test_all_evaluation.py) should be run as separate files, not together, to avoid import side effects.
+
+### Alternative: Run All Tests
+
+```bash
+# Run all tests at once (may have isolation issues)
 uv run pytest
 
-# Run specific test category
+# Run specific test category by directory
 uv run pytest tests/unit/
 uv run pytest tests/modules/
 uv run pytest tests/integration/
@@ -125,6 +146,9 @@ uv run pytest -k "multi_task"
 
 # Run with interactive debugging on failure
 uv run pytest --pdb
+
+# List available markers
+uv run pytest --markers
 ```
 
 ## Test Output Directory

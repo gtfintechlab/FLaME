@@ -4,6 +4,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 
 
+@pytest.mark.unit
 def test_ectsum_bertscore_lazy_loading():
     """Test that ectsum loads BERTScore lazily and handles errors properly."""
 
@@ -34,6 +35,7 @@ def test_ectsum_bertscore_lazy_loading():
         mock_load.assert_called_once()  # Still only called once
 
 
+@pytest.mark.unit
 def test_ectsum_bertscore_loading_error():
     """Test that ectsum handles BERTScore loading errors properly."""
 
@@ -62,6 +64,7 @@ def test_ectsum_bertscore_loading_error():
         mock_load.assert_called_once()  # Only tried once
 
 
+@pytest.mark.unit
 def test_edtsum_bertscore_lazy_loading():
     """Test that edtsum loads BERTScore lazily and handles errors properly."""
 
@@ -83,6 +86,7 @@ def test_edtsum_bertscore_lazy_loading():
         mock_load.assert_called_once_with("bertscore")
 
 
+@pytest.mark.unit
 def test_importing_modules_without_bertscore():
     """Test that we can import evaluation modules without BERTScore installed."""
 

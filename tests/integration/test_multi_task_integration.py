@@ -7,6 +7,8 @@ from unittest.mock import patch
 import sys
 import os
 
+pytestmark = pytest.mark.integration
+
 
 def test_end_to_end_multi_task_workflow(tmp_path, monkeypatch, dummy_args):
     """Test complete multi-task workflow from YAML to execution"""

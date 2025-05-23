@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import time as _time
 import importlib
-from pathlib import Path
 from types import SimpleNamespace as _SN
 
 import pytest
@@ -153,35 +152,13 @@ def _patch_external(monkeypatch, tmp_path_factory):
     except ModuleNotFoundError:
         pass
 
-    # 6. Redirect output dirs
-    temp_root: Path = tmp_path_factory.mktemp("flame_artifacts")
-    # Redirect ALL outputs (results, logs, evaluation, test files) to temporary dirs
-    results_dir = temp_root / "results"
-    logs_dir = temp_root / "logs"
-    eval_dir = temp_root / "evaluation"
-    test_output_dir = temp_root / "test_outputs"  # New dedicated dir for test outputs
-
-    # Create all output directories
-    for d in (results_dir, logs_dir, eval_dir, test_output_dir):
-        d.mkdir(parents=True, exist_ok=True)
-
-    # Set environment variable to indicate we're in test mode
-    # This is a reliable way for code to detect it's running in a test
+    # 6. Set environment variable to indicate we're in test mode
+    # This triggers the use of TEST_OUTPUT_DIR instead of RESULTS_DIR/EVALUATION_DIR
     monkeypatch.setenv("PYTEST_RUNNING", "1")
 
-    try:
-        # Import and patch config BEFORE any other imports that might use it
-        import flame.config as _cfg
-
-        # Update all directory paths to point to temp locations
-        monkeypatch.setattr(_cfg, "RESULTS_DIR", results_dir)
-        monkeypatch.setattr(_cfg, "LOG_DIR", logs_dir)
-        monkeypatch.setattr(_cfg, "EVALUATION_DIR", eval_dir)
-        monkeypatch.setattr(_cfg, "TEST_OUTPUT_DIR", test_output_dir)
-        # Explicitly update ROOT_DIR to ensure no absolute paths break
-        monkeypatch.setattr(_cfg, "ROOT_DIR", temp_root.parent)
-    except ModuleNotFoundError:
-        pass
+    # Note: We don't patch the directories anymore because we want tests to use
+    # the actual tests/test_outputs/ directory, not temp directories.
+    # The IN_PYTEST flag will cause the code to use TEST_OUTPUT_DIR.
 
     # 6b. Stub MMLULoader to avoid heavy dataset logic
     try:
@@ -233,6 +210,10 @@ def _patch_external(monkeypatch, tmp_path_factory):
 # ---------------------------------------------------------------------------
 # Generic args fixture
 # ---------------------------------------------------------------------------
+
+
+# Note: Module cache clearing was attempted but pytest's test collection
+# interferes with proper isolation. Run module tests separately as documented.
 
 
 @pytest.fixture()

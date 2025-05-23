@@ -5,6 +5,8 @@ from flame.task_registry import supported, INFERENCE_MAP, EVALUATE_MAP
 from main import run_tasks
 from types import SimpleNamespace
 
+pytestmark = pytest.mark.unit
+
 
 def test_task_registry_completeness():
     """Test that task registry contains expected tasks"""
@@ -98,10 +100,10 @@ def test_inference_and_evaluation_task_mapping():
     assert "numclaim" in common_tasks
     assert "finer" in common_tasks
 
-    # Verify some tasks are only in evaluation (like refind)
-    evaluation_only = set(EVALUATE_MAP.keys()) - set(INFERENCE_MAP.keys())
-    assert "refind" in evaluation_only
-    assert "banking77" in evaluation_only
+    # Verify some tasks are only in inference (like econlogicqa)
+    inference_only = set(INFERENCE_MAP.keys()) - set(EVALUATE_MAP.keys())
+    assert "econlogicqa" in inference_only
+    assert "finred" in inference_only
 
 
 def test_supported_function_behavior():
