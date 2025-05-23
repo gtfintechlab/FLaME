@@ -29,9 +29,9 @@ def test_get_prompt_returns_correct_function():
     for task, format_type, expected_name in test_cases:
         func = get_prompt(task, format_type)
         assert func is not None, f"No prompt function found for {task}, {format_type}"
-        assert func.__name__ == expected_name, (
-            f"Wrong function name for {task}, {format_type}"
-        )
+        assert (
+            func.__name__ == expected_name
+        ), f"Wrong function name for {task}, {format_type}"
 
 
 def test_fallback_behavior():
@@ -51,17 +51,17 @@ def test_fallback_behavior():
     if zero_shot_only_task:
         func = get_prompt(zero_shot_only_task, PromptFormat.DEFAULT)
         assert func is not None
-        assert func.__name__.endswith("_zeroshot_prompt"), (
-            f"Function name should end with _zeroshot_prompt, got {func.__name__}"
-        )
+        assert func.__name__.endswith(
+            "_zeroshot_prompt"
+        ), f"Function name should end with _zeroshot_prompt, got {func.__name__}"
 
     # If a specific format is requested and not available, should return None
     # Find a task with no FEW_SHOT format
     for task in _REGISTRY:
         if PromptFormat.FEW_SHOT not in _REGISTRY[task]:
-            assert get_prompt(task, PromptFormat.FEW_SHOT) is None, (
-                f"Expected None for {task} with FEW_SHOT format"
-            )
+            assert (
+                get_prompt(task, PromptFormat.FEW_SHOT) is None
+            ), f"Expected None for {task} with FEW_SHOT format"
             break
 
 
@@ -128,9 +128,9 @@ def test_registry_handles_task_format_combinations():
         assert func is not None, f"Function for {task}/{format_type} not found"
         result = func(test_input)
         assert isinstance(result, str), f"Result for {task}/{format_type} not a string"
-        assert test_input in result, (
-            f"Input not found in result for {task}/{format_type}"
-        )
+        assert (
+            test_input in result
+        ), f"Input not found in result for {task}/{format_type}"
 
     # Test few-shot stubs separately
     few_shot_stubs = [
