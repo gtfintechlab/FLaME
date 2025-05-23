@@ -5,15 +5,38 @@ import numpy as np
 from flame.utils.logging_utils import setup_logger
 from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 
-# Load BERTScore evaluation metric
-bertscore = load("bertscore")
-
-# Configure logging
+# Configure logging first so we can use it in get_bertscore
 logger = setup_logger(
     name="edtsum_evaluation",
     log_file=LOG_DIR / "edtsum_evaluation.log",
     level=LOG_LEVEL,
 )
+
+# Load BERTScore evaluation metric lazily
+_bertscore = None
+_bertscore_error = None
+
+
+def get_bertscore():
+    global _bertscore, _bertscore_error
+
+    # If we already tried and failed, raise the error
+    if _bertscore_error is not None:
+        raise _bertscore_error
+
+    # If not loaded yet, try to load it
+    if _bertscore is None:
+        try:
+            logger.info("Loading BERTScore metric...")
+            _bertscore = load("bertscore")
+            logger.info("BERTScore loaded successfully")
+        except Exception as e:
+            _bertscore_error = RuntimeError(
+                f"Failed to load BERTScore metric. Make sure 'bert-score' is installed: {str(e)}"
+            )
+            raise _bertscore_error
+
+    return _bertscore
 
 
 def summarization_prompt(input_text: str):
@@ -54,7 +77,7 @@ def edtsum_evaluate(file_name, args):
 
     # Compute BERTScore
     logger.info("Computing BERTScore metrics...")
-    bert_scores = bertscore.compute(
+    bert_scores = get_bertscore().compute(
         predictions=llm_responses,
         references=correct_summaries,
         model_type="distilbert-base-uncased",

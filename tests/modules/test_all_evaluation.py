@@ -184,7 +184,7 @@ def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: 
     monkeypatch.setattr(_sum, "is_multilabel", lambda *a, **k: False, raising=False)
 
     # 6. builtins.eval -> return fake completion object for causal detection modules
-    import builtins as _builtins  # noqa: WPS433 (importing system module)
+    import builtins as _builtins
 
     def _dummy_completion(*_a, **_k):  # noqa: D401 (simple function)
         """Return object mimicking litellm completion response."""
@@ -208,9 +208,9 @@ def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: 
     # ------------------------------------------------------------------
     # Patch misc stdlib helpers for tolerant parsing & heavy deps stubbing
     # ------------------------------------------------------------------
-    import sys  # noqa: WPS433
-    import json as _json  # noqa: WPS433
-    import ast as _ast  # noqa: WPS433
+    import sys
+    import json as _json
+    import ast as _ast
 
     _orig_json_loads = _json.loads
     _orig_literal_eval = _ast.literal_eval
@@ -236,9 +236,9 @@ def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: 
     monkeypatch.setattr(_ast, "literal_eval", _safe_literal_eval, raising=False)
 
     # Stub heavyweight external libraries used by some eval modules
-    from types import SimpleNamespace as _SSN  # noqa: WPS433
+    from types import SimpleNamespace as _SSN
 
-    class _MockMetric:  # noqa: WPS431
+    class _MockMetric:
         def compute(self, predictions=None, references=None, *a, **k):  # noqa: D401
             length = len(predictions or [])
             zeros = [0.0] * length

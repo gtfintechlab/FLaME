@@ -263,4 +263,5 @@ For detailed guidance on the testing framework, refer to these resources:
    - Evaluation results: `evaluations/<dataset>/evaluation_<dataset>_<model>_<date>.csv`
 
 ## Project Specific Memories
+- Always use `uv` package manager. Do not run python without using uv. Always use `uv add` then `uv pip install` but never bare python without uv.
 - do not use `uv run python main.py` ever on your own, let me run that command

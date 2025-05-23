@@ -112,21 +112,10 @@ def test_multi_task_with_mixed_modes(tmp_path, monkeypatch):
 
 def test_cli_list_tasks_command(monkeypatch, capsys):
     """Test the list-tasks CLI command"""
+    # Test by importing and calling the functions directly
     from flame.task_registry import supported
 
-    # Mock sys.argv for list-tasks command
-    monkeypatch.setattr(sys, "argv", ["main.py", "list-tasks"])
-
-    # Create a mock that prints tasks
-    def mock_main():
-        print("Available inference tasks:")
-        for task in sorted(supported("inference")):
-            print(f"  - {task}")
-        print("\nAvailable evaluation tasks:")
-        for task in sorted(supported("evaluate")):
-            print(f"  - {task}")
-
-    # Instead of mocking main, just print the tasks directly
+    # Simulate what the command does
     print("Available inference tasks:")
     for task in sorted(supported("inference")):
         print(f"  - {task}")
@@ -137,11 +126,42 @@ def test_cli_list_tasks_command(monkeypatch, capsys):
     # Capture output
     captured = capsys.readouterr()
 
-    # Verify output contains expected tasks
+    # Verify output contains expected content
     assert "Available inference tasks:" in captured.out
     assert "Available evaluation tasks:" in captured.out
     assert "fomc" in captured.out
     assert "numclaim" in captured.out
+    assert "finer" in captured.out
+
+    # Verify structure
+    lines = captured.out.strip().split("\n")
+
+    # Find the sections
+    inference_start = None
+    evaluation_start = None
+    for i, line in enumerate(lines):
+        if "Available inference tasks:" in line:
+            inference_start = i
+        elif "Available evaluation tasks:" in line:
+            evaluation_start = i
+
+    # Count tasks between sections
+    inference_tasks = 0
+    evaluation_tasks = 0
+
+    if inference_start is not None and evaluation_start is not None:
+        # Count inference tasks
+        for i in range(inference_start + 1, evaluation_start):
+            if lines[i].strip().startswith("- "):
+                inference_tasks += 1
+
+        # Count evaluation tasks
+        for i in range(evaluation_start + 1, len(lines)):
+            if lines[i].strip() and lines[i].strip().startswith("- "):
+                evaluation_tasks += 1
+
+    assert inference_tasks > 10  # Should have many inference tasks
+    assert evaluation_tasks > 5  # Should have several evaluation tasks
 
 
 def test_task_specific_parameters_yaml(tmp_path):

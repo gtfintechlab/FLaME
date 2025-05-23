@@ -1,6 +1,7 @@
 import argparse
 from dotenv import load_dotenv
 import os
+import sys
 import logging
 from flame.code.inference import main as inference
 from huggingface_hub import login
@@ -13,6 +14,14 @@ import litellm
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="FLaME")
+
+    # Add subparsers for commands
+    subparsers = parser.add_subparsers(dest="command", help="Commands")
+
+    # Add list-tasks command
+    subparsers.add_parser("list-tasks", help="List available tasks")
+
+    # Keep the original arguments as the default (no subcommand)
     parser.add_argument("--config", type=str, help="Path to the YAML config file.")
     parser.add_argument(
         "--mode",
@@ -151,6 +160,16 @@ if __name__ == "__main__":
     # Parse arguments and configure logging
     args, config = parse_arguments()
 
+    # Handle list-tasks command
+    if args.command == "list-tasks":
+        print("Available inference tasks:")
+        for task in sorted(supported_tasks("inference")):
+            print(f"  - {task}")
+        print("\nAvailable evaluation tasks:")
+        for task in sorted(supported_tasks("evaluate")):
+            print(f"  - {task}")
+        sys.exit(0)
+
     # Set up main logger
     main_logger = get_component_logger("flame.main")
     main_logger.info("Starting FLaME framework")
@@ -220,24 +239,26 @@ if __name__ == "__main__":
             "Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in the environment."
         )
 
-    if not args.mode or args.mode not in ["inference", "evaluate"]:
-        main_logger.error(
-            "Mode is required and must be either 'inference' or 'evaluate'."
-        )
-        raise ValueError(
-            "Mode is required and must be either 'inference' or 'evaluate'."
-        )
-    if args.mode == "evaluate" and not args.file_name:
-        main_logger.error("File name is required for evaluation mode.")
-        raise ValueError("File name is required for evaluation mode.")
+    # Validation only needed when not running a command
+    if args.command is None:
+        if not args.mode or args.mode not in ["inference", "evaluate"]:
+            main_logger.error(
+                "Mode is required and must be either 'inference' or 'evaluate'."
+            )
+            raise ValueError(
+                "Mode is required and must be either 'inference' or 'evaluate'."
+            )
+        if args.mode == "evaluate" and not args.file_name:
+            main_logger.error("File name is required for evaluation mode.")
+            raise ValueError("File name is required for evaluation mode.")
 
-    tasks = args.tasks
-    if not tasks:
-        main_logger.error("No tasks specified; use --tasks option")
-        raise ValueError("No tasks specified; use --tasks option")
+        tasks = args.tasks
+        if not tasks:
+            main_logger.error("No tasks specified; use --tasks option")
+            raise ValueError("No tasks specified; use --tasks option")
 
-    main_logger.info(
-        f"Running {len(tasks)} tasks in {args.mode} mode: {', '.join(tasks)}"
-    )
-    run_tasks(tasks, args.mode, args)
-    main_logger.info("All tasks completed successfully")
+        main_logger.info(
+            f"Running {len(tasks)} tasks in {args.mode} mode: {', '.join(tasks)}"
+        )
+        run_tasks(tasks, args.mode, args)
+        main_logger.info("All tasks completed successfully")
