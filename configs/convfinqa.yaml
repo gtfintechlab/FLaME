@@ -1,0 +1,27 @@
+model: "together_ai/meta-llama/Llama-4-Scout-17B-16E-Instruct"
+tasks:
+  - convfinqa
+max_tokens: 128
+temperature: 0.0
+top_p: 0.9
+top_k: null
+repetition_penalty: 1.0
+batch_size: 50
+prompt_format: zero_shot
+
+# Logging configuration
+logging:
+  level: "INFO"            # Global logging level (Options: DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  console:
+    enabled: true
+    level: "INFO"          # Console output level
+  file:
+    enabled: true
+    level: "DEBUG"         # File output level
+    max_size_mb: 10        # Maximum file size in MB
+    backup_count: 5        # Number of backup files to keep
+  components:
+    litellm: "WARNING"     # Control litellm verbosity (WARNING suppresses most output)
+    batch_utils: "INFO"
+    inference: "INFO"      # Control inference module verbosity
+    evaluation: "INFO"     # Control evaluation module verbosity
