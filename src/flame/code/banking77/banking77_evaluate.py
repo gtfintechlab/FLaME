@@ -20,10 +20,19 @@ banking77_label_map = {category: index for index, category in enumerate(banking7
 
 def map_extracted_label_to_number(extracted_label: str):
     """Map the extracted label to its corresponding numerical value."""
-    if extracted_label not in banking77_label_map:
-        logger.error(f"Label not found: {extracted_label}")
+    # Handle special "NO_MATCH" case from extraction
+    if extracted_label == "NO_MATCH":
+        logger.debug("Label extraction returned NO_MATCH")
+        return -1
+
+    # Clean up the extracted label by stripping whitespace and handling common variations
+    cleaned_label = extracted_label.strip()
+
+    if cleaned_label not in banking77_label_map:
+        logger.error(f"Label not found: {repr(cleaned_label)}")
+        logger.debug(f"Available labels: {list(banking77_label_map.keys())}")
     return banking77_label_map.get(
-        extracted_label, -1
+        cleaned_label, -1
     )  # Return -1 if the label is not found
 
 
@@ -35,8 +44,12 @@ def save_progress(df, path):
 
 def banking77_evaluate(file_name, args):
     """Evaluate Banking 77 results and return results and metrics DataFrames."""
-    task = args.dataset.strip('“”"')
-    logger.info(f"Starting evaluation for {task} using model {args.model}.")
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "banking77"
+    if hasattr(args, "model"):
+        logger.info(f"Starting evaluation for {task} using model {args.model}.")
+    else:
+        logger.info(f"Starting evaluation for {task}.")
 
     # Load the CSV file
     df = pd.read_csv(file_name)

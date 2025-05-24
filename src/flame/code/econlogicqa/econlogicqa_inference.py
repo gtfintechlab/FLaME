@@ -18,7 +18,7 @@ def econlogicqa_inference(args):
 
     # Load dataset
     logger.info("Loading dataset...")
-    dataset = safe_load_dataset("glennmatlin/econlogicqa", trust_remote_code=True)[
+    dataset = safe_load_dataset("gtfintechlab/econlogicqa", trust_remote_code=True)[
         "test"
     ]
 
