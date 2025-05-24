@@ -1,6 +1,6 @@
 from datetime import date
 import pandas as pd
-from datasets import load_dataset
+from flame.utils.dataset_utils import safe_load_dataset
 import litellm
 
 from litellm import completion
@@ -23,7 +23,7 @@ def ectsum_inference(args):
 
     # Load the ECTSum dataset (test split)
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/ECTSum", trust_remote_code=True)
+    dataset = safe_load_dataset("gtfintechlab/ECTSum", trust_remote_code=True)
 
     results_path = (
         RESULTS_DIR

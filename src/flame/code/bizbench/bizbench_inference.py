@@ -1,7 +1,7 @@
 from datetime import date
 
 import pandas as pd
-from datasets import load_dataset
+from flame.utils.dataset_utils import safe_load_dataset
 from tqdm import tqdm
 
 from flame.code.prompts import get_prompt, PromptFormat
@@ -18,7 +18,7 @@ def bizbench_inference(args):
 
     # Load dataset
     logger.info("Loading dataset...")
-    dataset = load_dataset("glennmatlin/bizbench", trust_remote_code=True)
+    dataset = safe_load_dataset("glennmatlin/bizbench", trust_remote_code=True)
 
     # Initialize lists to store actual labels and model responses
     X_question = []

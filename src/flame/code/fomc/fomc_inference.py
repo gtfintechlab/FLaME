@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 
 import pandas as pd
 from tqdm import tqdm
-from datasets import load_dataset
+from flame.utils.dataset_utils import safe_load_dataset
 from pathlib import Path
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
@@ -49,7 +49,9 @@ def validate_sample(response: str) -> bool:
 
 def load_fomc_dataset():
     """Load FOMC dataset with progress tracking."""
-    dataset = load_dataset("gtfintechlab/fomc_communication", trust_remote_code=True)
+    dataset = safe_load_dataset(
+        "gtfintechlab/fomc_communication", trust_remote_code=True
+    )
     test_data = dataset["test"]  # type: ignore
     logger.debug(f"Loaded {len(test_data)} test samples")
     return test_data

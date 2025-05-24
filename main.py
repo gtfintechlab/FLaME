@@ -266,15 +266,23 @@ if __name__ == "__main__":
     # Log HuggingFace status
     HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
     if HUGGINGFACEHUB_API_TOKEN:
-        login(token=HUGGINGFACEHUB_API_TOKEN)
-        main_logger.info("Logged in to Hugging Face Hub")
+        try:
+            login(token=HUGGINGFACEHUB_API_TOKEN)
+            main_logger.info("Logged in to Hugging Face Hub")
+        except Exception as e:
+            main_logger.error(f"Failed to authenticate with Hugging Face Hub: {e}")
+            print(f"ERROR: Failed to authenticate with Hugging Face Hub: {e}")
+            print("Please check your HUGGINGFACEHUB_API_TOKEN is valid.")
+            sys.exit(1)
     else:
-        main_logger.warning(
-            "Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in the environment."
+        main_logger.error(
+            "Hugging Face API token not found. This is required for accessing FLaME datasets."
         )
         print(
-            "Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in the environment."
+            "ERROR: Hugging Face API token not found. Please set HUGGINGFACEHUB_API_TOKEN in the environment."
         )
+        print("The FLaME datasets are private and require authentication.")
+        sys.exit(1)
 
     # Validation only needed when not running a command
     if args.command is None:

@@ -1,6 +1,6 @@
 from datetime import date
 import pandas as pd
-from datasets import load_dataset
+from flame.utils.dataset_utils import safe_load_dataset
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -17,7 +17,9 @@ def finentity_inference(args):
     logger.info(f"Starting FinEntity inference on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/finentity", "5768", trust_remote_code=True)
+    dataset = safe_load_dataset(
+        "gtfintechlab/finentity", "5768", trust_remote_code=True
+    )
 
     # Extract sentences and actual labels
     sentences = [row["content"] for row in dataset["test"]]  # type: ignore

@@ -1,6 +1,6 @@
 import time
 import pandas as pd
-from datasets import load_dataset
+from flame.utils.dataset_utils import safe_load_dataset
 from litellm import completion
 
 from flame.code.prompts import get_prompt, PromptFormat
@@ -12,7 +12,7 @@ logger = get_component_logger("inference", "tatqa")
 
 
 def tatqa_inference(args):
-    dataset = load_dataset("gtfintechlab/TATQA", trust_remote_code=True)
+    dataset = safe_load_dataset("gtfintechlab/TATQA", trust_remote_code=True)
 
     # Initialize lists to store context, model responses, actual answers, and complete responses
     context = []

@@ -1,5 +1,5 @@
 import pandas as pd
-from datasets import load_dataset
+from flame.utils.dataset_utils import safe_load_dataset
 from tqdm import tqdm
 
 from flame.code.prompts import get_prompt, PromptFormat
@@ -12,7 +12,7 @@ logger = get_component_logger("inference", "finqa")
 
 
 def finqa_inference(args):
-    dataset = load_dataset("gtfintechlab/finqa", trust_remote_code=True)
+    dataset = safe_load_dataset("gtfintechlab/finqa", trust_remote_code=True)
     test_data = dataset["test"]  # type: ignore
     all_texts = [
         f"{' '.join(data['pre_text'])} {' '.join(data['post_text'])} {' '.join([' '.join(row) for row in data['table_ori']])} {data['question']}"

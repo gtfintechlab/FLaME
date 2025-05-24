@@ -1,7 +1,7 @@
 import time
 import litellm
 import pandas as pd
-from datasets import load_dataset
+from flame.utils.dataset_utils import safe_load_dataset
 from datetime import date
 
 from flame.code.prompts import get_prompt, PromptFormat
@@ -23,7 +23,7 @@ def numclaim_inference(args):
 
     # Load the Numclaim dataset (test split)
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/Numclaim", trust_remote_code=True)
+    dataset = safe_load_dataset("gtfintechlab/Numclaim", trust_remote_code=True)
 
     # We'll generate the filename at the end of the function
 

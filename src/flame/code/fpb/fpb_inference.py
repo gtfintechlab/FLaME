@@ -1,6 +1,6 @@
 import pandas as pd
 from tqdm import tqdm
-from datasets import load_dataset
+from flame.utils.dataset_utils import safe_load_dataset
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
@@ -17,7 +17,7 @@ def fpb_inference(args):
     logger.info("Starting FPB inference")
     logger.info("Loading dataset...")
     # Specify a specific data split - using '5768' as default
-    dataset = load_dataset(
+    dataset = safe_load_dataset(
         "gtfintechlab/financial_phrasebank_sentences_allagree",
         "5768",  # Explicitly specify a config name from available options
         trust_remote_code=True,

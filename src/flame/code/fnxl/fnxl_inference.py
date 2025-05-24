@@ -2,7 +2,7 @@ from datetime import date
 import json
 
 import pandas as pd
-from datasets import load_dataset
+from flame.utils.dataset_utils import safe_load_dataset
 from tqdm import tqdm
 
 from flame.code.prompts import get_prompt, PromptFormat
@@ -18,7 +18,7 @@ def fnxl_inference(args):
     logger.info(f"Starting FNXL inference (extraction+classification) on {today}")
 
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/fnxl", trust_remote_code=True)
+    dataset = safe_load_dataset("gtfintechlab/fnxl", trust_remote_code=True)
     test_data = dataset["test"]  # type: ignore
 
     sentences = []

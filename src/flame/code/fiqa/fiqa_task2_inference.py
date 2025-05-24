@@ -1,7 +1,7 @@
 from datetime import date
 
 import pandas as pd
-from datasets import load_dataset
+from flame.utils.dataset_utils import safe_load_dataset
 from tqdm import tqdm
 
 from flame.code.prompts import get_prompt, PromptFormat
@@ -18,7 +18,7 @@ def fiqa_task2_inference(args):
 
     # Load dataset and initialize lists for results
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/FiQA_Task2", trust_remote_code=True)
+    dataset = safe_load_dataset("gtfintechlab/FiQA_Task2", trust_remote_code=True)
 
     test_data = dataset["test"]  # type: ignore
     all_questions = [data["question"] for data in test_data]  # type: ignore

@@ -1,6 +1,6 @@
 from datetime import date
 import pandas as pd
-from datasets import load_dataset
+from flame.utils.dataset_utils import safe_load_dataset
 import litellm
 
 from flame.code.prompts import get_prompt, PromptFormat
@@ -20,7 +20,7 @@ def finer_inference(args):
 
     # Load the dataset
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/finer-ord-bio", trust_remote_code=True)
+    dataset = safe_load_dataset("gtfintechlab/finer-ord-bio", trust_remote_code=True)
 
     # Extract data
     sentences = [row["tokens"] for row in dataset["test"]]  # type: ignore
