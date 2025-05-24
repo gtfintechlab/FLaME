@@ -1,0 +1,204 @@
+name: Smoke Tests
+
+# Fast smoke tests to verify basic functionality
+# These run quickly and catch major breaking changes
+
+on:
+  push:
+    branches: [ main, develop, epic1 ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install uv
+      run: |
+        pip install uv
+        
+    - name: Install dependencies
+      run: |
+        uv pip install -r requirements.txt
+        uv pip install -e .
+        
+    - name: Test package import
+      run: |
+        echo "Testing package import..."
+        uv run python -c "import flame; print('FLaME package imported successfully')"
+        
+    - name: Test CLI help
+      run: |
+        echo "Testing CLI help..."
+        uv run python main.py --help
+        
+    - name: Test list-tasks command
+      run: |
+        echo "Testing list-tasks command..."
+        uv run python main.py list-tasks
+        
+    - name: Test YAML config parsing
+      run: |
+        echo "Testing YAML config parsing..."
+        uv run python -c "
+        import sys
+        sys.argv = ['main.py', '--config', 'configs/default.yaml', '--mode', 'inference', '--tasks', 'fomc']
+        from main import parse_arguments
+        args = parse_arguments()
+        print(f'Config parsed successfully: {args.model}')
+        print(f'Tasks: {args.tasks}')
+        "
+        
+    - name: Test task registry
+      run: |
+        echo "Testing task registry..."
+        uv run python -c "
+        from flame.task_registry import supported
+        inf_tasks = supported('inference')
+        eval_tasks = supported('evaluate')
+        print(f'Found {len(inf_tasks)} inference tasks')
+        print(f'Found {len(eval_tasks)} evaluation tasks')
+        assert len(inf_tasks) > 10, 'Should have many inference tasks'
+        assert len(eval_tasks) > 5, 'Should have several evaluation tasks'
+        print('Task registry working correctly')
+        "
+        
+    - name: Test imports of core modules
+      run: |
+        echo "Testing core module imports..."
+        uv run python -c "
+        from flame.code.inference import main as inference_main
+        from flame.code.evaluate import main as evaluate_main
+        from flame.config import configure_logging
+        from flame.utils.logging_utils import get_component_logger
+        from flame.utils.batch_utils import chunk_list
+        from flame.utils.miscellaneous import generate_inference_filename
+        print('All core modules imported successfully')
+        "
+        
+    - name: Test logging configuration
+      run: |
+        echo "Testing logging configuration..."
+        uv run python -c "
+        from flame.config import configure_logging
+        from flame.utils.logging_utils import get_component_logger
+        
+        # Test basic logging setup
+        config = {'logging': {'level': 'INFO'}}
+        configure_logging(config)
+        logger = get_component_logger('test')
+        logger.info('Test logging message')
+        print('Logging configuration working')
+        "
+        
+    - name: Test basic prompt functionality
+      run: |
+        echo "Testing prompt functionality..."
+        uv run python -c "
+        from flame.code.prompts import get_prompt, PromptFormat
+        
+        # Test getting a basic prompt
+        prompt = get_prompt('fomc', PromptFormat.ZERO_SHOT)
+        assert prompt is not None, 'Should get a prompt for fomc'
+        assert len(prompt) > 10, 'Prompt should have content'
+        print('Prompt functionality working')
+        "
+        
+    - name: Run critical unit tests
+      run: |
+        echo "Running critical unit tests..."
+        uv run pytest tests/unit/test_task_validation.py tests/unit/test_yaml_parsing.py -v --tb=short
+        
+    - name: Test batch utilities
+      run: |
+        echo "Testing batch utilities..."
+        uv run python -c "
+        from flame.utils.batch_utils import chunk_list
+        
+        # Test chunking
+        data = list(range(100))
+        chunks = chunk_list(data, 10)
+        assert len(chunks) == 10, 'Should create 10 chunks'
+        assert len(chunks[0]) == 10, 'First chunk should have 10 items'
+        print('Batch utilities working')
+        "
+        
+    - name: Test file generation utilities
+      run: |
+        echo "Testing file generation utilities..."
+        uv run python -c "
+        import os
+        os.environ['PYTEST_RUNNING'] = '1'  # Simulate test environment
+        
+        from flame.utils.miscellaneous import generate_inference_filename
+        
+        # Test filename generation
+        path = generate_inference_filename('fomc', 'together_ai/test-model')
+        assert 'fomc' in str(path), 'Task name should be in path'
+        assert 'together_ai' in str(path), 'Provider should be in path'
+        print('File generation utilities working')
+        "
+
+  validate-configs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        pip install pyyaml
+        
+    - name: Validate YAML configs
+      run: |
+        echo "Validating YAML configuration files..."
+        python -c "
+        import yaml
+        import os
+        
+        # Test default config
+        with open('configs/default.yaml', 'r') as f:
+            config = yaml.safe_load(f)
+            
+        assert 'model' in config, 'Config should have model'
+        assert 'tasks' in config, 'Config should have tasks'
+        assert 'max_tokens' in config, 'Config should have max_tokens'
+        
+        print('YAML configs are valid')
+        "
+        
+    - name: Validate project structure
+      run: |
+        echo "Validating project structure..."
+        python -c "
+        import os
+        
+        # Check critical directories exist
+        assert os.path.exists('src/flame'), 'src/flame should exist'
+        assert os.path.exists('src/flame/code'), 'src/flame/code should exist'
+        assert os.path.exists('src/flame/utils'), 'src/flame/utils should exist'
+        assert os.path.exists('tests'), 'tests should exist'
+        assert os.path.exists('configs'), 'configs should exist'
+        
+        # Check critical files exist
+        assert os.path.exists('main.py'), 'main.py should exist'
+        assert os.path.exists('requirements.txt'), 'requirements.txt should exist'
+        assert os.path.exists('pyproject.toml'), 'pyproject.toml should exist'
+        
+        print('Project structure is valid')
+        "

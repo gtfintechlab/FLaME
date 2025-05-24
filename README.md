@@ -184,12 +184,49 @@ The file src/together/prompts.py holds various zero-shot prompts that are used f
 
 Use the unified `main.py` entrypoint to run one or more tasks:
 
-```bash
-# Inference on multiple tasks
-python main.py --config config.yml --mode inference --tasks numclaim finer
+#### Multi-Task Execution
 
-# Evaluation of multiple tasks (requires inference CSVs)
-python main.py --config config.yml --mode evaluate --tasks numclaim finer --file_name numclaim_results.csv
+Run multiple tasks with a single command:
+
+```bash
+# Using YAML configuration
+uv run python main.py --config configs/default.yaml
+
+# Using command-line arguments  
+uv run python main.py --config configs/default.yaml --tasks fomc numclaim fnxl --mode inference
+
+# Override specific parameters
+uv run python main.py --config configs/default.yaml --tasks fomc numclaim --max_tokens 256 --temperature 0.1
+```
+
+#### Task-Specific Configuration
+
+You can specify task-specific parameters in YAML:
+
+```yaml
+# configs/multi_task_config.yaml
+model: "together_ai/meta-llama/Llama-4-Scout-17B-16E-Instruct"
+tasks:
+  - fomc
+  - numclaim
+max_tokens: 128
+temperature: 0.0
+
+# Task-specific overrides
+task_config:
+  fomc:
+    max_tokens: 256
+    temperature: 0.1
+  numclaim:
+    batch_size: 20
+```
+
+#### List Available Tasks
+
+View all available tasks:
+
+```bash
+uv run python main.py list-tasks
 ```
 
 #### Command Options:
@@ -198,4 +235,6 @@ python main.py --config config.yml --mode evaluate --tasks numclaim finer --file
 - `--mode`: `inference` or `evaluate`.
 - `--tasks`: Space-separated list of task names to run.
 - `--file_name`: (evaluate only) Path to the inference CSV file.
-- `--model`, `--max_tokens`, `--temperature`, `--top_p`, `--top_k`, `--repetition_penalty`, `--batch_size`, `--prompt_format`: Same as before.
+- `--model`, `--max_tokens`, `--temperature`, `--top_p`, `--top_k`, `--repetition_penalty`, `--batch_size`, `--prompt_format`: Model and generation parameters.
+
+See `docs/multi_task_guide.md` for comprehensive multi-task execution documentation.

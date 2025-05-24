@@ -111,6 +111,40 @@ class MultiTaskError(Exception):
         super().__init__(f"Errors in tasks: {', '.join(errors.keys())}")
 
 
+def apply_task_specific_config(args, task: str):
+    """Apply task-specific configuration overrides from YAML config.
+
+    Args:
+        args: Global arguments object
+        task: Task name to apply specific config for
+
+    Returns:
+        Modified args object with task-specific overrides applied
+    """
+    import copy
+
+    # Create a copy to avoid modifying the original args
+    task_args = copy.deepcopy(args)
+
+    # Apply task-specific config if available
+    if hasattr(args, "task_config") and args.task_config and task in args.task_config:
+        task_config = args.task_config[task]
+        logger = get_component_logger("flame")
+        logger.debug(f"Applying task-specific config for '{task}': {task_config}")
+
+        for key, value in task_config.items():
+            if hasattr(task_args, key):
+                original_value = getattr(task_args, key)
+                setattr(task_args, key, value)
+                logger.debug(f"Task '{task}': {key} {original_value} -> {value}")
+            else:
+                # Add new task-specific parameter
+                setattr(task_args, key, value)
+                logger.debug(f"Task '{task}': Added new parameter {key} = {value}")
+
+    return task_args
+
+
 def run_tasks(tasks: list[str], mode: str, args):
     # Get the main logger
     logger = get_component_logger("flame")
@@ -125,13 +159,16 @@ def run_tasks(tasks: list[str], mode: str, args):
     """Sequentially run each task, collect errors, and raise MultiTaskError if any fail."""
     errors: dict[str, Exception] = {}
     for t in tasks:
-        args.task = t
+        # Apply task-specific configuration
+        task_args = apply_task_specific_config(args, t)
+        task_args.task = t
+
         logger.info(f"Running task '{t}' in {mode} mode")
         try:
             if mode == "inference":
-                inference(args)
+                inference(task_args)
             else:
-                evaluate(args)
+                evaluate(task_args)
             logger.info(f"Task '{t}' completed successfully")
         except Exception as e:
             logger.error(f"Task '{t}' failed with error: {str(e)}", exc_info=True)
