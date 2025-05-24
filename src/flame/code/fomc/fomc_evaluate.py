@@ -9,6 +9,7 @@ from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 import time
+from flame.code.prompts.registry import get_prompt, PromptFormat
 
 logger = setup_logger(
     name="fomc_evaluation",
@@ -21,23 +22,6 @@ label_mapping: Dict[str, int] = {
     "HAWKISH": 1,
     "NEUTRAL": 2,
 }
-
-
-def extraction_prompt(llm_response: str) -> str:
-    """Generate a prompt to extract the classification label from the LLM response.
-
-    Args:
-        llm_response: The raw response from the language model
-
-    Returns:
-        A formatted prompt string for label extraction
-    """
-    prompt = f"""Extract the classification label from the following LLM response. The label should be one of the following: 'HAWKISH', 'DOVISH', or 'NEUTRAL'.
-                
-                Here is the LLM response to analyze:
-                "{llm_response}"
-                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
-    return prompt
 
 
 def map_label_to_number(label: str) -> int:
@@ -187,7 +171,14 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
         for batch_idx, (response_batch, indices_batch) in enumerate(pbar):
             # Prepare messages for batch
             messages_batch = [
-                [{"role": "user", "content": extraction_prompt(response)}]
+                [
+                    {
+                        "role": "user",
+                        "content": get_prompt("fomc", PromptFormat.EXTRACTION)(
+                            response
+                        ),
+                    }
+                ]
                 for response in response_batch
             ]
 
@@ -264,10 +255,5 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
             "Value": [accuracy, precision, recall, f1],
         }
     )
-
-    # Save metrics DataFrame with consistent naming
-    # metrics_path = evaluation_results_path.with_name(f"evaluation_{base_filename}_metrics.csv")
-    # metrics_df.to_csv(metrics_path, index=False)
-    # logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df

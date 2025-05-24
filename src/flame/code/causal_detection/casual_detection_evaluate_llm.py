@@ -7,6 +7,7 @@ from sklearn.metrics import (
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.code.prompts.registry import get_prompt, PromptFormat
 from tqdm import tqdm
 from litellm.types.utils import (
     ModelResponse,
@@ -24,16 +25,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "causal_detection_evaluate.log",
     level=LOG_LEVEL,
 )
-
-
-# Define the prompt for LLM response extraction
-def extraction_prompt(llm_response: str):
-    prompt = f"""Given the following output from a language model, extract the entire list of tokens. The allowed tokens are 'O', 'I-CAUSE', 'B-CAUSE', 'I-EFFECT', and 'B-EFFECT'.
-                The list should only contain these tokens and should be enclosed in brackets. Each token should be a string and surrounded by quotations ('').
-                Extract all tokens that were found and output them in the exact order they were originally written. Only output tokens from the input, do not add any tokens. If no tokens were found, output an empty list.
-                Only output a list of tokens enclosed in brackets, do not include any additional text or formatting.
-                Response: {llm_response}"""
-    return prompt
 
 
 def adjust_tags(row):
@@ -92,8 +83,9 @@ def causal_detection_evaluate(file_name, args):
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
         # Prepare messages for batch
+        extraction_prompt_func = get_prompt("causal_detection", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(response)}]
+            [{"role": "user", "content": extraction_prompt_func(response)}]
             for response in batch
         ]
 

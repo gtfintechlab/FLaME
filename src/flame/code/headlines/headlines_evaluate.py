@@ -5,6 +5,8 @@ from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 import ast
+from flame.code.prompts.registry import get_prompt, PromptFormat
+
 
 # Configure logging
 logger = setup_logger(
@@ -36,22 +38,6 @@ def preprocess_llm_response(raw_response: str):
     except Exception as e:
         logger.error(f"Error preprocessing LLM response: {e}")
         return None
-
-
-def extraction_prompt(llm_response: str):
-    """Generate a prompt to extract the relevant information from the LLM response."""
-    prompt = f"""Extract the relevant information from the following LLM response and provide a score of 0 or 1 for each attribute based on the content. Format your output as a JSON object with these keys:
-    - "Price_or_Not"
-    - "Direction_Up"
-    - "Direction_Down"
-    - "Direction_Constant"
-    - "Past_Price"
-    - "Future_Price"
-    - "Past_News"
-    Only output the keys and values in the JSON object. Do not include any additional text.
-    LLM Response:
-    "{llm_response}" """
-    return prompt
 
 
 def map_label_to_number(label: str, category: str):
@@ -87,8 +73,9 @@ def headlines_evaluate(file_name, args):
 
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch_content in enumerate(pbar):
+        extraction_prompt_func = get_prompt("headlines", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(response)}]
+            [{"role": "user", "content": extraction_prompt_func(response)}]
             for response in batch_content
         ]
         try:

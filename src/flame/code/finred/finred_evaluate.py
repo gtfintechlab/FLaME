@@ -4,58 +4,16 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.code.prompts.registry import get_prompt, PromptFormat
+from flame.code.prompts.constants import (
+    finred_extraction_labels as possible_relationships,
+)
 
 logger = setup_logger(
     name="finred_evaluation",
     log_file=LOG_DIR / "finred_evaluation.log",
     level=LOG_LEVEL,
 )
-
-# Define possible relationships
-possible_relationships = [
-    "subsidiary",
-    "owned_by",
-    "employer",
-    "product_or_material_produced",
-    "industry",
-    "manufacturer",
-    "developer",
-    "legal_form",
-    "parent_organization",
-    "distribution_format",
-    "chairperson",
-    "location_of_formation",
-    "headquarters_location",
-    "operator",
-    "creator",
-    "currency",
-    "founded_by",
-    "original_broadcaster",
-    "owner_of",
-    "director_/_manager",
-    "business_division",
-    "chief_executive_officer",
-    "position_held",
-    "platform",
-    "brand",
-    "distributed_by",
-    "publisher",
-    "stock_exchange",
-    "member_of",
-]
-
-
-def extraction_prompt(llm_response: str):
-    """Generate a prompt to extract the classification label from the LLM response."""
-    relationship_choices = ", ".join(possible_relationships)
-    prompt = f"""Extract the classification label from the following LLM response. The label should be one of the following {relationship_choices}. 
-    
-                Pick the label out of the list that is the closest to the LLM response, but list ‘NO-REL’ if the LLM did not output a clear answer.
-                
-                Here is the LLM response to analyze:
-                "{llm_response}"
-                Provide only the label that best matches the response, exactly as it is listed in the approved label list, with an underscore (_) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, asterisks, or punctuation, etc. Only output the label. Do not list an explanation or multiple labels."""
-    return prompt
 
 
 def save_progress(df, path):
@@ -66,7 +24,7 @@ def save_progress(df, path):
 
 def finred_evaluate(file_name, args):
     """Evaluate FinRED dataset and return results and metrics DataFrames."""
-    task = args.dataset.strip('“”"')
+    task = args.dataset.strip('"""')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV
@@ -88,8 +46,9 @@ def finred_evaluate(file_name, args):
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, sentence_batch in enumerate(pbar):
         # Prepare messages for batch
+        extraction_prompt_func = get_prompt("finred", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(sentence)}]
+            [{"role": "user", "content": extraction_prompt_func(sentence)}]
             for sentence in sentence_batch
         ]
         try:

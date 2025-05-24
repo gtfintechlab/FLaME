@@ -3,6 +3,7 @@ import re
 from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.code.prompts.registry import get_prompt, PromptFormat
 from tqdm import tqdm
 
 logger = setup_logger(
@@ -10,20 +11,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "convfinqa_evaluation.log",
     level=LOG_LEVEL,
 )
-
-
-def extraction_prompt(llm_response: str):
-    prompt = f"""
-    You will receive a response from a language model that may include a numerical answer within its text. 
-    Your task is to extract and return only the main/final answer. This could be represented as an integer, decimal, percentage, or text.
-    Respond with whatever is labeled as the final answer, if that exists, even if that contains text. Otherwise, stick to numerical answers.
-    Do not include any additional text or formatting. 
-
-    Model Response: {llm_response}
-
-    Please respond with the final answer. If a final answer was not provided, respond NA.
-    """
-    return prompt
 
 
 def evaluate_answer(predicted_answer: str, correct_answer: str):
@@ -69,8 +56,9 @@ def finqa_evaluate(file_name, args):
 
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
+        extraction_prompt_func = get_prompt("qa", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(response)}]
+            [{"role": "user", "content": extraction_prompt_func(response)}]
             for response in batch
         ]
 

@@ -8,6 +8,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_sc
 # from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.code.prompts.registry import get_prompt, PromptFormat
 
 # Configure logging
 logger = setup_logger(
@@ -15,27 +16,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "finer_evaluation.log",
     level=LOG_LEVEL,
 )
-
-
-def extraction_prompt_finer(llm_response: str):
-    """Generate a prompt to extract numeric labels for named entity recognition."""
-    prompt = f"""For each token in the following response, map the named entity labels to these numeric values:
-                    - "O" (Other): 0
-                    - "PER_B" (Person_B): 1
-                    - "PER_I" (Person_I): 2
-                    - "LOC_B" (Location_B): 3
-                    - "LOC_I" (Location_I): 4
-                    - "ORG_B" (Organisation_B): 5
-                    - "ORG_I" (Organisation_I): 6
- 
-                Provide only the list of integer labels, in the format:
-                [0, 1, 0, ...]
- 
-                Do not include any additional text, explanations, or formatting other than a plain list.
- 
-                LLM response:
-                "{llm_response}"."""
-    return prompt
 
 
 def clean_extracted_list(response: str) -> str:
@@ -172,8 +152,9 @@ def finer_evaluate(file_name, args):
     for batch_idx, batch_indices in enumerate(index_batches):
         llm_responses_batch = [df.at[i, "llm_responses"] for i in batch_indices]
         logger.info(f"Processing batch {batch_idx + 1} with {len(batch_indices)} rows.")
+        extraction_prompt_func = get_prompt("finer", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt_finer(llm_response)}]
+            [{"role": "user", "content": extraction_prompt_func(llm_response)}]
             for llm_response in llm_responses_batch
         ]
         try:

@@ -3,6 +3,7 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.code.prompts.registry import get_prompt, PromptFormat
 from tqdm import tqdm
 
 # Configure logging
@@ -18,14 +19,6 @@ label_mapping = {
     "NEGATIVE": 0,
     "POSITIVE": 2,
 }
-
-
-def extraction_prompt(llm_response: str):
-    """Generate a prompt to extract the most relevant label from the LLM response."""
-    prompt = f"""Based on the following list of labels: ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’, extract the most relevant label from the following response:
-                "{llm_response}"
-                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
-    return prompt
 
 
 def map_label_to_number(label: str):
@@ -44,7 +37,7 @@ def save_progress(df, path):
 
 def fpb_evaluate(file_name, args):
     """Evaluate FPB dataset and return results and metrics DataFrames."""
-    task = args.dataset.strip('“”"')
+    task = args.dataset.strip('"""')
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load the CSV file with the LLM responses
@@ -66,8 +59,9 @@ def fpb_evaluate(file_name, args):
 
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch_content in enumerate(pbar):
+        extraction_prompt_func = get_prompt("fpb", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(response)}]
+            [{"role": "user", "content": extraction_prompt_func(response)}]
             for response in batch_content
         ]
         try:

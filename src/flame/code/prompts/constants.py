@@ -103,3 +103,52 @@ FINRED_RELATIONSHIPS = [
     "Unfair-practice",
     "Was-merged-into",
 ]
+
+# Lowercase aliases for backward compatibility
+banking77_list = BANKING77_CATEGORIES
+finred_relationships = FINRED_RELATIONSHIPS
+
+# FinRed extraction labels (used for extraction prompts and evaluation)
+finred_extraction_labels = [
+    "subsidiary",
+    "owned_by",
+    "employer",
+    "product_or_material_produced",
+    "industry",
+    "manufacturer",
+    "developer",
+    "legal_form",
+    "parent_organization",
+    "distribution_format",
+    "chairperson",
+    "location_of_formation",
+    "headquarters_location",
+    "operator",
+    "creator",
+    "currency",
+    "founded_by",
+    "original_broadcaster",
+    "owner_of",
+    "director_/_manager",
+    "business_division",
+    "chief_executive_officer",
+    "position_held",
+    "platform",
+    "brand",
+    "distributed_by",
+    "publisher",
+    "stock_exchange",
+    "member_of",
+]
+
+# REFinD relationships
+refind_possible_relationships = [
+    "PERSON-TITLE",
+    "PERSON-GOV_AGY",
+    "PERSON-ORG",
+    "PERSON-UNIV",
+    "ORG-ORG",
+    "ORG-MONEY",
+    "ORG-GPE",
+    "ORG-DATE",
+]

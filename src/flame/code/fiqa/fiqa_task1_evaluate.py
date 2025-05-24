@@ -3,6 +3,7 @@ import re
 from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.code.prompts.registry import get_prompt, PromptFormat
 from sklearn.metrics import accuracy_score
 from tqdm import tqdm
 
@@ -12,19 +13,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "convfinqa_evaluation.log",
     level=LOG_LEVEL,
 )
-
-
-# Function to create the extraction prompt
-def extraction_prompt(llm_response: str):
-    prompt = f"""
-    You are tasked with extracting the sentiment score from a response. 
-    The sentiment score should be a single numeric value between -1 and 1.
-
-    Model Response: {llm_response}
-
-    Provide only the numerical sentiment score as the output.
-    """
-    return prompt
 
 
 def extract_numerical_value(text):
@@ -51,8 +39,9 @@ def fiqa_task1_evaluate(file_name, args):
 
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
+        extraction_prompt_func = get_prompt("fiqa_task1", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(llm_response)}]
+            [{"role": "user", "content": extraction_prompt_func(llm_response)}]
             for llm_response in batch
         ]
 

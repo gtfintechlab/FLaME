@@ -4,6 +4,7 @@ from pathlib import Path
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.code.prompts.registry import get_prompt, PromptFormat
 
 # Setup logger
 logger = setup_logger(
@@ -11,16 +12,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "numclaim_evaluation.log",
     level=LOG_LEVEL,
 )
-
-
-# Define prompt for extraction
-def extraction_prompt(llm_response: str):
-    prompt = f"""Based on the provided response, extract the following information:
-                - Label the response as 'INCLAIM' if it contains the word INCLAIM or any numeric value or quantitative assertion.
-                - Label the response as 'OUTCOFLAIM' if it contains the word OUTOFCLAIM or any qualitative assertion.
-                ONLY PROVIDE THE LABEL WITHOUT ANY ADDITIONAL TEXT.
-                The response: "{llm_response}"."""
-    return prompt
 
 
 # Mapping function to convert labels to binary
@@ -51,8 +42,9 @@ def numclaim_evaluate(file_name, args):
 
     for batch_idx, batch_indices in enumerate(index_batches):
         llm_responses_batch = [llm_responses[i] for i in batch_indices]
+        extraction_prompt_func = get_prompt("numclaim", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(llm_response)}]
+            [{"role": "user", "content": extraction_prompt_func(llm_response)}]
             for llm_response in llm_responses_batch
         ]
 

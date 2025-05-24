@@ -25,13 +25,23 @@ The package includes:
 from .registry import get_prompt, PromptFormat, register_prompt, get_prompt_by_name
 
 # Import constants
-from .constants import BANKING77_CATEGORIES, FINRED_RELATIONSHIPS
+from .constants import (
+    BANKING77_CATEGORIES,
+    FINRED_RELATIONSHIPS,
+    banking77_list,
+    finred_relationships,
+    finred_extraction_labels,
+    refind_possible_relationships,
+)
 
 # Import all prompt modules to populate the registry
 # These imports are needed to trigger the registry decorators
 from . import base  # noqa: F401
 from . import zeroshot  # noqa: F401
 from . import fewshot  # noqa: F401
+
+# Import extraction prompts to register them
+from .. import extraction_prompts  # noqa: F401
 
 # Re-export all prompts
 __all__ = [
@@ -88,6 +98,10 @@ __all__ = [
     # Constants
     "BANKING77_CATEGORIES",
     "FINRED_RELATIONSHIPS",
+    "banking77_list",
+    "finred_relationships",
+    "finred_extraction_labels",
+    "refind_possible_relationships",
 ]
 
 # Import specific functions for direct access

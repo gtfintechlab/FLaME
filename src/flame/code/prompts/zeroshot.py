@@ -7,7 +7,7 @@ based solely on instructions.
 """
 
 from .registry import register_prompt, PromptFormat
-from .constants import BANKING77_CATEGORIES, FINRED_RELATIONSHIPS
+from .constants import banking77_list, finred_relationships
 
 
 @register_prompt("headlines", PromptFormat.ZERO_SHOT)
@@ -199,7 +199,7 @@ def banking77_zeroshot_prompt(sentence: str) -> str:
         Formatted prompt string
     """
     prompt = f"""Discard all the previous instructions. Behave like you are an expert at
-                fine-grained single-domain intent detection. From the following list: {BANKING77_CATEGORIES}, identify
+                fine-grained single-domain intent detection. From the following list: {banking77_list}, identify
                 which category the following sentence belongs to.
                 {sentence}"""
 
@@ -506,7 +506,7 @@ def finred_zeroshot_prompt(sentence: str, entity1: str, entity2: str) -> str:
     "{sentence}"
     
     The relationship should match one of the following categories, where the relationship is what the head entity is to the tail entity:
-    {", ".join(FINRED_RELATIONSHIPS)}.
+    {", ".join(finred_relationships)}.
 
     You must output one, and only one, relationship out of the previous list that connects the head entity {entity2} to the tail entity {entity1}. Find what relationship best fits {entity2} 'RELATIONSHIP' {entity1} for this sentence.
     """

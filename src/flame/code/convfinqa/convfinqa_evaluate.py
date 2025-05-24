@@ -4,6 +4,7 @@ from litellm import completion
 import re
 from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.logging_utils import setup_logger
+from flame.code.prompts.registry import get_prompt, PromptFormat
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 # Setup logger
@@ -12,20 +13,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "convfinqa_evaluation.log",
     level=LOG_LEVEL,
 )
-
-
-# Prompt template for extracting numerical answers
-def extraction_prompt(llm_response: str):
-    prompt = f"""
-    You will receive a response from a language model that may include a numerical answer within its text. 
-    Your task is to extract and return only the main numerical value (integer, decimal, or percentage) that 
-    represents the final answer. Do not include any additional text or formatting. 
-
-    Model Response: {llm_response}
-
-    Please respond with only one numerical value.
-    """
-    return prompt
 
 
 # Function to extract numerical values using regex
@@ -49,11 +36,12 @@ def convfinqa_evaluate(file_name, args):
     regex_extraction = []
 
     # Iterating over responses
+    extraction_prompt_func = get_prompt("convfinqa", PromptFormat.EXTRACTION)
     for entry in df["response"]:
         try:
             model_response = completion(
                 model=args.model,
-                messages=[{"role": "user", "content": extraction_prompt(entry)}],
+                messages=[{"role": "user", "content": extraction_prompt_func(entry)}],
                 max_tokens=args.max_tokens,
                 temperature=args.temperature,
                 top_k=args.top_k,

@@ -3,6 +3,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_sc
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.code.prompts.registry import get_prompt, PromptFormat
 
 # Setup logger
 logger = setup_logger(
@@ -10,15 +11,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "subjectiveqa_evaluation.log",
     level=LOG_LEVEL,
 )
-
-
-def extraction_prompt(llm_response, feature):
-    """Prompt to extract a valid label for SubjectiveQA."""
-    return f"""The LLM output provided below contains the predicted rating for the feature '{feature}'.
-    Extract the rating as one of the following numbers: 0, 1, or 2, without any explanation or additional text.
-    If the rating is missing or the format is invalid, return 'error'.
-
-    LLM Response: "{llm_response}" """
 
 
 def normalize_response(response):
@@ -76,8 +68,14 @@ def subjectiveqa_evaluate(file_name, args):
         index_batches = chunk_list(list(range(len(responses))), batch_size)
         for batch_idx, batch_indices in enumerate(index_batches):
             response_batch = [responses[i] for i in batch_indices]
+            extraction_prompt_func = get_prompt("subjectiveqa", PromptFormat.EXTRACTION)
             messages_batch = [
-                [{"role": "user", "content": extraction_prompt(resp, predicted_label)}]
+                [
+                    {
+                        "role": "user",
+                        "content": extraction_prompt_func(resp, predicted_label),
+                    }
+                ]
                 for resp in response_batch
             ]
             try:

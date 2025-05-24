@@ -2,7 +2,7 @@ import json
 import pandas as pd
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.utils.logging_utils import setup_logger
-from flame.code.extraction_prompts import fnxl_extraction_prompt
+from flame.code.prompts.registry import get_prompt, PromptFormat
 from flame.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
@@ -11,31 +11,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "fnxl_evaluation.log",
     level=LOG_LEVEL,
 )
-
-
-def extraction_prompt(raw_response: str):
-    """
-    Prompt to transform the raw LLM output into a standard JSON dict:
-      {
-        "us-gaap:SomeTag": [1.0, 2.0],
-        "other": [3.0]
-      }
-    The LLM might have used a different format or extra text, so we
-    ask it to re-extract in a consistent way.
-    """
-    prompt = f"""An LLM previously gave the following response about numerals and XBRL tags:
-    ---
-    {raw_response}
-
-    Please convert that into valid JSON of the form:
-    {{
-      "xbrl_tag": [list_of_numerical_values],
-      "other_tag": [list_of_numerical_values]
-    }}
-    If you have no numerals for a certain tag, omit that tag.
-    Only return the JSON. Do not include any extra text.
-    """
-    return prompt
 
 
 def normalize_taglist_json(json_input):
@@ -129,8 +104,9 @@ def fnxl_evaluate(file_name, args):
     logger.info(f"Processing {len(df)} rows in {total_batches} batches.")
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
+        extraction_prompt_func = get_prompt("fnxl", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": fnxl_extraction_prompt(response)}]
+            [{"role": "user", "content": extraction_prompt_func(response)}]
             for response in batch
         ]
 
