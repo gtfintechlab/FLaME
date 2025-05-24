@@ -66,13 +66,13 @@ def causal_classification_evaluate(file_name, args):
             [{"role": "user", "content": extraction_prompt_func(llm_response)}]
             for llm_response in llm_responses_batch
         ]
-        logger.info(f"Generated messages for batch {messages_batch}.")
+        logger.debug(f"Generated messages for batch {messages_batch}.")
 
         try:
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, len(index_batches)
             )
-            logger.info(f"{batch_responses}")
+            logger.debug(f"Batch responses: {batch_responses}")
             for idx, (response, actual_label) in enumerate(
                 zip(batch_responses, actual_labels_batch)
             ):
