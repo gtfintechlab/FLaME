@@ -238,3 +238,53 @@ uv run python main.py list-tasks
 - `--model`, `--max_tokens`, `--temperature`, `--top_p`, `--top_k`, `--repetition_penalty`, `--batch_size`, `--prompt_format`: Model and generation parameters.
 
 See `docs/multi_task_guide.md` for comprehensive multi-task execution documentation.
+
+## Output Structure
+
+FLaME uses a sophisticated folder hierarchy and filename scheme for organizing results:
+
+### Directory Structure
+
+```
+results/
+└── {task_slug}/
+    └── {provider}/
+        └── {model_family}/ (optional)
+            └── {model_slug}__{task_slug}__r{run:02d}__{yyyymmdd}__{uuid8}.csv
+
+evaluations/
+└── {task_slug}/
+    └── {provider}/
+        └── {model_family}/ (optional)
+            ├── {model_slug}__{task_slug}__r{run:02d}__{yyyymmdd}__{uuid8}.csv
+            └── {model_slug}__{task_slug}__r{run:02d}__{yyyymmdd}__{uuid8}_metrics.csv
+```
+
+### Filename Template
+
+`{model_slug}__{task_slug}__r{run:02d}__{yyyymmdd}__{uuid8}{suffix}.csv`
+
+Where:
+- `model_slug`: Normalized model name (e.g., "llama-4-scout-17b-16e-instruct")
+- `task_slug`: Task name (e.g., "causal_classification")  
+- `run`: Zero-padded run number (e.g., "01", "02")
+- `yyyymmdd`: ISO date string (e.g., "20250524")
+- `uuid8`: First 8 characters of UUID for uniqueness
+- `suffix`: "" for inference results, "_metrics" for evaluation metrics
+
+### Example Paths
+
+```bash
+# Inference result
+results/fomc/together_ai/meta-llama/llama-4-scout-17b-16e-instruct__fomc__r01__20250524__a1b2c3d4.csv
+
+# Evaluation results  
+evaluations/fomc/together_ai/meta-llama/llama-4-scout-17b-16e-instruct__fomc__r01__20250524__e5f6g7h8.csv
+evaluations/fomc/together_ai/meta-llama/llama-4-scout-17b-16e-instruct__fomc__r01__20250524__e5f6g7h8_metrics.csv
+```
+
+This structure provides:
+- Clear separation by task, provider, and model family
+- Collision-free filenames with UUID suffixes
+- Consistent naming convention across all outputs
+- Easy filtering and organization of results
