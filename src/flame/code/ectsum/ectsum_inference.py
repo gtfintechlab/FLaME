@@ -8,8 +8,6 @@ from litellm import completion
 # Import prompts from the unified prompt package
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
-from flame.config import RESULTS_DIR
-from flame.utils.miscellaneous import generate_inference_filename
 
 # Use component-based logger that follows the logging configuration
 logger = get_component_logger("inference", "ectsum")
@@ -24,13 +22,6 @@ def ectsum_inference(args):
     # Load the ECTSum dataset (test split)
     logger.info("Loading dataset...")
     dataset = safe_load_dataset("gtfintechlab/ECTSum", trust_remote_code=True)
-
-    results_path = (
-        RESULTS_DIR
-        / "ectsum"
-        / f"ectsum_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize lists to store documents, actual labels, model responses, and complete responses
     documents = []
@@ -103,12 +94,5 @@ def ectsum_inference(args):
             "complete_responses": complete_responses,
         }
     )
-
-    # Generate a unique results path with timestamp and UUID
-    results_path = generate_inference_filename("ectsum", args.model)
-
-    # Save the results to a CSV file
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

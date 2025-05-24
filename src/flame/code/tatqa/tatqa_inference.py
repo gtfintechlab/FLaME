@@ -5,7 +5,6 @@ from litellm import completion
 
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
-from flame.utils.miscellaneous import generate_inference_filename
 
 # Use component-based logger that follows the logging configuration
 logger = get_component_logger("inference", "tatqa")
@@ -65,10 +64,4 @@ def tatqa_inference(args):
         }
     )
 
-    # Generate a unique results path with timestamp and UUID
-    results_path = generate_inference_filename("tatqa", args.model)
-
-    # Save the results to a CSV file
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
     return df

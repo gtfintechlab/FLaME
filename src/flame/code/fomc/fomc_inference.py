@@ -12,8 +12,6 @@ from pathlib import Path
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.utils.miscellaneous import generate_inference_filename
-
 
 # Use component-based logger that follows the logging configuration
 logger = get_component_logger("inference", "fomc")
@@ -83,15 +81,10 @@ def fomc_inference(args):
     provider = model_parts[0] if len(model_parts) > 1 else "unknown"
     model_name = model_parts[-1]
 
-    # Generate filename first
-    results_path = generate_inference_filename("fomc", args.model)
-
     # Detailed startup logging - keep critical info at INFO level
     logger.info(f"Starting FOMC inference with {model_name}")
     logger.debug(f"Provider: {provider}")
     logger.debug(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    logger.debug(f"Output directory: {results_path.parent}")
-    logger.debug(f"Output filename: {results_path.name}")
 
     # Load dataset
     test_data = load_fomc_dataset()

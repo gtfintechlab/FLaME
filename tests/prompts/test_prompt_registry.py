@@ -33,9 +33,9 @@ def test_get_prompt_returns_correct_function():
     for task, format_type, expected_name in test_cases:
         func = get_prompt(task, format_type)
         assert func is not None, f"No prompt function found for {task}, {format_type}"
-        assert (
-            func.__name__ == expected_name
-        ), f"Wrong function name for {task}, {format_type}"
+        assert func.__name__ == expected_name, (
+            f"Wrong function name for {task}, {format_type}"
+        )
 
 
 def test_fallback_behavior():
@@ -55,17 +55,17 @@ def test_fallback_behavior():
     if zero_shot_only_task:
         func = get_prompt(zero_shot_only_task, PromptFormat.DEFAULT)
         assert func is not None
-        assert func.__name__.endswith(
-            "_zeroshot_prompt"
-        ), f"Function name should end with _zeroshot_prompt, got {func.__name__}"
+        assert func.__name__.endswith("_zeroshot_prompt"), (
+            f"Function name should end with _zeroshot_prompt, got {func.__name__}"
+        )
 
     # If a specific format is requested and not available, should return None
     # Find a task with no FEW_SHOT format
     for task in _REGISTRY:
         if PromptFormat.FEW_SHOT not in _REGISTRY[task]:
-            assert (
-                get_prompt(task, PromptFormat.FEW_SHOT) is None
-            ), f"Expected None for {task} with FEW_SHOT format"
+            assert get_prompt(task, PromptFormat.FEW_SHOT) is None, (
+                f"Expected None for {task} with FEW_SHOT format"
+            )
             break
 
 
@@ -132,9 +132,9 @@ def test_registry_handles_task_format_combinations():
         assert func is not None, f"Function for {task}/{format_type} not found"
         result = func(test_input)
         assert isinstance(result, str), f"Result for {task}/{format_type} not a string"
-        assert (
-            test_input in result
-        ), f"Input not found in result for {task}/{format_type}"
+        assert test_input in result, (
+            f"Input not found in result for {task}/{format_type}"
+        )
 
     # Test few-shot stubs separately
     few_shot_stubs = [
@@ -211,9 +211,9 @@ def test_task_registry_extraction_prompt_alignment():
         if func is None:
             missing_prompts.append(task_name)
 
-    assert (
-        len(missing_prompts) == 0
-    ), f"The following evaluation tasks are missing extraction prompts: {missing_prompts}"
+    assert len(missing_prompts) == 0, (
+        f"The following evaluation tasks are missing extraction prompts: {missing_prompts}"
+    )
 
 
 def test_extraction_prompt_functionality():
@@ -308,18 +308,18 @@ def test_extraction_prompt_functionality():
 
         # Call with extra args if needed (e.g., subjectiveqa needs feature parameter)
         result = func(sample_response, **extra_args)
-        assert isinstance(
-            result, str
-        ), f"Extraction prompt for {task} should return a string"
-        assert (
-            len(result) > 0
-        ), f"Extraction prompt for {task} should not return empty string"
+        assert isinstance(result, str), (
+            f"Extraction prompt for {task} should return a string"
+        )
+        assert len(result) > 0, (
+            f"Extraction prompt for {task} should not return empty string"
+        )
 
         # Check that the prompt contains expected elements
         for expected in expected_contains:
-            assert (
-                expected in result
-            ), f"Extraction prompt for {task} should contain '{expected}'"
+            assert expected in result, (
+                f"Extraction prompt for {task} should contain '{expected}'"
+            )
 
 
 def test_extraction_prompt_integration():
@@ -342,9 +342,9 @@ def test_extraction_prompt_integration():
     )
 
     assert len(banking77_list) == 77, "banking77_list should have 77 categories"
-    assert (
-        len(finred_extraction_labels) == 29
-    ), "finred_extraction_labels should have 29 labels"
-    assert (
-        len(refind_possible_relationships) == 8
-    ), "refind_possible_relationships should have 8 relationships"
+    assert len(finred_extraction_labels) == 29, (
+        "finred_extraction_labels should have 29 labels"
+    )
+    assert len(refind_possible_relationships) == 8, (
+        "refind_possible_relationships should have 8 relationships"
+    )

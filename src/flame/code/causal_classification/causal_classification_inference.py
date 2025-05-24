@@ -4,7 +4,6 @@ from flame.utils.dataset_utils import safe_load_dataset
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.utils.miscellaneous import generate_inference_filename
 
 # Use the component logger with the proper namespace
 logger = get_component_logger("inference.causal_classification")
@@ -85,12 +84,5 @@ def causal_classification_inference(args):
             "complete_responses": complete_responses,
         }
     )
-
-    # Generate a unique results path with timestamp and UUID
-    results_path = generate_inference_filename("causal_classification", args.model)
-
-    # Save the results to a CSV file
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

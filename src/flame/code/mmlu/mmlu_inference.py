@@ -9,8 +9,6 @@ from tqdm import tqdm
 from flame.code.mmlu.mmlu_loader import MMLULoader
 from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import RESULTS_DIR
-from flame.utils.miscellaneous import generate_inference_filename
 
 logger = get_component_logger("inference", "mmlu")
 
@@ -115,9 +113,6 @@ def mmlu_inference(args) -> pd.DataFrame:
     provider = model_parts[0] if len(model_parts) > 1 else "unknown"
     model_name = model_parts[-1]
 
-    # Generate filename
-    results_path = generate_inference_filename("mmlu", args.model)
-
     # Log startup information
     logger.info(
         f"Starting MMLU inference on model '{model_name}' from provider '{provider}'"
@@ -125,9 +120,6 @@ def mmlu_inference(args) -> pd.DataFrame:
     logger.info(f"Subjects: {args.mmlu_subjects or 'default economics subjects'}")
     logger.info(f"Split: {args.mmlu_split}")
     logger.info(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    relative_path = results_path.relative_to(RESULTS_DIR.parent)
-    logger.info(f"Output directory: ./{relative_path.parent}")
-    logger.info(f"Output filename: {relative_path.name}")
 
     # Load MMLU dataset
     loader = MMLULoader(
@@ -208,22 +200,4 @@ def mmlu_inference(args) -> pd.DataFrame:
             "subject": subjects,
         }
     )
-
-    # Save results with metadata
-    metadata = {
-        "model": args.model,
-        "provider": provider,
-        "model_name": model_name,
-        "temperature": args.temperature,
-        "top_p": args.top_p,
-        "top_k": args.top_k,
-        "max_tokens": args.max_tokens,
-        "batch_size": args.batch_size,
-        "repetition_penalty": args.repetition_penalty,
-        "subjects": args.mmlu_subjects,
-        "split": args.mmlu_split,
-        "num_few_shot": args.mmlu_num_few_shot,
-    }
-    save_inference_results(results_df, results_path, metadata)
-
     return results_df

@@ -116,7 +116,9 @@ banking77_label_map = {category: index for index, category in enumerate(banking7
 def banking_77_extraction_prompt(llm_response: str):
     prompt = f"""Based on the following list of banking intents: {banking77_list}, extract the most relevant category from the following response:
                 "{llm_response}"
-                Provide only the label that best matches the response, exactly as it appears in the initial list of intents, with an underscore (_) between words. Only output alphanumeric characters and underscores. Do not include any special characters or punctuation. Only output the label. Do not list an explanation or multiple labels."""
+                Provide only the label that best matches the response, exactly as it appears in the initial list of intents. All labels use lowercase letters with underscores between words.
+                If no label is appropriate or the response indicates "none of the above" or similar, output "NO_MATCH".
+                Only output the label. Do not list an explanation or multiple labels."""
     return prompt
 
 

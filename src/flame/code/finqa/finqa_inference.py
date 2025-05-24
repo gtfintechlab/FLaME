@@ -5,7 +5,6 @@ from tqdm import tqdm
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.utils.miscellaneous import generate_inference_filename
 
 # Use component-based logger that follows the logging configuration
 logger = get_component_logger("inference", "finqa")
@@ -76,12 +75,5 @@ def finqa_inference(args):
 
     success_rate = (df["response"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
-
-    # Generate a unique results path with timestamp and UUID
-    results_path = generate_inference_filename("finqa", args.model)
-
-    # Save the results to a CSV file
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df
