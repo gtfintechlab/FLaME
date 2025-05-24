@@ -36,6 +36,8 @@ def _make_dummy_df() -> pd.DataFrame:  # noqa: D103 (helper)
         # Generic classification label setup
         "actual_labels": ["[0,0,0,0,0,0,0]"],
         "llm_responses": ["dummy response"],
+        # Banking77 specific - use valid numeric labels
+        "actual_labels_banking77": [11],  # card_arrival
         # MMLU
         "raw_response": ["A"],
         "actual_answer": ["A"],
@@ -132,7 +134,11 @@ def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: 
         dummy_df = _DummyEvalDF(df2)
     # For banking77, use numeric labels
     elif "banking77" in module_name:
-        dummy_df["actual_labels"] = [0]  # Use numeric label for banking77
+        dummy_df["actual_labels"] = [
+            11
+        ]  # Use numeric label for banking77 (card_arrival)
+        dummy_df["llm_responses"] = ["card_arrival"]  # Use valid banking77 label name
+        dummy_df["extracted_labels"] = [-1]  # Will be populated by evaluation
     # For convfinqa and tatqa, ensure proper label types
     elif "convfinqa" in module_name:
         dummy_df["actual_labels"] = ["answer"]  # Non-None string
@@ -179,7 +185,7 @@ def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: 
 
     # Patch sklearn utilities to avoid type checking issues
     monkeypatch.setattr(
-        _smc, "_check_targets", lambda *a, **k: ("unknown", [0], [0]), raising=False
+        _smc, "_check_targets", lambda *a, **k: ("multiclass", [0], [0]), raising=False
     )
     monkeypatch.setattr(_sum, "type_of_target", lambda *a, **k: "binary", raising=False)
     monkeypatch.setattr(_sum, "is_multilabel", lambda *a, **k: False, raising=False)
