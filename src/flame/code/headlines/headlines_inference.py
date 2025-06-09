@@ -19,7 +19,7 @@ def headlines_inference(args):
     # Load the Headlines dataset (test split with specific config)
     logger.info("Loading dataset...")
     dataset = safe_load_dataset(
-        "gtfintechlab/Headlines", "5768", trust_remote_code=True
+        "gtfintechlab/Headlines", name="5768", trust_remote_code=True
     )
 
     # Initialize lists to store news, model responses, labels, and actual labels

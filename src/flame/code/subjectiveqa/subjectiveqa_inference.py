@@ -1,5 +1,3 @@
-import random
-import time
 import traceback
 
 import litellm
@@ -28,12 +26,15 @@ def subjectiveqa_inference(args):
         "OPTIMISTIC": "The speaker answers with a positive tone regarding outcomes.",
     }
 
-    task = args.dataset.strip('“”"')
+    task = (
+        getattr(args, "task", None) or getattr(args, "dataset", None) or "subjectiveqa"
+    )
     logger.info(f"Starting inference for {task} using model {args.model}.")
     try:
         dataset = safe_load_dataset(
-            "gtfintechlab/subjectiveqa", "5768", split="test", trust_remote_code=True
+            "gtfintechlab/subjectiveqa", name="5768", trust_remote_code=True
         )
+        dataset = dataset["test"]  # Get the test split
     except Exception as e:
         logger.error(f"Dataset loading failed: {e}")
         logger.error(traceback.format_exc())
@@ -91,9 +92,8 @@ def subjectiveqa_inference(args):
                         },
                     ]
                 )
-                time.sleep(
-                    random.uniform(0.5, 1.5)
-                )  # Add a short randomized delay between features
+                # time.sleep(random.uniform(0.5, 1.5))  # Removed sleep for better performance
+                pass
         try:
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, total_batches

@@ -108,12 +108,13 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
     Raises:
         ValueError: If input data validation fails
     """
-    task = args.dataset.strip('"""')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "fomc"
 
-    # Generate unique filename and paths first for logging
-    base_filename, evaluation_results_path = generate_evaluation_filename(
-        task, args.model
-    )
+    # Note: Path generation removed - evaluate.py handles saving
+    # base_filename, evaluation_results_path = generate_evaluation_filename(
+    #     task, args.model
+    # )
 
     # Extract provider and model name for logging
     model_parts = args.model.split("/")
@@ -125,9 +126,10 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
         f"Starting {task} evaluation on model '{model_name}' from provider '{provider}'"
     )
     logger.info(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    relative_path = evaluation_results_path.relative_to(EVALUATION_DIR.parent)
-    logger.info(f"Output directory: ./{relative_path.parent}")
-    logger.info(f"Output filename: {relative_path.name}")
+    # Note: Path logging removed - evaluate.py handles paths
+    # relative_path = evaluation_results_path.relative_to(EVALUATION_DIR.parent)
+    # logger.info(f"Output directory: ./{relative_path.parent}")
+    # logger.info(f"Output filename: {relative_path.name}")
 
     # Load and validate the CSV file
     try:
@@ -220,8 +222,7 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
                 # Update DataFrame with the result
                 df.at[idx, "extracted_labels"] = mapped_label
 
-            # Save progress after each batch
-            save_progress(df, evaluation_results_path)
+            # Note: Intermediate saving removed - evaluate.py handles final saving
 
             pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 

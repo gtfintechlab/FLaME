@@ -2,6 +2,7 @@ from datetime import date
 import pandas as pd
 from flame.utils.dataset_utils import safe_load_dataset
 import litellm
+from tqdm import tqdm
 
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
@@ -42,7 +43,10 @@ def finer_inference(args):
     # Create batches
     sentence_batches = chunk_list(sentences, batch_size)
 
-    for batch_idx, sentence_batch in enumerate(sentence_batches):
+    pbar = tqdm(sentence_batches, desc="Processing batches")
+    for batch_idx, sentence_batch in enumerate(pbar):
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+
         # Create prompt messages for the batch
         messages_batch = [
             [{"role": "user", "content": finer_prompt(sentence)}]

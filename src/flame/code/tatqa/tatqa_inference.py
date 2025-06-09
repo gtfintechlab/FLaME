@@ -1,10 +1,10 @@
-import time
 import pandas as pd
-from flame.utils.dataset_utils import safe_load_dataset
-from litellm import completion
+from tqdm import tqdm
 
+from flame.utils.dataset_utils import safe_load_dataset
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 
 # Use component-based logger that follows the logging configuration
 logger = get_component_logger("inference", "tatqa")
@@ -23,7 +23,9 @@ def tatqa_inference(args):
     if tatqa_prompt is None:
         raise RuntimeError("TATQA prompt not found in registry")
 
-    for i, entry in enumerate(dataset["test"]):  # type: ignore
+    # Prepare all data first
+    all_prompts = []
+    for entry in dataset["test"]:  # type: ignore
         question = entry["query"]  # type: ignore
         context_text = entry["text"]  # type: ignore
         combined_text = f"{context_text} {question}"  # Combine context and question
@@ -32,28 +34,32 @@ def tatqa_inference(args):
         actual_answer = entry["answer"]  # type: ignore
         actual_answers.append(actual_answer)
 
-        try:
-            logger.info(f"Processing question {i + 1}/{len(dataset['test'])}")  # type: ignore
-            # TAT-QA-specific prompt logic, create the prompt for table and text-based QA
-            model_response = completion(
-                messages=[{"role": "user", "content": tatqa_prompt(combined_text)}],
-                model=args.model,
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-            )
+        all_prompts.append(tatqa_prompt(combined_text))
 
-            complete_responses.append(model_response)
-            response_label = model_response.choices[0].message.content  # type: ignore
-            llm_responses.append(response_label)
+    logger.info(
+        f"Processing {len(all_prompts)} TATQA examples in batches of {args.batch_size}"
+    )
 
-        except Exception as e:
-            logger.error(f"Error processing entry {len(context)}: {e}")
-            llm_responses.append(None)
-            complete_responses.append(None)
-            time.sleep(20.0)
+    # Process in batches
+    batches = list(chunk_list(all_prompts, args.batch_size))
+    for batch_idx, batch_prompts in enumerate(
+        tqdm(batches, desc="Processing TATQA batches")
+    ):
+        # Convert prompts to messages format for batch processing
+        messages_batch = [
+            [{"role": "user", "content": prompt}] for prompt in batch_prompts
+        ]
+        batch_responses = process_batch_with_retry(
+            args, messages_batch, batch_idx, len(batches)
+        )
+
+        complete_responses.extend(batch_responses)
+        # Extract text responses
+        for response in batch_responses:
+            if response:
+                llm_responses.append(response.choices[0].message.content)  # type: ignore
+            else:
+                llm_responses.append(None)
 
     df = pd.DataFrame(
         {

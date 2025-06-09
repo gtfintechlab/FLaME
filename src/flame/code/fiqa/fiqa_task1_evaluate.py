@@ -21,7 +21,8 @@ def extract_numerical_value(text):
 
 
 def fiqa_task1_evaluate(file_name, args):
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "fiqa"
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
     df = pd.read_csv(file_name)

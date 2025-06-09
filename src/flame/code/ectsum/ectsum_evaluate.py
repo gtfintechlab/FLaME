@@ -55,7 +55,8 @@ def save_progress(df, path):
 
 def ectsum_evaluate(file_name, args):
     """Evaluate ECTSum summaries and return results and metrics DataFrames."""
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "ectsum"
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load the CSV file

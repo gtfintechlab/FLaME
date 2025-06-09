@@ -1,19 +1,14 @@
 import json
 import pandas as pd
-from flame.utils.logging_utils import setup_logger
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 import ast
 from flame.code.prompts.registry import get_prompt, PromptFormat
 
 
 # Configure logging
-logger = setup_logger(
-    name="headlines_evaluation",
-    log_file=LOG_DIR / "headlines_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_component_logger("evaluation", "headlines")
 
 label_mapping = {
     "Price_or_Not": {"0": 0, "1": 1},
@@ -45,14 +40,9 @@ def map_label_to_number(label: str, category: str):
     return label_mapping[category].get(label.strip(), -1)
 
 
-def save_progress(df, path):
-    """Save progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
-
-
 def headlines_evaluate(file_name, args):
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "headlines"
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV

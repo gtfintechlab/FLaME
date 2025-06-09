@@ -1,17 +1,12 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from flame.utils.logging_utils import setup_logger
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
 from flame.code.prompts.registry import get_prompt, PromptFormat
 from tqdm import tqdm
 
 # Configure logging
-logger = setup_logger(
-    name="fpb_evaluation",
-    log_file=LOG_DIR / "fpb_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_component_logger("evaluation", "fpb")
 
 # Define label mapping
 label_mapping = {
@@ -29,15 +24,10 @@ def map_label_to_number(label: str):
     )  # Return -1 if the label is not found
 
 
-def save_progress(df, path):
-    """Save the current progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
-
-
 def fpb_evaluate(file_name, args):
     """Evaluate FPB dataset and return results and metrics DataFrames."""
-    task = args.dataset.strip('"""')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "fpb"
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load the CSV file with the LLM responses
@@ -79,13 +69,16 @@ def fpb_evaluate(file_name, args):
                 mapped_label = map_label_to_number(extracted_label)
 
                 if mapped_label == -1:
-                    logger.error(f"Invalid label for response: {extracted_label}")
+                    logger.debug(f"Invalid label for response: {extracted_label}")
 
             except Exception as e:
                 logger.error(f"Error extracting response: {e}")
                 mapped_label = -1
 
             extracted_labels.append(mapped_label)
+
+    # Update the dataframe with extracted labels
+    df["extracted_labels"] = extracted_labels
 
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, extracted_labels)

@@ -71,7 +71,7 @@ def causal_detection_inference(args):
                 response_label = response.choices[0].message.content
                 response_tags = response_label.split()
             except Exception as e:
-                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
+                logger.debug(f"Error in response: {str(e)}\nResponse: {response}")
                 response_tags = None
             llm_responses.append(response_tags)
             tokens_list.append(token)

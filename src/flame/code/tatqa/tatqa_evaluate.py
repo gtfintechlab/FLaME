@@ -1,17 +1,12 @@
 import pandas as pd
-from flame.code.tokens import tokens
-from litellm import completion
-from flame.config import LOG_DIR, LOG_LEVEL
-from flame.utils.logging_utils import setup_logger
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-import time
+from tqdm import tqdm
 
-# Setup logger
-logger = setup_logger(
-    name="convfinqa_evaluation",
-    log_file=LOG_DIR / "convfinqa_evaluation.log",
-    level=LOG_LEVEL,
-)
+from flame.utils.logging_utils import get_component_logger
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("evaluation", "tatqa")
 
 
 # Function to generate the evaluation prompt
@@ -26,65 +21,91 @@ def evaluation_prompt(llm_response: str, actual_answer: str):
     return prompt
 
 
-# Function for extracting and evaluating responses
-
-
 def tatqa_evaluate(file_name, args):
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "tatqa"
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
     df = pd.read_csv(file_name)
     logger.info(f"Loaded data from {file_name} for evaluation.")
 
-    # Note: Path definition removed - evaluate.py handles saving
-
     # Initialize list for storing evaluation results
     evaluation_results = []
     extraction_model_response = []
 
-    # Iterate over each response and evaluate
-    for i, (llm_response, actual_answer) in enumerate(
-        zip(df["response"], df["actual_answer"])
-    ):
-        try:
-            model_response = completion(
-                model=args.model,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": evaluation_prompt(llm_response, actual_answer),
-                    }
-                ],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+    # Prepare all prompts
+    all_prompts = []
+    for llm_response, actual_answer in zip(df["response"], df["actual_answer"]):
+        if pd.notna(llm_response):
+            all_prompts.append(evaluation_prompt(str(llm_response), str(actual_answer)))
+        else:
+            all_prompts.append(None)
+
+    logger.info(
+        f"Processing {len(all_prompts)} TATQA evaluations in batches of {args.batch_size}"
+    )
+
+    # Process non-null prompts in batches
+    valid_indices = [i for i, prompt in enumerate(all_prompts) if prompt is not None]
+    valid_prompts = [all_prompts[i] for i in valid_indices]
+
+    if valid_prompts:
+        batches = list(chunk_list(valid_prompts, args.batch_size))
+        all_batch_responses = []
+
+        for batch_idx, batch_prompts in enumerate(
+            tqdm(batches, desc="Evaluating TATQA responses")
+        ):
+            # Convert prompts to messages format for batch processing
+            messages_batch = [
+                [{"role": "user", "content": prompt}] for prompt in batch_prompts
+            ]
+            batch_responses = process_batch_with_retry(
+                args, messages_batch, batch_idx, len(batches)
             )
-            extraction_model_response.append(model_response)
-            response_text = model_response.choices[0].message.content  # type: ignore
-            evaluation_results.append(response_text)
-            logger.info(f"Processed {i + 1}/{len(df)} responses.")
-        except Exception as e:
-            logger.error(f"Error processing response {i}: {e}")
-            extraction_model_response.append(str(e))
-            evaluation_results.append(None)
-            time.sleep(10.0)
+            all_batch_responses.extend(batch_responses)
 
-        # Update DataFrame with extracted results after each iteration
-        df["extracted_labels"] = evaluation_results
+        # Map responses back to original indices
+        response_map = dict(zip(valid_indices, all_batch_responses))
 
-        # Note: Progress saving removed - evaluate.py handles saving
-        logger.info(f"Processed iteration {i + 1}/{len(df)}")
+        # Build final results
+        for i in range(len(df)):
+            if i in response_map and response_map[i]:
+                extraction_model_response.append(response_map[i])
+                response_text = response_map[i].choices[0].message.content  # type: ignore
+                evaluation_results.append(response_text)
+            else:
+                extraction_model_response.append(None)
+                evaluation_results.append(None)
+    else:
+        # All responses are null
+        extraction_model_response = [None] * len(df)
+        evaluation_results = [None] * len(df)
+
+    # Update DataFrame with extracted results
+    df["extracted_labels"] = evaluation_results
 
     correct_labels = df["actual_answer"].tolist()
 
-    # Calculate metrics
-    accuracy = accuracy_score(correct_labels, evaluation_results)
-    precision, recall, f1, _ = precision_recall_fscore_support(
-        correct_labels, evaluation_results
-    )
+    # Filter out None values for metrics calculation
+    valid_indices = [
+        i for i, result in enumerate(evaluation_results) if result is not None
+    ]
+    valid_labels = [correct_labels[i] for i in valid_indices]
+    valid_results = [evaluation_results[i] for i in valid_indices]
+
+    if not valid_results:
+        logger.error("No valid evaluation results to calculate metrics")
+        accuracy = precision = recall = f1 = 0.0
+    else:
+        # Convert to strings for comparison
+        valid_labels = [str(label) for label in valid_labels]
+        valid_results = [str(result).strip() for result in valid_results]
+
+        accuracy = accuracy_score(valid_labels, valid_results)
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            valid_labels, valid_results, average="weighted", zero_division=0
+        )
 
     # Log metrics
     logger.info(f"Accuracy: {accuracy:.4f}")
@@ -101,6 +122,5 @@ def tatqa_evaluate(file_name, args):
     )
 
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}.")
-    # Note: File saving removed - evaluate.py handles saving
 
     return df, metrics_df

@@ -1,8 +1,8 @@
-import time
 import litellm
 import pandas as pd
 from flame.utils.dataset_utils import safe_load_dataset
 from datetime import date
+from tqdm import tqdm
 
 from flame.code.prompts import get_prompt, PromptFormat
 from flame.utils.logging_utils import get_component_logger
@@ -48,9 +48,13 @@ def numclaim_inference(args):
     if numclaim_prompt is None:
         raise RuntimeError("Numclaim prompt not found in registry")
 
-    for batch_idx, (sentence_batch, response_batch) in enumerate(
-        zip(sentence_batches, response_batches)
-    ):
+    pbar = tqdm(
+        zip(sentence_batches, response_batches),
+        total=total_batches,
+        desc="Processing batches",
+    )
+    for batch_idx, (sentence_batch, response_batch) in enumerate(pbar):
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         # Create prompt messages for the batch
         messages_batch = [
             [{"role": "user", "content": numclaim_prompt(sentence)}]  # type: ignore
@@ -73,7 +77,8 @@ def numclaim_inference(args):
                     llm_responses.append("error")
                     complete_responses.append(None)
                 finally:
-                    time.sleep(1)  # Sleep for 1 second after each response
+                    # time.sleep(1)  # Removed sleep for better performance
+                    pass
 
         except Exception as e:
             logger.error(f"Batch {batch_idx + 1} failed: {e}")

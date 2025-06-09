@@ -24,7 +24,8 @@ def save_progress(df, path):
 
 def finred_evaluate(file_name, args):
     """Evaluate FinRED dataset and return results and metrics DataFrames."""
-    task = args.dataset.strip('"""')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "finred"
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV

@@ -1,16 +1,12 @@
 import pandas as pd
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-from flame.utils.logging_utils import setup_logger
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
 from flame.code.prompts.registry import get_prompt, PromptFormat
+from tqdm import tqdm
 
 # Setup logger
-logger = setup_logger(
-    name="subjectiveqa_evaluation",
-    log_file=LOG_DIR / "subjectiveqa_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_component_logger("evaluation", "subjectiveqa")
 
 
 def normalize_response(response):
@@ -39,7 +35,10 @@ def normalize_response(response):
 
 def subjectiveqa_evaluate(file_name, args):
     """Evaluate SubjectiveQA results with extraction and batching logic."""
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = (
+        getattr(args, "task", None) or getattr(args, "dataset", None) or "subjectiveqa"
+    )
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
     # Load the input CSV file
@@ -61,12 +60,13 @@ def subjectiveqa_evaluate(file_name, args):
     extracted_labels = {label: [] for _, label in label_pairs}
 
     # Process each label in batches
-    batch_size = 10
-    for actual_label, predicted_label in label_pairs:
+    batch_size = args.batch_size
+    for actual_label, predicted_label in tqdm(label_pairs, desc="Processing features"):
         responses = data[predicted_label].tolist()
         actuals = data[actual_label].tolist()
         index_batches = chunk_list(list(range(len(responses))), batch_size)
-        for batch_idx, batch_indices in enumerate(index_batches):
+        pbar = tqdm(index_batches, desc=f"Processing {predicted_label}", leave=False)
+        for batch_idx, batch_indices in enumerate(pbar):
             response_batch = [responses[i] for i in batch_indices]
             extraction_prompt_func = get_prompt("subjectiveqa", PromptFormat.EXTRACTION)
             messages_batch = [

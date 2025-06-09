@@ -1,3 +1,9 @@
+"""
+NOTE: This task is not included in the current release.
+MMLU was not used in the camera-ready version of the paper
+and will be implemented in a future release.
+"""
+
 import json
 from datetime import datetime
 from pathlib import Path

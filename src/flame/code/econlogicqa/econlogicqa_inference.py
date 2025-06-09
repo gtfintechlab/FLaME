@@ -1,3 +1,9 @@
+"""
+NOTE: This task is not included in the current release.
+EconLogicQA was not used in the camera-ready version of the paper
+and will be implemented in a future release.
+"""
+
 from datetime import date
 
 import pandas as pd

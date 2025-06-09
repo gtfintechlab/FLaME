@@ -1,3 +1,9 @@
+"""
+NOTE: This task is not included in the current release.
+MMLU was not used in the camera-ready version of the paper
+and will be implemented in a future release.
+"""
+
 """MMLU evaluation module."""
 
 from datetime import datetime
@@ -143,7 +149,8 @@ def mmlu_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
         >>> results_df, metrics_df = mmlu_evaluate("inference_results.csv", args)
         >>> print(f"Overall accuracy: {metrics_df.loc[0, 'Value']:.2f}")
     """
-    task = args.dataset.strip('"""')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "mmlu"
 
     # Generate unique filename and paths
     base_filename, evaluation_results_path = generate_evaluation_filename(

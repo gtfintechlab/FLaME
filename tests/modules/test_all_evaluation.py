@@ -78,6 +78,14 @@ def _make_dummy_df() -> pd.DataFrame:  # noqa: D103 (helper)
 @pytest.mark.modules
 @pytest.mark.parametrize("module_name", _discover_eval_modules())
 def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: D103 – pytest test fn
+    # Skip modules that are not in current release
+    skip_prefixes = {
+        "flame.code.mmlu",  # Not included in current release - deferred for future implementation
+        "flame.code.econlogicqa",  # Not included in current release - deferred for future implementation
+    }
+    if any(module_name.startswith(p) for p in skip_prefixes):
+        pytest.skip(f"Skipping {module_name} - not in current release")
+
     # Patch evaluate module EARLY to prevent heavy dependency imports
     import sys
 

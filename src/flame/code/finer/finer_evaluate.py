@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import re
+from tqdm import tqdm
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 
@@ -32,10 +33,12 @@ def save_progress(df, path):
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
+    # def finer_evaluate(file_name, args):
+    #     """Evaluate Finer dataset with batching and return results and metrics DataFrames."""
+    #     # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "finer"
 
-# def finer_evaluate(file_name, args):
-#     """Evaluate Finer dataset with batching and return results and metrics DataFrames."""
-#     task = args.dataset.strip('“”"')
+
 #     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
 #     # Load CSV
@@ -123,7 +126,8 @@ def finer_evaluate(file_name, args):
     Skip rows where the length of actual vs. predicted lists differ.
     Compute row-level metrics and aggregate them.
     """
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "finer"
     logger.info(f"Starting row-by-row evaluation for {task} using model {args.model}.")
 
     # Load CSV
@@ -149,9 +153,10 @@ def finer_evaluate(file_name, args):
     indices = list(range(len(df)))
     index_batches = chunk_list(indices, batch_size)
     logger.info(f"Processing {len(df)} rows in {len(index_batches)} batches.")
-    for batch_idx, batch_indices in enumerate(index_batches):
+    pbar = tqdm(index_batches, desc="Processing batches")
+    for batch_idx, batch_indices in enumerate(pbar):
         llm_responses_batch = [df.at[i, "llm_responses"] for i in batch_indices]
-        logger.info(f"Processing batch {batch_idx + 1} with {len(batch_indices)} rows.")
+        pbar.set_description(f"Batch {batch_idx + 1}/{len(index_batches)}")
         extraction_prompt_func = get_prompt("finer", PromptFormat.EXTRACTION)
         messages_batch = [
             [{"role": "user", "content": extraction_prompt_func(llm_response)}]
@@ -162,7 +167,7 @@ def finer_evaluate(file_name, args):
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, len(index_batches)
             )
-            logger.info(f"Processed responses for batch {batch_idx + 1}.")
+            logger.debug(f"Processed responses for batch {batch_idx + 1}.")
             for idx, (response, row_idx) in enumerate(
                 zip(batch_responses, batch_indices)
             ):

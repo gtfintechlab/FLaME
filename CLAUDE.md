@@ -262,6 +262,24 @@ For detailed guidance on the testing framework, refer to these resources:
    - Inference results: `results/<dataset>/<dataset>_<provider>_<model>_<date>.csv`
    - Evaluation results: `evaluations/<dataset>/evaluation_<dataset>_<model>_<date>.csv`
 
+## Tasks Not in Current Release
+
+The following tasks are not included in the current release version and are deferred for future implementation:
+
+1. **EconLogicQA** - Not used in the camera-ready version of the paper
+   - Status: Deferred for future release
+   - Inference module has deprecation notice
+   - Tests should be marked to skip
+
+2. **MMLU** - Not used in the camera-ready version of the paper
+   - Status: Deferred for future release
+   - MMLU (Massive Multitask Language Understanding) benchmark
+   - Inference and evaluation modules have deprecation notices
+   - Tests should be marked to skip
+
 ## Project Specific Memories
 - Always use `uv` package manager. Do not run python without using uv. Always use `uv add` then `uv pip install` but never bare python without uv.
-- do not use `uv run python main.py` ever on your own, let me run that command
+- **NEVER run inference yourself** - do not use `uv run python main.py` ever on your own, let the user run that command
+- Only run dataset loading tests and other non-inference commands
+- Wait for inference to complete rather than interrupting
+- NEVER run `uv run python main.py` on your own!

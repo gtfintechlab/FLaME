@@ -30,6 +30,7 @@ def test_inference_module(module_name, dummy_args):  # noqa: D103 – pytest tes
     # Some modules expect external heavy deps or file structures we can't mock easily – skip.
     skip_prefixes = {
         "flame.code.mmlu",  # MMLU pipeline still under construction – skip for now
+        "flame.code.econlogicqa",  # Not included in current release - deferred for future implementation
     }
     if any(module_name.startswith(p) for p in skip_prefixes):
         pytest.skip(

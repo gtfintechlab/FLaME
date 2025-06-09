@@ -36,7 +36,8 @@ def save_progress(df, path):
 
 def finbench_evaluate(file_name, args):
     """Evaluate the FinBench dataset and return results and metrics DataFrames."""
-    task = args.dataset.strip('"""')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "finbench"
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load the CSV file
@@ -88,7 +89,7 @@ def finbench_evaluate(file_name, args):
             if mapped_label == -1:
                 logger.error(f"Invalid label for response {batch_idx}: {response}")
             else:
-                logger.info(f"Extracted label for row {batch_idx}: {mapped_label}")
+                logger.debug(f"Extracted label for row {batch_idx}: {mapped_label}")
 
             extracted_labels.append(mapped_label)
 

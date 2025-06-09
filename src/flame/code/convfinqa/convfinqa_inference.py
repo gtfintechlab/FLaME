@@ -37,7 +37,7 @@ def convfinqa_inference(args):
 
     # Pre-process all entries to prepare for batching
     logger.info("Preprocessing dataset entries...")
-    for entry in dataset["train"]:  # type: ignore
+    for entry in dataset["test"]:  # type: ignore
         pre_text = " ".join(entry["pre_text"])  # type: ignore
         post_text = " ".join(entry["post_text"])  # type: ignore
         table_text = " ".join([" ".join(map(str, row)) for row in entry["table_ori"]])  # type: ignore
@@ -82,7 +82,7 @@ def convfinqa_inference(args):
                     response_label = response.choices[0].message.content
                     llm_responses.append(response_label)
                 except Exception as e:
-                    logger.error(
+                    logger.debug(
                         f"Error in response parsing: {str(e)}\nResponse: {response}"
                     )
                     llm_responses.append(None)

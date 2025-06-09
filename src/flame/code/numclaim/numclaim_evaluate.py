@@ -1,17 +1,12 @@
 import pandas as pd
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-from pathlib import Path
-from flame.utils.logging_utils import setup_logger
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
 from flame.code.prompts.registry import get_prompt, PromptFormat
+from tqdm import tqdm
 
 # Setup logger
-logger = setup_logger(
-    name="numclaim_evaluation",
-    log_file=LOG_DIR / "numclaim_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_component_logger("evaluation", "numclaim")
 
 
 # Mapping function to convert labels to binary
@@ -20,13 +15,11 @@ def map_labels(label):
 
 
 def numclaim_evaluate(file_name, args):
-    logger.info(f"Starting evaluation for Numclaim with model {args.model}...")
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "numclaim"
+    logger.info(f"Starting evaluation for {task} with model {args.model}...")
     # Load data from the specified file
-    results_file = Path(file_name)
-    if not results_file.exists():
-        raise FileNotFoundError(f"Results file {results_file} not found.")
-
-    df = pd.read_csv(results_file)
+    df = pd.read_csv(file_name)
     correct_labels = df["actual_labels"].apply(map_labels).tolist()
     llm_responses = df["llm_responses"].tolist()
 
@@ -40,7 +33,9 @@ def numclaim_evaluate(file_name, args):
 
     logger.info(f"Processing {len(df)} rows in {len(index_batches)} batches.")
 
-    for batch_idx, batch_indices in enumerate(index_batches):
+    pbar = tqdm(index_batches, desc="Processing batches")
+    for batch_idx, batch_indices in enumerate(pbar):
+        pbar.set_description(f"Batch {batch_idx + 1}/{len(index_batches)}")
         llm_responses_batch = [llm_responses[i] for i in batch_indices]
         extraction_prompt_func = get_prompt("numclaim", PromptFormat.EXTRACTION)
         messages_batch = [
@@ -72,8 +67,8 @@ def numclaim_evaluate(file_name, args):
             for row_idx in batch_indices:
                 df.at[row_idx, "extracted_labels"] = None
 
-    print(df["actual_labels"].value_counts())
-    print(df["extracted_labels"].value_counts())
+    logger.debug(f"Actual labels: {df['actual_labels'].value_counts().to_dict()}")
+    logger.debug(f"Extracted labels: {df['extracted_labels'].value_counts().to_dict()}")
 
     # Calculate evaluation metrics
     extracted_labels = df["extracted_labels"].dropna().tolist()

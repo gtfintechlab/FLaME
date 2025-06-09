@@ -1,11 +1,11 @@
 import pandas as pd
-from flame.code.tokens import tokens
-from litellm import completion
 import re
 from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.logging_utils import setup_logger
 from flame.code.prompts.registry import get_prompt, PromptFormat
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from tqdm import tqdm
 
 # Setup logger
 logger = setup_logger(
@@ -23,7 +23,8 @@ def extract_numerical_value(text):
 
 # Main evaluation function
 def convfinqa_evaluate(file_name, args):
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "convfinqa"
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
     df = pd.read_csv(file_name)
@@ -35,34 +36,55 @@ def convfinqa_evaluate(file_name, args):
     extraction_model_response = []
     regex_extraction = []
 
-    # Iterating over responses
+    # Prepare all prompts for batch processing
     extraction_prompt_func = get_prompt("convfinqa", PromptFormat.EXTRACTION)
-    for entry in df["response"]:
+    all_responses = df["response"].tolist()
+
+    logger.info(
+        f"Processing {len(all_responses)} responses in batches of {args.batch_size}"
+    )
+
+    # Create batches
+    batches = list(chunk_list(all_responses, args.batch_size))
+    total_batches = len(batches)
+
+    # Process batches with progress bar
+    for batch_idx, batch_responses in enumerate(
+        tqdm(batches, desc="Extracting ConvFinQA answers")
+    ):
+        # Prepare messages for batch
+        messages_batch = [
+            [{"role": "user", "content": extraction_prompt_func(response)}]
+            for response in batch_responses
+        ]
+
         try:
-            model_response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": extraction_prompt_func(entry)}],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
+            # Process batch with retry logic
+            batch_results = process_batch_with_retry(
+                args, messages_batch, batch_idx, total_batches
             )
 
-            extraction_model_response.append(model_response)
-            response_text = model_response.choices[0].message.content  # type: ignore
+            # Process each result in the batch
+            for response in batch_results:
+                extraction_model_response.append(response)
+                try:
+                    response_text = response.choices[0].message.content
+                    extraction_response.append(response_text)
 
-            extraction_response.append(response_text)
-
-            numerical_value = extract_numerical_value(response_text)
-            regex_extraction.append(numerical_value)
+                    numerical_value = extract_numerical_value(response_text)
+                    regex_extraction.append(numerical_value)
+                except Exception as e:
+                    logger.debug(f"Error extracting from response: {str(e)}")
+                    extraction_response.append(None)
+                    regex_extraction.append(None)
 
         except Exception as e:
-            logger.error(f"Error processing response: {e}")
-            extraction_model_response.append(str(e))
-            extraction_response.append(None)
-            regex_extraction.append(None)
+            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+            # Add None values for failed batch
+            for _ in batch_responses:
+                extraction_model_response.append(None)
+                extraction_response.append(None)
+                regex_extraction.append(None)
 
     # Adding results to DataFrame
     df["extraction_model_response"] = extraction_model_response
@@ -71,15 +93,17 @@ def convfinqa_evaluate(file_name, args):
 
     # Accuracy calculation
     correct_labels = df["actual_label"].tolist()
-    valid_predictions = [
-        (x, y) if pd.notna(x) else (x, "Error")
-        for x, y in zip(correct_labels, regex_extraction)
+    predictions = [
+        str(pred) if pd.notna(pred) else "Error" for pred in regex_extraction
     ]
 
     # Calculate metrics
-    accuracy = accuracy_score(correct_labels, valid_predictions)
+    # Convert labels to strings for comparison
+    correct_labels_str = [str(label) for label in correct_labels]
+
+    accuracy = accuracy_score(correct_labels_str, predictions)
     precision, recall, f1, _ = precision_recall_fscore_support(
-        correct_labels, valid_predictions
+        correct_labels_str, predictions, average="weighted", zero_division=0
     )
 
     # Log metrics
@@ -91,8 +115,10 @@ def convfinqa_evaluate(file_name, args):
     # Create metrics DataFrame
     metrics_df = pd.DataFrame(
         {
-            "Metric": ["Accuracy", "Precision", "Recall", "F1 Score"],
-            "Value": [accuracy, precision, recall, f1],
+            "Accuracy": [accuracy],
+            "Precision": [precision],
+            "Recall": [recall],
+            "F1 Score": [f1],
         }
     )
 

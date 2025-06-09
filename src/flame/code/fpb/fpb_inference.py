@@ -19,7 +19,7 @@ def fpb_inference(args):
     # Specify a specific data split - using '5768' as default
     dataset = safe_load_dataset(
         "gtfintechlab/financial_phrasebank_sentences_allagree",
-        "5768",  # Explicitly specify a config name from available options
+        name="5768",  # Pass config name using 'name' parameter
         trust_remote_code=True,
     )
 

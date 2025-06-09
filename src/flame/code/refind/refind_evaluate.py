@@ -1,30 +1,20 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
-from flame.utils.logging_utils import setup_logger
+from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
 from flame.code.prompts.registry import get_prompt, PromptFormat
 from flame.code.prompts.constants import (
     refind_possible_relationships as possible_relationships,
 )
 
-logger = setup_logger(
-    name="refind_evaluation",
-    log_file=LOG_DIR / "refind_evaluation.log",
-    level=LOG_LEVEL,
-)
-
-
-def save_progress(df, path):
-    """Save the current progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
+logger = get_component_logger("evaluation", "refind")
 
 
 def refind_evaluate(file_name, args):
     """Evaluate Refind dataset and return results and metrics DataFrames."""
-    task = args.dataset.strip('"""')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "refind"
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
     # Load the CSV file with the LLM responses
@@ -74,7 +64,7 @@ def refind_evaluate(file_name, args):
                 .upper()
             )
             if extracted_label not in possible_relationships:
-                print(f"Invalid label: {extracted_label}")
+                logger.debug(f"Invalid label: {extracted_label}")
                 extracted_label = "NO-REL"
             extracted_labels.append(extracted_label)
 

@@ -3,12 +3,12 @@ import re
 from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.logging_utils import setup_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.code.prompts.registry import get_prompt, PromptFormat
+from flame.code.prompts import get_prompt, PromptFormat
 from tqdm import tqdm
 
 logger = setup_logger(
-    name="convfinqa_evaluation",
-    log_file=LOG_DIR / "convfinqa_evaluation.log",
+    name="finqa_evaluation",
+    log_file=LOG_DIR / "finqa_evaluation.log",
     level=LOG_LEVEL,
 )
 
@@ -35,7 +35,7 @@ def extract_numerical_value(text):
 
 
 def finqa_evaluate(file_name, args):
-    task = args.dataset.strip('“”"')
+    task = getattr(args, "task", None) or "finqa"
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
     df = pd.read_csv(file_name)
@@ -68,20 +68,20 @@ def finqa_evaluate(file_name, args):
                 args, messages_batch, batch_idx, total_batches, args.max_tokens
             )
 
+            for response in batch_responses:
+                extraction_model_response.append(response)
+                try:
+                    response_text = response.choices[0].message.content  # type: ignore
+                except Exception as e:
+                    logger.debug(f"Error in response: {str(e)}\nResponse: {response}")
+                    response_text = None
+                extraction_response.append(response_text)
+
         except Exception as e:
             logger.error(f"Error processing batch: {e}")
             for _ in range(len(batch)):
                 extraction_response.append(None)
                 extraction_model_response.append(str(e))
-
-        for response in batch_responses:
-            extraction_model_response.append(response)
-            try:
-                response_text = response.choices[0].message.content  # type: ignore
-            except Exception as e:
-                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
-                response_text = None
-            extraction_response.append(response_text)
 
     all_responses = [
         (response, actual_label)
@@ -105,25 +105,27 @@ def finqa_evaluate(file_name, args):
                 args, messages_batch, batch_idx, total_batches, args.max_tokens * 2
             )
 
+            for response in batch_responses:
+                evaluation_model_response.append(response)
+                try:
+                    response_text = response.choices[0].message.content.lower()  # type: ignore
+                except Exception as e:
+                    logger.debug(f"Error in response: {str(e)}\nResponse: {response}")
+                    response_text = None
+                evaluation_response.append(response_text)
+                find_correct = response_text.find("correct") if response_text else -1
+                find_wrong = response_text.find("wrong") if response_text else -1
+                answers.append(
+                    find_correct != -1
+                    and (find_wrong == -1 or find_correct < find_wrong)
+                )
+
         except Exception as e:
             logger.error(f"Error processing batch: {e}")
             for _ in range(len(batch)):
                 evaluation_response.append(None)
                 evaluation_model_response.append(str(e))
-
-        for response in batch_responses:
-            evaluation_model_response.append(response)
-            try:
-                response_text = response.choices[0].message.content.lower()  # type: ignore
-            except Exception as e:
-                logger.error(f"Error in response: {str(e)}\nResponse: {response}")
-                response_text = None
-            evaluation_response.append(response_text)
-            find_correct = response_text.find("correct")  # type: ignore
-            find_wrong = response_text.find("wrong")  # type: ignore
-            answers.append(
-                find_correct != -1 and (find_wrong == -1 or find_correct < find_wrong)
-            )
+                answers.append(False)
 
     df["extraction_model_response"] = extraction_model_response
     df["extraction_response"] = extraction_response

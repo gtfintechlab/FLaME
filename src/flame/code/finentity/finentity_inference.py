@@ -18,7 +18,7 @@ def finentity_inference(args):
 
     logger.info("Loading dataset...")
     dataset = safe_load_dataset(
-        "gtfintechlab/finentity", "5768", trust_remote_code=True
+        "gtfintechlab/finentity", name="5768", trust_remote_code=True
     )
 
     # Extract sentences and actual labels
