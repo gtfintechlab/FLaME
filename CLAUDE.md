@@ -242,8 +242,11 @@ For detailed guidance on the testing framework, refer to these resources:
    ```
    together_ai/meta-llama/Llama-4-Scout-17B-16E-Instruct
    ```
+   
+3. **Local Ollama Support**  
+   - To run fully offline against an Ollama-served model, see the **“Local Inference with Ollama”** section in **README.md**.
 
-3. **Package Management**:
+4. **Package Management**:
    - Always use `uv` for package management and running Python scripts
    - Examples:
      ```bash
@@ -254,11 +257,11 @@ For detailed guidance on the testing framework, refer to these resources:
      uv run python script.py
      ```
 
-4. **Testing**:
+5. **Testing**:
    - Run tests before making changes to ensure everything works
    - Tests use mock/stub libraries to avoid network calls
 
-5. **Result Paths**:
+6. **Result Paths**:
    - Inference results: `results/<dataset>/<dataset>_<provider>_<model>_<date>.csv`
    - Evaluation results: `evaluations/<dataset>/evaluation_<dataset>_<model>_<date>.csv`
 

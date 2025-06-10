@@ -288,3 +288,58 @@ This structure provides:
 - Collision-free filenames with UUID suffixes
 - Consistent naming convention across all outputs
 - Easy filtering and organization of results
+
+## Local Inference with Ollama
+
+FLaME can also run **fully offline** against any model served by [Ollama](https://ollama.com/docs).  
+Below are the steps to get up and running—using **the same** `configs/default.yaml`:
+
+1. **Install Ollama**  
+   - **Native** (macOS/Linux/Windows with Homebrew/Chocolatey):  
+     Follow the official guide: https://ollama.com/docs/installation  
+   - **Docker** (cross-platform):  
+     ```bash
+     docker run -d --name ollama -p 11434:11434 ollama/ollama:latest serve
+     ```
+
+2. **Pull your desired model** (for example, `llama3`):  
+   ```bash
+   # Native
+   ollama pull llama3
+   # Or, if using Docker
+   docker exec ollama ollama pull llama3
+   ```
+
+3. **Configure FLaME environment**  
+   In your project root, create or update `.env`:
+   ```bash
+   OLLAMA_API_BASE=http://localhost:11434
+   ```
+
+4. **Create an Ollama-specific config**  
+   Use the default.yaml file as a template. Copy your `configs/default.yaml` to a new file (e.g. `configs/ollama_run.yaml`):
+   ```bash
+   cp configs/default.yaml configs/ollama_run.yaml
+   ```
+   Then edit **only** these fields in `configs/ollama_run.yaml`:
+   ```yaml
+   model: "ollama/<model_tag>"   # e.g. ollama/llama3, ollama/mistral, ollama/phi3:mini
+   tasks:
+     - <task_name>              # e.g. fomc, finer, numclaim, etc.
+   ```
+   All other parameters (batch_size, prompt_format, logging) can remain as in `default.yaml`, or be adjusted as needed.
+
+
+5. **Run FLaME with your Ollama config**  
+   ```bash
+   uv run python main.py --config configs/ollama_run.yaml
+   ```
+
+#### Common Troubleshooting
+
+| Symptom                             | Possible Fix                                                  |
+|-------------------------------------|---------------------------------------------------------------|
+| Cannot connect to Ollama server     | Verify `OLLAMA_API_BASE` matches your host:port and Ollama is running |
+| Unknown provider “ollama”           | Upgrade LiteLLM and ensure `model:` prefix is exactly `ollama/<tag>` |
+| Model tag not found                 | Confirm you ran `ollama pull <tag>` and spelling is correct    |
+| First batch very slow               | Wait for model to load into memory or pre-warm with a quick ping |
