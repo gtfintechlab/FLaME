@@ -41,22 +41,22 @@ jobs:
     - name: Test package import
       run: |
         echo "Testing package import..."
-        uv run python -c "import flame; print('FLaME package imported successfully')"
+        python -c "import flame; print('FLaME package imported successfully')"
         
     - name: Test CLI help
       run: |
         echo "Testing CLI help..."
-        uv run python main.py --help
+        python main.py --help
         
     - name: Test list-tasks command
       run: |
         echo "Testing list-tasks command..."
-        uv run python main.py list-tasks
+        python main.py list-tasks
         
     - name: Test YAML config parsing
       run: |
         echo "Testing YAML config parsing..."
-        uv run python -c "
+        python -c "
         import sys
         sys.argv = ['main.py', '--config', 'configs/default.yaml', '--mode', 'inference', '--tasks', 'fomc']
         from main import parse_arguments
@@ -68,7 +68,7 @@ jobs:
     - name: Test task registry
       run: |
         echo "Testing task registry..."
-        uv run python -c "
+        python -c "
         from flame.task_registry import supported
         inf_tasks = supported('inference')
         eval_tasks = supported('evaluate')
@@ -82,7 +82,7 @@ jobs:
     - name: Test imports of core modules
       run: |
         echo "Testing core module imports..."
-        uv run python -c "
+        python -c "
         from flame.code.inference import main as inference_main
         from flame.code.evaluate import main as evaluate_main
         from flame.config import configure_logging
@@ -95,7 +95,7 @@ jobs:
     - name: Test logging configuration
       run: |
         echo "Testing logging configuration..."
-        uv run python -c "
+        python -c "
         from flame.config import configure_logging
         from flame.utils.logging_utils import get_component_logger
         
@@ -110,7 +110,7 @@ jobs:
     - name: Test basic prompt functionality
       run: |
         echo "Testing prompt functionality..."
-        uv run python -c "
+        python -c "
         from flame.code.prompts import get_prompt, PromptFormat
         
         # Test getting a basic prompt
@@ -123,12 +123,12 @@ jobs:
     - name: Run critical unit tests
       run: |
         echo "Running critical unit tests..."
-        uv run pytest -c pytest-ci.ini tests/unit/test_task_validation.py tests/unit/test_yaml_parsing.py -m "not requires_api and not requires_ollama"
+        pytest -c pytest-ci.ini tests/unit/test_task_validation.py tests/unit/test_yaml_parsing.py -m "not requires_api and not requires_ollama"
         
     - name: Test batch utilities
       run: |
         echo "Testing batch utilities..."
-        uv run python -c "
+        python -c "
         from flame.utils.batch_utils import chunk_list
         
         # Test chunking
@@ -142,7 +142,7 @@ jobs:
     - name: Test file generation utilities
       run: |
         echo "Testing file generation utilities..."
-        uv run python -c "
+        python -c "
         import os
         os.environ['PYTEST_RUNNING'] = '1'  # Simulate test environment
         

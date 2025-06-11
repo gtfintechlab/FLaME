@@ -49,12 +49,12 @@ jobs:
     
     - name: Import Check
       run: |
-        uv run python -c "import flame; print('Import successful')"
-        uv run python -c "from flame.task_registry import supported; print(f'Tasks: {len(supported(\"inference\"))}')"
+        python -c "import flame; print('Import successful')"
+        python -c "from flame.task_registry import supported; print(f'Tasks: {len(supported(\"inference\"))}')"
     
     - name: Config Parse Check
       run: |
-        uv run python -c "
+        python -c "
         import yaml
         with open('configs/default.yaml') as f:
           config = yaml.safe_load(f)
@@ -92,18 +92,18 @@ jobs:
     
     - name: Unit Tests
       run: |
-        uv run pytest -c pytest-ci.ini tests/unit/ \
+        pytest -c pytest-ci.ini tests/unit/ \
           -m "not requires_api and not requires_ollama and not slow" \
           --no-header --tb=short
     
     - name: Prompt Tests
       run: |
-        uv run pytest -c pytest-ci.ini tests/prompts/ \
+        pytest -c pytest-ci.ini tests/prompts/ \
           --no-header --tb=short
     
     - name: Core Utilities
       run: |
-        uv run python -c "
+        python -c "
         from flame.utils.batch_utils import chunk_list
         from flame.utils.logging_utils import get_component_logger
         from flame.config import configure_logging
@@ -149,10 +149,10 @@ jobs:
       run: |
         if [ "${{ matrix.test-group }}" == "modules" ]; then
           # Run module tests separately
-          uv run pytest -c pytest-ci.ini tests/modules/test_all_inference.py --no-header
-          uv run pytest -c pytest-ci.ini tests/modules/test_all_evaluation.py --no-header
+          pytest -c pytest-ci.ini tests/modules/test_all_inference.py --no-header
+          pytest -c pytest-ci.ini tests/modules/test_all_evaluation.py --no-header
         else
-          uv run pytest -c pytest-ci.ini tests/${{ matrix.test-group }}/ \
+          pytest -c pytest-ci.ini tests/${{ matrix.test-group }}/ \
             -m "not requires_ollama and not slow" \
             --no-header --tb=short
         fi

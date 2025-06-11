@@ -33,19 +33,19 @@ jobs:
     
     - name: Lint Check
       run: |
-        uv run ruff check src/ tests/ main.py || true
+        ruff check src/ tests/ main.py || true
     
     - name: Import Test
       run: |
-        uv run python -c "import flame; print('✓ Package imports')"
+        python -c "import flame; print('✓ Package imports')"
     
     - name: Config Test
       run: |
-        uv run python main.py list-tasks | grep -q "fomc" && echo "✓ CLI works"
+        python main.py list-tasks | grep -q "fomc" && echo "✓ CLI works"
     
     - name: Core Unit Tests
       run: |
-        uv run pytest -c pytest-ci.ini \
+        pytest -c pytest-ci.ini \
           tests/unit/test_task_validation.py \
           tests/unit/test_yaml_parsing.py \
           --no-header --tb=short -q
