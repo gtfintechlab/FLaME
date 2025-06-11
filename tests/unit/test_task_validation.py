@@ -102,10 +102,14 @@ def test_inference_and_evaluation_task_mapping():
     assert "numclaim" in common_tasks
     assert "finer" in common_tasks
 
-    # Verify some tasks are only in inference (like econlogicqa)
+    # Verify that currently all active tasks have both inference and evaluation
     inference_only = set(INFERENCE_MAP.keys()) - set(EVALUATE_MAP.keys())
-    assert "econlogicqa" in inference_only
-    assert "finred" in inference_only
+    evaluate_only = set(EVALUATE_MAP.keys()) - set(INFERENCE_MAP.keys())
+
+    # In the current release, all tasks have both inference and evaluation
+    # (econlogicqa and mmlu are commented out - not in current release)
+    assert len(inference_only) == 0, f"Found inference-only tasks: {inference_only}"
+    assert len(evaluate_only) == 0, f"Found evaluate-only tasks: {evaluate_only}"
 
 
 def test_supported_function_behavior():
