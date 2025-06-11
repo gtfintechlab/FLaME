@@ -34,8 +34,8 @@ jobs:
         
     - name: Install dependencies
       run: |
-        uv pip install -r requirements.txt
-        uv pip install -e .
+        uv pip install --system -r requirements.txt
+        uv pip install --system -e .
         
     - name: Run Unit Tests
       run: |
