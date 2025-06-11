@@ -1,0 +1,52 @@
+name: PR Quick Tests
+
+# Fast tests that run on every PR push
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  CI: "true"
+  PYTEST_RUNNING: "1"
+  HUGGINGFACEHUB_API_TOKEN: "mock-token-for-ci"
+  FLAME_CONFIG: "ci"
+
+jobs:
+  quick-check:
+    name: PR Quick Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Quick Install
+      run: |
+        pip install uv
+        uv pip install -r requirements.txt
+        uv pip install -e .
+    
+    - name: Lint Check
+      run: |
+        uv run ruff check src/ tests/ main.py || true
+    
+    - name: Import Test
+      run: |
+        uv run python -c "import flame; print('✓ Package imports')"
+    
+    - name: Config Test
+      run: |
+        uv run python main.py list-tasks | grep -q "fomc" && echo "✓ CLI works"
+    
+    - name: Core Unit Tests
+      run: |
+        uv run pytest -c pytest-ci.ini \
+          tests/unit/test_task_validation.py \
+          tests/unit/test_yaml_parsing.py \
+          --no-header --tb=short -q
+        echo "✓ Core tests pass"

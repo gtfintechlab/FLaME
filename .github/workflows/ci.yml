@@ -1,0 +1,171 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop, epic1 ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  # Global CI environment variables
+  CI: "true"
+  PYTEST_RUNNING: "1"
+  HUGGINGFACEHUB_API_TOKEN: "mock-token-for-ci"
+  FLAME_CONFIG: "ci"
+
+jobs:
+  # Tier 1: Lightning Tests (< 30 seconds)
+  lightning-tests:
+    name: Lightning Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache uv
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/uv
+        key: ${{ runner.os }}-uv-${{ hashFiles('requirements.txt') }}
+    
+    - name: Install uv
+      run: pip install uv
+    
+    - name: Install dependencies
+      run: |
+        uv pip install -r requirements.txt
+        uv pip install -e .
+    
+    - name: Syntax Check
+      run: |
+        python -m py_compile main.py
+        python -m compileall src/
+    
+    - name: Import Check
+      run: |
+        uv run python -c "import flame; print('Import successful')"
+        uv run python -c "from flame.task_registry import supported; print(f'Tasks: {len(supported(\"inference\"))}')"
+    
+    - name: Config Parse Check
+      run: |
+        uv run python -c "
+        import yaml
+        with open('configs/default.yaml') as f:
+          config = yaml.safe_load(f)
+        print('Config valid')
+        "
+
+  # Tier 2: Core Tests (< 2 minutes)
+  core-tests:
+    name: Core Tests
+    needs: lightning-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/uv
+          ~/.cache/pip
+        key: ${{ runner.os }}-deps-${{ hashFiles('requirements.txt') }}
+    
+    - name: Install dependencies
+      run: |
+        pip install uv
+        uv pip install -r requirements.txt
+        uv pip install -e .
+    
+    - name: Unit Tests
+      run: |
+        uv run pytest -c pytest-ci.ini tests/unit/ \
+          -m "not requires_api and not requires_ollama and not slow" \
+          --no-header --tb=short
+    
+    - name: Prompt Tests
+      run: |
+        uv run pytest -c pytest-ci.ini tests/prompts/ \
+          --no-header --tb=short
+    
+    - name: Core Utilities
+      run: |
+        uv run python -c "
+        from flame.utils.batch_utils import chunk_list
+        from flame.utils.logging_utils import get_component_logger
+        from flame.config import configure_logging
+        chunks = chunk_list(list(range(100)), 10)
+        assert len(chunks) == 10
+        print('Utilities working')
+        "
+
+  # Tier 3: Integration Tests (< 5 minutes)
+  integration-tests:
+    name: Integration Tests
+    needs: core-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    strategy:
+      matrix:
+        test-group: [multi_task, modules, integration]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/uv
+          ~/.cache/pip
+        key: ${{ runner.os }}-deps-${{ hashFiles('requirements.txt') }}
+    
+    - name: Install dependencies
+      run: |
+        pip install uv
+        uv pip install -r requirements.txt
+        uv pip install -e .
+    
+    - name: Run ${{ matrix.test-group }} tests
+      run: |
+        if [ "${{ matrix.test-group }}" == "modules" ]; then
+          # Run module tests separately
+          uv run pytest -c pytest-ci.ini tests/modules/test_all_inference.py --no-header
+          uv run pytest -c pytest-ci.ini tests/modules/test_all_evaluation.py --no-header
+        else
+          uv run pytest -c pytest-ci.ini tests/${{ matrix.test-group }}/ \
+            -m "not requires_ollama and not slow" \
+            --no-header --tb=short
+        fi
+
+  # Status check that all tests passed
+  ci-status:
+    name: CI Status
+    needs: [lightning-tests, core-tests, integration-tests]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check CI Status
+      run: |
+        echo "All CI tests passed successfully!"
+        echo "✅ Lightning Tests"
+        echo "✅ Core Tests"
+        echo "✅ Integration Tests"

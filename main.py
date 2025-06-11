@@ -267,7 +267,11 @@ if __name__ == "__main__":
 
     # Log HuggingFace status
     HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-    if HUGGINGFACEHUB_API_TOKEN:
+
+    # Skip authentication in CI/test environments with mock token
+    if os.getenv("CI") == "true" and HUGGINGFACEHUB_API_TOKEN == "mock-token-for-ci":
+        main_logger.info("Running in CI mode with mock authentication")
+    elif HUGGINGFACEHUB_API_TOKEN:
         try:
             login(token=HUGGINGFACEHUB_API_TOKEN)
             main_logger.info("Logged in to Hugging Face Hub")

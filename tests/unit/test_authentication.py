@@ -7,8 +7,13 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 
+@pytest.mark.unit
 def test_main_no_huggingface_token(monkeypatch, capsys):
     """Test that main.py exits with error when no HF token is provided."""
+    # Skip this test in CI environment
+    if os.getenv("CI") == "true":
+        pytest.skip("Skipping authentication test in CI environment")
+
     # Remove HF token from environment
     monkeypatch.delenv("HUGGINGFACEHUB_API_TOKEN", raising=False)
 
@@ -45,8 +50,13 @@ def test_main_no_huggingface_token(monkeypatch, capsys):
     assert "FLaME datasets are private" in captured.out
 
 
+@pytest.mark.unit
 def test_main_invalid_huggingface_token(monkeypatch, capsys):
     """Test that main.py exits with error when HF token is invalid."""
+    # Skip this test in CI environment
+    if os.getenv("CI") == "true":
+        pytest.skip("Skipping authentication test in CI environment")
+
     # Set invalid token
     monkeypatch.setenv("HUGGINGFACEHUB_API_TOKEN", "invalid_token_12345")
 

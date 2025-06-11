@@ -34,6 +34,7 @@ ALL_TASKS = [
 
 @pytest.mark.parametrize("task", ALL_TASKS)
 @pytest.mark.integration
+@pytest.mark.requires_ollama
 def test_task_inference_minimal(task):
     """Test that each task can start inference successfully."""
     cmd = [

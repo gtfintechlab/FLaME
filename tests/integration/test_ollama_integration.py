@@ -6,10 +6,12 @@ import pytest
 from flame.code.inference import run_inference
 
 
+@pytest.mark.requires_ollama
 class TestOllamaIntegration:
     """Test FLaME tasks with real Ollama inference."""
 
     @pytest.mark.integration
+    @pytest.mark.requires_ollama
     def test_fomc_inference_with_ollama(self, ollama_integration_test, tmp_path):
         """Test FOMC task inference using Ollama."""
 
@@ -43,6 +45,7 @@ class TestOllamaIntegration:
         assert df["response"].notna().any()
 
     @pytest.mark.integration
+    @pytest.mark.requires_ollama
     def test_fpb_inference_with_ollama(self, ollama_integration_test):
         """Test FPB (sentiment) task with Ollama."""
 
@@ -85,6 +88,7 @@ class TestOllamaIntegration:
         assert len(content) > 0
 
     @pytest.mark.parametrize("task", ["fomc", "fpb", "numclaim"])
+    @pytest.mark.requires_ollama
     def test_multiple_tasks_with_ollama(self, task, ollama_integration_test):
         """Test multiple tasks with Ollama."""
 
@@ -113,11 +117,13 @@ class TestOllamaIntegration:
             pytest.skip(f"Task {task} not compatible with current setup: {str(e)}")
 
 
+@pytest.mark.requires_ollama
 class TestOllamaPerformance:
     """Performance tests comparing Ollama with mocked responses."""
 
     @pytest.mark.integration
     @pytest.mark.slow
+    @pytest.mark.requires_ollama
     def test_inference_speed(self, ollama_integration_test, benchmark):
         """Benchmark Ollama inference speed."""
         from litellm import completion
