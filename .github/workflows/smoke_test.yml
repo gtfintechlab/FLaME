@@ -41,7 +41,15 @@ jobs:
     - name: Test package import
       run: |
         echo "Testing package import..."
-        python -c "import flame; print('FLaME package imported successfully')"
+        python -c "
+        import sys
+        print(f'Python executable: {sys.executable}')
+        print(f'Python version: {sys.version}')
+        
+        import flame
+        print(f'FLaME location: {flame.__file__}')
+        print('FLaME package imported successfully')
+        "
         
     - name: Test CLI help
       run: |
@@ -69,9 +77,18 @@ jobs:
       run: |
         echo "Testing task registry..."
         python -c "
+        import sys
+        print(f'Python path: {sys.path}')
+        
         from flame.task_registry import supported
+        print(f'supported type: {type(supported)}')
+        
         inf_tasks = supported('inference')
+        print(f'inf_tasks type: {type(inf_tasks)}')
+        
         eval_tasks = supported('evaluate')
+        print(f'eval_tasks type: {type(eval_tasks)}')
+        
         print(f'Found {len(inf_tasks)} inference tasks')
         print(f'Found {len(eval_tasks)} evaluation tasks')
         assert len(inf_tasks) > 10, 'Should have many inference tasks'
@@ -113,10 +130,15 @@ jobs:
         python -c "
         from flame.code.prompts import get_prompt, PromptFormat
         
-        # Test getting a basic prompt
-        prompt = get_prompt('fomc', PromptFormat.ZERO_SHOT)
-        assert prompt is not None, 'Should get a prompt for fomc'
-        assert len(prompt) > 10, 'Prompt should have content'
+        # Test getting a basic prompt function
+        prompt_func = get_prompt('fomc', PromptFormat.ZERO_SHOT)
+        assert prompt_func is not None, 'Should get a prompt function for fomc'
+        assert callable(prompt_func), 'Should be a callable function'
+        
+        # Test calling the prompt function
+        prompt_text = prompt_func('Test sentence')
+        assert isinstance(prompt_text, str), 'Prompt function should return a string'
+        assert len(prompt_text) > 10, 'Prompt should have content'
         print('Prompt functionality working')
         "
         
