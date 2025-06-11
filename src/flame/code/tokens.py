@@ -3,8 +3,8 @@ This module provides backward compatibility for code that still imports from fla
 The original tokens.py file was removed as part of a refactoring effort.
 """
 
-from typing import List
 import warnings
+from typing import List
 
 
 def tokens(api_model_string: str) -> List[str]:

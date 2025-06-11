@@ -1,12 +1,12 @@
 from datetime import date
 
 import pandas as pd
-from flame.utils.dataset_utils import safe_load_dataset
 from tqdm import tqdm
 
-from flame.code.prompts import get_prompt, PromptFormat
-from flame.utils.logging_utils import get_component_logger
+from flame.code.prompts import PromptFormat, get_prompt
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.dataset_utils import safe_load_dataset
+from flame.utils.logging_utils import get_component_logger
 
 # Use component-based logger that follows the logging configuration
 logger = get_component_logger("inference", "convfinqa")
@@ -37,7 +37,8 @@ def convfinqa_inference(args):
 
     # Pre-process all entries to prepare for batching
     logger.info("Preprocessing dataset entries...")
-    for entry in dataset["test"]:  # type: ignore
+    # ConvFinQA uses 'dev' split for testing
+    for entry in dataset["dev"]:  # type: ignore
         pre_text = " ".join(entry["pre_text"])  # type: ignore
         post_text = " ".join(entry["post_text"])  # type: ignore
         table_text = " ".join([" ".join(map(str, row)) for row in entry["table_ori"]])  # type: ignore

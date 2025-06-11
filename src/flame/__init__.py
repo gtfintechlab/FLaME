@@ -1,9 +1,9 @@
 from flame.config import (
-    LOG_DIR,
     DATA_DIR,
-    ROOT_DIR,
-    PACKAGE_DIR,
+    LOG_DIR,
     LOG_LEVEL,
+    PACKAGE_DIR,
+    ROOT_DIR,
 )
 from flame.utils.logging_utils import setup_logger
 

@@ -1,6 +1,8 @@
-import pytest
-from main import run_tasks
 from unittest.mock import patch
+
+import pytest
+
+from main import run_tasks
 
 pytestmark = pytest.mark.multi_task
 

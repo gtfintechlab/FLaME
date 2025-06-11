@@ -2,8 +2,9 @@
 
 import os
 import sys
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 
 def test_main_no_huggingface_token(monkeypatch, capsys):

@@ -1,11 +1,13 @@
-import pandas as pd
 import re
-from flame.config import LOG_DIR, LOG_LEVEL
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.code.prompts.registry import get_prompt, PromptFormat
+
+import pandas as pd
 from sklearn.metrics import accuracy_score
 from tqdm import tqdm
+
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.config import LOG_DIR, LOG_LEVEL
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import setup_logger
 
 # Setup logger
 logger = setup_logger(

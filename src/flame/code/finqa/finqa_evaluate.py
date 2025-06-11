@@ -1,10 +1,12 @@
-import pandas as pd
 import re
-from flame.config import LOG_DIR, LOG_LEVEL
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.code.prompts import get_prompt, PromptFormat
+
+import pandas as pd
 from tqdm import tqdm
+
+from flame.code.prompts import PromptFormat, get_prompt
+from flame.config import LOG_DIR, LOG_LEVEL
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import setup_logger
 
 logger = setup_logger(
     name="finqa_evaluation",
@@ -15,7 +17,7 @@ logger = setup_logger(
 
 def evaluate_answer(predicted_answer: str, correct_answer: str):
     prompt = f"""
-    You will receive two answers. Your job is to evaluate if they are exactly the same, with some caveats. 
+    You will receive two answers. Your job is to evaluate if they are exactly the same, with some caveats.
     If they are wholly different answers (eg: 8 and 9), they are considered different.
     If the first answer is a more precise version of the second answer (eg: units listed, more decimal points reported, etc), they are the same.
     If the first answer can be rounded to the second answer, with the exact level of precision that the second answer uses, they are considered the same. If they cannot, they are different.

@@ -1,9 +1,11 @@
 from datetime import date
+
 import pandas as pd
-from flame.utils.dataset_utils import safe_load_dataset
-from flame.code.prompts import get_prompt, PromptFormat
-from flame.utils.logging_utils import get_component_logger
+
+from flame.code.prompts import PromptFormat, get_prompt
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.dataset_utils import safe_load_dataset
+from flame.utils.logging_utils import get_component_logger
 
 # Use the component logger with the proper namespace
 logger = get_component_logger("inference.causal_classification")

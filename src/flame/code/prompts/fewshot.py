@@ -5,7 +5,7 @@ This module contains few-shot prompt functions for various FLaME tasks.
 Few-shot prompts include examples to help guide the model's behavior.
 """
 
-from .registry import register_prompt, PromptFormat
+from .registry import PromptFormat, register_prompt
 
 # The following are stub functions that will be implemented in the future
 # They are included here for completeness and to maintain registry consistency

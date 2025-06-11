@@ -21,7 +21,7 @@ def generate_inference_filename(task: str, model: str, output_dir=None):
     # Use test output directory if running in pytest, or RESULTS_DIR by default
     if output_dir is None:
         # Import at runtime to get patched values in tests
-        from flame.config import RESULTS_DIR, TEST_OUTPUT_DIR, IN_PYTEST
+        from flame.config import IN_PYTEST, RESULTS_DIR, TEST_OUTPUT_DIR
 
         output_dir = TEST_OUTPUT_DIR if IN_PYTEST else RESULTS_DIR
 

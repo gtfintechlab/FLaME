@@ -7,7 +7,7 @@ task name and format, and retrieved using a common interface.
 """
 
 from enum import Enum, auto
-from typing import Dict, Callable, Optional
+from typing import Callable, Dict, Optional
 
 
 class PromptFormat(Enum):

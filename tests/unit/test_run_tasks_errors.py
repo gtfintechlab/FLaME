@@ -1,10 +1,12 @@
 """Tests for error handling in multi-task execution."""
 
-import pytest
 from types import SimpleNamespace
-from main import run_tasks, MultiTaskError
 from unittest.mock import patch
+
 import pandas as pd
+import pytest
+
+from main import MultiTaskError, run_tasks
 
 pytestmark = pytest.mark.unit
 

@@ -41,15 +41,15 @@ def test_zeroshot_prompt_functionality():
     """Test that zero-shot prompt functions work correctly."""
     # Import from new path
     from flame.code.prompts import (
+        causal_detection_zeroshot_prompt,
+        ectsum_prompt,
+        ectsum_zeroshot_prompt,
+        finqa_prompt,
+        finqa_zeroshot_prompt,
         # Zero-shot prompt functions
         fpb_zeroshot_prompt,
-        numclaim_zeroshot_prompt,
-        ectsum_zeroshot_prompt,
-        finqa_zeroshot_prompt,
-        causal_detection_zeroshot_prompt,
         numclaim_prompt,
-        ectsum_prompt,
-        finqa_prompt,
+        numclaim_zeroshot_prompt,
     )
 
     # Check that aliased functions work
@@ -91,7 +91,7 @@ def test_fewshot_prompt_functionality():
 
 def test_registry_access():
     """Test that prompts can be accessed through the registry."""
-    from flame.code.prompts import get_prompt, PromptFormat
+    from flame.code.prompts import PromptFormat, get_prompt
 
     # Test retrieving various prompt functions
     fpb_fn = get_prompt("fpb", PromptFormat.ZERO_SHOT)

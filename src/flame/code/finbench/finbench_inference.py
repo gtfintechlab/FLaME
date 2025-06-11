@@ -1,13 +1,13 @@
 from datetime import date
 
 import pandas as pd
-from flame.utils.dataset_utils import safe_load_dataset
 from tqdm import tqdm
 
-from flame.code.prompts import get_prompt, PromptFormat
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.code.prompts import PromptFormat, get_prompt
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.dataset_utils import safe_load_dataset
+from flame.utils.logging_utils import setup_logger
 
 logger = setup_logger(
     name="finbench_inference",

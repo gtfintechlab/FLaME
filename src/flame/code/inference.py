@@ -34,7 +34,7 @@ def main(args):
         logger.info(f"Time taken for inference: {time_taken}")
 
         # Generate a unique results path for this run using new structure
-        from flame.config import RESULTS_DIR, TEST_OUTPUT_DIR, IN_PYTEST
+        from flame.config import IN_PYTEST, RESULTS_DIR, TEST_OUTPUT_DIR
 
         base_dir = TEST_OUTPUT_DIR if IN_PYTEST else RESULTS_DIR
         results_path = generate_output_path(base_dir, task, args.model)

@@ -8,6 +8,7 @@ import importlib
 import inspect
 from pathlib import Path
 from types import ModuleType
+
 import pandas as pd
 import pytest
 
@@ -223,9 +224,9 @@ def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: 
     # ------------------------------------------------------------------
     # Patch misc stdlib helpers for tolerant parsing & heavy deps stubbing
     # ------------------------------------------------------------------
-    import sys
-    import json as _json
     import ast as _ast
+    import json as _json
+    import sys
 
     _orig_json_loads = _json.loads
     _orig_literal_eval = _ast.literal_eval

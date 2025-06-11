@@ -13,8 +13,8 @@ import pandas as pd
 from tqdm import tqdm
 
 from flame.code.mmlu.mmlu_loader import MMLULoader
-from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import get_component_logger
 
 logger = get_component_logger("inference", "mmlu")
 

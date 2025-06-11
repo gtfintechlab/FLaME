@@ -1,11 +1,13 @@
-import pandas as pd
+import ast
 import json
 import re
-import ast
+
+import pandas as pd
 from tqdm import tqdm
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import setup_logger
 
 # Configure logging
 logger = setup_logger(
@@ -90,7 +92,7 @@ def parse_json_content(content):
                 fixed_content = "\n".join(lines)
 
             return json.loads(fixed_content)
-        except:
+        except json.JSONDecodeError:
             try:
                 return ast.literal_eval(content)
             except (ValueError, SyntaxError):

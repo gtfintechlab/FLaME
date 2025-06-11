@@ -6,8 +6,8 @@ These prompts do not include examples and expect the model to perform the task
 based solely on instructions.
 """
 
-from .registry import register_prompt, PromptFormat
 from .constants import banking77_list, finred_relationships
+from .registry import PromptFormat, register_prompt
 
 
 @register_prompt("headlines", PromptFormat.ZERO_SHOT)
@@ -79,7 +79,7 @@ def fomc_zeroshot_prompt(sentence: str) -> str:
 @register_prompt("bizbench", PromptFormat.ZERO_SHOT)
 def bizbench_zeroshot_prompt(question: str, context: str) -> str:
     """Generate a zero-shot prompt for the BizBench task."""
-    prompt = f"""Discard all previous instructions. You are an expert financial data extractor. 
+    prompt = f"""Discard all previous instructions. You are an expert financial data extractor.
                 Extract the answer to the following question from the provided SEC filing context.
                 Provide the answer with just the number without any units or other text.
 
@@ -124,7 +124,7 @@ def fpb_zeroshot_prompt(sentence: str, prompt_format: str = None) -> str:
 
         user_msg = f""" Classify the following sentence into 'NEGATIVE', 'POSITIVE', or 'NEUTRAL'
                     class. Label 'NEGATIVE' if it is corresponding to negative sentiment, 'POSITIVE' if it is
-                    corresponding to positive sentiment, or 'NEUTRAL' if the sentiment is neutral. 
+                    corresponding to positive sentiment, or 'NEUTRAL' if the sentiment is neutral.
                     Provide the label in the first line and provide a short explanation in the second line.
                     Explain how you came to your classification decision. This is the sentence: {sentence}."""
 
@@ -146,7 +146,7 @@ def fpb_zeroshot_prompt(sentence: str, prompt_format: str = None) -> str:
                         class. Label 'NEGATIVE' if it is corresponding to negative sentiment, 'POSITIVE' if it is
                         corresponding to positive sentiment, or 'NEUTRAL' if the sentiment is neutral. Provide
                         the label in the first line and provide a short explanation in the second line.
-                        For instance: 
+                        For instance:
                         "According to Gran , the company has no plans to move all production to Russia , although that is where the company is growing" would be classified as 'NEUTRAL.
                         "When this investment is in place , Atria plans to expand into the Moscow market" would be classified as 'NEUTRAL'.
                         "With the new production plant the company would increase its capacity to meet the expected increase in demand and would improve the use of raw materials and therefore increase the production profitability" would be classified as 'POSITIVE'.
@@ -179,8 +179,8 @@ def edtsum_zeroshot_prompt(document: str) -> str:
     Returns:
         Formatted prompt string
     """
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert at summarization tasks.	
-        You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization 
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert at summarization tasks.
+        You are given a text that consists of multiple sentences. Your task is to perform abstractive summarization
         on this text. Use your understanding of the content to express the main ideas and crucial details in a shorter, coherent, and natural sounding text.
         \nThe text:\n{document}.\nOutput your concise summary below. Try to keep your summary to one sentence and a maximum of 50 words, preferably around 25 words."""
     return prompt
@@ -219,7 +219,7 @@ def fiqa_task1_zeroshot_prompt(sentence: str) -> str:
     Returns:
         Formatted prompt string
     """
-    prompt = f"""You are a financial sentiment analysis expert. Analyze the provided sentence, identify relevant target aspects (such as companies, products, or strategies), and assign a sentiment score for each target. 
+    prompt = f"""You are a financial sentiment analysis expert. Analyze the provided sentence, identify relevant target aspects (such as companies, products, or strategies), and assign a sentiment score for each target.
                 The sentiment score should be between -1 (highly negative) and 1 (highly positive), using up to three decimal places to capture nuances in sentiment.
 
                 Financial sentence:
@@ -241,7 +241,7 @@ def fiqa_task2_zeroshot_prompt(question: str) -> str:
         Formatted prompt string
     """
     prompt = f"""
-    You are a financial analysis expert tasked with answering opinion-based financial questions. Your answer should be drawn from a broad corpus of structured and unstructured financial data sources, such as microblogs, reports, and news articles. 
+    You are a financial analysis expert tasked with answering opinion-based financial questions. Your answer should be drawn from a broad corpus of structured and unstructured financial data sources, such as microblogs, reports, and news articles.
 
     Carefully analyze the given question and identify:
     - Relevant financial entities (e.g., companies, products, indexes)
@@ -324,8 +324,8 @@ def finentity_zeroshot_prompt(sentence: str) -> str:
     Returns:
         Formatted prompt string
     """
-    prompt = f"""Discard all the previous instructions. Behave like you are an expert entity recognizer and sentiment classifier. Identify the entities which are companies or organizations from the following content and classify the sentiment of the corresponding entities into 'Neutral' 'Positive' or 'Negative' classes. Considering every paragraph as a String in Python, provide the entities with the start and end index to mark the boundaries of it including spaces and punctuation using zero-based indexing. In the output, 
-    Tag means sentiment; value means entity name. If no entity is found in the paragraph, 
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert entity recognizer and sentiment classifier. Identify the entities which are companies or organizations from the following content and classify the sentiment of the corresponding entities into 'Neutral' 'Positive' or 'Negative' classes. Considering every paragraph as a String in Python, provide the entities with the start and end index to mark the boundaries of it including spaces and punctuation using zero-based indexing. In the output,
+    Tag means sentiment; value means entity name. If no entity is found in the paragraph,
     the response should be empty. Only give the output, not python code. The output should be a list that looks like:
     [{{'end': 210,
    'label': 'Neutral',
@@ -363,8 +363,8 @@ def finbench_zeroshot_prompt(profile: str) -> str:
         Formatted prompt string
     """
     prompt = f"""Discard all the previous instructions. Behave like you are an expect risk assessor.
-                Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan for. 
-                Categorize the person as 'HIGH RISK' if their profile indicates that they will likely default on 
+                Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan for.
+                Categorize the person as 'HIGH RISK' if their profile indicates that they will likely default on
                 the loan and not pay it back, and 'LOW RISK' if it is unlikely that they will fail to pay the loan back in full.
                 Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision.
                 Here is the information about the person:\nProfile data: {profile}\nPredict the risk category of this person:
@@ -411,7 +411,7 @@ def finqa_zeroshot_prompt(document: str) -> str:
     Returns:
         Formatted prompt string
     """
-    prompt = f"""Discard all the previous instructions. Behave like you are a financial expert in question answering. 
+    prompt = f"""Discard all the previous instructions. Behave like you are a financial expert in question answering.
                 Your task is to answer a financial question based on the provided context.\n\n The context:
                 {document}. Repeat you final answer at the end of your response. """
 
@@ -436,7 +436,7 @@ def convfinqa_zeroshot_prompt(document: str) -> str:
     The context provided includes a previous question and its answer, followed by a new question that you need to answer.
     Focus on answering only the final question based on the entire provided context:
     {document}.
-    Answer the final question based on the context above. Repeat your final answer at the end of your response. 
+    Answer the final question based on the context above. Repeat your final answer at the end of your response.
     """
     return prompt
 
@@ -455,10 +455,10 @@ def tatqa_zeroshot_prompt(document: str) -> str:
         Formatted prompt string
     """
     prompt = f"""Discard all previous instructions. Behave like an expert in table-and-text-based financial question answering.
-                Your task is to answer a question by extracting relevant information from both tables and text 
+                Your task is to answer a question by extracting relevant information from both tables and text
                 provided in the context. Ensure that you use both sources comprehensively to generate an accurate response. Repeat your final answer at the
-                end of your response. 
-                
+                end of your response.
+
                 The context: {document}"""
 
     return prompt
@@ -478,7 +478,7 @@ def causal_classification_zeroshot_prompt(text: str) -> str:
         Formatted prompt string
     """
     prompt = f"""Discard all the previous instructions. Behave like you are an expert causal classification model.
-    Below is a sentence. Classify it into one of the following categories: 
+    Below is a sentence. Classify it into one of the following categories:
                     0 - Non-causal
                     1 - Direct causal
                     2 - Indirect causal
@@ -504,7 +504,7 @@ def finred_zeroshot_prompt(sentence: str, entity1: str, entity2: str) -> str:
     """
     prompt = f"""Classify what relationship {entity2} (the head) has to {entity1} (the tail) within the following sentence:
     "{sentence}"
-    
+
     The relationship should match one of the following categories, where the relationship is what the head entity is to the tail entity:
     {", ".join(finred_relationships)}.
 
@@ -533,8 +533,8 @@ def causal_detection_zeroshot_prompt(tokens: list) -> str:
         - 'B-EFFECT': The first token of an effect phrase.
         - 'I-EFFECT': A token inside an effect phrase, but not the first token.
         - 'O': A token that is neither part of a cause nor an effect phrase.
-        
-    Return only the list of labels in the same order as the tokens, without additional commentary or repeating the tokens themselves. 
+
+    Return only the list of labels in the same order as the tokens, without additional commentary or repeating the tokens themselves.
 
     Tokens: {", ".join(tokens)}"""
 
@@ -589,7 +589,7 @@ def fnxl_zeroshot_prompt(sentence, company=None, doc_type=None) -> str:
     prompt = f"""
     You are an SEC reporting expert. Given a sentence from a financial filing, do two things:
     1) Identify every numeral in the sentence.
-    2) For each numeral, assign the most appropriate US-GAAP XBRL tag based on context. 
+    2) For each numeral, assign the most appropriate US-GAAP XBRL tag based on context.
     If no tag is appropriate, label it as "other".
 
     Return only valid JSON in this format:

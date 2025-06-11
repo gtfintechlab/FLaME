@@ -1,5 +1,6 @@
 import pandas as pd
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+
 from flame.utils.logging_utils import get_component_logger
 
 # Setup logger
@@ -82,7 +83,7 @@ def subjectiveqa_evaluate(file_name, args):
         )
 
     # Create metrics DataFrame
-    results_df = pd.DataFrame(metrics)
+    metrics_df = pd.DataFrame(metrics)
 
     # Compute average metrics
     if len(metrics) > 0:
@@ -100,21 +101,19 @@ def subjectiveqa_evaluate(file_name, args):
     logger.info(f"Average F1: {average_f1:.4f}")
     logger.info(f"Average Accuracy: {average_accuracy:.4f}")
 
-    # Create DataFrame for aggregated statistics
-    statistics_df = pd.DataFrame(
-        {
-            "Metric": ["Precision", "Recall", "F1 Score", "Accuracy"],
-            "Average": [
-                average_precision,
-                average_recall,
-                average_f1,
-                average_accuracy,
-            ],
-        }
-    )
+    # Add average metrics to the metrics DataFrame
+    average_row = {
+        "Label": "AVERAGE",
+        "Precision": average_precision,
+        "Recall": average_recall,
+        "F1 Score": average_f1,
+        "Accuracy": average_accuracy,
+    }
+    metrics_df = pd.concat([metrics_df, pd.DataFrame([average_row])], ignore_index=True)
 
     # Add extracted_labels columns to match expected format
     for _, predicted_label in label_pairs:
         data[f"{predicted_label}_extracted"] = data[predicted_label]
 
-    return data, statistics_df
+    # Return both detailed metrics and statistics
+    return data, metrics_df

@@ -1,21 +1,23 @@
-import re
 import json
+import re
+
 import pandas as pd
+from litellm.types.utils import (
+    Choices,
+    CompletionTokensDetailsWrapper,
+    Message,
+    ModelResponse,
+    PromptTokensDetailsWrapper,
+    Usage,
+)
 from sklearn.metrics import (
     accuracy_score,
-    precision_recall_fscore_support,
     classification_report,
+    precision_recall_fscore_support,
 )
-from flame.utils.logging_utils import setup_logger
+
 from flame.config import LOG_DIR, LOG_LEVEL
-from litellm.types.utils import (
-    ModelResponse,
-    Choices,
-    Message,
-    Usage,
-    CompletionTokensDetailsWrapper,
-    PromptTokensDetailsWrapper,
-)
+from flame.utils.logging_utils import setup_logger
 
 # Setup logger at module level
 logger = setup_logger(

@@ -1,6 +1,7 @@
-import requests
 import os
 import zipfile
+
+import requests
 
 base_url = "https://github.com/czyssrs/FinQA/raw/main/dataset/"
 

@@ -9,8 +9,8 @@ This ensures test artifacts are isolated and gitignored.
 """
 
 import logging
-from pathlib import Path
 import os
+from pathlib import Path
 from typing import Dict, Optional
 
 # Base directories
@@ -149,8 +149,9 @@ def configure_litellm():
         The configured litellm logger
     """
     try:
-        import litellm
         import logging
+
+        import litellm
 
         # Get the configured level for litellm
         litellm_level = LOG_CONFIG["components"].get("litellm", logging.WARNING)

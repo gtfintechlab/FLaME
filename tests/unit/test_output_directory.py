@@ -1,6 +1,7 @@
 """Test to verify test output directory configuration"""
 
 import pytest
+
 from flame.config import TEST_OUTPUT_DIR
 
 pytestmark = pytest.mark.unit

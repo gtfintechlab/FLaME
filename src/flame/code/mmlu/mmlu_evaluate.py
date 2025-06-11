@@ -1,20 +1,20 @@
-"""
+"""MMLU evaluation module.
+
 NOTE: This task is not included in the current release.
 MMLU was not used in the camera-ready version of the paper
 and will be implemented in a future release.
 """
 
-"""MMLU evaluation module."""
-
+import uuid
 from datetime import datetime
 from pathlib import Path
-import uuid
 from typing import Optional, Tuple
 
 import pandas as pd
 from sklearn.metrics import accuracy_score
-from flame.utils.logging_utils import setup_logger
+
 from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from flame.utils.logging_utils import setup_logger
 
 logger = setup_logger(
     name="mmlu_evaluation",

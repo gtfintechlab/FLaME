@@ -5,7 +5,7 @@ This module contains the default prompt functions for various FLaME tasks.
 These are often the canonical implementations that are most widely used.
 """
 
-from .registry import register_prompt, PromptFormat
+from .registry import PromptFormat, register_prompt
 
 
 @register_prompt("bizbench", PromptFormat.DEFAULT)

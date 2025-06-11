@@ -10,17 +10,17 @@ This test suite verifies that:
 import pytest
 
 from flame.code.prompts import (
-    get_prompt,
     PromptFormat,
-    bizbench_prompt,
-    banking77_zeroshot_prompt,
     banking77_fewshot_prompt,
-    fpb_zeroshot_prompt,
+    banking77_zeroshot_prompt,
+    bizbench_prompt,
+    finbench_zeroshot_prompt,
+    finentity_zeroshot_prompt,
+    finer_zeroshot_prompt,
     fiqa_task1_zeroshot_prompt,
     fiqa_task2_zeroshot_prompt,
-    finer_zeroshot_prompt,
-    finentity_zeroshot_prompt,
-    finbench_zeroshot_prompt,
+    fpb_zeroshot_prompt,
+    get_prompt,
 )
 
 pytestmark = pytest.mark.prompts

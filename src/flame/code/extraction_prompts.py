@@ -1,5 +1,5 @@
-from flame.code.prompts.registry import register_prompt, PromptFormat
 from flame.code.prompts.constants import banking77_list, finred_extraction_labels
+from flame.code.prompts.registry import PromptFormat, register_prompt
 
 
 @register_prompt("subjectiveqa", PromptFormat.EXTRACTION)
@@ -79,12 +79,12 @@ def finer_extraction_prompt(llm_response: str):
                     - "LOC_I" (Location_I): 4
                     - "ORG_B" (Organisation_B): 5
                     - "ORG_I" (Organisation_I): 6
- 
+
                 Provide only the list of integer labels, in the format:
                 [0, 1, 0, ...]
- 
+
                 Do not include any additional text, explanations, or formatting other than a plain list.
- 
+
                 LLM response:
                 "{llm_response}"."""
     return prompt
@@ -136,10 +136,10 @@ def finbench_extraction_prompt(llm_response: str):
 )  # Generic QA extraction - used by multiple tasks
 def qa_extraction_prompt(llm_response: str):
     prompt = f"""
-    You will receive a response from a language model that may include a numerical answer within its text. 
+    You will receive a response from a language model that may include a numerical answer within its text.
     Your task is to extract and return only the main/final answer. This could be represented as an integer, decimal, percentage, or text.
     Respond with whatever is labeled as the final answer, if that exists, even if that contains text. Otherwise, stick to numerical answers.
-    Do not include any additional text or formatting. 
+    Do not include any additional text or formatting.
 
     Model Response: {llm_response}
 
@@ -151,9 +151,9 @@ def qa_extraction_prompt(llm_response: str):
 @register_prompt("convfinqa", PromptFormat.EXTRACTION)
 def convfinqa_extraction_prompt(llm_response: str):
     prompt = f"""
-    You will receive a response from a language model that may include a numerical answer within its text. 
-    Your task is to extract and return only the main numerical value (integer, decimal, or percentage) that 
-    represents the final answer. Do not include any additional text or formatting. 
+    You will receive a response from a language model that may include a numerical answer within its text.
+    Your task is to extract and return only the main numerical value (integer, decimal, or percentage) that
+    represents the final answer. Do not include any additional text or formatting.
 
     Model Response: {llm_response}
 
@@ -164,7 +164,7 @@ def convfinqa_extraction_prompt(llm_response: str):
 
 def qa_evaluate_answer(predicted_answer: str, correct_answer: str):
     prompt = f"""
-    You will receive two answers. Your job is to evaluate if they are exactly the same, with some caveats. 
+    You will receive two answers. Your job is to evaluate if they are exactly the same, with some caveats.
     If they are wholly different answers (eg: 8 and 9), they are considered different.
     If the first answer is a more precise version of the second answer (eg: units listed, more decimal points reported, etc), they are the same.
     If the first answer can be rounded to the second answer, with the exact level of precision that the second answer uses, they are considered the same. If they cannot, they are different.
@@ -182,10 +182,10 @@ def qa_evaluate_answer(predicted_answer: str, correct_answer: str):
 def finred_extraction_prompt(llm_response: str):
     """Generate a prompt to extract the classification label from the LLM response."""
     relationship_choices = ", ".join(finred_extraction_labels)
-    prompt = f"""Extract the classification label from the following LLM response. The label should be one of the following {relationship_choices}. 
-    
+    prompt = f"""Extract the classification label from the following LLM response. The label should be one of the following {relationship_choices}.
+
                 Pick the label out of the list that is the closest to the LLM response, but list 'NO-REL' if the LLM did not output a clear answer.
-                
+
                 Here is the LLM response to analyze:
                 "{llm_response}"
                 Provide only the label that best matches the response, exactly as it is listed in the approved label list, with an underscore (_) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, asterisks, or punctuation, etc. Only output the label. Do not list an explanation or multiple labels."""
@@ -203,7 +203,7 @@ def fomc_extraction_prompt(llm_response: str) -> str:
         A formatted prompt string for label extraction
     """
     prompt = f"""Extract the classification label from the following LLM response. The label should be one of the following: 'HAWKISH', 'DOVISH', or 'NEUTRAL'.
-                
+
                 Here is the LLM response to analyze:
                 "{llm_response}"
                 Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
@@ -240,7 +240,7 @@ def headlines_extraction_prompt(llm_response: str):
 def refind_extraction_prompt(llm_response: str):
     """Construct the extraction prompt."""
     prompt = f"""Extract the classification label from the following LLM response. The label should be one of the following: ‘PERSON-TITLE’, ‘PERSON-GOV_AGY’, ‘PERSON-ORG’, ‘PERSON-UNIV’, ‘ORG-ORG’, ‘ORG-MONEY’, ‘ORG-GPE’, or ‘ORG-DATE’. List ‘NO-REL’ if the LLM did not output a clear answer.
-                
+
                 Here is the LLM response to analyze:
                 "{llm_response}"
                 Provide only the label that best matches the response, exactly as it is listed in the approved label list, with a dash (-) between words. Only output alphanumeric characters, spaces, dashes, and underscores. Do not include any special characters, quotations, or punctuation. Only output the label."""
@@ -251,7 +251,7 @@ def refind_extraction_prompt(llm_response: str):
 @register_prompt("fiqa_task1", PromptFormat.EXTRACTION)
 def fiqa_1_extraction_prompt(llm_response: str):
     prompt = f"""
-    You are tasked with extracting the sentiment score from a response. 
+    You are tasked with extracting the sentiment score from a response.
     The sentiment score should be a single numeric value between -1 and 1.
 
     Model Response: {llm_response}

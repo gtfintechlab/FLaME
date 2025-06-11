@@ -1,15 +1,17 @@
-import pandas as pd
-import numpy as np
 import json
 import re
+
+import numpy as np
+import pandas as pd
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from tqdm import tqdm
+
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 
 # from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
-from flame.config import LOG_DIR, LOG_LEVEL
-from flame.code.prompts.registry import get_prompt, PromptFormat
 
 # Configure logging
 logger = setup_logger(
@@ -36,7 +38,7 @@ def save_progress(df, path):
     # def finer_evaluate(file_name, args):
     #     """Evaluate Finer dataset with batching and return results and metrics DataFrames."""
     #     # support legacy args.dataset for tests, prefer args.task
-    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "finer"
+    #     task = getattr(args, "task", None) or getattr(args, "dataset", None) or "finer"
 
 
 #     logger.info(f"Starting evaluation for {task} using model {args.model}.")

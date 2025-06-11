@@ -1,6 +1,8 @@
-import pytest
 import sys
+
+import pytest
 import yaml
+
 from main import parse_arguments
 
 pytestmark = pytest.mark.unit

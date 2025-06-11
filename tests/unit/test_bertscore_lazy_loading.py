@@ -1,7 +1,8 @@
 """Test lazy loading of BERTScore in evaluation modules."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 
 @pytest.mark.unit
@@ -10,9 +11,9 @@ def test_ectsum_bertscore_lazy_loading():
 
     # Import the module - this should NOT trigger BERTScore loading
     from flame.code.ectsum.ectsum_evaluate import (
-        get_bertscore,
         _bertscore,
         _bertscore_error,
+        get_bertscore,
     )
 
     # Verify BERTScore is not loaded yet
@@ -41,6 +42,7 @@ def test_ectsum_bertscore_loading_error():
 
     # Reset the module state
     import importlib
+
     import flame.code.ectsum.ectsum_evaluate
 
     importlib.reload(flame.code.ectsum.ectsum_evaluate)
@@ -70,6 +72,7 @@ def test_edtsum_bertscore_lazy_loading():
 
     # Reset the module state
     import importlib
+
     import flame.code.edtsum.edtsum_evaluate
 
     importlib.reload(flame.code.edtsum.edtsum_evaluate)

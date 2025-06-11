@@ -1,13 +1,14 @@
 import pandas as pd
-from tqdm import tqdm
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
-from flame.code.prompts.registry import get_prompt, PromptFormat
+from tqdm import tqdm
+
 from flame.code.prompts.constants import (
     finred_extraction_labels as possible_relationships,
 )
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.config import LOG_DIR, LOG_LEVEL
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import setup_logger
 
 logger = setup_logger(
     name="finred_evaluation",

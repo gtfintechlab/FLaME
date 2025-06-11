@@ -18,15 +18,15 @@ Important: Never commit test outputs. Always use the IN_PYTEST pattern.
 
 from __future__ import annotations
 
-import time as _time
 import importlib
-from types import SimpleNamespace as _SN
-
-import pytest
-import litellm
+import time as _time
 
 # Silence deprecation warnings (Pydantic, litellm deprecations)
 import warnings
+from types import SimpleNamespace as _SN
+
+import litellm
+import pytest
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 

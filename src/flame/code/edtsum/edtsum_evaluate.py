@@ -1,8 +1,9 @@
+import numpy as np
 import pandas as pd
 from evaluate import load
-import numpy as np
-from flame.utils.logging_utils import setup_logger
+
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.utils.logging_utils import setup_logger
 
 # Configure logging first so we can use it in get_bertscore
 logger = setup_logger(
@@ -41,7 +42,7 @@ def get_bertscore():
 def summarization_prompt(input_text: str):
     """Generate a prompt for creating temporal summaries."""
     prompt = f'''Generate a temporal summary in about 50 words in line-by-line bullet format based on the following input. The summary should include key events, time points, and any major changes in sequence.
-                
+
                 Here is the input to analyze:
                 "{input_text}"'''
     return prompt

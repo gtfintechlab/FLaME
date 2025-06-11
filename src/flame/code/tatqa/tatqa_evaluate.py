@@ -1,9 +1,9 @@
 import pandas as pd
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
 
-from flame.utils.logging_utils import get_component_logger
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from flame.utils.logging_utils import get_component_logger
 
 # Use component-based logger that follows the logging configuration
 logger = get_component_logger("evaluation", "tatqa")
@@ -12,8 +12,8 @@ logger = get_component_logger("evaluation", "tatqa")
 # Function to generate the evaluation prompt
 def evaluation_prompt(llm_response: str, actual_answer: str):
     prompt = f"""
-    The correct answer is {actual_answer}. Based on the model's response, extract the numerical value closest to the correct label. 
-    Return only the number and no additional words, punctuation, or text. For example, 13 or 90%. 
+    The correct answer is {actual_answer}. Based on the model's response, extract the numerical value closest to the correct label.
+    Return only the number and no additional words, punctuation, or text. For example, 13 or 90%.
     If there are multiple numbers, return only the most relevant one.
 
     Response: {llm_response}

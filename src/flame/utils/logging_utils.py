@@ -2,7 +2,8 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from flame.config import LOG_CONFIG, LOG_FORMAT, LOG_DIR
+
+from flame.config import LOG_CONFIG, LOG_DIR, LOG_FORMAT
 
 
 def setup_logger(name, log_file, level=None):

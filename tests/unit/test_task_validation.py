@@ -1,9 +1,11 @@
 """Tests for task validation and registry functionality"""
 
-import pytest
-from flame.task_registry import supported, INFERENCE_MAP, EVALUATE_MAP
-from main import run_tasks
 from types import SimpleNamespace
+
+import pytest
+
+from flame.task_registry import EVALUATE_MAP, INFERENCE_MAP, supported
+from main import run_tasks
 
 pytestmark = pytest.mark.unit
 

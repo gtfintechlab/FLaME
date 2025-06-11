@@ -1,9 +1,9 @@
 import pandas as pd
-from flame.utils.dataset_utils import safe_load_dataset
 from litellm import completion
 from tqdm import tqdm
 
-from flame.code.prompts import get_prompt, PromptFormat
+from flame.code.prompts import PromptFormat, get_prompt
+from flame.utils.dataset_utils import safe_load_dataset
 from flame.utils.logging_utils import get_component_logger
 
 # Use component-based logger that follows the logging configuration

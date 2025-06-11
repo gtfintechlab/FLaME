@@ -9,8 +9,8 @@ This test suite ensures that our prompt registry:
 import pytest
 
 # Import our registry
-from flame.code.prompts import get_prompt, PromptFormat
-from flame.code.prompts.registry import list_tasks, _REGISTRY
+from flame.code.prompts import PromptFormat, get_prompt
+from flame.code.prompts.registry import _REGISTRY, list_tasks
 
 pytestmark = pytest.mark.prompts
 
@@ -325,9 +325,9 @@ def test_extraction_prompt_functionality():
 def test_extraction_prompt_integration():
     """Test that extraction prompts integrate correctly with evaluation modules."""
     # Import a few evaluation modules to ensure they can access extraction prompts
-    from flame.code.fpb.fpb_evaluate import fpb_evaluate
     from flame.code.banking77.banking77_evaluate import banking77_evaluate
     from flame.code.finred.finred_evaluate import finred_evaluate
+    from flame.code.fpb.fpb_evaluate import fpb_evaluate
 
     # These imports should not fail, and the modules should have access to the registry
     assert fpb_evaluate is not None

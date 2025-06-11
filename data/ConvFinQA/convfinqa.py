@@ -1,10 +1,10 @@
-from huggingface_hub import hf_hub_upload
 import pandas as pd
 from datasets import Dataset, DatasetDict
-from flame.utils.miscellaneous import zip_to_csv
+from huggingface_hub import hf_hub_upload
 
 from flame.config import DATA_DIR, LOG_DIR, LOG_LEVEL
 from flame.utils.logging_utils import setup_logger
+from flame.utils.miscellaneous import zip_to_csv
 
 logger = setup_logger(
     name=__name__, log_file=LOG_DIR / "convfinqahuggify.log", level=LOG_LEVEL

@@ -1,9 +1,11 @@
-from huggingface_hub import hf_hub_upload
+import logging
+
 import pandas as pd
 from datasets import Dataset
-import logging
-from flame.utils.miscellaneous import zip_to_csv
+from huggingface_hub import hf_hub_upload
+
 from flame.config import DATA_DIR, LOG_LEVEL
+from flame.utils.miscellaneous import zip_to_csv
 
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "finqa"

@@ -1,23 +1,25 @@
+import ast
+
 import pandas as pd
+from litellm.types.utils import (
+    Choices,
+    CompletionTokensDetailsWrapper,
+    Message,
+    ModelResponse,
+    PromptTokensDetailsWrapper,
+    Usage,
+)
 from sklearn.metrics import (
     accuracy_score,
-    precision_recall_fscore_support,
     classification_report,
+    precision_recall_fscore_support,
 )
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
-from flame.code.prompts.registry import get_prompt, PromptFormat
 from tqdm import tqdm
-from litellm.types.utils import (
-    ModelResponse,
-    Choices,
-    Message,
-    Usage,
-    CompletionTokensDetailsWrapper,
-    PromptTokensDetailsWrapper,
-)
-import ast
+
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.config import LOG_DIR, LOG_LEVEL
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import setup_logger
 
 # Configure logging
 logger = setup_logger(
@@ -115,7 +117,7 @@ def causal_detection_evaluate(file_name, args):
                     extracted_tags.append("[]")
 
         except Exception as e:
-            logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+            logger.debug(f"Batch {batch_idx + 1} failed: {str(e)}")
             # Add empty results for failed batch
             for _ in batch:
                 extracted_tags.append("[]")

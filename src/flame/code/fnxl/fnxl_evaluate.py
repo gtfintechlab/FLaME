@@ -1,10 +1,12 @@
 import json
+
 import pandas as pd
+from tqdm import tqdm
+
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.utils.logging_utils import setup_logger
-from flame.code.prompts.registry import get_prompt, PromptFormat
-from flame.config import LOG_DIR, LOG_LEVEL
-from tqdm import tqdm
 
 logger = setup_logger(
     name="fnxl_evaluation",

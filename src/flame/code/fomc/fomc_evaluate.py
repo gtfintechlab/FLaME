@@ -1,15 +1,17 @@
-from typing import Dict, Tuple, List
-import pandas as pd
+import time
+import uuid
 from datetime import datetime
 from pathlib import Path
-import uuid
+from typing import Dict, List, Tuple
+
+import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
-import time
-from flame.code.prompts.registry import get_prompt, PromptFormat
+
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import setup_logger
 
 logger = setup_logger(
     name="fomc_evaluation",

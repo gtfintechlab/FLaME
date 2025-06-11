@@ -1,8 +1,8 @@
 """Utilities for generating output filenames and folder hierarchies."""
 
-import uuid
 import datetime
 import re
+import uuid
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -208,7 +208,7 @@ def generate_inference_filename(
     """
     if output_dir is None:
         # Import at runtime to get patched values in tests
-        from flame.config import RESULTS_DIR, TEST_OUTPUT_DIR, IN_PYTEST
+        from flame.config import IN_PYTEST, RESULTS_DIR, TEST_OUTPUT_DIR
 
         output_dir = TEST_OUTPUT_DIR if IN_PYTEST else RESULTS_DIR
 
@@ -236,7 +236,7 @@ def generate_evaluation_filename(
     """
     if output_dir is None:
         # Import at runtime to get patched values in tests
-        from flame.config import EVALUATION_DIR, TEST_OUTPUT_DIR, IN_PYTEST
+        from flame.config import EVALUATION_DIR, IN_PYTEST, TEST_OUTPUT_DIR
 
         output_dir = TEST_OUTPUT_DIR if IN_PYTEST else EVALUATION_DIR
 

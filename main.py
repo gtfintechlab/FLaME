@@ -1,15 +1,17 @@
 import argparse
-from dotenv import load_dotenv
+import logging
 import os
 import sys
-import logging
-from flame.code.inference import main as inference
-from huggingface_hub import login
-from flame.code.evaluate import main as evaluate
-from flame.task_registry import supported as supported_tasks
-from flame.config import configure_logging, LOG_CONFIG
-from flame.utils.logging_utils import get_component_logger
+
 import litellm
+from dotenv import load_dotenv
+from huggingface_hub import login
+
+from flame.code.evaluate import main as evaluate
+from flame.code.inference import main as inference
+from flame.config import LOG_CONFIG, configure_logging
+from flame.task_registry import supported as supported_tasks
+from flame.utils.logging_utils import get_component_logger
 
 
 def parse_arguments():

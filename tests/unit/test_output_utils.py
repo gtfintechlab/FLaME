@@ -1,14 +1,15 @@
 """Unit tests for new output utilities and filename patterns."""
 
-import pytest
 import re
 from datetime import datetime
-from flame.config import TEST_OUTPUT_DIR
 
+import pytest
+
+from flame.config import TEST_OUTPUT_DIR
 from flame.utils.output_utils import (
-    parse_model_info,
     build_output_filename,
     generate_output_path,
+    parse_model_info,
     parse_output_filename,
 )
 
@@ -44,9 +45,9 @@ def test_new_filename_pattern():
 
     # Pattern: {model_slug}__{task_slug}__r{run:02d}__{yyyymmdd}__{uuid8}.csv
     pattern = r"^llama-2-7b__fomc__r01__\d{8}__[0-9a-f]{8}\.csv$"
-    assert re.match(pattern, filename), (
-        f"Filename {filename} doesn't match expected pattern"
-    )
+    assert re.match(
+        pattern, filename
+    ), f"Filename {filename} doesn't match expected pattern"
 
     # Test metrics version
     metrics_filename = build_output_filename("llama-2-7b", "fomc", run=1, metrics=True)

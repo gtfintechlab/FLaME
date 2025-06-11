@@ -1,11 +1,12 @@
 """Integration tests for multi-task functionality in FLaME"""
 
+import os
+import sys
+from unittest.mock import patch
+
+import pandas as pd
 import pytest
 import yaml
-import pandas as pd
-from unittest.mock import patch
-import sys
-import os
 
 pytestmark = pytest.mark.integration
 
@@ -84,8 +85,9 @@ def test_multi_task_with_mixed_modes(tmp_path, monkeypatch):
     with open(config_file, "w") as f:
         yaml.dump(inference_config, f)
 
-    import main
     from types import SimpleNamespace
+
+    import main
 
     # Mock parse_arguments to return our config
     def mock_parse_args():
@@ -221,8 +223,9 @@ def test_task_specific_parameters_yaml(tmp_path):
 def test_multi_task_error_recovery_and_reporting(monkeypatch):
     """Test error recovery and reporting in multi-task execution"""
     from types import SimpleNamespace
-    from main import MultiTaskError, run_tasks
     from unittest.mock import patch
+
+    from main import MultiTaskError, run_tasks
 
     # Create mock functions with controlled failures
     call_log = []
@@ -346,10 +349,11 @@ def test_invalid_configurations(tmp_path, monkeypatch, invalid_config, expected_
 
 def test_multi_task_progress_tracking(capsys):
     """Test that multi-task execution provides progress feedback"""
-    from types import SimpleNamespace
-    from main import run_tasks
-    from unittest.mock import patch
     import time
+    from types import SimpleNamespace
+    from unittest.mock import patch
+
+    from main import run_tasks
 
     # Mock inference with delays to simulate real processing
     def mock_inference(args):

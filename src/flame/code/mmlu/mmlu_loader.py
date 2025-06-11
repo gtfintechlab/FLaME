@@ -3,12 +3,13 @@
 import logging
 import sys
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
-from flame.utils.dataset_utils import safe_load_dataset
+
 from flame.code.mmlu.mmlu_constants import ECONOMICS_SUBJECTS, SPLITS
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.utils.dataset_utils import safe_load_dataset
 
 # Configure logging to show on console with timestamp and level
 logging.basicConfig(
