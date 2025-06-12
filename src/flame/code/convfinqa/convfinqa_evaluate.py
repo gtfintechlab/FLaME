@@ -1,87 +1,103 @@
-import pandas as pd
-from datetime import date
-from flame.code.tokens import tokens
-from litellm import completion
 import re
-from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-from flame.utils.logging_utils import setup_logger
+
+import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from tqdm import tqdm
 
-# Setup logger
-logger = setup_logger(
-    name="convfinqa_evaluation",
-    log_file=LOG_DIR / "convfinqa_evaluation.log",
-    level=LOG_LEVEL,
-)
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import get_component_logger
 
-
-# Prompt template for extracting numerical answers
-def extraction_prompt(llm_response: str):
-    prompt = f"""
-    You will receive a response from a language model that may include a numerical answer within its text. 
-    Your task is to extract and return only the main numerical value (integer, decimal, or percentage) that 
-    represents the final answer. Do not include any additional text or formatting. 
-
-    Model Response: {llm_response}
-
-    Please respond with only one numerical value.
-    """
-    return prompt
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("evaluation", "convfinqa")
 
 
 # Function to extract numerical values using regex
 def extract_numerical_value(text):
-    match = re.search(r"(\d+(\.\d+)?%?)", text)
+    if text is None:
+        return None
+    match = re.search(r"(\d+(\.\d+)?%?)", str(text))
     return match.group(0) if match else None
 
 
-# Main evaluation function
+# Main evaluation function with batch processing
 def convfinqa_evaluate(file_name, args):
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "convfinqa"
     logger.info(f"Starting evaluation for {task} using model {args.model}...")
 
     df = pd.read_csv(file_name)
     logger.info(f"Loaded data from {file_name} for evaluation.")
 
-    # Output path for evaluation results
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
-
     extraction_response = []
     extraction_model_response = []
     regex_extraction = []
 
-    # Iterating over responses
-    for entry in df["response"]:
-        try:
-            model_response = completion(
-                model=args.model,
-                messages=[{"role": "user", "content": extraction_prompt(entry)}],
-                max_tokens=args.max_tokens,
-                temperature=args.temperature,
-                top_k=args.top_k,
-                top_p=args.top_p,
-                repetition_penalty=args.repetition_penalty,
-                stop=tokens(args.model),
-            )
+    # Get all responses to process
+    all_responses = df["response"].tolist()
+    extraction_prompt_func = get_prompt("convfinqa", PromptFormat.EXTRACTION)
 
-            extraction_model_response.append(model_response)
-            response_text = model_response.choices[0].message.content  # type: ignore
+    # Prepare all prompts
+    all_prompts = []
+    for response in all_responses:
+        if pd.notna(response):
+            all_prompts.append(extraction_prompt_func(str(response)))
+        else:
+            all_prompts.append(None)
 
-            extraction_response.append(response_text)
+    logger.info(
+        f"Processing {len(all_prompts)} ConvFinQA evaluations in batches of {args.batch_size}"
+    )
 
-            numerical_value = extract_numerical_value(response_text)
-            regex_extraction.append(numerical_value)
+    # Process non-null prompts in batches
+    valid_indices = [i for i, prompt in enumerate(all_prompts) if prompt is not None]
+    valid_prompts = [all_prompts[i] for i in valid_indices]
 
-        except Exception as e:
-            logger.error(f"Error processing response: {e}")
-            extraction_model_response.append(str(e))
-            extraction_response.append(None)
-            regex_extraction.append(None)
+    if valid_prompts:
+        batches = list(chunk_list(valid_prompts, args.batch_size))
+        all_batch_responses = []
+
+        for batch_idx, batch_prompts in enumerate(
+            tqdm(batches, desc="Evaluating ConvFinQA responses")
+        ):
+            # Convert prompts to messages format for batch processing
+            messages_batch = [
+                [{"role": "user", "content": prompt}] for prompt in batch_prompts
+            ]
+
+            try:
+                batch_responses = process_batch_with_retry(
+                    args, messages_batch, batch_idx, len(batches)
+                )
+                all_batch_responses.extend(batch_responses)
+            except Exception as e:
+                logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
+                # Add None responses for failed batch
+                all_batch_responses.extend([None] * len(batch_prompts))
+
+        # Map responses back to original indices
+        response_map = dict(zip(valid_indices, all_batch_responses))
+
+        # Build final results
+        for i in range(len(df)):
+            if i in response_map and response_map[i]:
+                model_response = response_map[i]
+                extraction_model_response.append(model_response)
+                response_text = model_response.choices[0].message.content  # type: ignore
+                extraction_response.append(response_text)
+
+                # Extract numerical value
+                numerical_value = extract_numerical_value(response_text)
+                regex_extraction.append(numerical_value)
+            else:
+                extraction_model_response.append(None)
+                extraction_response.append(None)
+                regex_extraction.append(None)
+    else:
+        # All responses are null
+        extraction_model_response = [None] * len(df)
+        extraction_response = [None] * len(df)
+        regex_extraction = [None] * len(df)
 
     # Adding results to DataFrame
     df["extraction_model_response"] = extraction_model_response
@@ -90,16 +106,21 @@ def convfinqa_evaluate(file_name, args):
 
     # Accuracy calculation
     correct_labels = df["actual_label"].tolist()
-    valid_predictions = [
-        (x, y) if pd.notna(x) else (x, "Error")
-        for x, y in zip(correct_labels, regex_extraction)
-    ]
 
-    # Calculate metrics
-    accuracy = accuracy_score(correct_labels, valid_predictions)
-    precision, recall, f1, _ = precision_recall_fscore_support(
-        correct_labels, valid_predictions
-    )
+    # Filter out None predictions for metrics calculation
+    valid_indices = [i for i, pred in enumerate(regex_extraction) if pred is not None]
+    if valid_indices:
+        valid_labels = [str(correct_labels[i]) for i in valid_indices]
+        valid_predictions = [str(regex_extraction[i]) for i in valid_indices]
+
+        # Calculate metrics
+        accuracy = accuracy_score(valid_labels, valid_predictions)
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            valid_labels, valid_predictions, average="weighted", zero_division=0
+        )
+    else:
+        logger.error("No valid predictions to calculate metrics")
+        accuracy = precision = recall = f1 = 0.0
 
     # Log metrics
     logger.info(f"Accuracy: {accuracy:.4f}")
@@ -115,16 +136,6 @@ def convfinqa_evaluate(file_name, args):
         }
     )
 
-    logger.info(
-        f"Evaluation completed. Accuracy: {accuracy:.4f}. Results saved to {evaluation_results_path}"
-    )
-    df.to_csv(evaluation_results_path, index=False)
-
-    # Save metrics DataFrame
-    metrics_path = evaluation_results_path.with_name(
-        f"{evaluation_results_path.stem}_metrics.csv"
-    )
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}.")
 
     return df, metrics_df

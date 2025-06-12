@@ -1,10 +1,11 @@
-import logging
 import argparse
+import logging
 
 from datasets import DatasetDict, load_dataset
 from dotenv import dotenv_values
-from flame.config import DATA_DIR, LOG_LEVEL
 from huggingface_hub import login
+
+from flame.config import DATA_DIR, LOG_LEVEL
 
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "EconLogicQA"

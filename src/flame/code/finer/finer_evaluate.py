@@ -1,13 +1,17 @@
-import pandas as pd
-import numpy as np
 import json
 import re
+
+import numpy as np
+import pandas as pd
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from tqdm import tqdm
+
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 
 # from flame.code.tokens import tokens
 from flame.utils.logging_utils import setup_logger
-from flame.config import LOG_DIR, LOG_LEVEL
 
 # Configure logging
 logger = setup_logger(
@@ -15,27 +19,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "finer_evaluation.log",
     level=LOG_LEVEL,
 )
-
-
-def extraction_prompt_finer(llm_response: str):
-    """Generate a prompt to extract numeric labels for named entity recognition."""
-    prompt = f"""For each token in the following response, map the named entity labels to these numeric values:
-                    - "O" (Other): 0
-                    - "PER_B" (Person_B): 1
-                    - "PER_I" (Person_I): 2
-                    - "LOC_B" (Location_B): 3
-                    - "LOC_I" (Location_I): 4
-                    - "ORG_B" (Organisation_B): 5
-                    - "ORG_I" (Organisation_I): 6
- 
-                Provide only the list of integer labels, in the format:
-                [0, 1, 0, ...]
- 
-                Do not include any additional text, explanations, or formatting other than a plain list.
- 
-                LLM response:
-                "{llm_response}"."""
-    return prompt
 
 
 def clean_extracted_list(response: str) -> str:
@@ -52,10 +35,12 @@ def save_progress(df, path):
     df.to_csv(path, index=False)
     logger.info(f"Progress saved to {path}")
 
+    # def finer_evaluate(file_name, args):
+    #     """Evaluate Finer dataset with batching and return results and metrics DataFrames."""
+    #     # support legacy args.dataset for tests, prefer args.task
+    #     task = getattr(args, "task", None) or getattr(args, "dataset", None) or "finer"
 
-# def finer_evaluate(file_name, args):
-#     """Evaluate Finer dataset with batching and return results and metrics DataFrames."""
-#     task = args.dataset.strip('“”"')
+
 #     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
 #     # Load CSV
@@ -143,7 +128,8 @@ def finer_evaluate(file_name, args):
     Skip rows where the length of actual vs. predicted lists differ.
     Compute row-level metrics and aggregate them.
     """
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "finer"
     logger.info(f"Starting row-by-row evaluation for {task} using model {args.model}.")
 
     # Load CSV
@@ -169,11 +155,13 @@ def finer_evaluate(file_name, args):
     indices = list(range(len(df)))
     index_batches = chunk_list(indices, batch_size)
     logger.info(f"Processing {len(df)} rows in {len(index_batches)} batches.")
-    for batch_idx, batch_indices in enumerate(index_batches):
+    pbar = tqdm(index_batches, desc="Processing batches")
+    for batch_idx, batch_indices in enumerate(pbar):
         llm_responses_batch = [df.at[i, "llm_responses"] for i in batch_indices]
-        logger.info(f"Processing batch {batch_idx + 1} with {len(batch_indices)} rows.")
+        pbar.set_description(f"Batch {batch_idx + 1}/{len(index_batches)}")
+        extraction_prompt_func = get_prompt("finer", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt_finer(llm_response)}]
+            [{"role": "user", "content": extraction_prompt_func(llm_response)}]
             for llm_response in llm_responses_batch
         ]
         try:
@@ -181,7 +169,7 @@ def finer_evaluate(file_name, args):
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, len(index_batches)
             )
-            logger.info(f"Processed responses for batch {batch_idx + 1}.")
+            logger.debug(f"Processed responses for batch {batch_idx + 1}.")
             for idx, (response, row_idx) in enumerate(
                 zip(batch_responses, batch_indices)
             ):

@@ -1,18 +1,16 @@
 from datetime import date
-import pandas as pd
-from datasets import load_dataset
-from flame.code.prompts_zeroshot import finer_zeroshot_prompt
-from flame.code.prompts_fewshot import finer_fewshot_prompt
+
 import litellm
+import pandas as pd
+from tqdm import tqdm
 
-# from flame.code.tokens import tokens
-from flame.utils.logging_utils import setup_logger
+from flame.code.prompts import PromptFormat, get_prompt
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from flame.utils.dataset_utils import safe_load_dataset
+from flame.utils.logging_utils import get_component_logger
 
-logger = setup_logger(
-    name="finer_inference", log_file=LOG_DIR / "finer_inference.log", level=LOG_LEVEL
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "finer")
 
 litellm.drop_params = True
 
@@ -23,7 +21,7 @@ def finer_inference(args):
 
     # Load the dataset
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/finer-ord-bio", trust_remote_code=True)
+    dataset = safe_load_dataset("gtfintechlab/finer-ord-bio", trust_remote_code=True)
 
     # Extract data
     sentences = [row["tokens"] for row in dataset["test"]]  # type: ignore
@@ -33,9 +31,11 @@ def finer_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        finer_prompt = finer_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        finer_prompt = finer_zeroshot_prompt
+        finer_prompt = get_prompt("finer", PromptFormat.FEW_SHOT)
+    else:
+        finer_prompt = get_prompt("finer", PromptFormat.ZERO_SHOT)
+    if finer_prompt is None:
+        raise RuntimeError("FinER prompt not found in registry")
 
     batch_size = args.batch_size
     total_batches = len(sentences) // batch_size + int(len(sentences) % batch_size > 0)
@@ -44,7 +44,10 @@ def finer_inference(args):
     # Create batches
     sentence_batches = chunk_list(sentences, batch_size)
 
-    for batch_idx, sentence_batch in enumerate(sentence_batches):
+    pbar = tqdm(sentence_batches, desc="Processing batches")
+    for batch_idx, sentence_batch in enumerate(pbar):
+        pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
+
         # Create prompt messages for the batch
         messages_batch = [
             [{"role": "user", "content": finer_prompt(sentence)}]
@@ -80,12 +83,5 @@ def finer_inference(args):
             "complete_responses": complete_responses,
         }
     )
-    # Save results to a CSV file
-    results_path = (
-        RESULTS_DIR / "finer" / f"finer_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
 
     return df

@@ -1,0 +1,173 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop, epic1 ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  # Global CI environment variables
+  CI: "true"
+  PYTEST_RUNNING: "1"
+  HUGGINGFACEHUB_API_TOKEN: "mock-token-for-ci"
+  FLAME_CONFIG: "ci"
+
+jobs:
+  # Tier 1: Lightning Tests (< 30 seconds)
+  lightning-tests:
+    name: Lightning Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache uv
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/uv
+        key: ${{ runner.os }}-uv-${{ hashFiles('requirements.txt') }}
+    
+    - name: Install uv
+      run: pip install uv
+    
+    - name: Install dependencies
+      run: |
+        uv pip install --system -r requirements.txt
+        uv pip install --system -e .
+    
+    - name: Syntax Check
+      run: |
+        python -m py_compile main.py
+        python -m compileall src/
+    
+    - name: Import Check
+      run: |
+        python -c "import flame; print('Import successful')"
+        python -c "from flame.task_registry import supported; print(f'Tasks: {len(supported(\"inference\"))}')"
+    
+    - name: Config Parse Check
+      run: |
+        python -c "
+        import yaml
+        with open('configs/default.yaml') as f:
+          config = yaml.safe_load(f)
+        print('Config valid')
+        "
+
+  # Tier 2: Essential Tests (< 3 minutes)
+  essential-tests:
+    name: Essential Tests
+    needs: lightning-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/uv
+          ~/.cache/pip
+        key: ${{ runner.os }}-deps-${{ hashFiles('requirements.txt') }}
+    
+    - name: Install dependencies
+      run: |
+        pip install uv
+        uv pip install --system -r requirements.txt
+        uv pip install --system -e .
+    
+    - name: Essential Unit Tests
+      run: |
+        pytest -c pytest-ci.ini tests/unit/ \
+          -m "not requires_api and not requires_ollama and not slow" \
+          --no-header --tb=short
+    
+    - name: Essential Module Tests
+      run: |
+        pytest -c pytest-ci.ini tests/modules/ \
+          -m "essential" \
+          --no-header --tb=short
+    
+    - name: Prompt Tests
+      run: |
+        pytest -c pytest-ci.ini tests/prompts/ \
+          --no-header --tb=short
+
+  # Tier 3: Full Test Suite (< 5 minutes)
+  full-tests:
+    name: Full Test Suite
+    needs: essential-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    
+    strategy:
+      matrix:
+        test-group: [integration, modules-full]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/uv
+          ~/.cache/pip
+        key: ${{ runner.os }}-deps-${{ hashFiles('requirements.txt') }}
+    
+    - name: Install dependencies
+      run: |
+        pip install uv
+        uv pip install --system -r requirements.txt
+        uv pip install --system -e .
+    
+    - name: Run ${{ matrix.test-group }} tests
+      run: |
+        if [ "${{ matrix.test-group }}" == "modules-full" ]; then
+          # Run all module tests (not just essential)
+          pytest -c pytest-ci.ini tests/modules/ \
+            -m "not requires_ollama" \
+            --no-header --tb=short
+        else
+          # Run integration tests
+          pytest -c pytest-ci.ini tests/${{ matrix.test-group }}/ \
+            -m "not requires_ollama and not slow" \
+            --no-header --tb=short
+        fi
+
+  # Status check that all tests passed
+  ci-status:
+    name: CI Status
+    needs: [lightning-tests, essential-tests, full-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check CI Status
+      run: |
+        if [ "${{ needs.lightning-tests.result }}" != "success" ] || \
+           [ "${{ needs.essential-tests.result }}" != "success" ] || \
+           [ "${{ needs.full-tests.result }}" != "success" ] && [ "${{ needs.full-tests.result }}" != "skipped" ]; then
+          echo "❌ CI failed"
+          exit 1
+        fi
+        echo "✅ All CI tests passed successfully!"

@@ -1,24 +1,22 @@
-"""MMLU inference module."""
+"""
+NOTE: This task is not included in the current release.
+MMLU was not used in the camera-ready version of the paper
+and will be implemented in a future release.
+"""
 
 import json
-import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import pandas as pd
 from tqdm import tqdm
-import litellm
 
 from flame.code.mmlu.mmlu_loader import MMLULoader
-from flame.utils.logging_utils import setup_logger
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import get_component_logger
 
-logger = setup_logger(
-    name="mmlu_inference",
-    log_file=LOG_DIR / "mmlu_inference.log",
-    level=LOG_LEVEL,
-)
+logger = get_component_logger("inference", "mmlu")
 
 
 def format_mmlu_prompt(
@@ -54,53 +52,6 @@ def format_mmlu_prompt(
     current_text += "\n\nAnswer:"
 
     return f"{examples_text}{current_text}"
-
-
-def generate_inference_filename(task: str, model: str) -> Tuple[str, Path]:
-    """Generate a unique filename for inference results.
-
-    Args:
-        task: Task name (e.g., 'mmlu')
-        model: Full model path
-
-    Returns:
-        Tuple of (base_filename, full_path)
-    """
-    model_parts = model.split("/")
-    provider = model_parts[0] if len(model_parts) > 1 else "unknown"
-    model_name = model_parts[-1].replace("-", "_")
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    uid = str(uuid.uuid4())[:8]
-    base_filename = f"{task}_{provider}_{model_name}_{timestamp}_{uid}"
-    full_path = RESULTS_DIR / task / f"inference_{base_filename}.csv"
-    full_path.parent.mkdir(parents=True, exist_ok=True)
-    return base_filename, full_path
-
-
-def chunk_list(lst: List, chunk_size: int) -> List[List]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3,
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 
 def save_inference_results(df: pd.DataFrame, path: Path, metadata: Dict) -> None:
@@ -168,9 +119,6 @@ def mmlu_inference(args) -> pd.DataFrame:
     provider = model_parts[0] if len(model_parts) > 1 else "unknown"
     model_name = model_parts[-1]
 
-    # Generate filename
-    base_filename, results_path = generate_inference_filename("mmlu", args.model)
-
     # Log startup information
     logger.info(
         f"Starting MMLU inference on model '{model_name}' from provider '{provider}'"
@@ -178,9 +126,6 @@ def mmlu_inference(args) -> pd.DataFrame:
     logger.info(f"Subjects: {args.mmlu_subjects or 'default economics subjects'}")
     logger.info(f"Split: {args.mmlu_split}")
     logger.info(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    relative_path = results_path.relative_to(RESULTS_DIR.parent)
-    logger.info(f"Output directory: ./{relative_path.parent}")
-    logger.info(f"Output filename: {relative_path.name}")
 
     # Load MMLU dataset
     loader = MMLULoader(
@@ -261,22 +206,4 @@ def mmlu_inference(args) -> pd.DataFrame:
             "subject": subjects,
         }
     )
-
-    # Save results with metadata
-    metadata = {
-        "model": args.model,
-        "provider": provider,
-        "model_name": model_name,
-        "temperature": args.temperature,
-        "top_p": args.top_p,
-        "top_k": args.top_k,
-        "max_tokens": args.max_tokens,
-        "batch_size": args.batch_size,
-        "repetition_penalty": args.repetition_penalty,
-        "subjects": args.mmlu_subjects,
-        "split": args.mmlu_split,
-        "num_few_shot": args.mmlu_num_few_shot,
-    }
-    save_inference_results(results_df, results_path, metadata)
-
     return results_df

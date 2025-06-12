@@ -1,14 +1,20 @@
-"""MMLU evaluation module."""
+"""MMLU evaluation module.
 
+NOTE: This task is not included in the current release.
+MMLU was not used in the camera-ready version of the paper
+and will be implemented in a future release.
+"""
+
+import uuid
 from datetime import datetime
 from pathlib import Path
-import uuid
 from typing import Optional, Tuple
 
 import pandas as pd
 from sklearn.metrics import accuracy_score
-from flame.utils.logging_utils import setup_logger
+
 from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from flame.utils.logging_utils import setup_logger
 
 logger = setup_logger(
     name="mmlu_evaluation",
@@ -100,9 +106,8 @@ def generate_evaluation_filename(task: str, model: str) -> Tuple[str, Path]:
     # Construct filename
     base_filename = f"{task}_{provider}_{model_name}_{timestamp}_{uid}"
 
-    # Create full path
+    # Note: Path creation removed - evaluate.py handles saving
     full_path = EVALUATION_DIR / task / f"evaluation_{base_filename}.csv"
-    full_path.parent.mkdir(parents=True, exist_ok=True)
 
     return base_filename, full_path
 
@@ -144,7 +149,8 @@ def mmlu_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
         >>> results_df, metrics_df = mmlu_evaluate("inference_results.csv", args)
         >>> print(f"Overall accuracy: {metrics_df.loc[0, 'Value']:.2f}")
     """
-    task = args.dataset.strip('"""')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "mmlu"
 
     # Generate unique filename and paths
     base_filename, evaluation_results_path = generate_evaluation_filename(
@@ -257,11 +263,6 @@ def mmlu_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
             f"{row['Subject']}: {row['Value']:.4f} ({row['Questions']} questions)"
         )
 
-    # Save metrics
-    metrics_path = evaluation_results_path.with_name(
-        f"evaluation_{base_filename}_metrics.csv"
-    )
-    metrics_df.to_csv(metrics_path, index=False)
-    logger.info(f"Metrics saved to {metrics_path}")
+    # Note: Metrics saving removed - evaluate.py handles saving
 
     return df, metrics_df

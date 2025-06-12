@@ -1,30 +1,21 @@
 """FOMC inference module."""
 
 import json
-import uuid
-from datetime import datetime
 from dataclasses import dataclass
-from typing import Dict, Any, List, Optional, Tuple
-import logging
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 import pandas as pd
 from tqdm import tqdm
-from datasets import load_dataset
-import litellm
-from pathlib import Path
 
-from flame.code.prompts_zeroshot import fomc_zeroshot_prompt
-from flame.code.prompts_fewshot import fomc_fewshot_prompt
-from flame.utils.logging_utils import setup_logger
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+from flame.code.prompts import PromptFormat, get_prompt
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.dataset_utils import safe_load_dataset
+from flame.utils.logging_utils import get_component_logger
 
-# Configure litellm to be less verbose
-logging.getLogger("litellm").setLevel(logging.WARNING)
-logging.getLogger("openai").setLevel(logging.WARNING)
-
-logger = setup_logger(
-    name="fomc_inference", log_file=LOG_DIR / "fomc_inference.log", level=LOG_LEVEL
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "fomc")
 
 
 @dataclass
@@ -49,32 +40,6 @@ class InferenceConfig:
             raise ValueError("Batch size must be positive")
 
 
-def generate_inference_filename(task: str, model: str) -> Tuple[str, Path]:
-    """Generate a unique filename for inference results.
-
-    Args:
-        task: The task name (e.g., 'fomc')
-        model: The full model path
-
-    Returns:
-        Tuple of (base_filename, full_path)
-    """
-    model_parts = model.split("/")
-    provider = model_parts[0] if len(model_parts) > 1 else "unknown"
-    model_name = model_parts[-1].replace("-", "_")
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    uid = str(uuid.uuid4())[:8]
-    base_filename = f"{task}_{provider}_{model_name}_{timestamp}_{uid}"
-    full_path = RESULTS_DIR / task / f"inference_{base_filename}.csv"
-    full_path.parent.mkdir(parents=True, exist_ok=True)
-    return base_filename, full_path
-
-
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
 def validate_sample(response: str) -> bool:
     """Validate model response format."""
     valid_labels = {"DOVISH", "HAWKISH", "NEUTRAL"}
@@ -83,7 +48,9 @@ def validate_sample(response: str) -> bool:
 
 def load_fomc_dataset():
     """Load FOMC dataset with progress tracking."""
-    dataset = load_dataset("gtfintechlab/fomc_communication", trust_remote_code=True)
+    dataset = safe_load_dataset(
+        "gtfintechlab/fomc_communication", trust_remote_code=True
+    )
     test_data = dataset["test"]  # type: ignore
     logger.debug(f"Loaded {len(test_data)} test samples")
     return test_data
@@ -108,28 +75,6 @@ def save_inference_results(
     logger.debug(f"Results and metadata saved to {path.parent}")
 
 
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            # top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            # repetition_penalty=args.repetition_penalty,
-            num_retries=3,  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
-
-
 def fomc_inference(args):
     """Run FOMC inference with improved logging and error handling."""
     # Extract provider and model info
@@ -137,17 +82,10 @@ def fomc_inference(args):
     provider = model_parts[0] if len(model_parts) > 1 else "unknown"
     model_name = model_parts[-1]
 
-    # Generate filename first
-    base_filename, results_path = generate_inference_filename("fomc", args.model)
-
     # Detailed startup logging - keep critical info at INFO level
     logger.info(f"Starting FOMC inference with {model_name}")
     logger.debug(f"Provider: {provider}")
     logger.debug(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    logger.debug(
-        f"Output directory: ./{results_path.relative_to(RESULTS_DIR.parent).parent}"
-    )
-    logger.debug(f"Output filename: {results_path.name}")
 
     # Load dataset
     test_data = load_fomc_dataset()
@@ -159,9 +97,11 @@ def fomc_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        fomc_prompt = fomc_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        fomc_prompt = fomc_zeroshot_prompt
+        fomc_prompt = get_prompt("fomc", PromptFormat.FEW_SHOT)
+    else:
+        fomc_prompt = get_prompt("fomc", PromptFormat.ZERO_SHOT)
+    if fomc_prompt is None:
+        raise RuntimeError("FOMC prompt not found in registry")
 
     # Get all sentences and labels
     all_sentences = [item["sentence"] for item in test_data]  # type: ignore
@@ -226,19 +166,5 @@ def fomc_inference(args):
     # Log final statistics
     success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
-
-    # # Save results with metadata
-    # metadata = {
-    #     "model": args.model,
-    #     "provider": provider,
-    #     "model_name": model_name,
-    #     "temperature": args.temperature,
-    #     "top_p": args.top_p,
-    #     "top_k": args.top_k,
-    #     "max_tokens": args.max_tokens,
-    #     "batch_size": args.batch_size,
-    #     "repetition_penalty": args.repetition_penalty
-    # }
-    # save_inference_results(df, results_path, metadata)
 
     return df

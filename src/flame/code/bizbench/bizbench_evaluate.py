@@ -1,8 +1,17 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def calculate_accuracy_and_stats(file_path, tolerance=0.01):
+    """Calculate accuracy and other metrics for BizBench results.
+
+    Args:
+        file_path: Path to the CSV file with results
+        tolerance: Tolerance threshold for approximate matching (default: 0.01)
+
+    Returns:
+        Dictionary with accuracy metrics
+    """
     df = pd.read_csv(file_path)
 
     # Function to clean and convert values to floats where possible
@@ -47,6 +56,36 @@ def calculate_accuracy_and_stats(file_path, tolerance=0.01):
     }
 
 
-stats = calculate_accuracy_and_stats("path_to_your_file.csv")
-for metric, value in stats.items():
-    print(f"{metric}: {value:.4f}")
+def bizbench_evaluate(file_name, args):
+    """Evaluate BizBench results using the standardized test interface.
+
+    Args:
+        file_name (str): Path to the results CSV file
+        args: Configuration parameters which may include tolerance
+
+    Returns:
+        tuple: (DataFrame of results, DataFrame of metrics)
+    """
+    # Extract tolerance parameter if available, otherwise use default
+    tolerance = getattr(args, "tolerance", 0.01)
+
+    # Call the original calculation function
+    metrics_dict = calculate_accuracy_and_stats(file_name, tolerance)
+
+    # Read the original results file
+    df = pd.read_csv(file_name)
+
+    # Create metrics DataFrame
+    metrics_df = pd.DataFrame(
+        {"Metric": list(metrics_dict.keys()), "Value": list(metrics_dict.values())}
+    )
+
+    return df, metrics_df
+
+
+# Only execute this when running the script directly
+if __name__ == "__main__":
+    # Example usage
+    stats = calculate_accuracy_and_stats("path_to_your_file.csv")
+    for metric, value in stats.items():
+        print(f"{metric}: {value:.4f}")

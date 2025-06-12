@@ -1,10 +1,12 @@
 import json
+
 import pandas as pd
+from tqdm import tqdm
+
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.config import LOG_DIR, LOG_LEVEL
 from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 from flame.utils.logging_utils import setup_logger
-from flame.code.extraction_prompts import fnxl_extraction_prompt
-from flame.config import LOG_DIR, LOG_LEVEL
-from tqdm import tqdm
 
 logger = setup_logger(
     name="fnxl_evaluation",
@@ -13,29 +15,98 @@ logger = setup_logger(
 )
 
 
-def extraction_prompt(raw_response: str):
+def clean_json_response(response):
     """
-    Prompt to transform the raw LLM output into a standard JSON dict:
-      {
-        "us-gaap:SomeTag": [1.0, 2.0],
-        "other": [3.0]
-      }
-    The LLM might have used a different format or extra text, so we
-    ask it to re-extract in a consistent way.
+    Clean JSON response by removing markdown formatting and extracting only the JSON portion.
+    Handles cases like:
+    - "Here is the output in JSON format:\n\n```json\n{...}\n```\n\nExplanation:..."
+    - "json\n{...}"
+    - "```json\n{...}\n```"
     """
-    prompt = f"""An LLM previously gave the following response about numerals and XBRL tags:
-    ---
-    {raw_response}
+    if not isinstance(response, str):
+        return response
 
-    Please convert that into valid JSON of the form:
-    {{
-      "xbrl_tag": [list_of_numerical_values],
-      "other_tag": [list_of_numerical_values]
-    }}
-    If you have no numerals for a certain tag, omit that tag.
-    Only return the JSON. Do not include any extra text.
-    """
-    return prompt
+    response = response.strip()
+
+    # Look for JSON content within markdown code blocks
+    if "```json" in response:
+        start_marker = response.find("```json")
+        json_start = start_marker + 7  # Length of '```json\n'
+
+        # Find the end of the JSON block
+        end_marker = response.find("```", json_start)
+        if end_marker != -1:
+            json_content = response[json_start:end_marker].strip()
+        else:
+            # No closing ```, take everything after ```json
+            json_content = response[json_start:].strip()
+
+    # Look for JSON content after "Here is the output in JSON format:"
+    elif "Here is the output in JSON format:" in response:
+        json_start_marker = response.find("Here is the output in JSON format:")
+        after_intro = response[
+            json_start_marker + len("Here is the output in JSON format:") :
+        ].strip()
+
+        # Look for actual JSON content (starts with { or [)
+        json_start = 0
+        for i, char in enumerate(after_intro):
+            if char in "{[":
+                json_start = i
+                break
+
+        # Extract JSON until we hit explanation text or end
+        json_content = after_intro[json_start:]
+
+        # Try to find the end of JSON by looking for closing brace followed by explanation
+        if json_content.startswith("{"):
+            brace_count = 0
+            json_end = 0
+            for i, char in enumerate(json_content):
+                if char == "{":
+                    brace_count += 1
+                elif char == "}":
+                    brace_count -= 1
+                    if brace_count == 0:
+                        json_end = i + 1
+                        break
+            if json_end > 0:
+                json_content = json_content[:json_end]
+
+    # Fallback: try to extract JSON from any response
+    else:
+        # Look for JSON starting with { or [
+        json_start = 0
+        for i, char in enumerate(response):
+            if char in "{[":
+                json_start = i
+                break
+
+        json_content = response[json_start:]
+
+        # Try to find the end of JSON
+        if json_content.startswith("{"):
+            brace_count = 0
+            json_end = 0
+            for i, char in enumerate(json_content):
+                if char == "{":
+                    brace_count += 1
+                elif char == "}":
+                    brace_count -= 1
+                    if brace_count == 0:
+                        json_end = i + 1
+                        break
+            if json_end > 0:
+                json_content = json_content[:json_end]
+
+    # Clean up the extracted JSON
+    json_content = json_content.strip()
+    json_content = json_content.replace(
+        "'", '"'
+    )  # Replace single quotes with double quotes
+
+    logger.debug(f"Cleaned JSON response: {json_content[:100]}...")
+    return json_content
 
 
 def normalize_taglist_json(json_input):
@@ -45,12 +116,15 @@ def normalize_taglist_json(json_input):
     ignoring any non-numeric items.
     """
     if isinstance(json_input, str):
-        json_str = json_input.strip().strip("```").strip()
+        # Apply JSON cleanup first
+        json_str = clean_json_response(json_input)
         json_str = json_str.replace("'", '"')
         try:
             data = json.loads(json_str)
         except json.JSONDecodeError as e:
-            logger.warning(f"Failed to parse JSON string: {json_str}. Error: {e}")
+            logger.warning(
+                f"Failed to parse JSON string after cleanup: {json_str[:200]}... Error: {e}"
+            )
             return {}
     elif isinstance(json_input, dict):
         data = json_input
@@ -111,7 +185,8 @@ def fnxl_evaluate(file_name, args):
       3) Compare partial-credit for each row. Sum up micro-average metrics.
       4) Return (df_with_extractions, metrics_df).
     """
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "fnxl"
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     logger.info(f"Loading file: {file_name}")
@@ -126,13 +201,12 @@ def fnxl_evaluate(file_name, args):
     actual_labels_batches = chunk_list(actual_labels, args.batch_size)
     total_batches = len(batches)
 
-    extracted_labels = []
-
     logger.info(f"Processing {len(df)} rows in {total_batches} batches.")
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch in enumerate(pbar):
+        extraction_prompt_func = get_prompt("fnxl", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": fnxl_extraction_prompt(response)}]
+            [{"role": "user", "content": extraction_prompt_func(response)}]
             for response in batch
         ]
 
@@ -165,18 +239,21 @@ def fnxl_evaluate(file_name, args):
                         "total_predicted": total_pred,
                     }
                 )
-                df.at[batch_indices[i], "extracted_labels"] = cleaned_json_str
+                # [Glenn] the old code here was `df.at[batch_indices[i], "extracted_labels"] = cleaned_json_str`
+                # But batch_indices was never defined so I calculate the correct index in the original dataframe
+                # TODO: check with @Huzaifa about this and ensure my patch is correct
+                idx = batch_idx * args.batch_size + i
+                df.at[idx, "extracted_labels"] = cleaned_json_str
             except Exception as e:
                 logger.error(f"Error processing: {e}")
                 row_metrics.append(
                     {"tp": 0, "fp": 0, "fn": 0, "total_actual": 0, "total_predicted": 0}
                 )
-                extracted_labels.append(None)
+                idx = batch_idx * args.batch_size + i
+                df.at[idx, "extracted_labels"] = None
 
         pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
         logger.info(f"Processed responses for batch {batch_idx + 1}.")
-
-    df["extracted_labels"] = extracted_labels
 
     total_tp = sum(m["tp"] for m in row_metrics)
     total_fp = sum(m["fp"] for m in row_metrics)

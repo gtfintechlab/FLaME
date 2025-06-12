@@ -1,45 +1,29 @@
-from typing import Dict, Tuple, List, Any
-import pandas as pd
+import time
+import uuid
 from datetime import datetime
 from pathlib import Path
-import uuid
-from litellm import batch_completion
+from typing import Dict, List, Tuple
+
+import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from flame.utils.logging_utils import setup_logger
-from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-import time
 from tqdm import tqdm
 
-# Configure logging
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import setup_logger
+
 logger = setup_logger(
     name="fomc_evaluation",
     log_file=LOG_DIR / "fomc_evaluation.log",
     level=LOG_LEVEL,
 )
 
-# Mapping of FOMC sentiment labels to numerical values
 label_mapping: Dict[str, int] = {
-    "DOVISH": 0,  # Indicates accommodative monetary policy stance
-    "HAWKISH": 1,  # Indicates restrictive monetary policy stance
-    "NEUTRAL": 2,  # Indicates balanced monetary policy stance
+    "DOVISH": 0,
+    "HAWKISH": 1,
+    "NEUTRAL": 2,
 }
-
-
-def extraction_prompt(llm_response: str) -> str:
-    """Generate a prompt to extract the classification label from the LLM response.
-
-    Args:
-        llm_response: The raw response from the language model
-
-    Returns:
-        A formatted prompt string for label extraction
-    """
-    prompt = f"""Extract the classification label from the following LLM response. The label should be one of the following: 'HAWKISH', 'DOVISH', or 'NEUTRAL'.
-                
-                Here is the LLM response to analyze:
-                "{llm_response}"
-                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
-    return prompt
 
 
 def map_label_to_number(label: str) -> int:
@@ -107,42 +91,10 @@ def generate_evaluation_filename(task: str, model: str) -> Tuple[str, Path]:
     # Construct base filename
     base_filename = f"{task}_{provider}_{model_name}_{timestamp}_{uid}"
 
-    # Create full path
+    # Note: Path creation removed - evaluate.py handles saving
     full_path = EVALUATION_DIR / task / f"evaluation_{base_filename}.csv"
-    full_path.parent.mkdir(parents=True, exist_ok=True)
 
     return base_filename, full_path
-
-
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(
-    model: str,
-    messages_batch: List[List[Dict]],
-    args,
-    batch_idx: int,
-    total_batches: int,
-):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        batch_responses = batch_completion(
-            model=model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3,
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 
 def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -158,12 +110,13 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
     Raises:
         ValueError: If input data validation fails
     """
-    task = args.dataset.strip('"""')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "fomc"
 
-    # Generate unique filename and paths first for logging
-    base_filename, evaluation_results_path = generate_evaluation_filename(
-        task, args.model
-    )
+    # Note: Path generation removed - evaluate.py handles saving
+    # base_filename, evaluation_results_path = generate_evaluation_filename(
+    #     task, args.model
+    # )
 
     # Extract provider and model name for logging
     model_parts = args.model.split("/")
@@ -175,9 +128,10 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
         f"Starting {task} evaluation on model '{model_name}' from provider '{provider}'"
     )
     logger.info(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    relative_path = evaluation_results_path.relative_to(EVALUATION_DIR.parent)
-    logger.info(f"Output directory: ./{relative_path.parent}")
-    logger.info(f"Output filename: {relative_path.name}")
+    # Note: Path logging removed - evaluate.py handles paths
+    # relative_path = evaluation_results_path.relative_to(EVALUATION_DIR.parent)
+    # logger.info(f"Output directory: ./{relative_path.parent}")
+    # logger.info(f"Output filename: {relative_path.name}")
 
     # Load and validate the CSV file
     try:
@@ -221,14 +175,33 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
         for batch_idx, (response_batch, indices_batch) in enumerate(pbar):
             # Prepare messages for batch
             messages_batch = [
-                [{"role": "user", "content": extraction_prompt(response)}]
+                [
+                    {
+                        "role": "user",
+                        "content": get_prompt("fomc", PromptFormat.EXTRACTION)(
+                            response
+                        ),
+                    }
+                ]
                 for response in response_batch
             ]
 
             try:
-                # Process batch with retry logic
+                # Create a simple args-like object with required attributes
+                class ModelArgs:
+                    pass
+
+                model_args = ModelArgs()
+                model_args.model = args.model
+                model_args.max_tokens = args.max_tokens
+                model_args.temperature = args.temperature
+                model_args.top_p = args.top_p
+                if hasattr(args, "repetition_penalty"):
+                    model_args.repetition_penalty = args.repetition_penalty
+
+                # Process batch with retry logic using canonical implementation
                 batch_responses = process_batch_with_retry(
-                    args.model, messages_batch, args, batch_idx, total_batches
+                    model_args, messages_batch, batch_idx, total_batches
                 )
 
             except Exception as e:
@@ -251,8 +224,7 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
                 # Update DataFrame with the result
                 df.at[idx, "extracted_labels"] = mapped_label
 
-            # Save progress after each batch
-            save_progress(df, evaluation_results_path)
+            # Note: Intermediate saving removed - evaluate.py handles final saving
 
             pbar.set_description(f"Batch {batch_idx + 1}/{total_batches}")
 
@@ -286,10 +258,5 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
             "Value": [accuracy, precision, recall, f1],
         }
     )
-
-    # Save metrics DataFrame with consistent naming
-    # metrics_path = evaluation_results_path.with_name(f"evaluation_{base_filename}_metrics.csv")
-    # metrics_df.to_csv(metrics_path, index=False)
-    # logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df

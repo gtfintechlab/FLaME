@@ -3,12 +3,13 @@
 import logging
 import sys
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
-from datasets import load_dataset
+
 from flame.code.mmlu.mmlu_constants import ECONOMICS_SUBJECTS, SPLITS
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.utils.dataset_utils import safe_load_dataset
 
 # Configure logging to show on console with timestamp and level
 logging.basicConfig(
@@ -62,7 +63,7 @@ class MMLULoader:
 
         for subject in self.subjects:
             try:
-                dev_set = load_dataset("cais/mmlu", subject, split="dev")
+                dev_set = safe_load_dataset("cais/mmlu", subject, split="dev")
                 # Take num_few_shot/len(subjects) examples from each subject
                 num_examples = max(1, self.num_few_shot // len(self.subjects))
 
@@ -111,7 +112,7 @@ class MMLULoader:
         all_data = []
         for subject in self.subjects:
             try:
-                dataset = load_dataset("cais/mmlu", subject, split=self.split)
+                dataset = safe_load_dataset("cais/mmlu", subject, split=self.split)
 
                 # Convert to DataFrame
                 df = pd.DataFrame(

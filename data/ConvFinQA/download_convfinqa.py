@@ -1,6 +1,7 @@
-import requests
-import zipfile
 import os
+import zipfile
+
+import requests
 
 data_zip_url = "https://github.com/czyssrs/ConvFinQA/raw/main/data.zip"
 

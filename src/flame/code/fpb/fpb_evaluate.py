@@ -1,18 +1,13 @@
 import pandas as pd
-from datetime import date
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from flame.utils.logging_utils import setup_logger
-from flame.config import EVALUATION_DIR, LOG_DIR, LOG_LEVEL
-import litellm
-from typing import Any, List
 from tqdm import tqdm
 
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import get_component_logger
+
 # Configure logging
-logger = setup_logger(
-    name="fpb_evaluation",
-    log_file=LOG_DIR / "fpb_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_component_logger("evaluation", "fpb")
 
 # Define label mapping
 label_mapping = {
@@ -20,14 +15,6 @@ label_mapping = {
     "NEGATIVE": 0,
     "POSITIVE": 2,
 }
-
-
-def extraction_prompt(llm_response: str):
-    """Generate a prompt to extract the most relevant label from the LLM response."""
-    prompt = f"""Based on the following list of labels: ‘NEGATIVE’, ‘POSITIVE’, or ‘NEUTRAL’, extract the most relevant label from the following response:
-                "{llm_response}"
-                Provide only the label that best matches the response. Only output alphanumeric characters and spaces. Do not include any special characters or punctuation."""
-    return prompt
 
 
 def map_label_to_number(label: str):
@@ -38,55 +25,17 @@ def map_label_to_number(label: str):
     )  # Return -1 if the label is not found
 
 
-def save_progress(df, path):
-    """Save the current progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
-
-
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3,  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
-
-
 def fpb_evaluate(file_name, args):
     """Evaluate FPB dataset and return results and metrics DataFrames."""
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "fpb"
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load the CSV file with the LLM responses
     df = pd.read_csv(file_name)
     logger.info(f"Loaded {len(df)} rows from {file_name}.")
 
-    # Define paths for saving results
-    evaluation_results_path = (
-        EVALUATION_DIR
-        / task
-        / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    evaluation_results_path.parent.mkdir(parents=True, exist_ok=True)
+    # Note: Path definition removed - evaluate.py handles saving
 
     # Initialize extracted labels if not present
     if "extracted_labels" not in df.columns:
@@ -101,8 +50,9 @@ def fpb_evaluate(file_name, args):
 
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch_content in enumerate(pbar):
+        extraction_prompt_func = get_prompt("fpb", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(response)}]
+            [{"role": "user", "content": extraction_prompt_func(response)}]
             for response in batch_content
         ]
         try:
@@ -120,13 +70,16 @@ def fpb_evaluate(file_name, args):
                 mapped_label = map_label_to_number(extracted_label)
 
                 if mapped_label == -1:
-                    logger.error(f"Invalid label for response: {extracted_label}")
+                    logger.debug(f"Invalid label for response: {extracted_label}")
 
             except Exception as e:
                 logger.error(f"Error extracting response: {e}")
                 mapped_label = -1
 
             extracted_labels.append(mapped_label)
+
+    # Update the dataframe with extracted labels
+    df["extracted_labels"] = extracted_labels
 
     # Calculate metrics
     accuracy = accuracy_score(correct_labels, extracted_labels)
@@ -147,10 +100,5 @@ def fpb_evaluate(file_name, args):
             "Value": [accuracy, precision, recall, f1],
         }
     )
-
-    # # Save metrics DataFrame
-    # metrics_path = evaluation_results_path.with_name(f"{evaluation_results_path.stem}_metrics.csv")
-    # metrics_df.to_csv(metrics_path, index=False)
-    # logger.info(f"Metrics saved to {metrics_path}")
 
     return df, metrics_df

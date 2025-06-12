@@ -1,18 +1,15 @@
-import json
-import pandas as pd
-from flame.utils.logging_utils import setup_logger
-from flame.config import LOG_DIR, LOG_LEVEL
-import litellm
-from typing import Any, List
-from tqdm import tqdm
 import ast
+import json
+
+import pandas as pd
+from tqdm import tqdm
+
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import get_component_logger
 
 # Configure logging
-logger = setup_logger(
-    name="headlines_evaluation",
-    log_file=LOG_DIR / "headlines_evaluation.log",
-    level=LOG_LEVEL,
-)
+logger = get_component_logger("evaluation", "headlines")
 
 label_mapping = {
     "Price_or_Not": {"0": 0, "1": 1},
@@ -39,62 +36,14 @@ def preprocess_llm_response(raw_response: str):
         return None
 
 
-def extraction_prompt(llm_response: str):
-    """Generate a prompt to extract the relevant information from the LLM response."""
-    prompt = f"""Extract the relevant information from the following LLM response and provide a score of 0 or 1 for each attribute based on the content. Format your output as a JSON object with these keys:
-    - "Price_or_Not"
-    - "Direction_Up"
-    - "Direction_Down"
-    - "Direction_Constant"
-    - "Past_Price"
-    - "Future_Price"
-    - "Past_News"
-    Only output the keys and values in the JSON object. Do not include any additional text.
-    LLM Response:
-    "{llm_response}" """
-    return prompt
-
-
 def map_label_to_number(label: str, category: str):
     """Map extracted labels to numeric values."""
     return label_mapping[category].get(label.strip(), -1)
 
 
-def save_progress(df, path):
-    """Save progress to a CSV file."""
-    df.to_csv(path, index=False)
-    logger.info(f"Progress saved to {path}")
-
-
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            repetition_penalty=args.repetition_penalty,
-            num_retries=3,  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
-
-
 def headlines_evaluate(file_name, args):
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "headlines"
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV
@@ -115,8 +64,9 @@ def headlines_evaluate(file_name, args):
 
     pbar = tqdm(batches, desc="Processing batches")
     for batch_idx, batch_content in enumerate(pbar):
+        extraction_prompt_func = get_prompt("headlines", PromptFormat.EXTRACTION)
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(response)}]
+            [{"role": "user", "content": extraction_prompt_func(response)}]
             for response in batch_content
         ]
         try:

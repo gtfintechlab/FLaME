@@ -1,49 +1,15 @@
 from datetime import date
+
 import pandas as pd
-from datasets import load_dataset
-
-import litellm
-from typing import Any, List
-from flame.code.prompts_zeroshot import refind_zeroshot_prompt
-from flame.code.prompts_fewshot import refind_fewshot_prompt
-
-from flame.utils.logging_utils import setup_logger
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
 from tqdm import tqdm
 
-# Setup logger for ReFinD inference
-logger = setup_logger(
-    name="refind_inference",
-    log_file=LOG_DIR / "refind_inference.log",
-    level=LOG_LEVEL,
-)
+from flame.code.prompts import PromptFormat, get_prompt
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.dataset_utils import safe_load_dataset
+from flame.utils.logging_utils import get_component_logger
 
-
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            # top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            # repetition_penalty=args.repetition_penalty,
-            num_retries=3,  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "refind")
 
 
 def refind_inference(args):
@@ -52,12 +18,9 @@ def refind_inference(args):
 
     # Load the ReFinD dataset (test split)
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/ReFinD", trust_remote_code=True)
+    dataset = safe_load_dataset("gtfintechlab/ReFinD", trust_remote_code=True)
 
-    results_path = (
-        RESULTS_DIR / "refind" / f"refind_{args.model}_{today.strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
+    # We'll generate the filename at the end of the function
 
     test_data = dataset["test"]  # type: ignore
     all_sentences = [
@@ -84,9 +47,11 @@ def refind_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        refind_prompt = refind_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        refind_prompt = refind_zeroshot_prompt
+        refind_prompt = get_prompt("refind", PromptFormat.FEW_SHOT)
+    else:
+        refind_prompt = get_prompt("refind", PromptFormat.ZERO_SHOT)
+    if refind_prompt is None:
+        raise RuntimeError("ReFinD prompt not found in registry")
 
     logger.info(f"Starting inference on ReFinD with model {args.model}...")
 
@@ -135,10 +100,6 @@ def refind_inference(args):
             "complete_responses": complete_responses,
         }
     )
-
-    # Save the results to a CSV file
-    df.to_csv(results_path, index=False)
-    logger.info(f"Inference completed. Results saved to {results_path}")
 
     success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")

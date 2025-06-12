@@ -1,28 +1,7 @@
-from flame.code.numclaim.numclaim_evaluate import numclaim_evaluate
-from flame.code.fnxl.fnxl_evaluate import fnxl_evaluate
-from flame.code.finer.finer_evaluate import finer_evaluate
-from flame.code.finentity.finentity_evaluate import finentity_evaluate
-from flame.code.banking77.banking77_evaluate import banking77_evaluate
-from flame.code.causal_classification.causal_classification_evaluate import (
-    causal_classification_evaluate,
-)
-from flame.code.subjectiveqa.subjectiveqa_evaluate import subjectiveqa_evaluate
-from flame.code.ectsum.ectsum_evaluate import ectsum_evaluate
-from flame.code.refind.refind_evaluate import refind_evaluate
-from flame.code.convfinqa.convfinqa_evaluate import convfinqa_evaluate
-from flame.code.finqa.finqa_evaluate import finqa_evaluate
-from flame.code.tatqa.tatqa_evaluate import tatqa_evaluate
-from pathlib import Path
-
-# from flame.code.mmlu.mmlu_evaluate import mmlu_evaluate
-# from flame.code.bizbench.bizbench_evaluate import bizbench_evaluate
-# from flame.code.econlogicqa.econlogicqa_evaluate import econlogicqa_evaluate
-from flame.code.causal_detection.casual_detection_evaluate_llm import (
-    causal_detection_evaluate,
-)
-
-from flame.utils.logging_utils import setup_logger
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.task_registry import EVALUATE_MAP
+from flame.utils.logging_utils import setup_logger
+from flame.utils.output_utils import generate_output_path, parse_output_filename
 
 logger = setup_logger(
     name="together_evaluate",
@@ -36,37 +15,20 @@ def main(args):
 
     Args:
         args: Command line arguments containing:
-            - dataset: Name of the task/dataset
+            - task: Name of the task to run
             - model: Model to use
             - file_name: Path to inference results
             - Other task-specific parameters
     """
-    task = args.dataset.strip('"""')
+    # support legacy args.dataset for tests, prefer args.task
+    raw = getattr(args, "task", None) or getattr(args, "dataset", None)
+    if not raw:
+        logger.error("No task specified in args")
+        return
+    task = raw
 
     # Map of tasks to their evaluation functions
-    task_evaluate_map = {
-        "numclaim": numclaim_evaluate,
-        # "fpb": fpb_evaluate,
-        # "fomc": fomc_evaluate,
-        # "finbench": finbench_evaluate,
-        "finer": finer_evaluate,
-        "finentity": finentity_evaluate,
-        # "headlines": headlines_evaluate,
-        # "fiqa_task1": fiqa_task1_evaluate,
-        # "fiqa_task2": fiqa_task2_evaluate,
-        # "edtsum": edtsum_evaluate,
-        "fnxl": fnxl_evaluate,
-        # "finred": finred_evaluate,
-        "causal_classification": causal_classification_evaluate,
-        "subjectiveqa": subjectiveqa_evaluate,
-        "ectsum": ectsum_evaluate,
-        "refind": refind_evaluate,
-        "banking77": banking77_evaluate,
-        "convfinqa": convfinqa_evaluate,
-        "finqa": finqa_evaluate,
-        "tatqa": tatqa_evaluate,
-        "causal_detection": causal_detection_evaluate,
-    }
+    task_evaluate_map = EVALUATE_MAP
 
     if task in task_evaluate_map:
         evaluate_function = task_evaluate_map[task]
@@ -74,26 +36,49 @@ def main(args):
         # Run evaluation
         df, metrics_df = evaluate_function(args.file_name, args)
 
-        # Save evaluation results
-        results_path = f"evaluation_{args.file_name}"
-        results_path = Path(results_path)
-        # results_path = (
-        #     EVALUATION_DIR
-        #     / task
-        #     / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-        # )
-        results_path.parent.mkdir(parents=True, exist_ok=True)
+        # Determine output base directory - import at runtime to get patched values
+        from flame.config import EVALUATION_DIR, IN_PYTEST, TEST_OUTPUT_DIR
+
+        base_dir = TEST_OUTPUT_DIR if IN_PYTEST else EVALUATION_DIR
+
+        # Extract model info from input filename to maintain consistency
+        input_filename = args.file_name.split("/")[-1]
+
+        try:
+            # Try to parse the new format filename
+            parsed = parse_output_filename(input_filename)
+            # Use the model from args if available, otherwise reconstruct from parsed filename
+            if hasattr(args, "model") and args.model:
+                model_info = args.model
+            else:
+                # Extract provider and model family from the parsed model_slug
+                # model_slug format: "llama-4-scout-17b-16e-instruct"
+                model_slug = parsed["model_slug"]
+                # For now, we'll use the model info from args or fall back to a reasonable default
+                model_info = f"together_ai/meta-llama/{model_slug}"
+            run = parsed["run"]
+        except (ValueError, KeyError):
+            # Fall back to legacy parsing if new format fails
+            # Legacy format: {task}_{provider}_{model_name}_{timestamp}_{uid}.csv
+            parts = input_filename.replace(".csv", "").split("_")
+            if len(parts) >= 3:
+                model_info = f"{parts[1]}/{parts[2]}"  # provider/model
+                run = 1
+            else:
+                model_info = "unknown/unknown"
+                run = 1
+
+        # Generate evaluation results path using new structure
+        results_path = generate_output_path(
+            base_dir, task, model_info, run, metrics=False
+        )
         df.to_csv(results_path, index=False)
         logger.info(f"Evaluation completed for {task}. Results saved to {results_path}")
 
-        # Save metrics
-        metrics_path = Path(f"{str(results_path)[:-4]}_metrics.csv")
-        # metrics_path = (
-        #     EVALUATION_DIR
-        #     / task
-        #     / f"evaluation_{task}_{args.model}_{date.today().strftime('%d_%m_%Y')}_metrics.csv"
-        # )
-        metrics_path.parent.mkdir(parents=True, exist_ok=True)
+        # Generate metrics path using new structure
+        metrics_path = generate_output_path(
+            base_dir, task, model_info, run, metrics=True
+        )
         metrics_df.to_csv(metrics_path, index=False)
         logger.info(f"Metrics saved to {metrics_path}")
     else:

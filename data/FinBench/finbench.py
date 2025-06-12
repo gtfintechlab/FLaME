@@ -1,7 +1,9 @@
-import os
-from huggingface_hub import login
-from datasets import DatasetDict, load_dataset
 import logging
+import os
+
+from datasets import DatasetDict, load_dataset
+from huggingface_hub import login
+
 from flame.config import DATA_DIR, LOG_LEVEL
 
 HUGGINGFACEHUB_API_TOKEN = os.environ["HUGGINGFACEHUB_API_TOKEN"]

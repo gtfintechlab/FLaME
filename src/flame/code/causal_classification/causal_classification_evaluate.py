@@ -1,10 +1,12 @@
 import pandas as pd
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+
+from flame.code.prompts.registry import PromptFormat, get_prompt
+from flame.config import LOG_DIR, LOG_LEVEL
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
 
 # litellm.set_verbose=True
 from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
-from flame.config import LOG_DIR, LOG_LEVEL
 
 # Set up logging
 logger = setup_logger(
@@ -12,13 +14,6 @@ logger = setup_logger(
     log_file=LOG_DIR / "causal_classification_evaluation.log",
     level=LOG_LEVEL,
 )
-
-
-def extraction_prompt(llm_response: str):
-    """Generate a prompt to extract the label from the LLM response."""
-    return f"""The LLM output provided below contains the predicted label. Extract the label as a single number (0, 1, or 2) without any explanation or additional text. If the label is missing, return 'error'.
-
-    LLM Response: "{llm_response}" """
 
 
 def normalize_response(response):
@@ -65,17 +60,20 @@ def causal_classification_evaluate(file_name, args):
         llm_responses_batch = [df.at[i, "llm_responses"] for i in batch_indices]
         actual_labels_batch = [df.at[i, "actual_labels"] for i in batch_indices]
         logger.info(f"Processing batch {batch_idx + 1} with {len(batch_indices)} rows.")
+        extraction_prompt_func = get_prompt(
+            "causal_classification", PromptFormat.EXTRACTION
+        )
         messages_batch = [
-            [{"role": "user", "content": extraction_prompt(llm_response)}]
+            [{"role": "user", "content": extraction_prompt_func(llm_response)}]
             for llm_response in llm_responses_batch
         ]
-        logger.info(f"Generated messages for batch {messages_batch}.")
+        logger.debug(f"Generated messages for batch {messages_batch}.")
 
         try:
             batch_responses = process_batch_with_retry(
                 args, messages_batch, batch_idx, len(index_batches)
             )
-            logger.info(f"{batch_responses}")
+            logger.debug(f"Batch responses: {batch_responses}")
             for idx, (response, actual_label) in enumerate(
                 zip(batch_responses, actual_labels_batch)
             ):

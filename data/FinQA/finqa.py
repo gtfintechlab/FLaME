@@ -1,16 +1,68 @@
-from huggingface_hub import hf_hub_upload
+import logging
+
 import pandas as pd
 from datasets import Dataset
-import logging
-from flame.utils.process_qa import process_qa_pairs
-from flame.utils.zip_to_csv import zip_to_csv
+from huggingface_hub import hf_hub_upload
+
 from flame.config import DATA_DIR, LOG_LEVEL
+from flame.utils.miscellaneous import zip_to_csv
 
 HF_ORGANIZATION = "gtfintechlab"
 DATASET = "finqa"
 
 logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
+
+
+def process_qa_pairs(data):
+    """Process question-answer pairs from FinQA data.
+
+    Extracts pre_text, post_text, table_ori, and QA pairs from the dataset.
+
+    Args:
+        data: DataFrame containing FinQA data
+
+    Returns:
+        DataFrame with processed QA pairs
+    """
+    pre_text, post_text, table_ori = [], [], []
+    question_0, question_1, answer_0, answer_1 = [], [], [], []
+
+    for _, row in data.iterrows():
+        pre_text.append(row["pre_text"])
+        post_text.append(row["post_text"])
+        table_ori.append(row["table_ori"])
+
+        if pd.notna(row["qa"]):
+            question_0.append(row["qa"].get("question"))
+            answer_0.append(row["qa"].get("answer"))
+            question_1.append(None)
+            answer_1.append(None)
+        else:
+            question_0.append(
+                row["qa_0"].get("question") if pd.notna(row["qa_0"]) else None
+            )
+            answer_0.append(
+                row["qa_0"].get("answer") if pd.notna(row["qa_0"]) else None
+            )
+            question_1.append(
+                row["qa_1"].get("question") if pd.notna(row["qa_1"]) else None
+            )
+            answer_1.append(
+                row["qa_1"].get("answer") if pd.notna(row["qa_1"]) else None
+            )
+
+    return pd.DataFrame(
+        {
+            "pre_text": pre_text,
+            "post_text": post_text,
+            "table_ori": table_ori,
+            "question_0": question_0,
+            "question_1": question_1,
+            "answer_0": answer_0,
+            "answer_1": answer_1,
+        }
+    )
 
 
 def huggify_data_finqa(push_to_hub=False):

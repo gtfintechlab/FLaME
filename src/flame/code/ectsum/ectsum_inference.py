@@ -1,20 +1,16 @@
 from datetime import date
-import pandas as pd
-from datasets import load_dataset
+
 import litellm
-
+import pandas as pd
 from litellm import completion
-from flame.code.prompts_zeroshot import ectsum_zeroshot_prompt
-from flame.code.prompts_fewshot import ectsum_fewshot_prompt
 
-# from flame.code.tokens import tokens
-from flame.utils.logging_utils import setup_logger
-from flame.config import RESULTS_DIR, LOG_DIR, LOG_LEVEL
+# Import prompts from the unified prompt package
+from flame.code.prompts import PromptFormat, get_prompt
+from flame.utils.dataset_utils import safe_load_dataset
+from flame.utils.logging_utils import get_component_logger
 
-# Setup logger for ectsum inference
-logger = setup_logger(
-    name="ectsum_inference", log_file=LOG_DIR / "ectsum_inference.log", level=LOG_LEVEL
-)
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "ectsum")
 
 litellm.drop_params = True
 
@@ -25,14 +21,7 @@ def ectsum_inference(args):
 
     # Load the ECTSum dataset (test split)
     logger.info("Loading dataset...")
-    dataset = load_dataset("gtfintechlab/ECTSum", trust_remote_code=True)
-
-    results_path = (
-        RESULTS_DIR
-        / "ectsum"
-        / f"ectsum_{args.model}_{date.today().strftime('%d_%m_%Y')}.csv"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
+    dataset = safe_load_dataset("gtfintechlab/ECTSum", trust_remote_code=True)
 
     # Initialize lists to store documents, actual labels, model responses, and complete responses
     documents = []
@@ -41,9 +30,11 @@ def ectsum_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        ectsum_prompt = ectsum_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        ectsum_prompt = ectsum_zeroshot_prompt
+        ectsum_prompt = get_prompt("ectsum", PromptFormat.FEW_SHOT)
+    else:
+        ectsum_prompt = get_prompt("ectsum", PromptFormat.ZERO_SHOT)
+    if ectsum_prompt is None:
+        raise RuntimeError("ECTSum prompt not found in registry")
 
     logger.info(f"Starting inference on ECTSum with model {args.model}...")
 
@@ -103,7 +94,5 @@ def ectsum_inference(args):
             "complete_responses": complete_responses,
         }
     )
-
-    logger.info(f"Inference completed. Returning DataFrame with {len(df)} rows.")
 
     return df

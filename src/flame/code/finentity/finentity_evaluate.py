@@ -1,10 +1,13 @@
-import pandas as pd
+import ast
 import json
 import re
-import ast
-from flame.utils.logging_utils import setup_logger
-from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+
+import pandas as pd
+from tqdm import tqdm
+
 from flame.config import LOG_DIR, LOG_LEVEL
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.logging_utils import setup_logger
 
 # Configure logging
 logger = setup_logger(
@@ -37,6 +40,16 @@ def sanitize_json_string(json_str):
     """Sanitize JSON strings by fixing common formatting issues."""
 
     json_str = json_str.strip()
+
+    # Remove markdown code blocks if present
+    if json_str.startswith("```"):
+        # Find the end of the opening code block marker
+        first_newline = json_str.find("\n")
+        if first_newline != -1:
+            json_str = json_str[first_newline + 1 :]
+        # Remove the closing code block marker
+        if json_str.endswith("```"):
+            json_str = json_str[:-3].rstrip()
     json_str = json_str.replace(", }", "}").replace(
         ", ]", "]"
     )  # Remove trailing commas
@@ -54,13 +67,38 @@ def parse_json_content(content):
     """Parse JSON content with error handling."""
     try:
         return json.loads(content)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        # Try to fix common issues
         try:
-            return ast.literal_eval(content)
-        except (ValueError, SyntaxError) as e:
-            logger.error(f"JSON decoding error: {e}")
-            logger.error(f"Failed content: {content}")
-            return []
+            # Handle cases like 'stap" by finding and fixing mismatched quotes
+            fixed_content = content
+
+            # Count quotes to detect mismatches
+            double_quotes = fixed_content.count('"')
+            single_quotes = fixed_content.count("'")
+
+            # If odd number of quotes, likely a mismatch
+            if double_quotes % 2 != 0 or single_quotes % 2 != 0:
+                # Try to parse line by line and fix
+                lines = fixed_content.split("\n")
+                for i, line in enumerate(lines):
+                    if '"value":' in line and line.count('"') % 2 != 0:
+                        # Find the problematic quote and try to fix it
+                        if line.strip().endswith('",'):
+                            lines[i] = line[:-2] + '"},'
+                        elif "'" in line:
+                            # Replace single quotes in values
+                            lines[i] = line.replace("'", '"')
+                fixed_content = "\n".join(lines)
+
+            return json.loads(fixed_content)
+        except json.JSONDecodeError:
+            try:
+                return ast.literal_eval(content)
+            except (ValueError, SyntaxError):
+                logger.error(f"JSON decoding error: {e}")
+                logger.error(f"Failed content: {content}")
+                return []
 
 
 def normalize_entities(entities):
@@ -103,7 +141,8 @@ def evaluate_entities(pred_entities, true_entities):
 
 def finentity_evaluate(file_name, args):
     """Evaluate FinEntity dataset with batching."""
-    task = args.dataset.strip('“”"')
+    # support legacy args.dataset for tests, prefer args.task
+    task = getattr(args, "task", None) or getattr(args, "dataset", None) or "finentity"
     logger.info(f"Starting evaluation for {task} using model {args.model}.")
 
     # Load CSV
@@ -120,11 +159,10 @@ def finentity_evaluate(file_name, args):
     logger.info(f"Processing {len(df)} rows in {len(index_batches)} batches.")
 
     # Extract labels
-    for batch_idx, batch_indices in enumerate(index_batches):
+    pbar = tqdm(index_batches, desc="Processing batches")
+    for batch_idx, batch_indices in enumerate(pbar):
         llm_responses_batch = [df.at[i, "llm_responses"] for i in batch_indices]
-        logger.info(
-            f"Processing batch {batch_idx + 1}/{len(index_batches)} with {len(batch_indices)} rows."
-        )
+        pbar.set_description(f"Batch {batch_idx + 1}/{len(index_batches)}")
         messages_batch = [
             [{"role": "user", "content": finentity_prompt(response)}]
             for response in llm_responses_batch

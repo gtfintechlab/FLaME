@@ -1,45 +1,15 @@
 import pandas as pd
 from tqdm import tqdm
-from datasets import load_dataset
-from flame.code.prompts_zeroshot import fpb_zeroshot_prompt
-from flame.code.prompts_fewshot import fpb_fewshot_prompt
-from flame.utils.logging_utils import setup_logger
-from flame.config import LOG_DIR, LOG_LEVEL
-import litellm
-from typing import Any, List
 
-logger = setup_logger(
-    name="fpb_inference", log_file=LOG_DIR / "fpb_inference.log", level=LOG_LEVEL
-)
+from flame.code.prompts import PromptFormat, get_prompt
+from flame.utils.batch_utils import chunk_list, process_batch_with_retry
+from flame.utils.dataset_utils import safe_load_dataset
+from flame.utils.logging_utils import get_component_logger
+
+# Use component-based logger that follows the logging configuration
+logger = get_component_logger("inference", "fpb")
 
 # data_seed = '5768'
-
-
-def chunk_list(lst: List[Any], chunk_size: int) -> List[List[Any]]:
-    """Split a list into chunks of specified size."""
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def process_batch_with_retry(args, messages_batch, batch_idx, total_batches):
-    """Process a batch with litellm's retry mechanism."""
-    try:
-        # Using litellm's built-in retry mechanism
-        batch_responses = litellm.batch_completion(
-            model=args.model,
-            messages=messages_batch,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            # top_k=args.top_k if args.top_k else None,
-            top_p=args.top_p,
-            # repetition_penalty=args.repetition_penalty,
-            num_retries=3,  # Using litellm's retry mechanism
-        )
-        logger.debug(f"Completed batch {batch_idx + 1}/{total_batches}")
-        return batch_responses
-
-    except Exception as e:
-        logger.error(f"Batch {batch_idx + 1} failed: {str(e)}")
-        raise
 
 
 def fpb_inference(args):
@@ -47,10 +17,10 @@ def fpb_inference(args):
     # data_splits = ["sentences_50agree", "sentences_66agree", "sentences_75agree", "sentences_allagree"]
     logger.info("Starting FPB inference")
     logger.info("Loading dataset...")
-    # for data_split in data_splits:
-    dataset = load_dataset(
+    # Specify a specific data split - using '5768' as default
+    dataset = safe_load_dataset(
         "gtfintechlab/financial_phrasebank_sentences_allagree",
-        None,
+        name="5768",  # Pass config name using 'name' parameter
         trust_remote_code=True,
     )
 
@@ -60,9 +30,11 @@ def fpb_inference(args):
     complete_responses = []
 
     if args.prompt_format == "fewshot":
-        fpb_prompt = fpb_fewshot_prompt
-    elif args.prompt_format == "zeroshot":
-        fpb_prompt = fpb_zeroshot_prompt
+        fpb_prompt = get_prompt("fpb", PromptFormat.FEW_SHOT)
+    else:
+        fpb_prompt = get_prompt("fpb", PromptFormat.ZERO_SHOT)
+    if fpb_prompt is None:
+        raise RuntimeError("FPB prompt not found in registry")
 
     test_data = dataset["test"]  # type: ignore
     all_sentences = [data["sentence"] for data in test_data]  # type: ignore
@@ -119,5 +91,4 @@ def fpb_inference(args):
     success_rate = (df["llm_responses"].notna().sum() / len(df)) * 100
     logger.info(f"Inference completed. Success rate: {success_rate:.1f}%")
 
-
-#     return df
+    return df
