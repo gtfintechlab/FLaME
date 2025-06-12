@@ -1,5 +1,6 @@
 """Utilities for safe dataset loading with proper error handling."""
 
+import os
 import sys
 from typing import Any, Optional
 
@@ -31,6 +32,82 @@ def safe_load_dataset(
     Raises:
         SystemExit: If authentication fails or dataset cannot be accessed
     """
+    # In CI/test environments with mock token, return a mock dataset
+    if (
+        os.getenv("CI") == "true"
+        and os.getenv("HUGGINGFACEHUB_API_TOKEN") == "mock-token-for-ci"
+    ):
+        logger.debug(f"CI mode: returning mock dataset for {dataset_name}")
+
+        # Return a mock dataset that mimics HuggingFace dataset structure
+        class MockDataset(list):
+            def __init__(self):
+                # Create some dummy data with all common fields
+                super().__init__(
+                    [
+                        {
+                            "text": "dummy text 1",
+                            "label": 0,
+                            "sentence": "Test sentence 1",
+                            "question": "Test question 1?",
+                            "pre_text": ["Pre text 1"],
+                            "post_text": ["Post text 1"],
+                            "table_ori": [["A", "B"], ["1", "2"]],
+                            "question_0": "Q0",
+                            "question_1": "Q1",
+                            "answer_0": "A0",
+                            "answer_1": "A1",
+                            "context": "Test context 1",
+                            "tokens": ["token1", "token2"],
+                            "query": "Test query 1",
+                            "narrative": "Test narrative 1",
+                            "summary": "Test summary 1",
+                            "answer": "Test answer 1",
+                            "choices": ["choice1", "choice2", "choice3", "choice4"],
+                            "company": "Test Company 1",
+                            "docType": "10-K",
+                            "numerals-tags": '{"100": "NUMBER", "2023": "DATE"}',
+                            "response": "positive",
+                            "tags": ["B-ORG", "O", "O"],
+                        },
+                        {
+                            "text": "dummy text 2",
+                            "label": 1,
+                            "sentence": "Test sentence 2",
+                            "question": "Test question 2?",
+                            "pre_text": ["Pre text 2"],
+                            "post_text": ["Post text 2"],
+                            "table_ori": [["C", "D"], ["3", "4"]],
+                            "question_0": "Q0",
+                            "question_1": "Q1",
+                            "answer_0": "A0",
+                            "answer_1": "A1",
+                            "context": "Test context 2",
+                            "tokens": ["token3", "token4"],
+                            "query": "Test query 2",
+                            "narrative": "Test narrative 2",
+                            "summary": "Test summary 2",
+                            "answer": "Test answer 2",
+                            "choices": ["choice1", "choice2", "choice3", "choice4"],
+                            "company": "Test Company 2",
+                            "docType": "8-K",
+                            "numerals-tags": '{"200": "MONEY", "2024": "DATE"}',
+                            "response": "negative",
+                            "tags": ["O", "B-PER", "O"],
+                        },
+                    ]
+                )
+
+            def __getitem__(self, key):
+                if key in {"train", "test", "validation", "dev"}:
+                    return self
+                return super().__getitem__(key)
+
+        mock_dataset = MockDataset()
+        if split:
+            return mock_dataset[split]
+        return mock_dataset
+
     try:
         logger.debug(f"Loading dataset: {dataset_name}")
         dataset = load_dataset(

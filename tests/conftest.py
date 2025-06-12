@@ -93,7 +93,7 @@ class _DummyDataset(list):
         super().__init__([_DummyRow(), _DummyRow()])
 
     def __getitem__(self, item):  # type: ignore[override]
-        if item in {"train", "test", "validation"}:
+        if item in {"train", "test", "validation", "dev"}:
             return self
         return super().__getitem__(item)
 
