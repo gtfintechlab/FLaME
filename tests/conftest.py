@@ -70,6 +70,31 @@ class _DummyRow(dict):
         "text": "dummy text",
         "document": "dummy document",
         "sentence": "dummy sentence",
+        "label": 0,
+        "question": "What is the sentiment?",
+        # Task-specific fields
+        "context": "Test context for analysis",
+        "tokens": ["dummy", "text", "tokens"],
+        "tags": ["O", "B-ORG", "O"],
+        "response": "positive",
+        # ConvFinQA specific
+        "pre_text": ["This is pre-text"],
+        "post_text": ["This is post-text"],
+        "table_ori": [["Col1", "Col2"], ["Val1", "Val2"]],
+        "question_0": "First question?",
+        "question_1": "Second question?",
+        "answer_0": "First answer",
+        "answer_1": "Second answer",
+        # Other task fields
+        "query": "Test query",
+        "narrative": "Test narrative text",
+        "summary": "Test summary",
+        "answer": "Test answer",
+        "choices": ["choice1", "choice2", "choice3", "choice4"],
+        # FNXL specific
+        "company": "Test Corp",
+        "docType": "10-K",
+        "numerals-tags": '{"100": "NUMBER", "2023": "DATE"}',
         # FinRED specific
         "entities": [("ent_a", "ent_b")],
         "relations": ["rel_dummy"],
@@ -104,14 +129,15 @@ class _DummyDataset(list):
 
 
 @pytest.fixture(autouse=True)
-def _patch_external(monkeypatch, tmp_path_factory):
+def _patch_external(monkeypatch, tmp_path_factory, request):
     # 1. LiteLLM
     monkeypatch.setattr(litellm, "completion", _fake_completion)
     monkeypatch.setattr(litellm, "batch_completion", _fake_batch_completion)
 
-    # 2. datasets.load_dataset
-    datasets = importlib.import_module("datasets")
-    monkeypatch.setattr(datasets, "load_dataset", lambda *a, **k: _DummyDataset())
+    # 2. datasets.load_dataset - skip for tests marked with no_mock_datasets
+    if "no_mock_datasets" not in request.keywords:
+        datasets = importlib.import_module("datasets")
+        monkeypatch.setattr(datasets, "load_dataset", lambda *a, **k: _DummyDataset())
 
     # 3. time.sleep
     monkeypatch.setattr(_time, "sleep", lambda *_a, **_k: None)
