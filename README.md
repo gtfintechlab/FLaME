@@ -288,3 +288,51 @@ This structure provides:
 - Collision-free filenames with UUID suffixes
 - Consistent naming convention across all outputs
 - Easy filtering and organization of results
+
+## Local Development with Ollama
+
+For cost-effective local development and testing, FLaME supports using Ollama models. This allows you to run experiments without consuming API credits.
+
+### Setting up Ollama
+
+1. Install Ollama from https://ollama.ai
+2. Pull a model: `ollama pull qwen2.5:1.5b`
+3. Ensure Ollama is running: `ollama serve`
+
+### Example Ollama Configuration
+
+Create a custom configuration file for Ollama:
+
+```yaml
+# configs/ollama.yaml
+model: "ollama/qwen2.5:1.5b"
+api_base: "http://localhost:11434"
+
+# Generation parameters
+temperature: 0.0  # Deterministic for testing
+max_tokens: 512
+batch_size: 10
+
+# Development settings
+debug: true
+verbose: true
+
+# Task-specific overrides
+task_overrides:
+  finqa:
+    max_tokens: 1024
+  convfinqa:
+    max_tokens: 1024
+```
+
+### Running with Ollama
+
+```bash
+# Run inference with Ollama
+uv run python main.py --config configs/ollama.yaml --tasks fomc --mode inference
+
+# Run multiple tasks
+uv run python main.py --config configs/ollama.yaml --tasks fomc numclaim finer --mode inference
+```
+
+Note: Ollama models may have different performance characteristics compared to cloud models. Use them primarily for development and testing, not for final evaluations.

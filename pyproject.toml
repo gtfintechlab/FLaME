@@ -7,7 +7,6 @@ requires-python = ">=3.11"
 dependencies = [
     "backoff>=2.2.1",
     "datasets>=3.5.1",
-    "dvc>=3.59.2",
     "evaluate>=0.4.3",
     "huggingface-hub>=0.30.2",
     "litellm==1.67.1",
