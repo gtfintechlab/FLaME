@@ -136,8 +136,19 @@ def _patch_external(monkeypatch, tmp_path_factory, request):
 
     # 2. datasets.load_dataset - skip for tests marked with no_mock_datasets
     if "no_mock_datasets" not in request.keywords:
-        datasets = importlib.import_module("datasets")
-        monkeypatch.setattr(datasets, "load_dataset", lambda *a, **k: _DummyDataset())
+        try:
+            datasets = importlib.import_module("datasets")
+            monkeypatch.setattr(
+                datasets, "load_dataset", lambda *a, **k: _DummyDataset()
+            )
+            # Also patch it in the dataset_utils module directly
+            from flame.utils import dataset_utils
+
+            monkeypatch.setattr(
+                dataset_utils, "load_dataset", lambda *a, **k: _DummyDataset()
+            )
+        except ImportError:
+            pass
 
     # 3. time.sleep
     monkeypatch.setattr(_time, "sleep", lambda *_a, **_k: None)
