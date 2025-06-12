@@ -61,13 +61,13 @@ def safe_load_dataset(
             ]
         ):
             logger.error(f"Authentication error loading dataset '{dataset_name}': {e}")
-            print(
-                f"\nERROR: Failed to load dataset '{dataset_name}' due to authentication issues."
+            logger.error(
+                f"Failed to load dataset '{dataset_name}' due to authentication issues. "
+                "Please ensure: "
+                "1. Your HUGGINGFACEHUB_API_TOKEN is set correctly, "
+                "2. Your token has access to the required datasets, "
+                "3. You are logged in to Hugging Face Hub"
             )
-            print("Please ensure:")
-            print("1. Your HUGGINGFACEHUB_API_TOKEN is set correctly")
-            print("2. Your token has access to the required datasets")
-            print("3. You are logged in to Hugging Face Hub")
             sys.exit(1)
 
         # Check for dataset not found errors
@@ -75,13 +75,13 @@ def safe_load_dataset(
             not_found in error_msg
             for not_found in ["404", "not found", "does not exist", "couldn't find"]
         ):
-            logger.error(f"Dataset not found: '{dataset_name}'")
-            print(f"\nERROR: Dataset '{dataset_name}' not found.")
-            print("Please check the dataset name is correct.")
+            logger.error(
+                f"Dataset '{dataset_name}' not found. "
+                "Please check the dataset name is correct."
+            )
             sys.exit(1)
 
         # Other errors
         else:
             logger.error(f"Error loading dataset '{dataset_name}': {e}")
-            print(f"\nERROR: Failed to load dataset '{dataset_name}': {e}")
             sys.exit(1)

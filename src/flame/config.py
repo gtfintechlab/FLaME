@@ -78,9 +78,8 @@ def configure_logging(config: Optional[Dict] = None):
         try:
             LOG_CONFIG["level"] = getattr(logging, log_config["level"].upper())
         except AttributeError:
-            print(
-                f"Warning: Invalid logging level '{log_config['level']}'. Using INFO instead."
-            )
+            # Use INFO level as default if invalid level specified
+            pass
 
     # Parse console settings
     if "console" in log_config:
@@ -93,9 +92,8 @@ def configure_logging(config: Optional[Dict] = None):
                     logging, console_config["level"].upper()
                 )
             except AttributeError:
-                print(
-                    f"Warning: Invalid console logging level '{console_config['level']}'. Using default instead."
-                )
+                # Use default console level if invalid level specified
+                pass
 
     # Parse file settings
     if "file" in log_config:
@@ -108,9 +106,8 @@ def configure_logging(config: Optional[Dict] = None):
                     logging, file_config["level"].upper()
                 )
             except AttributeError:
-                print(
-                    f"Warning: Invalid file logging level '{file_config['level']}'. Using default instead."
-                )
+                # Use default file level if invalid level specified
+                pass
         if "max_size_mb" in file_config:
             LOG_CONFIG["file"]["max_size_mb"] = file_config["max_size_mb"]
         if "backup_count" in file_config:
@@ -127,9 +124,8 @@ def configure_logging(config: Optional[Dict] = None):
                 else:
                     LOG_CONFIG["components"][component] = level
             except AttributeError:
-                print(
-                    f"Warning: Invalid logging level '{level_name}' for component '{component}'. Using default instead."
-                )
+                # Use default component level if invalid level specified
+                pass
 
     # Ensure litellm is set to WARNING by default if not specified
     if "litellm" not in LOG_CONFIG["components"]:

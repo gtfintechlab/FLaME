@@ -97,7 +97,6 @@ def banking77_evaluate(file_name, args):
             except Exception as e:
                 logger.error(f"Error in response: {str(e)}\nResponse: {response}")
                 extracted_label = "Error"
-            # print(extracted_label)
             mapped_label = map_extracted_label_to_number(extracted_label)
 
             if mapped_label == -1:
