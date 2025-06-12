@@ -77,6 +77,7 @@ def _make_dummy_df() -> pd.DataFrame:  # noqa: D103 (helper)
 
 
 @pytest.mark.modules
+@pytest.mark.essential
 @pytest.mark.parametrize("module_name", _discover_eval_modules())
 def test_evaluation_module(module_name: str, dummy_args, monkeypatch):  # noqa: D103 – pytest test fn
     # Skip modules that are not in current release

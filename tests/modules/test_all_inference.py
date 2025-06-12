@@ -25,6 +25,7 @@ def _discover_inference_modules() -> list[str]:
 
 
 @pytest.mark.modules
+@pytest.mark.essential
 @pytest.mark.parametrize("module_name", _discover_inference_modules())
 def test_inference_module(module_name, dummy_args):  # noqa: D103 – pytest test fn
     # Some modules expect external heavy deps or file structures we can't mock easily – skip.
