@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
@@ -123,10 +124,18 @@ def causal_classification_evaluate(file_name, args):
     filtered_actual = [df.at[i, "actual_labels"] for i in valid_indices]
 
     # Compute evaluation metrics
-    precision = precision_score(filtered_actual, filtered_predicted, average="macro")
-    recall = recall_score(filtered_actual, filtered_predicted, average="macro")
-    f1 = f1_score(filtered_actual, filtered_predicted, average="macro")
-    accuracy = accuracy_score(filtered_actual, filtered_predicted)
+    # Convert lists to numpy arrays for sklearn
+    filtered_actual_array = np.array(filtered_actual)
+    filtered_predicted_array = np.array(filtered_predicted)
+
+    precision = precision_score(
+        filtered_actual_array, filtered_predicted_array, average="macro"
+    )
+    recall = recall_score(
+        filtered_actual_array, filtered_predicted_array, average="macro"
+    )
+    f1 = f1_score(filtered_actual_array, filtered_predicted_array, average="macro")
+    accuracy = accuracy_score(filtered_actual_array, filtered_predicted_array)
 
     # Metrics DataFrame
     metrics_df = pd.DataFrame(

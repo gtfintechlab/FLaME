@@ -9,6 +9,12 @@ import pytest
 def test_ectsum_bertscore_lazy_loading():
     """Test that ectsum loads BERTScore lazily and handles errors properly."""
 
+    # Reset the module state first
+    import importlib
+    import flame.code.ectsum.ectsum_evaluate
+
+    importlib.reload(flame.code.ectsum.ectsum_evaluate)
+
     # Import the module - this should NOT trigger BERTScore loading
     from flame.code.ectsum.ectsum_evaluate import (
         _bertscore,

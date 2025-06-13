@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
@@ -82,9 +83,11 @@ def finred_evaluate(file_name, args):
     df["extracted_labels"] = extracted_labels
 
     # Calculate metrics
-    accuracy = accuracy_score(correct_labels, extracted_labels)
+    correct_labels_array = np.array(correct_labels)
+    extracted_labels_array = np.array(extracted_labels)
+    accuracy = accuracy_score(correct_labels_array, extracted_labels_array)
     precision, recall, f1, _ = precision_recall_fscore_support(
-        correct_labels, extracted_labels, average="weighted"
+        correct_labels_array, extracted_labels_array, average="weighted"
     )
 
     # Log metrics

@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
@@ -102,9 +103,11 @@ def tatqa_evaluate(file_name, args):
         valid_labels = [str(label) for label in valid_labels]
         valid_results = [str(result).strip() for result in valid_results]
 
-        accuracy = accuracy_score(valid_labels, valid_results)
+        valid_labels_array = np.array(valid_labels)
+        valid_results_array = np.array(valid_results)
+        accuracy = accuracy_score(valid_labels_array, valid_results_array)
         precision, recall, f1, _ = precision_recall_fscore_support(
-            valid_labels, valid_results, average="weighted", zero_division=0
+            valid_labels_array, valid_results_array, average="weighted", zero_division=0
         )
 
     # Log metrics

@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
@@ -109,9 +110,13 @@ def banking77_evaluate(file_name, args):
 
     df["extracted_labels"] = extracted_labels
     # Evaluate performance
-    accuracy = accuracy_score(correct_labels, extracted_labels)
+    # Convert lists to numpy arrays for sklearn
+    correct_labels_array = np.array(correct_labels)
+    extracted_labels_array = np.array(extracted_labels)
+
+    accuracy = accuracy_score(correct_labels_array, extracted_labels_array)
     precision, recall, f1, _ = precision_recall_fscore_support(
-        correct_labels, extracted_labels, average="weighted"
+        correct_labels_array, extracted_labels_array, average="weighted"
     )
 
     logger.info(f"Accuracy: {accuracy:.4f}")
