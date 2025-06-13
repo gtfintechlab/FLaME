@@ -48,7 +48,14 @@ def calculate_metrics(df, llm_col, actual_col, k=10):
         # We threshold cosine similarities to get binary relevance scores
         binary_prediction = (cosine_similarities[idx] >= 0.5).astype(int)
         binary_truth = np.ones_like(binary_prediction)
-        binary_relevance.append(f1_score(binary_truth[:k], binary_prediction[:k]))
+        binary_relevance.append(
+            f1_score(
+                np.array(binary_truth[:k]),
+                np.array(binary_prediction[:k]),
+                average="binary",
+                pos_label=1,
+            )
+        )
 
     # Calculate average metrics
     avg_ndcg = np.mean(ndcg_scores)

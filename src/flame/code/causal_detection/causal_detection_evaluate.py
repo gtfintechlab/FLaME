@@ -1,5 +1,6 @@
 import ast
 
+import numpy as np
 import pandas as pd
 from litellm.types.utils import (
     Choices,
@@ -189,13 +190,17 @@ def causal_detection_evaluate(file_name, args):
 
     labels = ["B-CAUSE", "I-CAUSE", "B-EFFECT", "I-EFFECT", "O"]
     logger.info("Token Classification Report:")
-    logger.info(classification_report(flat_actual, flat_predicted, labels=labels))
+    flat_actual_array = np.array(flat_actual)
+    flat_predicted_array = np.array(flat_predicted)
+    logger.info(
+        classification_report(flat_actual_array, flat_predicted_array, labels=labels)
+    )
 
-    accuracy = accuracy_score(flat_actual, flat_predicted)
+    accuracy = accuracy_score(flat_actual_array, flat_predicted_array)
     logger.info(f"Overall Token-Level Accuracy: {accuracy:.4f}")
 
     precision, recall, f1, _ = precision_recall_fscore_support(
-        flat_actual, flat_predicted, average="weighted"
+        flat_actual_array, flat_predicted_array, average="weighted"
     )
 
     logger.info(f"Evaluation completed. Accuracy: {accuracy:.4f}.")

@@ -214,10 +214,16 @@ def finer_evaluate(file_name, args):
         # If you're treating each position as a label for classification,
         # you can directly use sklearn metrics row by row:
         try:
-            p = precision_score(y_true, y_pred, average="macro", zero_division=0)
-            r = recall_score(y_true, y_pred, average="macro", zero_division=0)
-            f = f1_score(y_true, y_pred, average="macro", zero_division=0)
-            a = accuracy_score(y_true, y_pred)
+            y_true_array = np.array(y_true)
+            y_pred_array = np.array(y_pred)
+            p = precision_score(
+                y_true_array, y_pred_array, average="macro", zero_division=0
+            )
+            r = recall_score(
+                y_true_array, y_pred_array, average="macro", zero_division=0
+            )
+            f = f1_score(y_true_array, y_pred_array, average="macro", zero_division=0)
+            a = accuracy_score(y_true_array, y_pred_array)
             row_precisions.append(p)
             row_recalls.append(r)
             row_f1s.append(f)

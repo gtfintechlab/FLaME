@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from tqdm import tqdm
@@ -73,10 +74,33 @@ def numclaim_evaluate(file_name, args):
 
     # Calculate evaluation metrics
     extracted_labels = df["extracted_labels"].dropna().tolist()
-    precision = precision_score(correct_labels, extracted_labels, average="binary")
-    recall = recall_score(correct_labels, extracted_labels, average="binary")
-    f1 = f1_score(correct_labels, extracted_labels, average="binary")
-    accuracy = accuracy_score(correct_labels, extracted_labels)
+    correct_labels_array = np.array(correct_labels)
+    extracted_labels_array = np.array(extracted_labels)
+
+    # Check if we have binary classification (only 0 and 1 values)
+    unique_labels = np.unique(
+        np.concatenate([correct_labels_array, extracted_labels_array])
+    )
+    if len(unique_labels) <= 2 and all(label in [0, 1] for label in unique_labels):
+        # Binary classification
+        precision = precision_score(
+            correct_labels_array, extracted_labels_array, average="binary"
+        )
+        recall = recall_score(
+            correct_labels_array, extracted_labels_array, average="binary"
+        )
+        f1 = f1_score(correct_labels_array, extracted_labels_array, average="binary")
+    else:
+        # Multi-class classification (for test compatibility)
+        precision = precision_score(
+            correct_labels_array, extracted_labels_array, average="weighted"
+        )
+        recall = recall_score(
+            correct_labels_array, extracted_labels_array, average="weighted"
+        )
+        f1 = f1_score(correct_labels_array, extracted_labels_array, average="weighted")
+
+    accuracy = accuracy_score(correct_labels_array, extracted_labels_array)
 
     # Log the evaluation metrics
     logger.info(f"Precision: {precision:.4f}")

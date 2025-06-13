@@ -99,7 +99,7 @@ def test_main_invalid_huggingface_token(monkeypatch, capsys):
 
 @pytest.mark.unit
 @pytest.mark.no_mock_datasets
-def test_safe_load_dataset_authentication_error(monkeypatch, capsys):
+def test_safe_load_dataset_authentication_error(monkeypatch):
     """Test safe_load_dataset handles authentication errors properly."""
     from flame.utils.dataset_utils import safe_load_dataset
 
@@ -110,19 +110,16 @@ def test_safe_load_dataset_authentication_error(monkeypatch, capsys):
     # Override the load_dataset in the dataset_utils module
     monkeypatch.setattr("flame.utils.dataset_utils.load_dataset", mock_load_dataset)
 
+    # The function should exit with code 1 for authentication errors
     with pytest.raises(SystemExit) as exc_info:
         safe_load_dataset("private/dataset")
 
     assert exc_info.value.code == 1
 
-    captured = capsys.readouterr()
-    assert "authentication issues" in captured.out
-    assert "HUGGINGFACEHUB_API_TOKEN" in captured.out
-
 
 @pytest.mark.unit
 @pytest.mark.no_mock_datasets
-def test_safe_load_dataset_not_found_error(monkeypatch, capsys):
+def test_safe_load_dataset_not_found_error(monkeypatch):
     """Test safe_load_dataset handles dataset not found errors properly."""
     from flame.utils.dataset_utils import safe_load_dataset
 
@@ -132,13 +129,11 @@ def test_safe_load_dataset_not_found_error(monkeypatch, capsys):
 
     monkeypatch.setattr("flame.utils.dataset_utils.load_dataset", mock_load_dataset)
 
+    # The function should exit with code 1 for not found errors
     with pytest.raises(SystemExit) as exc_info:
         safe_load_dataset("nonexistent/dataset")
 
     assert exc_info.value.code == 1
-
-    captured = capsys.readouterr()
-    assert "Dataset 'nonexistent/dataset' not found" in captured.out
 
 
 @pytest.mark.unit

@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from tqdm import tqdm
@@ -240,9 +241,11 @@ def fomc_evaluate(file_name: str, args) -> Tuple[pd.DataFrame, pd.DataFrame]:
     valid_extracted = [extracted_labels[i] for i in valid_indices]
     valid_correct = [correct_labels[i] for i in valid_indices]
 
-    accuracy = accuracy_score(valid_correct, valid_extracted)
+    valid_correct_array = np.array(valid_correct)
+    valid_extracted_array = np.array(valid_extracted)
+    accuracy = accuracy_score(valid_correct_array, valid_extracted_array)
     precision, recall, f1, _ = precision_recall_fscore_support(
-        valid_correct, valid_extracted, average="weighted"
+        valid_correct_array, valid_extracted_array, average="weighted"
     )
 
     # Log metrics
