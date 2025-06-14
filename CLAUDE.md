@@ -6,6 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - @~/.claude/epic1/epic1_plan.md
 - @~/.claude/epic1/multi_task_guide.md
 
+## Project Documentation
+- @.claude/cicd_testing_strategy.md - CI/CD testing strategy and guidelines
+- @.claude/liteLLM/Batching Completion()  liteLLM.md - LiteLLM batching documentation
+- @.claude/liteLLM/Reliability - Retries, Fallbacks  liteLLM.md - LiteLLM reliability features
+- @.claude/liteLLM/Router - Load Balancing  liteLLM.md - LiteLLM router and load balancing
+- @.claude/liteLLM/Streaming + Async  liteLLM.md - LiteLLM streaming and async features
+
 ## Project Overview
 
 FLaME (Financial Language Understanding Evaluation) is a framework for evaluating Large Language Models (LLMs) on financial tasks. The repository contains multiple datasets for evaluating model performance on tasks like sentiment analysis, causal classification, summarization, and more in the financial domain.
@@ -195,9 +202,9 @@ FLaME has a comprehensive testing framework:
 
 For detailed guidance on the testing framework, refer to these resources:
 
-- [Inference Testing Guide](./claude/inference_testing_guide.md): Details on testing inference modules
-- [Evaluation Testing Guide](./claude/evaluation_testing_guide.md): Details on testing evaluation modules
-- [Testing Suite Notes](./claude/testing_suite_notes.md): Design and roadmap for testing
+- [Inference Testing Guide](./.claude/inference_testing_guide.md): Details on testing inference modules
+- [Evaluation Testing Guide](./.claude/evaluation_testing_guide.md): Details on testing evaluation modules
+- [Testing Suite Notes](./.claude/testing_suite_notes.md): Design and roadmap for testing
 
 ## Common Patterns
 
