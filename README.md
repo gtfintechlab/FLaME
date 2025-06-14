@@ -1,4 +1,4 @@
-# FLaME (Financial Language Understanding Evaluation)
+# FLaME (**F**inancial **La**nguage **M**odel **E**valuation)
 
 ## Project Setup
 
