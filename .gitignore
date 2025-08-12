@@ -184,3 +184,6 @@ cython_debug/
 
 # Ignore evaluation test artifacts (dummy outputs)
 /evaluation_test_artifacts/
+
+# Presentations folder (contains large PowerPoint and image files)
+presentations/
