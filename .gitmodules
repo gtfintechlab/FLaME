@@ -1,2 +1,5 @@
 [submodule "FLaME"]
 	branch = main
+[submodule "benchforge"]
+	path = benchforge
+	url = https://github.com/gtfintechlab/benchforge.git
