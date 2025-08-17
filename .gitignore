@@ -27,10 +27,17 @@ wandb/
 test_outputs/
 tests/test_outputs/
 
-# Cache directories
+# Cache directories (comprehensive)
 .cache/
 */.cache/
+**/.cache/
 benchforge/.cache/
+*.cache
+.model_cache/
+.huggingface/
+.hf_cache/
+datasets_cache/
+transformers_cache/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -177,6 +184,23 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# Lock files and temp files
+*.lock
+*.pid
+*.swp
+*.swo
+*~
+.~*
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+.#*
+\#*#
+
 # Pyre type checker
 .pyre/
 
@@ -192,3 +216,86 @@ cython_debug/
 
 # Presentations folder (contains large PowerPoint and image files)
 presentations/
+
+# Additional Python cache patterns
+*.pyo
+*.pyd
+.Python
+pip-wheel-metadata/
+*.py.bak
+
+# Additional testing artifacts
+.stestr/
+.testrepository/
+.benchmarks/
+test_results/
+test_artifacts/
+
+# Linting and formatting cache
+.ruff_cache/
+.black_cache/
+.pylint_cache/
+.flake8_cache/
+
+# Dataset cache files
+*.arrow
+*.bin
+*.json.gz
+*.pickle
+*.pkl
+*.h5
+*.hdf5
+*.parquet
+
+# LLM response cache files (text files in cache dirs)
+.cache/*.txt
+benchforge/.cache/*.txt
+**/.cache/*.txt
+
+# Notebook outputs
+*.nbconvert/
+*.notebook/
+
+# System files
+Desktop.ini
+.directory
+.fuse_hidden*
+.Trash-*
+.nfs*
+
+# Editor backup files
+*.sublime-workspace
+*.sublime-project
+.vimrc
+.nvimrc
+Session.vim
+*.code-workspace
+
+# Archive files (often created for backups)
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# MacOS specific
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows specific  
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
