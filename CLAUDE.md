@@ -286,7 +286,6 @@ The following tasks are not included in the current release version and are defe
 
 ## Project Specific Memories
 - Always use `uv` package manager. Do not run python without using uv. Always use `uv add` then `uv pip install` but never bare python without uv.
-- **NEVER run inference yourself** - do not use `uv run python main.py` ever on your own, let the user run that command
-- Only run dataset loading tests and other non-inference commands
-- Wait for inference to complete rather than interrupting
-- NEVER run `uv run python main.py` on your own!
+- You can run inference tests with small sample sizes (e.g., 5-10 samples) for validation and testing purposes
+- For larger inference runs, confirm with the user first
+- Use appropriate test configurations to minimize API costs during testing

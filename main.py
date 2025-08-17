@@ -64,6 +64,17 @@ def parse_arguments():
         action="store_true",
         help="Enable debug logging for this run (overrides config)",
     )
+    # Migration flags for Phase 2
+    parser.add_argument(
+        "--use-benchforge",
+        action="store_true",
+        help="Force BenchForge implementation for all tasks",
+    )
+    parser.add_argument(
+        "--use-native",
+        action="store_true",
+        help="Force native implementation for all tasks",
+    )
     args = parser.parse_args()
 
     # Load and merge config
@@ -151,35 +162,108 @@ def run_tasks(tasks: list[str], mode: str, args):
     # Get the main logger
     logger = get_component_logger("flame")
 
-    # validate supported tasks
-    supported = supported_tasks(mode)
-    for t in tasks:
-        if t not in supported:
-            logger.error(f"Task '{t}' not supported for mode {mode}")
-            raise ValueError(f"Task '{t}' not supported for mode {mode}")
+    # Check if we should use BenchForge for any tasks
+    from flame.migration_config import MIGRATION_CONFIG
 
-    """Sequentially run each task, collect errors, and raise MultiTaskError if any fail."""
-    errors: dict[str, Exception] = {}
-    for t in tasks:
-        # Apply task-specific configuration
-        task_args = apply_task_specific_config(args, t)
-        task_args.task = t
+    # Check for force flags from command line
+    if args.use_benchforge:
+        logger.info("Forcing BenchForge implementation for all tasks")
+        use_benchforge = {task: True for task in tasks}
+    elif args.use_native:
+        logger.info("Forcing native implementation for all tasks")
+        use_benchforge = {task: False for task in tasks}
+    else:
+        # Check migration config for each task
+        use_benchforge = {}
+        for t in tasks:
+            use_bf = MIGRATION_CONFIG.use_benchforge(t)
+            use_benchforge[t] = use_bf
+            if use_bf:
+                logger.info(f"Task '{t}' will use BenchForge implementation")
 
-        logger.info(f"Running task '{t}' in {mode} mode")
-        try:
-            if mode == "inference":
-                inference(task_args)
-            else:
-                evaluate(task_args)
-            logger.info(f"Task '{t}' completed successfully")
-        except Exception as e:
-            logger.error(f"Task '{t}' failed with error: {str(e)}", exc_info=True)
-            errors[t] = e
-    if errors:
-        logger.error(
-            f"Encountered errors in {len(errors)} tasks: {', '.join(errors.keys())}"
+    # Separate tasks by implementation
+    native_tasks = [t for t in tasks if not use_benchforge.get(t, False)]
+    benchforge_tasks = [t for t in tasks if use_benchforge.get(t, False)]
+
+    # If we have BenchForge tasks, run them through main_benchforge
+    if benchforge_tasks:
+        logger.info(
+            f"Running {len(benchforge_tasks)} tasks with BenchForge: {', '.join(benchforge_tasks)}"
         )
-        raise MultiTaskError(errors)
+        try:
+            # Import and run BenchForge implementation
+            from flame.main_benchforge import main as benchforge_main
+            import sys
+
+            # Prepare arguments for BenchForge
+            for task in benchforge_tasks:
+                # Save original argv
+                original_argv = sys.argv.copy()
+
+                # Build new argv for BenchForge
+                sys.argv = ["main_benchforge.py", "--mode", mode, "--task", task]
+
+                # Add model if specified
+                if hasattr(args, "model") and args.model:
+                    sys.argv.extend(["--model", args.model])
+
+                # Add other parameters
+                if hasattr(args, "max_tokens") and args.max_tokens:
+                    sys.argv.extend(["--max_tokens", str(args.max_tokens)])
+                if hasattr(args, "temperature") and args.temperature is not None:
+                    sys.argv.extend(["--temperature", str(args.temperature)])
+                if hasattr(args, "batch_size") and args.batch_size:
+                    sys.argv.extend(["--batch_size", str(args.batch_size)])
+                if hasattr(args, "prompt_format") and args.prompt_format:
+                    sys.argv.extend(["--prompt_format", args.prompt_format])
+                if mode == "evaluate" and hasattr(args, "file_name") and args.file_name:
+                    sys.argv.extend(["--file_name", args.file_name])
+
+                logger.info(f"Running BenchForge for task '{task}'")
+                benchforge_main()
+
+                # Restore original argv
+                sys.argv = original_argv
+
+        except Exception as e:
+            logger.error(f"BenchForge tasks failed: {e}", exc_info=True)
+            raise
+
+    # Run native tasks if any
+    if native_tasks:
+        logger.info(
+            f"Running {len(native_tasks)} tasks with native implementation: {', '.join(native_tasks)}"
+        )
+
+        # validate supported tasks
+        supported = supported_tasks(mode)
+        for t in native_tasks:
+            if t not in supported:
+                logger.error(f"Task '{t}' not supported for mode {mode}")
+                raise ValueError(f"Task '{t}' not supported for mode {mode}")
+
+        """Sequentially run each task, collect errors, and raise MultiTaskError if any fail."""
+        errors: dict[str, Exception] = {}
+        for t in native_tasks:
+            # Apply task-specific configuration
+            task_args = apply_task_specific_config(args, t)
+            task_args.task = t
+
+            logger.info(f"Running task '{t}' in {mode} mode (native)")
+            try:
+                if mode == "inference":
+                    inference(task_args)
+                else:
+                    evaluate(task_args)
+                logger.info(f"Task '{t}' completed successfully")
+            except Exception as e:
+                logger.error(f"Task '{t}' failed with error: {str(e)}", exc_info=True)
+                errors[t] = e
+        if errors:
+            logger.error(
+                f"Encountered errors in {len(errors)} tasks: {', '.join(errors.keys())}"
+            )
+            raise MultiTaskError(errors)
 
 
 # Use the configure_litellm from config.py
