@@ -27,6 +27,11 @@ wandb/
 test_outputs/
 tests/test_outputs/
 
+# Cache directories
+.cache/
+*/.cache/
+benchforge/.cache/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
