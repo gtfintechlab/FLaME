@@ -1,5 +1,7 @@
-# FLaME (**F**inancial **La**nguage **M**odel **E**valuation)
+# FLaME v1.1.0 (**F**inancial **La**nguage **M**odel **E**valuation)
 
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
+[![BenchForge](https://img.shields.io/badge/powered%20by-BenchForge-green.svg)](benchforge/)
 Shield: [![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
 This work is licensed under a
@@ -11,6 +13,15 @@ This work is licensed under a
 [cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
 [cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg
 
+
+## What's New in v1.1.0 (In Development)
+
+### Ongoing Work
+- **BenchForge Integration**: Migrating FLAME to use BenchForge infrastructure
+- **Task Migration**: Progressive migration of tasks with improved extraction
+- **Documentation**: Comprehensive migration guides in `/docs/` folder
+
+See [CHANGELOG.md](CHANGELOG.md) for development progress.
 
 ## Project Setup
 
@@ -60,6 +71,19 @@ uv sync
 ```
 
 This installs all dependencies and the local `flame` package in editable mode automatically.
+
+### Installing FLaME with BenchForge
+
+FLaME v1.1.0 includes BenchForge as a git submodule. Initialize it after cloning:
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/flame.git
+cd flame
+
+# Initialize BenchForge submodule
+git submodule update --init --recursive
+```
 
 ### Installing FLaME
 
@@ -193,6 +217,20 @@ Prompts
 The file src/together/prompts.py holds various zero-shot prompts that are used for each dataset during inference. These prompts guide the model during the prediction phase.
 
 ### 3. Running the FLaME pipeline
+
+#### BenchForge Mode (Experimental in v1.1.0)
+
+For development testing, you can enable BenchForge for the FOMC task:
+
+```bash
+# Enable BenchForge for FOMC task (experimental)
+export USE_BENCHFORGE_FOMC=1
+uv run python main.py --tasks fomc --mode inference
+```
+
+Note: BenchForge integration is under active development. Most tasks still use the standard FLAME implementation.
+
+#### Standard Mode
 
 Use the unified `main.py` entrypoint to run one or more tasks:
 
