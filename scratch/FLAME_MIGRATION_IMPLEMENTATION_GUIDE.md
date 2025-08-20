@@ -8,124 +8,71 @@ This guide provides detailed implementation patterns, code templates, and best p
 
 ### Pattern 1: Binary Classification Tasks
 
-**Use for**: MA, FLS, NCC, binary sentiment tasks
+**Use for**: NCC, binary sentiment tasks, binary financial classification
 
 ```python
-# benchforge/bench_forge/flame/tasks/ma.py
+# benchforge/bench_forge/flame/tasks/numclaim.py
 from typing import Dict, Any, Optional, List
 from benchforge.bench_forge.flame.base import FLAMETask, FLAMEConfig, flame_task
 from benchforge.bench_forge.flame.extraction import ExtractionStrategy
 
-@flame_task("ma")
-class MergerAcquisition(FLAMETask):
-    """Binary classification for M&A event detection"""
+@flame_task("numclaim")
+class NumClaimTask(FLAMETask):
+    """Binary classification for numerical claims in financial text"""
     
     def __init__(self):
         super().__init__(FLAMEConfig(
-            name="ma",
-            huggingface_dataset="gtfintechlab/ma-classification",
-            valid_labels=[0, 1],  # 0: No M&A, 1: M&A event
+            name="numclaim",
+            huggingface_dataset="gtfintechlab/numclaim",
+            valid_labels=["OUTOFCLAIM", "INCLAIM"],
             extraction_strategy=ExtractionStrategy.MULTI_STRATEGY,
             task_type="classification",
-            label_map={
-                "no": 0, "false": 0, "negative": 0, "0": 0,
-                "yes": 1, "true": 1, "positive": 1, "1": 1,
-                "merger": 1, "acquisition": 1, "m&a": 1
-            }
+            label_mapping={"OUTOFCLAIM": 0, "INCLAIM": 1}
         ))
     
     def create_prompt(self, sample: Dict[str, Any], format: str = "zero_shot") -> str:
-        text = sample.get("text", "")
+        """Create prompt using exact FLAME format."""
+        sentence = sample.get("sentence", "")
         
         if format == "zero_shot":
-            return f"""Determine if the following text describes a merger or acquisition event.
-Answer with only 'Yes' (1) or 'No' (0).
-
-Text: {text}
-
-Answer:"""
-        
-        elif format == "few_shot":
-            examples = """
-Example 1:
-Text: Apple Inc. announced today the acquisition of startup AI company for $1 billion.
-Answer: Yes (1)
-
-Example 2:  
-Text: The company reported strong quarterly earnings with revenue up 15%.
-Answer: No (0)
-"""
-            return f"""{examples}
-
-Now classify:
-Text: {text}
-
-Answer:"""
-        
-        elif format == "cot":
-            return f"""Analyze if this text describes a merger or acquisition event.
-Consider: mentions of companies joining, acquisition terms, merger announcements, buyout language.
-
-Text: {text}
-
-Let's think step by step:
-1. Are there mentions of companies combining?
-2. Are acquisition/merger terms used?
-3. Is this describing an M&A transaction?
-
-Answer (Yes/No):"""
+            # Use exact FLAME prompt
+            return f"""Discard all the previous instructions. Behave like you are an expert at analyzing numerical claims. You have to classify the given financial sentence into 'INCLAIM' or 'OUTOFCLAIM'. Label 'INCLAIM' if the sentence contains numerical claims that can be explicitly verified or quantified. Label 'OUTOFCLAIM' if the sentence contains qualitative claims, subjective assessments, or statements that cannot be directly quantified. This is the sentence: {sentence}"""
         
         return self.create_prompt(sample, "zero_shot")
     
-    def extract_answer(self, response: str) -> Optional[int]:
-        """Extract binary answer with multiple strategies"""
+    def extract_answer(self, response: str) -> Optional[str]:
+        """Extract binary label with multiple strategies"""
         if not response:
             return None
         
-        response_lower = response.lower().strip()
+        response_clean = response.strip().upper()
         
-        # Strategy 1: Direct binary extraction
-        if response_lower in ["0", "1"]:
-            return int(response_lower)
-        
-        # Strategy 2: Yes/No mapping
-        if "yes" in response_lower or "true" in response_lower:
-            return 1
-        if "no" in response_lower or "false" in response_lower:
-            return 0
-        
-        # Strategy 3: M&A keywords
-        ma_keywords = ["merger", "acquisition", "acquire", "buyout", "takeover", "purchase"]
-        if any(keyword in response_lower for keyword in ma_keywords):
-            # Check for negation
-            negations = ["no ", "not ", "isn't", "doesn't", "without"]
-            if not any(neg in response_lower for neg in negations):
-                return 1
-        
-        # Strategy 4: Pattern matching
-        import re
-        patterns = [
-            (r'\b(?:yes|true|1|positive|merger|acquisition)\b', 1),
-            (r'\b(?:no|false|0|negative|none)\b', 0),
-            (r'(?:is|describes?|indicates?).{0,20}(?:merger|acquisition)', 1),
-            (r'(?:is\s+not|does\s+not|no\s+merger|no\s+acquisition)', 0)
-        ]
-        
-        for pattern, label in patterns:
-            if re.search(pattern, response_lower):
+        # Strategy 1: Direct label match
+        for label in self.config.valid_labels:
+            if label in response_clean:
                 return label
         
-        # Strategy 5: Fallback to first number found
-        numbers = re.findall(r'\b[01]\b', response)
-        if numbers:
-            return int(numbers[0])
+        # Strategy 2: Alternative phrasings
+        if "IN CLAIM" in response_clean or "INCLAIM" in response_clean:
+            return "INCLAIM"
+        if "OUT OF CLAIM" in response_clean or "OUTOFCLAIM" in response_clean:
+            return "OUTOFCLAIM"
+        
+        # Strategy 3: Keyword-based detection
+        inclaim_keywords = ["QUANTIFIED", "NUMERICAL", "VERIFIED", "MEASURABLE"]
+        outofclaim_keywords = ["QUALITATIVE", "SUBJECTIVE", "OPINION", "ASSESSMENT"]
+        
+        if any(kw in response_clean for kw in inclaim_keywords):
+            return "INCLAIM"
+        if any(kw in response_clean for kw in outofclaim_keywords):
+            return "OUTOFCLAIM"
         
         return None
 ```
 
 ### Pattern 2: Multi-Class Classification
 
-**Use for**: SC, FOMC, FPB, multi-class sentiment
+**Use for**: SC, FOMC, FPB, Banking77, multi-class classification
 
 ```python
 # benchforge/bench_forge/flame/tasks/sc.py
@@ -185,19 +132,83 @@ class SentenceCausality(FLAMETask):
 
 ### Pattern 3: Multi-Label/Multi-Attribute Classification
 
-**Use for**: Headlines, MLESG, complex classification
+**Use for**: Headlines, multi-attribute classification, complex labeling
 
 ```python
-# benchforge/bench_forge/flame/tasks/mlesg.py
-@flame_task("mlesg")
-class MLESG(FLAMETask):
-    """Multi-label ESG classification"""
+# benchforge/bench_forge/flame/tasks/headlines.py
+@flame_task("headlines")
+class HeadlinesTask(FLAMETask):
+    """Multi-attribute news classification with 7 binary attributes"""
     
     def __init__(self):
-        self.categories = [
-            "environmental", "social", "governance",
-            "climate", "diversity", "ethics", "sustainability"
+        self.attributes = [
+            "Price_or_Not", "Direction_Up", "Direction_Down", 
+            "Direction_Constant", "Past_Price", "Future_Price", "Past_News"
         ]
+        super().__init__(FLAMEConfig(
+            name="headlines",
+            huggingface_dataset="gtfintechlab/Headlines",
+            dataset_name="5768",
+            text_field="News",
+            valid_labels=[0, 1],  # Binary for each attribute
+            extraction_strategy=ExtractionStrategy.JSON_MULTI_ATTRIBUTE
+        ))
+    
+    def create_prompt(self, sample: Dict[str, Any], format: str = "zero_shot") -> str:
+        """Create prompt using exact FLAME format."""
+        sentence = sample.get("News", "")
+        
+        if format == "zero_shot":
+            # Use exact FLAME prompt
+            return f"""Discard all the previous instructions. Behave like you are an expert at analyzing headlines.
+Give a score of 0 for each of the following attributes if the news headline does not contain the following information or 1 if it does.
+Price or Not: Does the news item talk about price or not.
+Direction Up: Does the news headline talk about price going up or not?
+Direction Down: Does the news headline talk about price going down or not?
+Direction Constant: Does the news headline talk about price remaining constant or not?
+Past Price: Does the news headline talk about an event in the past?
+Future Price: Does the news headline talk about an event in the future?
+Past News: Does the news headline talk about a general event (apart from prices) in the past?
+The news headline is:
+{sentence}"""
+    
+    def extract_answer(self, response: str) -> Optional[List[int]]:
+        """Extract 7 binary attributes with JSON parsing"""
+        if not response:
+            return None
+        
+        import json
+        import re
+        
+        # Strategy 1: Direct JSON extraction
+        try:
+            # Look for JSON-like content
+            json_match = re.search(r'\{[^}]*\}', response)
+            if json_match:
+                json_str = json_match.group(0)
+                data = json.loads(json_str)
+                
+                result = []
+                for attr in self.attributes:
+                    value = data.get(attr, 0)
+                    result.append(int(value) if str(value).isdigit() else 0)
+                return result
+        except (json.JSONDecodeError, ValueError):
+            pass
+        
+        # Strategy 2: Line-by-line parsing
+        lines = response.split('\n')
+        result = [0] * 7
+        
+        for line in lines:
+            for i, attr in enumerate(self.attributes):
+                if attr.replace('_', ' ').lower() in line.lower():
+                    # Extract 0 or 1 from the line
+                    numbers = re.findall(r'\b[01]\b', line)
+                    if numbers:
+                        result[i] = int(numbers[0])
+        
+        return result if any(result) else None
         
         super().__init__(FLAMEConfig(
             name="mlesg",

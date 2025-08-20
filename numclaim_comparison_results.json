@@ -1,0 +1,151 @@
+{
+  "benchforge": [
+    {
+      "implementation": "BenchForge",
+      "sample_id": 1,
+      "context": "The company reported revenue of $3.2 billion, representing a 25% increase year-over-year.",
+      "expected": "INCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "BenchForge",
+      "sample_id": 2,
+      "context": "Market conditions continue to improve across all segments.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "BenchForge",
+      "sample_id": 3,
+      "context": "Our operating margin expanded to 23.5%, exceeding analyst expectations.",
+      "expected": "INCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "BenchForge",
+      "sample_id": 4,
+      "context": "The board remains confident in the company's strategic direction.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "BenchForge",
+      "sample_id": 5,
+      "context": "We added 1.2 million new subscribers this quarter, bringing total to 45 million.",
+      "expected": "INCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "BenchForge",
+      "sample_id": 6,
+      "context": "Innovation remains at the core of our business strategy.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "BenchForge",
+      "sample_id": 7,
+      "context": "Free cash flow reached $850 million, up from $620 million last year.",
+      "expected": "INCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "BenchForge",
+      "sample_id": 8,
+      "context": "We expect continued momentum in the coming quarters.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    }
+  ],
+  "flame": [
+    {
+      "implementation": "FLAME",
+      "sample_id": 1,
+      "context": "The company reported revenue of $3.2 billion, representing a 25% increase year-over-year.",
+      "expected": "INCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "FLAME",
+      "sample_id": 2,
+      "context": "Market conditions continue to improve across all segments.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "FLAME",
+      "sample_id": 3,
+      "context": "Our operating margin expanded to 23.5%, exceeding analyst expectations.",
+      "expected": "INCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "FLAME",
+      "sample_id": 4,
+      "context": "The board remains confident in the company's strategic direction.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "FLAME",
+      "sample_id": 5,
+      "context": "We added 1.2 million new subscribers this quarter, bringing total to 45 million.",
+      "expected": "INCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "FLAME",
+      "sample_id": 6,
+      "context": "Innovation remains at the core of our business strategy.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "FLAME",
+      "sample_id": 7,
+      "context": "Free cash flow reached $850 million, up from $620 million last year.",
+      "expected": "INCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    },
+    {
+      "implementation": "FLAME",
+      "sample_id": 8,
+      "context": "We expect continued momentum in the coming quarters.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "litellm.RateLimitError: RateLimitError: OpenAIException - You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.",
+      "extracted": null,
+      "api_time": 0
+    }
+  ],
+  "timestamp": "2025-08-18 19:22:40"
+}

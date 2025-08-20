@@ -838,7 +838,6 @@ dependencies = [
     { name = "ruff" },
     { name = "scikit-learn" },
     { name = "setuptools" },
-    { name = "superclaude" },
     { name = "tenacity" },
     { name = "tiktoken" },
     { name = "together" },
@@ -891,7 +890,6 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=1.6.1" },
     { name = "seaborn", marker = "extra == 'dev'", specifier = ">=0.13.2" },
     { name = "setuptools", specifier = ">=80.1.0" },
-    { name = "superclaude", specifier = ">=3.0.0.2" },
     { name = "tenacity", specifier = ">=9.1.2" },
     { name = "tiktoken", specifier = ">=0.9.0" },
     { name = "together", specifier = ">=1.5.5" },
@@ -3319,18 +3317,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ce/20/08dfcd9c983f6a6f4a1000d934b9e6d626cff8d2eeb77a89a68eef20a2b7/starlette-0.46.2.tar.gz", hash = "sha256:7f7361f34eed179294600af672f565727419830b54b7b084efe44bb82d2fccd5", size = 2580846, upload-time = "2025-04-13T13:56:17.942Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8b/0c/9d30a4ebeb6db2b25a841afbb80f6ef9a854fc3b41be131d249a977b4959/starlette-0.46.2-py3-none-any.whl", hash = "sha256:595633ce89f8ffa71a015caed34a5b2dc1c0cdb3f0f1fbd1e69339cf2abeec35", size = 72037, upload-time = "2025-04-13T13:56:16.21Z" },
-]
-
-[[package]]
-name = "superclaude"
-version = "3.0.0.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "setuptools" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/29/29/e1dfb51f0c462bef9ddd765ac0dca2ebb4b46b6fea901870d9ca229b4680/superclaude-3.0.0.2.tar.gz", hash = "sha256:0bb45f9494eee17c950f17c94b6f7128ed7d1e71750c39f47da89023e812a031", size = 113791, upload-time = "2025-07-23T12:00:50.017Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c7/6f/19dd0989aafaf25b0552ddc6bbefa240c6d69be6c94cc213741832196ad1/superclaude-3.0.0.2-py3-none-any.whl", hash = "sha256:3d30c60d06b7e7f430799adee4d7ac2575d3ea5b94d93771647965ee49aaf870", size = 142081, upload-time = "2025-07-23T12:00:48.469Z" },
 ]
 
 [[package]]

@@ -2,232 +2,161 @@
 
 ## 🎯 Migration Progress Dashboard
 
-**Overall Progress**: 12/24 tasks (50%)
-- ✅ **Completed & Tested**: 7 tasks
-- 🔧 **Code Ready (Needs Testing)**: 5 tasks  
-- 📋 **Not Started**: 12 tasks
+**Overall Progress**: 13/23 tasks (57%)
+- ✅ **Completed & Tested**: 12 tasks
+- 🔧 **Currently Implementing**: 1 task (Headlines)
+- 📋 **Real Tasks Remaining**: 10 tasks
 
 ---
 
-## ✅ Phase 1: COMPLETED TASKS (7/7)
+## ✅ COMPLETED TASKS (12/23)
 
 ### Sentiment Analysis
 - [x] **FOMC** - Federal Reserve sentiment classification
   - Location: `benchforge/bench_forge/flame/tasks/fomc.py`
-  - Status: Production ready, 99.6% extraction rate
+  - Status: Production ready, tested
   
 - [x] **FPB** - Financial Phrase Bank sentiment
   - Location: `benchforge/bench_forge/flame/tasks/fpb.py`
-  - Status: Production ready, validated
-
-### News Classification  
-- [x] **Headlines** - Multi-attribute news classification
-  - Location: `benchforge/bench_forge/flame/tasks/headlines.py`
-  - Status: Production ready, 7 binary attributes
+  - Status: Production ready, tested
 
 ### Question Answering
 - [x] **ConvFinQA** - Conversational Financial QA
   - Location: `benchforge/bench_forge/flame/tasks/convfinqa.py`
-  - Status: Production ready, multi-turn support
+  - Status: Production ready
 
 - [x] **FinQA** - Financial Table QA
   - Location: `benchforge/bench_forge/flame/tasks/finqa.py`
-  - Status: Production ready, table reasoning
+  - Status: Production ready
 
-- [x] **EDTSum** - Earnings Call QA
+- [x] **EDTSum** - Earnings Document Summarization
   - Location: `benchforge/bench_forge/flame/tasks/edtsum.py`
   - Status: Production ready
 
----
-
-## 🔧 Phase 2: CODE READY - NEEDS TESTING (5/5)
-
 ### Target Sentiment Analysis
-- [ ] **FiQA-SA** - Target-specific sentiment scoring
+- [x] **FiQA-SA** - Target-specific sentiment scoring
   - Location: `benchforge/bench_forge/flame/tasks/fiqa_sa.py`
-  - TODO:
-    - [ ] Run extraction validation tests
-    - [ ] Verify numeric score extraction (-1.0 to 1.0)
-    - [ ] Test regression metrics (MSE, MAE, Pearson)
-    - [ ] A/B test against FLAME baseline
-    - [ ] Document performance metrics
+  - Status: Production ready, tested
 
 ### Named Entity Recognition
-- [ ] **FiNER** - Financial NER with BIO tagging
+- [x] **FiNER** - Financial NER with BIO tagging
   - Location: `benchforge/bench_forge/flame/tasks/finer.py`
-  - TODO:
-    - [ ] Test BIO sequence validation
-    - [ ] Verify entity boundary detection
-    - [ ] Test all 7 extraction strategies
-    - [ ] Validate token-level F1 metrics
-    - [ ] Performance benchmark (>95% target)
+  - Status: Production ready, tested
 
-- [ ] **FinEntity** - Financial entity classification (11 types)
+- [x] **FinEntity** - Financial entity classification
   - Location: `benchforge/bench_forge/flame/tasks/finentity.py`
-  - TODO:
-    - [ ] Test all 11 entity type classifications
-    - [ ] Verify multi-class metrics
-    - [ ] Validate extraction strategies
-    - [ ] Cross-validate with FLAME outputs
-    - [ ] Document entity type mappings
+  - Status: Production ready, tested
 
 ### Causality Detection
-- [ ] **CD** - Causal Detection (BIO sequence)
+- [x] **CD** - Causal Detection (BIO sequence)
   - Location: `benchforge/bench_forge/flame/tasks/causal_detection.py`
-  - TODO:
-    - [ ] Test cause-effect sequence extraction
-    - [ ] Validate BIO tag constraints
-    - [ ] Test sequence evaluation metrics
-    - [ ] Benchmark token alignment accuracy
-    - [ ] Document extraction patterns
+  - Status: Production ready, tested
 
-- [ ] **SC** - Sentence Causality (0-2 classification)
-  - Location: `benchforge/bench_forge/flame/tasks/causal_classification.py`  
-  - TODO:
-    - [ ] Test numeric label extraction
-    - [ ] Validate multi-class metrics
-    - [ ] Test confusion matrix generation
-    - [ ] A/B test classification accuracy
-    - [ ] Performance optimization if needed
+- [x] **SC** - Sentence Causality (0-2 classification)
+  - Location: `benchforge/bench_forge/flame/tasks/causal_classification.py`
+  - Status: Production ready, tested
 
 ### Numerical Claims
-- [ ] **NCC** - Numerical Claim Classification
+- [x] **NCC** - Numerical Claim Classification
   - Location: `benchforge/bench_forge/flame/tasks/numclaim.py`
-  - TODO:
-    - [ ] Test binary classification (0/1)
-    - [ ] Validate financial pattern detection
-    - [ ] Test extraction strategies
-    - [ ] Verify binary metrics (precision, recall, F1)
-    - [ ] Document claim patterns
+  - Status: Production ready, tested
 
 ---
 
-## 📋 Phase 3: PENDING IMPLEMENTATION (12/12)
+## 🔧 CURRENTLY IMPLEMENTING (1/23)
 
-### High Priority - Core Financial Tasks (Week 5)
+### News Classification  
+- [ ] **Headlines** - Multi-attribute news classification
+  - Location: `benchforge/bench_forge/flame/tasks/headlines.py` (in progress)
+  - Status: Creating BenchForge implementation with 7 binary attributes
+  - TODO:
+    - [ ] Complete implementation with exact FLAME prompt
+    - [ ] Implement 7-attribute JSON extraction
+    - [ ] Test multi-attribute extraction strategies
+    - [ ] Validate against FLAME baseline
 
-#### 1. **TSA** - Twitter Sentiment Analysis
-**Complexity**: Low | **Template**: FPB pattern
-- [ ] Create `benchforge/bench_forge/flame/tasks/tsa.py`
-- [ ] Port prompt templates from `flame/tasks/tsa.py`
-- [ ] Implement 3-class sentiment (positive/negative/neutral)
-- [ ] Add Twitter-specific text preprocessing
-- [ ] Test with social media text patterns
-- [ ] Validate against FLAME baseline
+---
 
-#### 2. **TATQA** - Table and Text QA
-**Complexity**: Medium | **Template**: FinQA pattern
+## 📋 REAL TASKS REMAINING (10/23)
+
+### High Priority - Common Financial Tasks
+
+#### 1. **TATQA** - Table and Text QA
+**Complexity**: High | **Template**: FinQA pattern
 - [ ] Create `benchforge/bench_forge/flame/tasks/tatqa.py`
-- [ ] Implement table+text reasoning
-- [ ] Port numeric extraction logic
-- [ ] Add arithmetic operation support
-- [ ] Test table parsing accuracy
+- [ ] Implement table+text reasoning with arithmetic
+- [ ] Port exact FLAME prompt from `src/flame/code/tatqa/`
+- [ ] Add table parsing and numeric extraction
+- [ ] Test arithmetic operation support
 - [ ] Validate exact match and F1 scores
 
-#### 3. **FinQABench** - Financial QA Benchmark
-**Complexity**: Medium | **Template**: FinQA pattern
-- [ ] Create `benchforge/bench_forge/flame/tasks/finqabench.py`
-- [ ] Analyze question types and formats
-- [ ] Implement comprehensive QA patterns
-- [ ] Add benchmark-specific metrics
-- [ ] Test on diverse question types
-- [ ] Document performance targets
+#### 2. **Banking77** - Banking Intent Classification
+**Complexity**: Medium | **Template**: Multi-class classification
+- [ ] Create `benchforge/bench_forge/flame/tasks/banking77.py`
+- [ ] Implement 77-class intent classification
+- [ ] Port exact FLAME prompt from `src/flame/code/banking77/`
+- [ ] Add intent-specific extraction strategies
+- [ ] Test all 77 banking intents
+- [ ] Validate multi-class metrics
 
-### Medium Priority - Classification Tasks (Week 6)
+#### 3. **ECTSum** - Earnings Call Summarization
+**Complexity**: Medium | **Template**: Summarization task
+- [ ] Create `benchforge/bench_forge/flame/tasks/ectsum.py`
+- [ ] Implement earnings call summarization
+- [ ] Port exact FLAME prompt from `src/flame/code/ectsum/`
+- [ ] Add ROUGE evaluation metrics
+- [ ] Test summarization quality
+- [ ] Validate against FLAME baseline
 
-#### 4. **MA** - Merger & Acquisition Classification
-**Complexity**: Low | **Template**: NCC binary pattern
-- [ ] Create `benchforge/bench_forge/flame/tasks/ma.py`
-- [ ] Find/create dataset configuration
-- [ ] Implement binary classification (M&A event: yes/no)
-- [ ] Add financial event keywords
-- [ ] Test extraction strategies
-- [ ] Validate classification metrics
+#### 4. **FinBench** - Financial Benchmark Suite
+**Complexity**: Medium | **Template**: Multi-format benchmark
+- [ ] Create `benchforge/bench_forge/flame/tasks/finbench.py`
+- [ ] Port exact FLAME prompt from `src/flame/code/finbench/`
+- [ ] Implement benchmark evaluation logic
+- [ ] Add financial domain metrics
+- [ ] Test diverse financial scenarios
 
-#### 5. **MLESG** - Multi-label ESG Classification
-**Complexity**: Medium | **Template**: Headlines multi-attribute
-- [ ] Create `benchforge/bench_forge/flame/tasks/mlesg.py`
-- [ ] Implement multi-label classification
-- [ ] Port ESG category definitions
-- [ ] Add per-category metrics
-- [ ] Test multi-label extraction
-- [ ] Validate against ESG standards
+#### 5. **FinRed** - Financial Relation Extraction
+**Complexity**: High | **Template**: Relation extraction
+- [ ] Create `benchforge/bench_forge/flame/tasks/finred.py`
+- [ ] Port exact FLAME prompt from `src/flame/code/finred/`
+- [ ] Implement relation type extraction
+- [ ] Add financial relationship patterns
+- [ ] Test relation classification accuracy
 
-#### 6. **FLS** - Forward-Looking Statements
-**Complexity**: Low | **Template**: NCC binary pattern
-- [ ] Create `benchforge/bench_forge/flame/tasks/fls.py`
-- [ ] Implement binary classification
-- [ ] Add temporal language patterns
-- [ ] Test forward-looking indicators
-- [ ] Validate classification accuracy
+### Medium Priority - Specialized Tasks
 
-#### 7. **NER** - Standard Named Entity Recognition
-**Complexity**: Medium | **Template**: FiNER pattern
-- [ ] Create `benchforge/bench_forge/flame/tasks/ner.py`
-- [ ] Port standard NER tags (PER, ORG, LOC, etc.)
-- [ ] Implement BIO tagging
-- [ ] Add entity type validation
-- [ ] Test boundary detection
-- [ ] Validate F1 scores
+#### 6. **BizBench** - Business Benchmark
+**Complexity**: Medium
+- [ ] Create `benchforge/bench_forge/flame/tasks/bizbench.py`
+- [ ] Port exact FLAME prompt from `src/flame/code/bizbench/`
+- [ ] Implement business scenario evaluation
 
-### Low Priority - Benchmark Suites (Weeks 7-8)
+#### 7. **EconLogicQA** - Economic Logic QA
+**Complexity**: Medium
+- [ ] Create `benchforge/bench_forge/flame/tasks/econlogicqa.py`
+- [ ] Port exact FLAME prompt from `src/flame/code/econlogicqa/`
+- [ ] Implement economic reasoning patterns
 
-#### 8. **CFA** - CFA Exam Benchmark
-**Complexity**: High | **Template**: Multi-format QA
-- [ ] Create `benchforge/bench_forge/flame/tasks/cfa.py`
-- [ ] Analyze CFA question formats
-- [ ] Implement multiple choice support
-- [ ] Add professional exam metrics
-- [ ] Test on sample CFA questions
-- [ ] Document score calculations
+#### 8. **FNXL** - Financial XBRL Processing
+**Complexity**: High
+- [ ] Create `benchforge/bench_forge/flame/tasks/fnxl.py`
+- [ ] Port exact FLAME prompt from `src/flame/code/fnxl/`
+- [ ] Implement XBRL tag extraction
 
-#### 9. **FINEVAL** - Comprehensive Financial Evaluation
-**Complexity**: High | **Template**: Mixed tasks
-- [ ] Create `benchforge/bench_forge/flame/tasks/fineval.py`
-- [ ] Implement multi-task evaluation
-- [ ] Port diverse question types
-- [ ] Add comprehensive metrics
-- [ ] Test all subtasks
-- [ ] Create unified evaluation
+### Lower Priority - General Tasks
 
-#### 10-15. **Flare Variants** (Enhanced versions)
-**Complexity**: Low | **Template**: Base task + enhancements
+#### 9. **SubjectiveQA** - Subjective Question Answering
+**Complexity**: Low
+- [ ] Create `benchforge/bench_forge/flame/tasks/subjectiveqa.py`
+- [ ] Port exact FLAME prompt from `src/flame/code/subjectiveqa/`
 
-##### 10. **Flare-FOMC**
-- [ ] Create `benchforge/bench_forge/flame/tasks/flare_fomc.py`
-- [ ] Extend FOMC with enhanced features
-- [ ] Add additional extraction strategies
-- [ ] Test enhanced accuracy
+#### 10. **RefInd** - Reference Finding
+**Complexity**: Medium
+- [ ] Create `benchforge/bench_forge/flame/tasks/refind.py`
+- [ ] Port exact FLAME prompt from `src/flame/code/refind/`
 
-##### 11. **Flare-FPB**
-- [ ] Create `benchforge/bench_forge/flame/tasks/flare_fpb.py`
-- [ ] Extend FPB with improvements
-- [ ] Add context-aware features
-- [ ] Validate enhancements
-
-##### 12. **Flare-Headlines**
-- [ ] Create `benchforge/bench_forge/flame/tasks/flare_headlines.py`
-- [ ] Extend Headlines with more attributes
-- [ ] Add advanced extraction
-- [ ] Test attribute accuracy
-
-##### 13. **Flare-FINQA**
-- [ ] Create `benchforge/bench_forge/flame/tasks/flare_finqa.py`
-- [ ] Extend FinQA with complex reasoning
-- [ ] Add multi-step calculations
-- [ ] Validate arithmetic accuracy
-
-##### 14. **Flare-SM** (Stock Movement)
-- [ ] Create `benchforge/bench_forge/flame/tasks/flare_sm.py`
-- [ ] Implement stock movement prediction
-- [ ] Add market indicators
-- [ ] Test prediction accuracy
-
-##### 15. **Flare-ECTSUM** (Earnings Call Summarization)
-- [ ] Create `benchforge/bench_forge/flame/tasks/flare_ectsum.py`
-- [ ] Implement summarization task
-- [ ] Add ROUGE metrics
-- [ ] Test summary quality
+**Note**: MMLU task exists but is very large and may require special handling
 
 ---
 
@@ -297,13 +226,15 @@
 ### Template Selection Guide
 ```
 Binary Classification → Use NCC pattern
-Multi-class Classification → Use SC pattern  
-Multi-label Classification → Use Headlines pattern
-Sentiment Analysis → Use FPB pattern
-QA with Tables → Use FinQA pattern
+Multi-class Classification → Use SC/Banking77 pattern  
+Multi-attribute Classification → Use Headlines pattern
+Sentiment Analysis → Use FPB/FOMC pattern
+QA with Tables → Use FinQA/TATQA pattern
 QA without Tables → Use ConvFinQA pattern
-NER/Sequence Labeling → Use FiNER pattern
+NER/Sequence Labeling → Use FiNER/CD pattern
 Numeric Extraction → Use FiQA-SA pattern
+Relation Extraction → Use FinRed pattern
+Summarization → Use ECTSum pattern
 ```
 
 ### File Structure Template
@@ -346,9 +277,9 @@ class [TaskName](FLAMETask):
 - [ ] A/B test variance <1%
 
 ### Overall Migration Success
-- [ ] All 24 tasks migrated
+- [ ] All 23 real FLAME tasks migrated (13/23 complete)
 - [ ] Zero breaking changes for users
-- [ ] Performance improvement >20%
+- [ ] Performance parity with FLAME
 - [ ] Documentation complete
 - [ ] Feature flags configured
 - [ ] Rollback plan tested
@@ -357,22 +288,18 @@ class [TaskName](FLAMETask):
 
 ## 📅 Timeline
 
-### Week 5 (Current)
-- Complete testing of 5 code-ready tasks
-- Implement TSA, TATQA, FinQABench
+### Current Phase
+- Complete Headlines implementation (in progress)
+- Begin high-priority real task implementation
 
-### Week 6
-- Implement MA, MLESG, FLS, NER
-- Begin integration testing
+### Next Phase
+- Implement TATQA, Banking77, ECTSum (high priority)
+- Implement FinBench, FinRed (medium priority)
 
-### Week 7
-- Implement CFA, FINEVAL
-- Implement Flare variants
-- Performance optimization
-
-### Week 8
+### Final Phase
+- Implement remaining specialized tasks
 - Complete integration testing
-- A/B testing and validation
+- Performance optimization
 - Documentation and rollout preparation
 
 ---
@@ -385,7 +312,7 @@ class [TaskName](FLAMETask):
 - [ ] Address any failed tests
 
 ### Development
-- [ ] Implement next task in priority order
+- [ ] Implement next real FLAME task in priority order
 - [ ] Write unit tests alongside code
 - [ ] Run local validation tests
 - [ ] Update progress tracking
@@ -404,9 +331,9 @@ class [TaskName](FLAMETask):
 - None identified
 
 ### Decisions Needed
-- Confirm dataset availability for MA, MLESG, FLS tasks
-- Decide on Flare variant implementation priority
-- Determine rollout strategy (task by task vs batch)
+- Prioritize order of remaining 10 real FLAME tasks
+- Determine testing strategy for complex tasks (TATQA, FinRed)
+- Decide rollout strategy (task by task vs batch)
 
 ### Optimization Opportunities
 - Consider caching prompt templates
@@ -416,5 +343,5 @@ class [TaskName](FLAMETask):
 
 ---
 
-**Last Updated**: Current Session
-**Next Review**: After Phase 2 testing completion
+**Last Updated**: Documentation Cleanup Session
+**Next Review**: After Headlines implementation completion

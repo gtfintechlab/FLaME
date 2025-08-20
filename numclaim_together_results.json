@@ -1,0 +1,108 @@
+{
+  "model": "together_ai/meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "benchforge": [
+    {
+      "implementation": "BenchForge",
+      "sample_id": 1,
+      "context": "Revenue increased by 25% to reach $4.2 billion in Q3 2023.",
+      "expected": "INCLAIM",
+      "raw_response": "Based on the given guidelines, I would classify the sentence:\n\n\"Revenue increased by 25% to reach $4.2 billion in Q3 2023.\"\n\nas **INCLAIM**.\n\nThis classification is due to the presence of specific numerical values:\n\n- A percentage increase: \"25%\"\n- A specific financial metric: \"$4.2 billion\"\n\nThese details make the sentence a claim with numerical values, rather than just factual information without specific numbers.",
+      "extracted": "INCLAIM",
+      "correct": true,
+      "api_time": 2.4917280673980713
+    },
+    {
+      "implementation": "BenchForge",
+      "sample_id": 2,
+      "context": "The company expects continued growth in the coming quarters.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "Based on the provided guidelines, I would classify the sentence:\n\n\"The company expects continued growth in the coming quarters.\"\n\nas **OUTOFCLAIM**.\n\nThe reason is that this sentence expresses a general expectation of growth without specifying any numerical values, quantities, percentages, or financial metrics. It contains factual information about the company's expectation but does not include a specific numerical claim.",
+      "extracted": "OUTOFCLAIM",
+      "correct": true,
+      "api_time": 0.8861069679260254
+    },
+    {
+      "implementation": "BenchForge",
+      "sample_id": 3,
+      "context": "Operating margin improved to 18.5%, exceeding analyst expectations by 2 percentage points.",
+      "expected": "INCLAIM",
+      "raw_response": "Based on the given text, I would classify the sentence as:\n\n**INCLAIM**\n\nThe sentence contains a specific numerical value (\"18.5%\") and a comparison with another numerical value (\"2 percentage points\"), which makes it a claim with numerical values. Therefore, it falls under the 'INCLAIM' category.",
+      "extracted": "INCLAIM",
+      "correct": true,
+      "api_time": 1.7412397861480713
+    },
+    {
+      "implementation": "BenchForge",
+      "sample_id": 4,
+      "context": "Market conditions remain favorable for expansion.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "Based on the provided guidelines, I would classify the sentence:\n\n\"Market conditions remain favorable for expansion.\"\n\nas **OUTOFCLAIM**.\n\nThe sentence provides a general statement about market conditions without specifying any numerical values, quantities, percentages, or financial metrics. It simply presents a factual, qualitative assessment of the current situation.",
+      "extracted": "OUTOFCLAIM",
+      "correct": true,
+      "api_time": 0.7479679584503174
+    },
+    {
+      "implementation": "BenchForge",
+      "sample_id": 5,
+      "context": "We achieved a record 2.3 million active users, up from 1.8 million last quarter.",
+      "expected": "INCLAIM",
+      "raw_response": "Based on the given guidelines, I would classify the sentence:\n\n\"We achieved a record 2.3 million active users, up from 1.8 million last quarter.\"\n\nas **INCLAIM**.\n\nThe reason is that it contains specific numerical values (2.3 million and 1.8 million) and implies a quantitative change (an increase of 0.5 million active users), which constitutes a numerical claim.",
+      "extracted": "INCLAIM",
+      "correct": true,
+      "api_time": 1.8390381336212158
+    }
+  ],
+  "flame": [
+    {
+      "implementation": "FLAME",
+      "sample_id": 1,
+      "context": "Revenue increased by 25% to reach $4.2 billion in Q3 2023.",
+      "expected": "INCLAIM",
+      "raw_response": "OUTOFCLAIM\nThe sentence simply reports a historical fact about revenue increase without making a claim or argument, hence it falls under 'OUTOFCLAIM'.",
+      "extracted": "OUTOFCLAIM",
+      "correct": false,
+      "api_time": 0.4174220561981201
+    },
+    {
+      "implementation": "FLAME",
+      "sample_id": 2,
+      "context": "The company expects continued growth in the coming quarters.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "**INCLAIM**\nThe sentence is labeled as 'INCLAIM' because it expresses a forward-looking statement that implies a prediction or expectation about future growth, which constitutes a claim rather than a factual past or present information.",
+      "extracted": "INCLAIM",
+      "correct": false,
+      "api_time": 0.5847594738006592
+    },
+    {
+      "implementation": "FLAME",
+      "sample_id": 3,
+      "context": "Operating margin improved to 18.5%, exceeding analyst expectations by 2 percentage points.",
+      "expected": "INCLAIM",
+      "raw_response": "INCLAIM\nThe sentence is labeled as 'INCLAIM' because it expresses a comparison between the company's operating margin and analyst expectations, implying a claim about the company's performance relative to those expectations, rather than simply stating a fact.",
+      "extracted": "INCLAIM",
+      "correct": true,
+      "api_time": 1.1966567039489746
+    },
+    {
+      "implementation": "FLAME",
+      "sample_id": 4,
+      "context": "Market conditions remain favorable for expansion.",
+      "expected": "OUTOFCLAIM",
+      "raw_response": "OUTOFCLAIM\nThe sentence simply states a current state of affairs without expressing a claim or opinion about future actions or desired outcomes, it just provides factual present information.",
+      "extracted": "OUTOFCLAIM",
+      "correct": true,
+      "api_time": 0.572730302810669
+    },
+    {
+      "implementation": "FLAME",
+      "sample_id": 5,
+      "context": "We achieved a record 2.3 million active users, up from 1.8 million last quarter.",
+      "expected": "INCLAIM",
+      "raw_response": "OUTOFCLAIM\nThe sentence simply reports a factual achievement and a comparison to a previous quarter, without making a claim or argument about future performance or value.",
+      "extracted": "OUTOFCLAIM",
+      "correct": false,
+      "api_time": 1.1380276679992676
+    }
+  ],
+  "timestamp": "2025-08-18 19:27:00"
+}
