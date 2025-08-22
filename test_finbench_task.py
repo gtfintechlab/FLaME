@@ -5,7 +5,9 @@
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "benchforge"))
+sys.path.append(
+    os.path.join(os.path.dirname(__file__), "vendor/github.com/gtfintechlab/benchforge")
+)
 
 from bench_forge.flame.tasks.finbench import FinBenchTask, FinBenchConfig
 from bench_forge.tasks.config import PromptFormat
