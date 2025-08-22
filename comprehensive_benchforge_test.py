@@ -21,9 +21,7 @@ from datetime import datetime
 import time
 
 # Add vendored BenchForge to path
-sys.path.append(
-    os.path.join(os.path.dirname(__file__), "vendor/github.com/gtfintechlab/benchforge")
-)
+sys.path.append(os.path.join(os.path.dirname(__file__), "vendor/benchforge"))
 
 from bench_forge.tasks.config import PromptFormat
 from bench_forge.flame.adapter import FLAMETask

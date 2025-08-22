@@ -15,9 +15,7 @@ This provides deep validation of extraction rates, FLAME compatibility, and perf
 import sys
 import os
 
-sys.path.append(
-    os.path.join(os.path.dirname(__file__), "vendor/github.com/gtfintechlab/benchforge")
-)
+sys.path.append(os.path.join(os.path.dirname(__file__), "vendor/benchforge"))
 
 from bench_forge.tasks.config import PromptFormat
 from bench_forge.flame.tasks.tatqa import TATQATask, TATQAConfig
