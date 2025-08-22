@@ -1,0 +1,16 @@
+{
+  "model": "together_ai/meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  "timestamp": "20250818_195109",
+  "run_hash": "3b3a24c2",
+  "dataset_size": 537,
+  "benchforge": {
+    "accuracy": 86.96461824953445,
+    "extraction_success": 100.0,
+    "total_time": 59.98866891860962
+  },
+  "flame": {
+    "accuracy": 86.96461824953445,
+    "extraction_success": 100.0,
+    "total_time": 0.9564337730407715
+  }
+}
