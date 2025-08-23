@@ -266,15 +266,43 @@ Step 3 - Final answer:"""
     def _extract_currency(self, response: str) -> Optional[str]:
         """Extract currency amounts."""
         currency_patterns = [
-            r"\$?([\d,]+\.?\d*)\s*(?:million|billion|trillion|M|B|T)?",
+            r"\$?([\d,]+\.?\d*)\s*(million|billion|trillion|thousand|M|B|T|K)?",
             r"([\d,]+\.?\d*)\s*dollars?",
         ]
 
+        magnitude_multipliers = {
+            "k": 1_000,
+            "thousand": 1_000,
+            "m": 1_000_000,
+            "million": 1_000_000,
+            "b": 1_000_000_000,
+            "billion": 1_000_000_000,
+            "t": 1_000_000_000_000,
+            "trillion": 1_000_000_000_000,
+        }
+
         for pattern in currency_patterns:
             matches = re.findall(pattern, response, re.IGNORECASE)
-            if matches:
-                amount = matches[-1].strip()
-                return self._clean_numerical_answer(amount)
+            if not matches:
+                continue
+
+            match = matches[-1]
+            if isinstance(match, tuple):
+                amount, magnitude = match[0], match[1]
+            else:
+                amount, magnitude = match, ""
+
+            cleaned_amount = self._clean_numerical_answer(amount)
+            if cleaned_amount is None:
+                continue
+
+            value = float(cleaned_amount)
+            if magnitude:
+                multiplier = magnitude_multipliers.get(magnitude.lower(), 1)
+                value *= multiplier
+
+            amount_str = str(int(value)) if value.is_integer() else str(value)
+            return self._clean_numerical_answer(amount_str)
 
         return None
 
