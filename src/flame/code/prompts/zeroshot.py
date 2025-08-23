@@ -362,8 +362,8 @@ def finbench_zeroshot_prompt(profile: str) -> str:
     Returns:
         Formatted prompt string
     """
-    prompt = f"""Discard all the previous instructions. Behave like you are an expect risk assessor.
-                Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan for.
+    prompt = f"""Discard all the previous instructions. Behave like you are an expert risk assessor.
+                Classify the following individual as either 'LOW RISK' or 'HIGH RISK' for approving a loan.
                 Categorize the person as 'HIGH RISK' if their profile indicates that they will likely default on
                 the loan and not pay it back, and 'LOW RISK' if it is unlikely that they will fail to pay the loan back in full.
                 Provide the label in the first line and provide a short explanation in the second line. Explain how you came to your classification decision and output the label that you chose. Do not write any code, simply think and provide your decision.

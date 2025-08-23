@@ -78,16 +78,14 @@ class TATQATask(FLAMETask):
         context_text = sample.get(self.config.text_field, "")
         question = sample.get(self.config.question_field, "")
 
-        # Combine context and question as FLAME does
-        combined_context = f"{context_text} {question}"
-
         if format == PromptFormat.ZERO_SHOT:
-            # Use exact FLAME prompt
+            # Use exact FLAME prompt with separated context and question
             prompt = f"""Discard all previous instructions. Behave like an expert in table-and-text-based financial question answering.
 Your task is to answer a question by extracting relevant information from both tables and text
 provided in the context. Ensure that you use both sources comprehensively to generate an accurate response. Repeat your final answer at the
 end of your response.
-The context: {combined_context}"""
+Context: {context_text}
+Question: {question}"""
 
         elif format == PromptFormat.FEW_SHOT:
             prompt = f"""You are an expert in table-and-text-based question answering. Analyze the provided context to answer questions.
@@ -101,13 +99,15 @@ Question: What was the profit increase from 2020 to 2021?
 Answer: The profit increased from $20M to $25M, which is an increase of $5M.
 
 Now analyze this context and answer the question:
-Context: {combined_context}
+Context: {context_text}
+Question: {question}
 """
 
         elif format == PromptFormat.CHAIN_OF_THOUGHT:
             prompt = f"""Let's solve this table-and-text question step by step.
 
-Context: {combined_context}
+Context: {context_text}
+Question: {question}
 
 Let me analyze this systematically:
 1. First, I'll identify the relevant information from both tables and text
@@ -266,15 +266,43 @@ Step 3 - Final answer:"""
     def _extract_currency(self, response: str) -> Optional[str]:
         """Extract currency amounts."""
         currency_patterns = [
-            r"\$?([\d,]+\.?\d*)\s*(?:million|billion|trillion|M|B|T)?",
+            r"\$?([\d,]+\.?\d*)\s*(million|billion|trillion|thousand|M|B|T|K)?",
             r"([\d,]+\.?\d*)\s*dollars?",
         ]
 
+        magnitude_multipliers = {
+            "k": 1_000,
+            "thousand": 1_000,
+            "m": 1_000_000,
+            "million": 1_000_000,
+            "b": 1_000_000_000,
+            "billion": 1_000_000_000,
+            "t": 1_000_000_000_000,
+            "trillion": 1_000_000_000_000,
+        }
+
         for pattern in currency_patterns:
             matches = re.findall(pattern, response, re.IGNORECASE)
-            if matches:
-                amount = matches[-1].strip()
-                return self._clean_numerical_answer(amount)
+            if not matches:
+                continue
+
+            match = matches[-1]
+            if isinstance(match, tuple):
+                amount, magnitude = match[0], match[1]
+            else:
+                amount, magnitude = match, ""
+
+            cleaned_amount = self._clean_numerical_answer(amount)
+            if cleaned_amount is None:
+                continue
+
+            value = float(cleaned_amount)
+            if magnitude:
+                multiplier = magnitude_multipliers.get(magnitude.lower(), 1)
+                value *= multiplier
+
+            amount_str = str(int(value)) if value.is_integer() else str(value)
+            return self._clean_numerical_answer(amount_str)
 
         return None
 
@@ -347,13 +375,13 @@ Step 3 - Final answer:"""
             # Get sample data
             context = sample.get(self.config.text_field, "")
             question = sample.get(self.config.question_field, "")
-            combined_context = f"{context} {question}"
             actual_answer = self.get_ground_truth(sample)
 
             result = {
                 "index": i,
-                # FLAME-compatible fields for TATQA
-                "context": combined_context,  # FLAME primary field
+                # FLAME-compatible fields for TATQA - keep context and question separate
+                "context": context,  # FLAME primary field - context only
+                "question": question,  # FLAME primary field - question only
                 "response": response_text,  # FLAME primary field
                 "actual_answer": actual_answer,  # FLAME primary field
                 "complete_responses": complete_response,  # FLAME primary field
@@ -364,7 +392,7 @@ Step 3 - Final answer:"""
                 "answer": actual_answer,
                 # Standard BenchForge fields
                 "prompt": prompt,
-                "input": combined_context,
+                "input": f"Context: {context}\nQuestion: {question}",  # Formatted input
                 "ground_truth": actual_answer,
                 "raw_response": response_text,
                 "extracted_response": extracted,
