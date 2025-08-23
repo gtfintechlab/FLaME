@@ -323,7 +323,7 @@ def run_full_pipeline_example():
 
     try:
         # Setup LLM configuration
-        llm_config = LLMConfig(
+        LLMConfig(
             provider="openai",  # or your preferred provider
             model="gpt-3.5-turbo",
             max_tokens=256,
@@ -341,7 +341,7 @@ def run_full_pipeline_example():
         adapter = FLAMEAdapter()
 
         # Create task instance
-        task = adapter.create_task("convfinqa", task_config)
+        adapter.create_task("convfinqa", task_config)
 
         logger.info("Pipeline setup complete. In a real scenario, you would:")
         logger.info("1. Load dataset using task.load_dataset()")

@@ -15,7 +15,7 @@ print("=" * 60)
 identical_responses = (bf_df["raw_responses"] == fl_df["raw_responses"]).sum()
 total = len(bf_df)
 print(
-    f"\n📊 Identical Responses: {identical_responses}/{total} ({identical_responses/total*100:.2f}%)"
+    f"\n📊 Identical Responses: {identical_responses}/{total} ({identical_responses / total * 100:.2f}%)"
 )
 
 # Sample some different responses

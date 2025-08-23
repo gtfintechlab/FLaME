@@ -205,7 +205,7 @@ class FinEntityTask(FLAMETask):
                     data = ast.literal_eval(match.group(0))
                     if isinstance(data, list):
                         return data
-                except:
+                except (ValueError, SyntaxError):
                     pass
 
         # Strategy 4: Check for empty indicators
@@ -330,7 +330,7 @@ class FinEntityTask(FLAMETask):
                         try:
                             # Try literal eval
                             return ast.literal_eval(ground_truth)
-                        except:
+                        except (ValueError, SyntaxError):
                             return ground_truth
                 elif isinstance(ground_truth, list):
                     return ground_truth

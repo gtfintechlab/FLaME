@@ -123,7 +123,7 @@ def generate_report(results: Dict, df: pd.DataFrame) -> str:
 
     total_models = len(df)
     both_tested = df[df["BF_Better"].notna()].shape[0]
-    bf_better = df[df["BF_Better"] == True].shape[0] if both_tested > 0 else 0
+    bf_better = df[df["BF_Better"]].shape[0] if both_tested > 0 else 0
 
     report.append(f"- Total models in test: {total_models}")
     report.append(f"- Models with both methods tested: {both_tested}")
@@ -160,7 +160,7 @@ def generate_report(results: Dict, df: pd.DataFrame) -> str:
         report.append("### Extraction Rate")
         report.append(f"- FLAME Average: {avg_flame_ext:.1%}")
         report.append(f"- BenchForge Average: {avg_bf_ext:.1%}")
-        report.append(f"- Difference: {(avg_bf_ext - avg_flame_ext)*100:+.1f}%")
+        report.append(f"- Difference: {(avg_bf_ext - avg_flame_ext) * 100:+.1f}%")
         report.append("")
 
     # Per-model results
@@ -178,7 +178,7 @@ def generate_report(results: Dict, df: pd.DataFrame) -> str:
                 f"- F1 Score: FLAME={row['FLAME_F1']:.3f}, BF={row['BF_F1']:.3f} (Δ={row['F1_Diff']:+.3f})"
             )
             report.append(
-                f"- Extraction: FLAME={row['FLAME_Extraction']:.1%}, BF={row['BF_Extraction']:.1%} (Δ={row['Extraction_Diff']*100:+.1f}%)"
+                f"- Extraction: FLAME={row['FLAME_Extraction']:.1%}, BF={row['BF_Extraction']:.1%} (Δ={row['Extraction_Diff'] * 100:+.1f}%)"
             )
             report.append(
                 f"- Time: FLAME={row['FLAME_Time']:.1f}s, BF={row['BF_Time']:.1f}s (Δ={row['Time_Diff']:+.1f}s)"
@@ -279,7 +279,7 @@ def main():
 
     # Final verdict
     both_tested = df[df["BF_Better"].notna()].shape[0]
-    bf_better = df[df["BF_Better"] == True].shape[0] if both_tested > 0 else 0
+    bf_better = df[df["BF_Better"]].shape[0] if both_tested > 0 else 0
 
     if bf_better == both_tested and both_tested > 0:
         print("\n✅ SUCCESS: BenchForge is a complete superset of FLAME!")

@@ -117,7 +117,7 @@ def run_flame_numclaim(samples: List[Dict], model: str = "gpt-3.5-turbo"):
         if numclaim_prompt is None:
             # Try to import and register prompts
             import src.flame.code.prompts.zeroshot
-            import src.flame.code.prompts.fewshot
+            import src.flame.code.prompts.fewshot  # noqa: F401
 
             numclaim_prompt = get_prompt("numclaim", FLAMEPromptFormat.ZERO_SHOT)
 
@@ -234,12 +234,12 @@ def compare_results(benchforge_results: List[Dict], flame_results: List[Dict]):
     print("-" * 40)
     print(f"{'Total Samples':<25} {bf_total:<15} {fl_total:<15}")
     print(
-        f"{'Extraction Success':<25} {bf_extracted}/{bf_total} ({bf_extracted/bf_total*100:.1f}%){'':5} "
-        f"{fl_extracted}/{fl_total} ({fl_extracted/fl_total*100:.1f}%)"
+        f"{'Extraction Success':<25} {bf_extracted}/{bf_total} ({bf_extracted / bf_total * 100:.1f}%){'':5} "
+        f"{fl_extracted}/{fl_total} ({fl_extracted / fl_total * 100:.1f}%)"
     )
     print(
-        f"{'Accuracy':<25} {bf_correct}/{bf_total} ({bf_correct/bf_total*100:.1f}%){'':5} "
-        f"{fl_correct}/{fl_total} ({fl_correct/fl_total*100:.1f}%)"
+        f"{'Accuracy':<25} {bf_correct}/{bf_total} ({bf_correct / bf_total * 100:.1f}%){'':5} "
+        f"{fl_correct}/{fl_total} ({fl_correct / fl_total * 100:.1f}%)"
     )
 
     # Average API time
@@ -290,11 +290,11 @@ def compare_results(benchforge_results: List[Dict], flame_results: List[Dict]):
     if bf_extracted > 0 and fl_extracted > 0:
         if bf_extracted / bf_total >= fl_extracted / fl_total:
             print(
-                f"✅ BenchForge extraction rate ({bf_extracted/bf_total*100:.1f}%) >= FLAME ({fl_extracted/fl_total*100:.1f}%)"
+                f"✅ BenchForge extraction rate ({bf_extracted / bf_total * 100:.1f}%) >= FLAME ({fl_extracted / fl_total * 100:.1f}%)"
             )
         else:
             print(
-                f"⚠️ BenchForge extraction rate ({bf_extracted/bf_total*100:.1f}%) < FLAME ({fl_extracted/fl_total*100:.1f}%)"
+                f"⚠️ BenchForge extraction rate ({bf_extracted / bf_total * 100:.1f}%) < FLAME ({fl_extracted / fl_total * 100:.1f}%)"
             )
 
 

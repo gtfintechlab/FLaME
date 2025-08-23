@@ -8,15 +8,13 @@ to ensure both native FLAME and BenchForge methods are functioning.
 import os
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Setup paths
 flame_root = Path(__file__).parent.parent
 benchforge_root = Path(__file__).parent
 sys.path.insert(0, str(flame_root))
 sys.path.insert(0, str(benchforge_root))
-
-# Load environment
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -153,8 +151,8 @@ def test_native_flame_fomc():
         from flame.code.prompts import get_prompt, PromptFormat
 
         # Test validation
-        assert validate_sample("DOVISH") == True
-        assert validate_sample("invalid") == False
+        assert validate_sample("DOVISH")
+        assert not validate_sample("invalid")
         print("✅ Validation function works")
 
         # Test prompt creation

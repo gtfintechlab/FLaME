@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 import re
 
-from bench_forge.flame.adapter import FLAMEConfig, FLAMETask
+from bench_forge.flame.adapter import FLAMEConfig, FLAMETask, flame_task
 from bench_forge.tasks.config import PromptFormat
 
 logger = logging.getLogger(__name__)
@@ -36,6 +36,7 @@ class FiQASAConfig(FLAMEConfig):
         super().__post_init__()
 
 
+@flame_task("fiqa_sa")
 class FiQASATask(FLAMETask):
     """FiQA-SA task for target-specific sentiment scoring.
 
@@ -225,7 +226,7 @@ Provide a sentiment score between -1 and 1 (up to 3 decimal places):"""
                     extracted_scores.append(float(extracted))
                 else:
                     extracted_scores.append(None)
-            except:
+            except (ValueError, TypeError):
                 extracted_scores.append(None)
 
             try:
@@ -233,7 +234,7 @@ Provide a sentiment score between -1 and 1 (up to 3 decimal places):"""
                     ground_truth_scores.append(float(actual))
                 else:
                     ground_truth_scores.append(None)
-            except:
+            except (ValueError, TypeError):
                 ground_truth_scores.append(None)
 
         # Calculate metrics only for valid predictions
@@ -400,20 +401,3 @@ Provide a sentiment score between -1 and 1 (up to 3 decimal places):"""
             logger.debug(f"Failed to extract score from: {raw_response[:100]}...")
 
         return extracted
-
-
-# Register the task
-def register_fiqa_sa_task():
-    """Register FiQA-SA task."""
-    from bench_forge.tasks.registry import get_registry
-
-    registry = get_registry()
-    registry.register("fiqa_sa", FiQASATask)
-    logger.info("Registered FiQA-SA task")
-
-
-# Auto-register when imported
-try:
-    register_fiqa_sa_task()
-except Exception as e:
-    logger.warning(f"Could not auto-register FiQA-SA task: {e}")

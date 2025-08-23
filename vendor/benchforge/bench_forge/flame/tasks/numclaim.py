@@ -286,7 +286,7 @@ class NumClaimTask(FLAMETask):
                         ground_truth_nums.append(label_to_num[str(label).upper()])
                     else:
                         ground_truth_nums.append(-1)
-                except:
+                except (ValueError, TypeError, AttributeError):
                     ground_truth_nums.append(-1)
 
         # Calculate metrics only for valid predictions

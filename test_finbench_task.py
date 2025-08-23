@@ -111,7 +111,7 @@ def test_finbench_task():
         extracted_results.append(extracted)
         status = "✓" if extracted else "✗"
         print(
-            f"{status} Response {i+1:2d}: {'SUCCESS' if extracted else 'FAILED':7} -> {extracted}"
+            f"{status} Response {i + 1:2d}: {'SUCCESS' if extracted else 'FAILED':7} -> {extracted}"
         )
 
     # Calculate extraction success rate
@@ -195,7 +195,7 @@ def test_finbench_task():
 
     for i, sample in enumerate(test_samples[:3]):
         ground_truth = task.get_ground_truth(sample)
-        print(f"✓ Sample {i+1}: {ground_truth}")
+        print(f"✓ Sample {i + 1}: {ground_truth}")
 
     # Validation tests
     print("\n" + "=" * 50)

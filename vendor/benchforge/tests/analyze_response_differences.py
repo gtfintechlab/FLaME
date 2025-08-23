@@ -23,17 +23,17 @@ print("RESPONSE COMPARISON ANALYSIS")
 print("=" * 80)
 print("\n📊 STATISTICS:")
 print(f"Total samples: {total}")
-print(f"Identical responses: {identical} ({identical/total*100:.2f}%)")
-print(f"Different responses: {different} ({different/total*100:.2f}%)")
+print(f"Identical responses: {identical} ({identical / total * 100:.2f}%)")
+print(f"Different responses: {different} ({different / total * 100:.2f}%)")
 
 # Label agreement
 label_agreement = (bf_df["extracted_labels"] == fl_df["extracted_labels"]).sum()
 print("\n🏷️ LABEL AGREEMENT:")
 print(
-    f"Same labels extracted: {label_agreement}/{total} ({label_agreement/total*100:.2f}%)"
+    f"Same labels extracted: {label_agreement}/{total} ({label_agreement / total * 100:.2f}%)"
 )
 print(
-    f"Different labels: {total - label_agreement} ({(total - label_agreement)/total*100:.2f}%)"
+    f"Different labels: {total - label_agreement} ({(total - label_agreement) / total * 100:.2f}%)"
 )
 
 # Find indices where responses differ
@@ -43,8 +43,8 @@ print("\n📝 SHOWING 15 EXAMPLES OF DIFFERENT RESPONSES:")
 print("=" * 80)
 
 for i, idx in enumerate(diff_indices[:15]):
-    print(f"\n### DIFFERENCE {i+1} (Sample Index {idx}) ###")
-    print(f"Input Sentence: \"{bf_df.loc[idx, 'sentences'][:200]}...\"")
+    print(f"\n### DIFFERENCE {i + 1} (Sample Index {idx}) ###")
+    print(f'Input Sentence: "{bf_df.loc[idx, "sentences"][:200]}..."')
     print(f"True Label: {bf_df.loc[idx, 'actual_labels']}")
     print("")
 
@@ -92,8 +92,8 @@ if len(label_diff_indices) > 0:
     print("\n🔍 CASES WHERE LABELS DIFFER:")
     print("=" * 80)
     for i, idx in enumerate(label_diff_indices[:5]):
-        print(f"\n### LABEL DISAGREEMENT {i+1} (Index {idx}) ###")
-        print(f"Sentence: \"{bf_df.loc[idx, 'sentences'][:150]}...\"")
+        print(f"\n### LABEL DISAGREEMENT {i + 1} (Index {idx}) ###")
+        print(f'Sentence: "{bf_df.loc[idx, "sentences"][:150]}..."')
         print(f"True Label: {bf_df.loc[idx, 'actual_labels']}")
         print(
             f"BenchForge: {bf_df.loc[idx, 'extracted_labels']} {'✅' if bf_df.loc[idx, 'correct'] else '❌'}"
@@ -106,7 +106,7 @@ if len(label_diff_indices) > 0:
 print("\n" + "=" * 80)
 print("SUMMARY")
 print("=" * 80)
-print(f"✅ Response text agreement: {identical/total*100:.2f}%")
-print(f"✅ Label agreement: {label_agreement/total*100:.2f}%")
-print(f"📊 BenchForge accuracy: {bf_df['correct'].sum()/total*100:.2f}%")
-print(f"📊 FLAME accuracy: {fl_df['correct'].sum()/total*100:.2f}%")
+print(f"✅ Response text agreement: {identical / total * 100:.2f}%")
+print(f"✅ Label agreement: {label_agreement / total * 100:.2f}%")
+print(f"📊 BenchForge accuracy: {bf_df['correct'].sum() / total * 100:.2f}%")
+print(f"📊 FLAME accuracy: {fl_df['correct'].sum() / total * 100:.2f}%")

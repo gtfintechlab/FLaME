@@ -15,6 +15,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 import pandas as pd
+from dotenv import load_dotenv
 
 # Setup paths for both FLAME and BenchForge
 flame_root = Path(__file__).parent.parent
@@ -29,9 +30,6 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(), logging.FileHandler("fomc_comparison.log")],
 )
 logger = logging.getLogger(__name__)
-
-# Load environment variables
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -237,7 +235,7 @@ class FOMCComparison:
                 batch = prompts[i : i + self.batch_size]
                 batch_responses = llm_client.complete_batch(batch)
                 responses.extend(batch_responses)
-                logger.debug(f"Processed batch {i//self.batch_size + 1}")
+                logger.debug(f"Processed batch {i // self.batch_size + 1}")
 
             inference_time = time.time() - start_time
 
@@ -377,9 +375,9 @@ class FOMCComparison:
         all_comparisons = []
 
         for model in models:
-            logger.info(f"\n{'='*60}")
+            logger.info(f"\n{'=' * 60}")
             logger.info(f"Testing model: {model}")
-            logger.info(f"{'='*60}")
+            logger.info(f"{'=' * 60}")
 
             try:
                 # Run native FLAME
@@ -448,9 +446,9 @@ class FOMCComparison:
         with open(output_path, "w") as f:
             json.dump(summary, f, indent=2)
 
-        logger.info(f"\n{'='*60}")
+        logger.info(f"\n{'=' * 60}")
         logger.info("COMPARISON SUMMARY")
-        logger.info(f"{'='*60}")
+        logger.info(f"{'=' * 60}")
         logger.info(f"Models tested: {len(models)}")
         logger.info(f"Samples per model: {self.num_samples}")
         logger.info(f"BenchForge is superset: {summary['overall_superset']}")

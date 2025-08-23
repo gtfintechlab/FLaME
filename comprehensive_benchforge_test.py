@@ -310,7 +310,7 @@ class BenchForgeTestSuite:
                         self.log_result(
                             task_name,
                             "Extraction",
-                            f"Response {i+1}",
+                            f"Response {i + 1}",
                             "PASS",
                             f"Extracted: {str(extracted)[:50]}",
                             duration,
@@ -319,7 +319,7 @@ class BenchForgeTestSuite:
                         self.log_result(
                             task_name,
                             "Extraction",
-                            f"Response {i+1}",
+                            f"Response {i + 1}",
                             "FAIL",
                             f"No extraction from: {response_text[:50]}...",
                             duration,
@@ -329,7 +329,7 @@ class BenchForgeTestSuite:
                     self.log_result(
                         task_name,
                         "Extraction",
-                        f"Response {i+1}",
+                        f"Response {i + 1}",
                         "FAIL",
                         f"Extraction error: {str(e)}",
                         duration,

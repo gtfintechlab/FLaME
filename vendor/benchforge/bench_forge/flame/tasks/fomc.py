@@ -359,7 +359,7 @@ Classification:"""
                 # It might already be a number
                 try:
                     ground_truth_nums.append(int(label))
-                except:
+                except (ValueError, TypeError):
                     logger.warning(f"Unknown ground truth label: {label}")
                     ground_truth_nums.append(-1)
 

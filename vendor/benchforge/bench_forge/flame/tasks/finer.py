@@ -309,7 +309,7 @@ Step 3 - BIO tags:"""
             try:
                 # Try to parse as JSON
                 tags = json.loads(tags)
-            except:
+            except json.JSONDecodeError:
                 # Try to parse as space-separated
                 tags = tags.split()
 

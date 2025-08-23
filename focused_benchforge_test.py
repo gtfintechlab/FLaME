@@ -31,9 +31,9 @@ def test_task_comprehensive(
     task_class, config_class, task_name, test_samples, test_responses
 ):
     """Comprehensive test for a single task."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"COMPREHENSIVE TEST: {task_name.upper()}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     results = {
         "initialization": False,
@@ -83,12 +83,12 @@ def test_task_comprehensive(
                 extracted = task.extract_response(response, sample)
                 if extracted is not None:
                     successful += 1
-                    print(f"✓ [{task_name}] Response {i+1}: {str(extracted)[:50]}")
+                    print(f"✓ [{task_name}] Response {i + 1}: {str(extracted)[:50]}")
                 else:
-                    print(f"✗ [{task_name}] Response {i+1}: No extraction")
+                    print(f"✗ [{task_name}] Response {i + 1}: No extraction")
             except Exception as e:
-                print(f"✗ [{task_name}] Response {i+1}: Error - {str(e)}")
-                results["issues"].append(f"Extraction {i+1}: {str(e)}")
+                print(f"✗ [{task_name}] Response {i + 1}: Error - {str(e)}")
+                results["issues"].append(f"Extraction {i + 1}: {str(e)}")
 
         extraction_rate = (successful / total * 100) if total > 0 else 0
         results["extraction_rate"] = extraction_rate
@@ -306,9 +306,9 @@ def main():
         all_results[task_name] = results
 
     # Generate summary report
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("COMPREHENSIVE TEST SUMMARY")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     total_tasks = len(all_results)
     successful_init = sum(1 for r in all_results.values() if r["initialization"])
@@ -322,10 +322,10 @@ def main():
     print("\nOVERALL METRICS:")
     print(f"Total Tasks Tested: {total_tasks}")
     print(
-        f"✓ Successful Initialization: {successful_init}/{total_tasks} ({successful_init/total_tasks*100:.1f}%)"
+        f"✓ Successful Initialization: {successful_init}/{total_tasks} ({successful_init / total_tasks * 100:.1f}%)"
     )
     print(
-        f"✓ FLAME Compatible: {flame_compatible}/{total_tasks} ({flame_compatible/total_tasks*100:.1f}%)"
+        f"✓ FLAME Compatible: {flame_compatible}/{total_tasks} ({flame_compatible / total_tasks * 100:.1f}%)"
     )
     print(f"📊 Average Extraction Rate: {avg_extraction:.1f}%")
 

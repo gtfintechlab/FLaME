@@ -60,7 +60,7 @@ def analyze_entity_extraction(bf_df, flame_df):
                     else []
                 )
             return entities_str if isinstance(entities_str, list) else []
-        except:
+        except json.JSONDecodeError:
             return []
 
     bf_df["parsed_entities"] = bf_df["extracted_entities"].apply(
@@ -76,12 +76,12 @@ def analyze_entity_extraction(bf_df, flame_df):
 
     print(f"BenchForge - Avg entities per sample: {bf_entity_counts.mean():.2f}")
     print(
-        f"BenchForge - Samples with entities: {(bf_entity_counts > 0).sum()}/{len(bf_df)} ({(bf_entity_counts > 0).mean()*100:.1f}%)"
+        f"BenchForge - Samples with entities: {(bf_entity_counts > 0).sum()}/{len(bf_df)} ({(bf_entity_counts > 0).mean() * 100:.1f}%)"
     )
 
     print(f"FLAME - Avg entities per sample: {flame_entity_counts.mean():.2f}")
     print(
-        f"FLAME - Samples with entities: {(flame_entity_counts > 0).sum()}/{len(flame_df)} ({(flame_entity_counts > 0).mean()*100:.1f}%)"
+        f"FLAME - Samples with entities: {(flame_entity_counts > 0).sum()}/{len(flame_df)} ({(flame_entity_counts > 0).mean() * 100:.1f}%)"
     )
 
     # Sentiment distribution
@@ -100,13 +100,15 @@ def analyze_entity_extraction(bf_df, flame_df):
     print("\nBenchForge sentiment distribution:")
     bf_sentiment_counts = pd.Series(bf_sentiments).value_counts()
     for sentiment, count in bf_sentiment_counts.items():
-        print(f"  {sentiment}: {count} ({count/len(bf_sentiments)*100:.1f}%)")
+        print(f"  {sentiment}: {count} ({count / len(bf_sentiments) * 100:.1f}%)")
 
     print("\nFLAME sentiment distribution:")
     if flame_sentiments:
         flame_sentiment_counts = pd.Series(flame_sentiments).value_counts()
         for sentiment, count in flame_sentiment_counts.items():
-            print(f"  {sentiment}: {count} ({count/len(flame_sentiments)*100:.1f}%)")
+            print(
+                f"  {sentiment}: {count} ({count / len(flame_sentiments) * 100:.1f}%)"
+            )
     else:
         print("  No sentiments extracted")
 
@@ -177,7 +179,7 @@ def analyze_agreement_patterns(bf_df, flame_df):
 
     print(f"Agreements: {agreements}")
     print(f"Disagreements: {disagreements}")
-    print(f"Agreement rate: {agreements/(agreements+disagreements)*100:.1f}%")
+    print(f"Agreement rate: {agreements / (agreements + disagreements) * 100:.1f}%")
 
     if agreement_details:
         print(f"\nFirst {len(agreement_details)} disagreements:")

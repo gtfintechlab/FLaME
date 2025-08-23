@@ -300,7 +300,7 @@ Classification (respond with only the number 0, 1, or 2):"""
                         ground_truth_nums.append(num_label)
                     else:
                         ground_truth_nums.append(-1)
-                except:
+                except (ValueError, TypeError):
                     ground_truth_nums.append(-1)
 
         # Calculate metrics only for valid predictions

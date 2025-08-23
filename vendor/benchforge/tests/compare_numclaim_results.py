@@ -13,13 +13,13 @@ print("=" * 60)
 
 # Overall metrics
 print("\n📊 OVERALL METRICS:")
-print(f"BenchForge Accuracy: {bf_df['correct'].mean()*100:.2f}%")
-print(f"FLAME Accuracy: {fl_df['correct'].mean()*100:.2f}%")
+print(f"BenchForge Accuracy: {bf_df['correct'].mean() * 100:.2f}%")
+print(f"FLAME Accuracy: {fl_df['correct'].mean() * 100:.2f}%")
 
 # Agreement analysis
 agreements = (bf_df["extracted_labels"] == fl_df["extracted_labels"]).sum()
 print(
-    f"\nLabel Agreement: {agreements}/{len(bf_df)} ({agreements/len(bf_df)*100:.2f}%)"
+    f"\nLabel Agreement: {agreements}/{len(bf_df)} ({agreements / len(bf_df) * 100:.2f}%)"
 )
 
 # Find disagreements

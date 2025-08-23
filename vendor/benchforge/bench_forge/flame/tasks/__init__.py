@@ -29,6 +29,7 @@ from bench_forge.flame.tasks.tatqa import TATQAConfig, TATQATask
 from bench_forge.flame.tasks.banking77 import Banking77Config, Banking77Task
 from bench_forge.flame.tasks.ectsum import ECTSumConfig, ECTSumTask
 from bench_forge.flame.tasks.finbench import FinBenchConfig, FinBenchTask
+from bench_forge.flame.tasks.fiqa_sa import FiQASAConfig, FiQASATask
 
 __all__ = [
     "FOMCTask",
@@ -61,6 +62,8 @@ __all__ = [
     "ECTSumConfig",
     "FinBenchTask",
     "FinBenchConfig",
+    "FiQASATask",
+    "FiQASAConfig",
 ]
 
 
@@ -75,13 +78,14 @@ def register_all_flame_tasks():
     # QA tasks are auto-registered via @flame_task decorator
     # but we can import them to ensure registration
     from bench_forge.flame.tasks import (
-        convfinqa,
-        finqa,
-        edtsum,
-        tatqa,
-        banking77,
-        ectsum,
-        finbench,  # QA and classification tasks
-        finer,
-        finentity,  # NER tasks
+        convfinqa,  # noqa: F401
+        finqa,  # noqa: F401
+        edtsum,  # noqa: F401
+        fiqa_sa,  # noqa: F401
+        tatqa,  # noqa: F401
+        banking77,  # noqa: F401
+        ectsum,  # noqa: F401
+        finbench,  # QA and classification tasks  # noqa: F401
+        finer,  # noqa: F401
+        finentity,  # NER tasks  # noqa: F401
     )

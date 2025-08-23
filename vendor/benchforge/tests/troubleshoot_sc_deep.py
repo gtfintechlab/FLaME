@@ -9,6 +9,9 @@ import os
 import sys
 import time
 import logging
+import litellm
+from flame.utils.dataset_utils import safe_load_dataset
+from litellm import completion
 
 # Add paths for both implementations
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -22,11 +25,6 @@ logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
-
-# Import utilities
-from flame.utils.dataset_utils import safe_load_dataset
-from litellm import completion
-import litellm
 
 # Default model
 DEFAULT_MODEL = "together_ai/meta-llama/Llama-4-Scout-17B-16E-Instruct"
@@ -85,7 +83,7 @@ Answer (0, 1, or 2):""",
 
     prompt = prompts.get(prompt_version, prompts["flame"])
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Testing prompt version: {prompt_version}")
     print(f"Text: {text[:100]}...")
     print(f"Prompt length: {len(prompt)} chars")
@@ -327,7 +325,7 @@ def test_prompt_variations(test_samples):
             correct = sum(1 for r in version_results if r["correct"])
             total = len(version_results)
             print(f"\n{version.upper()} prompt:")
-            print(f"  Accuracy: {correct}/{total} ({correct/total*100:.1f}%)")
+            print(f"  Accuracy: {correct}/{total} ({correct / total * 100:.1f}%)")
             print(f"  Responses: {[r['response'] for r in version_results]}")
 
 

@@ -186,7 +186,7 @@ def run_benchforge_finentity(
                 total_api_time += batch_time
 
                 print(
-                    f"Batch API time: {batch_time:.2f}s ({batch_time/len(sample_batch):.2f}s per sample)"
+                    f"Batch API time: {batch_time:.2f}s ({batch_time / len(sample_batch):.2f}s per sample)"
                 )
 
                 # Process responses
@@ -299,17 +299,17 @@ def run_flame_finentity(
                 parse_json_content,
                 sanitize_json_string,
             )
-        import ast
+        import ast  # noqa: F401
 
         # Get FLAME prompt
         finentity_prompt = get_prompt("finentity", FLAMEPromptFormat.ZERO_SHOT)
         if finentity_prompt is None:
             # Try to import and register prompts
             try:
-                import flame.code.prompts.zeroshot
+                import flame.code.prompts.zeroshot  # noqa: F401
             except ImportError:
                 # Import with src path
-                import src.flame.code.prompts.zeroshot
+                import src.flame.code.prompts.zeroshot  # noqa: F401
             finentity_prompt = get_prompt("finentity", FLAMEPromptFormat.ZERO_SHOT)
 
         if finentity_prompt is None:
@@ -415,7 +415,7 @@ def calculate_entity_metrics(
     if isinstance(ground_truth_entities, str):
         try:
             ground_truth_entities = json.loads(ground_truth_entities)
-        except:
+        except json.JSONDecodeError:
             ground_truth_entities = []
 
     if not isinstance(ground_truth_entities, list):
@@ -483,7 +483,7 @@ def compare_results(benchforge_results: List[Dict], flame_results: List[Dict]):
     for i, (bf_result, flame_result) in enumerate(
         zip(benchforge_results, flame_results)
     ):
-        print(f"\n--- Sample {i+1} Comparison ---")
+        print(f"\n--- Sample {i + 1} Comparison ---")
 
         # Calculate individual metrics
         bf_sample_metrics = calculate_entity_metrics(
